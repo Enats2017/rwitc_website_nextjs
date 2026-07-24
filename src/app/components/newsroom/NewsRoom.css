@@ -1,0 +1,325 @@
+/* NEWS ROOM SECTION */
+   .newsRoom {
+       width: 100%;
+       padding: 70px 40px;
+       background: linear-gradient(180deg, #f7fbf7 0%, #eef6ef 100%);
+   }
+
+   /* CONTAINER */
+   .newsContainer {
+       width: 100%;
+       max-width: 1400px;
+       margin: 0 auto;
+       display: grid;
+       grid-template-columns: 420px 1fr;
+       gap: 35px;
+       align-items: stretch;
+   }
+
+   /* COMMON CARD (GLASS EFFECT) */
+   .raceCard,
+   .newsCard {
+       position: relative;
+       overflow: hidden;
+       background: rgba(255, 255, 255, .65);
+       backdrop-filter: blur(18px) saturate(160%);
+       -webkit-backdrop-filter: blur(18px) saturate(160%);
+       border-radius: 28px;
+       padding: 36px;
+       box-shadow:
+           0 15px 40px rgba(0, 0, 0, .08),
+           inset 0 1px 0 rgba(255, 255, 255, .6);
+       border: 1px solid rgba(255, 255, 255, .5);
+       transition: .35s ease;
+   }
+
+   .raceCard:hover,
+   .newsCard:hover {
+       transform: translateY(-6px);
+       box-shadow:
+           0 25px 60px rgba(0, 0, 0, .14),
+           inset 0 1px 0 rgba(255, 255, 255, .6);
+   }
+
+   /* TOP TAG (COMPACT PILL, NOT STRETCHED) */
+   .cardTag {
+       display: inline-flex;
+       align-items: center;
+       gap: 10px;
+       background: linear-gradient(135deg, #1cb356, #0b6d2a);
+       color: #ffffff;
+       padding: 12px 22px;
+       border-radius: 999px;
+       font-size: 14px;
+       font-weight: 800;
+       letter-spacing: .6px;
+       text-transform: uppercase;
+       margin-bottom: 28px;
+       box-shadow: 0 10px 22px rgba(11, 109, 42, .28);
+   }
+
+   .cardTag svg {
+       font-size: 15px;
+   }
+
+   /* LEFT CARD (RACE DAY) */
+   .raceCard {
+       display: flex;
+       flex-direction: column;
+       align-items: flex-start;
+       text-align: left;
+   }
+
+   .raceCard h2 {
+       font-size: 24px;
+       font-weight: 700;
+       color: #111;
+       margin: 0;
+   }
+
+   .raceCard h1 {
+       font-size: 38px;
+       line-height: 46px;
+       font-weight: 800;
+       color: #0b1f14;
+       margin: 4px 0 6px;
+   }
+
+   .raceCard p {
+       font-size: 15px;
+       color: #6d6d6d;
+       margin-bottom: 22px;
+   }
+
+   /* RACE NAV (CIRCLE ARROWS) */
+   .raceNav {
+       display: flex;
+       gap: 14px;
+       margin-bottom: 28px;
+   }
+
+   .navCircle {
+       width: 44px;
+       height: 44px;
+       border-radius: 50%;
+       border: none;
+       outline: none;
+       cursor: pointer;
+       background: rgba(11, 109, 42, .08);
+       color: #0b6d2a;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       font-size: 15px;
+       box-shadow: inset 0 0 0 1px rgba(11, 109, 42, .15);
+       transition: .3s ease;
+   }
+
+   .navCircle:hover {
+       background: #0b6d2a;
+       color: #ffffff;
+       transform: translateY(-3px);
+       box-shadow: 0 10px 20px rgba(11, 109, 42, .3);
+   }
+
+   /* RACE BUTTON */
+   .raceButton {
+       margin-top: auto;
+       display: inline-flex;
+       align-items: center;
+       gap: 12px;
+       padding: 14px 26px;
+       border: none;
+       outline: none;
+       cursor: pointer;
+       border-radius: 999px;
+       background: linear-gradient(135deg, #16a34a, #0b6d2a);
+       color: #ffffff;
+       font-size: 15px;
+       font-weight: 700;
+       transition: .35s ease;
+       box-shadow: 0 12px 28px rgba(11, 109, 42, .3);
+   }
+
+   .raceButton:hover {
+       transform: translateY(-4px);
+       box-shadow: 0 16px 34px rgba(11, 109, 42, .4);
+   }
+
+   /* NEWS CARD */
+   .newsCard {
+       display: flex;
+       flex-direction: column;
+   }
+
+   /* NEWS LIST */
+   .newsList {
+       display: flex;
+       flex-direction: column;
+   }
+
+   /* SINGLE NEWS */
+   .newsItem {
+       padding: 18px 0;
+       border-bottom: 1px dashed rgba(0, 0, 0, .12);
+       transition: .3s ease;
+   }
+
+   .newsItem:last-child {
+       border-bottom: none;
+   }
+
+   .newsItem:hover {
+       transform: translateX(6px);
+   }
+
+   .newsText {
+       font-size: 16.5px;
+       line-height: 26px;
+       color: #1c1c1c;
+       font-weight: 500;
+       margin: 0;
+   }
+
+   /* NEW LABEL */
+   .newLabel {
+       background: none;
+       border: none;
+       outline: none;
+       padding: 0;
+       margin-left: 4px;
+       font-family: inherit;
+       color: #16a34a;
+       font-weight: 800;
+       font-size: 14px;
+       cursor: pointer;
+   }
+
+   .newLabel:hover {
+       text-decoration: underline;
+   }
+
+   /* VIEW ALL LINK */
+   .viewAllWrap {
+       margin-top: 16px;
+       text-align: right;
+   }
+
+   .viewAll {
+       color: #0b6d2a;
+       font-size: 15px;
+       font-weight: 700;
+       text-decoration: underline;
+       text-underline-offset: 4px;
+   }
+
+   .viewAll:hover {
+       color: #0f7d33;
+   }
+
+   /* GLASS SHINE SWEEP EFFECT */
+   .raceCard::before,
+   .newsCard::before {
+       content: "";
+       position: absolute;
+       top: 0;
+       left: -120%;
+       width: 60%;
+       height: 100%;
+       background: linear-gradient(90deg,
+               transparent,
+               rgba(255, 255, 255, .35),
+               transparent);
+       transition: 1s;
+       pointer-events: none;
+   }
+
+   .raceCard:hover::before,
+   .newsCard:hover::before {
+       left: 150%;
+   }
+
+   /* RESPONSIVE */
+   @media (max-width:1200px) {
+       .newsContainer {
+           grid-template-columns: 1fr;
+           gap: 30px;
+       }
+   }
+
+   @media (max-width:768px) {
+       .newsRoom {
+           padding: 50px 20px;
+       }
+
+       .newsContainer {
+           gap: 24px;
+       }
+
+       .raceCard,
+       .newsCard {
+           padding: 26px;
+           border-radius: 24px;
+       }
+
+       .cardTag {
+           font-size: 12px;
+           padding: 10px 18px;
+       }
+
+       .raceCard h1 {
+           font-size: 30px;
+           line-height: 38px;
+       }
+
+       .navCircle {
+           width: 40px;
+           height: 40px;
+           font-size: 14px;
+       }
+
+       .newsText {
+           font-size: 15px;
+           line-height: 24px;
+       }
+   }
+
+   @media (max-width:500px) {
+       .newsRoom {
+           padding: 40px 15px;
+       }
+
+       .raceCard,
+       .newsCard {
+           padding: 20px;
+       }
+
+       .cardTag {
+           font-size: 11px;
+           padding: 9px 16px;
+       }
+
+       .raceCard h1 {
+           font-size: 26px;
+           line-height: 33px;
+       }
+
+       .raceButton {
+           width: 100%;
+           justify-content: center;
+       }
+
+       .viewAllWrap {
+           text-align: left;
+       }
+   }
+
+   /* SMOOTH TRANSITIONS */
+   .newsRoom *,
+   .raceCard,
+   .newsCard,
+   .newsItem,
+   .raceButton,
+   .navCircle {
+       transition: all .35s ease;
+   }

@@ -1,0 +1,360 @@
+/* FOOTER */
+.footer {
+    width: 100%;
+    background: linear-gradient(160deg, #0d7a30 0%, #0b6d2a 55%, #094f20 100%);
+    color: #ffffff;
+    margin-top: 100px;
+}
+
+/* TOP AREA */
+.footerTop {
+    max-width: 1400px;
+    margin: auto;
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* TOP ROW (DOWNLOAD + LOGO/SOCIAL SIDE BY SIDE) */
+.footerTopRow {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 40px;
+    align-items: stretch;
+}
+
+/* DOWNLOAD CARD */
+.downloadCard {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 20px;
+    padding: 22px 26px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .15), inset 0 1px 0 rgba(255, 255, 255, .15);
+    transition: .35s ease;
+}
+
+.downloadCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 22px 45px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .15);
+}
+
+.appImage {
+    flex-shrink: 0;
+}
+
+.downloadText {
+    flex: 1;
+}
+
+.downloadText h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.downloadText p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, .7);
+    margin: 0;
+}
+
+/* CONTACT / DOWNLOAD BUTTON */
+.contactButton {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 50px;
+    background: #ffffff;
+    color: #0b6d2a;
+    font-size: 13px;
+    font-weight: 700;
+    transition: .35s ease;
+}
+
+.contactButton:hover {
+    background: #16a34a;
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, .2);
+}
+
+.contactButton:active {
+    transform: scale(.96);
+}
+
+/* RIGHT COLUMN (LOGO + SOCIAL) - NARROW, MATCHES DOWNLOAD HEIGHT */
+.footerRightCol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 6px;
+    padding-top: 0;
+}
+
+.footerLogo {
+    width: 64px;
+    margin-bottom: 6px;
+}
+
+.footerText {
+    font-size: 13px;
+    line-height: 20px;
+    color: rgba(255, 255, 255, .85);
+    margin-bottom: 10px;
+}
+
+/* SOCIAL ICONS (ORIGINAL BRAND COLORS) */
+.socialIcons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.socialIcons a {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 15px;
+    transition: .3s ease;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .2);
+}
+
+.socialIcons a:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, .3);
+}
+
+/* FACEBOOK - brand blue */
+.iconFacebook {
+    background: #1877F2;
+}
+
+/* X (TWITTER) - brand black */
+.iconX {
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, .2);
+}
+
+/* INSTAGRAM - brand gradient */
+.iconInstagram {
+    background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+}
+
+/* YOUTUBE - brand red */
+.iconYoutube {
+    background: #FF0000;
+}
+
+/* CONTACT US BUTTON (BELOW SOCIAL ICONS) */
+.contactUsBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border: 1px solid rgba(255, 255, 255, .4);
+    outline: none;
+    cursor: pointer;
+    border-radius: 50px;
+    background: transparent;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    transition: .3s ease;
+}
+
+.contactUsBtn:hover {
+    background: #ffffff;
+    color: #0b6d2a;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, .2);
+}
+
+.contactUsBtn:active {
+    transform: scale(.96);
+}
+
+/* WEATHER CARD (FULL WIDTH) */
+.weatherCard {
+    display: flex;
+    width: 100%;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .15), inset 0 1px 0 rgba(255, 255, 255, .15);
+    transition: .35s ease;
+}
+
+.weatherCard:hover {
+    box-shadow: 0 22px 45px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .15);
+}
+
+.weatherMain {
+    width: 220px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, .07);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 26px;
+    gap: 8px;
+}
+
+.weatherMain h3 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, .8);
+    margin: 0;
+}
+
+.weatherMainRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.weatherMainRow span {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.weatherMainRow h1 {
+    font-size: 34px;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1;
+}
+
+/* FORECAST DAYS */
+.weatherDays {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.weatherDay {
+    padding: 18px 10px;
+    text-align: center;
+    border-left: 1px solid rgba(255, 255, 255, .1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: .3s ease;
+}
+
+.weatherDay:hover {
+    background: rgba(255, 255, 255, .08);
+}
+
+.weatherDay h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+    color: rgba(255, 255, 255, .9);
+}
+
+.weatherDay span {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.weatherTemps {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.weatherTemps strong {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.weatherTemps small {
+    font-size: 12px;
+    color: rgba(255, 255, 255, .6);
+}
+
+/* BOTTOM BAR */
+.footerBottom {
+    text-align: center;
+    padding: 20px;
+    background: #ffffff;
+    color: #111;
+    font-size: 14px;
+    font-weight: 600
+}
+
+/* RESPONSIVE */
+@media(max-width:1100px) {
+    .footerTopRow {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .footerRightCol {
+        align-items: center;
+    }
+}
+
+@media(max-width:900px) {
+    .weatherCard {
+        flex-direction: column;
+    }
+
+    .weatherMain {
+        width: 100%;
+    }
+
+    .weatherDays {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .weatherDay {
+        border-left: none;
+        border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .downloadCard {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+@media(max-width:600px) {
+    .footerTop {
+        padding: 45px 20px;
+    }
+
+    .weatherDays {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .weatherMainRow h1 {
+        font-size: 26px;
+    }
+
+    .downloadCard {
+        padding: 18px 20px;
+    }
+}

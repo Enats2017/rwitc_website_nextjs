@@ -1,0 +1,194 @@
+   /* HERO SECTION */
+   .hero {
+       width: 100%;
+       height: 100vh;
+       overflow: hidden;
+       position: relative;
+       background: #000;
+   }
+
+   /* SWIPER */
+   .heroSwiper {
+       width: 100%;
+       height: 100%;
+   }
+
+   .heroSwiper .swiper-wrapper {
+       width: 100%;
+       height: 100%;
+   }
+
+   .heroSwiper .swiper-slide {
+       width: 100%;
+       height: 100%;
+   }
+
+   /* HERO SLIDE */
+   .heroSlide {
+       width: 100%;
+       height: 100%;
+       position: relative;
+       overflow: hidden;
+   }
+
+   /* HERO IMAGE */
+   .heroSlide img {
+       width: 100%;
+       height: 100%;
+       object-fit: cover;
+       display: block;
+       animation: heroZoom 8s linear infinite;
+   }
+
+   /* DARK OVERLAY */
+   .heroSlide::before {
+       content: "";
+       position: absolute;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: linear-gradient(rgba(0, 0, 0, .18),
+               rgba(0, 0, 0, .10),
+               rgba(0, 0, 0, .18));
+       z-index: 1;
+   }
+
+   /* CUSTOM NAVIGATION BUTTONS */
+   .heroNavBtn {
+       position: absolute;
+       top: 50%;
+       transform: translateY(-50%);
+       width: 42px;
+       height: 42px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       border-radius: 50%;
+       background: rgba(255, 255, 255, .15);
+       backdrop-filter: blur(8px);
+       -webkit-backdrop-filter: blur(8px);
+       border: 1px solid rgba(255, 255, 255, .35);
+       color: #ffffff;
+       cursor: pointer;
+       padding: 0;
+       z-index: 5;
+       opacity: 0;
+       visibility: hidden;
+       transition: opacity .35s ease, visibility .35s ease, background .35s ease, transform .35s ease, box-shadow .35s ease;
+       box-shadow: 0 6px 14px rgba(0, 0, 0, .15);
+   }
+
+   .heroNavBtn svg {
+       width: 20px;
+       height: 20px;
+   }
+
+   .hero:hover .heroNavBtn {
+       opacity: 1;
+       visibility: visible;
+   }
+
+   .heroNavPrev {
+       left: 32px;
+   }
+
+   .heroNavNext {
+       right: 32px;
+   }
+
+   /* HOVER EFFECT */
+   .heroNavBtn:hover {
+       background: #0b6d2a;
+       border-color: #0b6d2a;
+       transform: translateY(-50%) scale(1.1);
+       box-shadow: 0 10px 20px rgba(0, 0, 0, .25);
+   }
+
+   /* HERO IMAGE ANIMATION */
+   @keyframes heroZoom {
+       0% {
+           transform: scale(1);
+       }
+
+       100% {
+           transform: scale(1.08);
+       }
+   }
+
+   /* SWIPER TRANSITION */
+   .heroSwiper .swiper-slide {
+       transition: transform .8s ease;
+   }
+
+   /* RESPONSIVE */
+   @media(max-width:1200px) {
+       .hero {
+           height: 85vh;
+       }
+   }
+
+   @media(max-width:992px) {
+       .hero {
+           height: 75vh;
+           margin-top: 82px;
+       }
+
+       .heroNavBtn {
+           width: 34px;
+           height: 34px;
+       }
+
+       .heroNavBtn svg {
+           width: 15px;
+           height: 15px;
+       }
+
+       .heroNavPrev {
+           left: 26px;
+       }
+
+       .heroNavNext {
+           right: 26px;
+       }
+   }
+
+   @media(max-width:768px) {
+       .hero {
+           height: 60vh;
+       }
+
+       .heroNavBtn {
+           width: 26px;
+           height: 26px;
+           opacity: .6;
+           visibility: visible;
+       }
+
+       .heroNavBtn svg {
+           width: 12px;
+           height: 12px;
+       }
+
+       .heroNavPrev {
+           left: 16px;
+       }
+
+       .heroNavNext {
+           right: 16px;
+       }
+   }
+
+   @media(max-width:500px) {
+       .hero {
+           height: 45vh;
+           margin-top: 72px;
+       }
+   }
+
+   /* SMOOTH EFFECT */
+   .heroSwiper,
+   .heroSlide,
+   .heroSlide img {
+       transition: all .35s ease;
+   }

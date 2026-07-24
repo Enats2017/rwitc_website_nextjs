@@ -1,0 +1,266 @@
+   /* GOOGLE FONT */
+   @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap");
+
+   * {
+       margin: 0;
+       padding: 0;
+       box-sizing: border-box;
+       font-family: "Outfit", sans-serif;
+   }
+
+   html,
+   body {
+       width: 100%;
+       overflow-x: hidden;
+       background: #edf7ef;
+   }
+
+   /* HEADER */
+   .header {
+       width: 100%;
+       position: relative;
+       z-index: 100;
+   }
+
+   /* GLASS CONTAINER */
+   .header__wrapper {
+       width: 100%;
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       padding: 18px 38px;
+       background: rgba(8, 82, 31, .93);
+       backdrop-filter: blur(20px);
+       -webkit-backdrop-filter: blur(20px);
+       border-bottom: 1px solid rgba(255, 255, 255, .10);
+       box-shadow:
+           0 15px 40px rgba(0, 0, 0, .18);
+   }
+
+   /* LEFT SIDE */
+   .header__brand {
+       display: flex;
+       align-items: center;
+       gap: 22px;
+   }
+
+   /* MENU BUTTON */
+
+   .menuButton {
+       width: 56px;
+       height: 56px;
+       flex-shrink: 0;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       border: none;
+       outline: none;
+       cursor: pointer;
+       border-radius: 50%;
+       background: rgba(255, 255, 255, .12);
+       backdrop-filter: blur(14px);
+       -webkit-backdrop-filter: blur(14px);
+       border: 1px solid rgba(255, 255, 255, .15);
+       color: #ffffff;
+       font-size: 22px;
+       transition: .35s;
+   }
+
+   .menuButton:hover {
+       background: #ffffff;
+       color: #0d6d2c;
+       transform: rotate(90deg);
+   }
+
+   /* LOGO */
+   .logo {
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       flex-shrink: 0;
+   }
+
+   .logo img {
+       width: 72px;
+       height: auto;
+       object-fit: contain;
+       display: block;
+       filter: drop-shadow(0 8px 15px rgba(0, 0, 0, .18));
+       transition: .35s;
+   }
+
+   .logo img:hover {
+       transform: scale(1.05);
+   }
+
+   /* CLUB INFO */
+   .clubInfo {
+       display: flex;
+       flex-direction: column;
+       justify-content: center;
+   }
+
+   .clubInfo h2 {
+       color: #ffffff;
+       font-size: 30px;
+       font-weight: 700;
+       line-height: 34px;
+       letter-spacing: .3px;
+   }
+
+   .clubInfo p {
+       margin-top: 6px;
+       color: rgba(255, 255, 255, .82);
+       font-size: 14px;
+       font-weight: 500;
+       letter-spacing: .4px;
+   }
+
+   /* RIGHT SIDE */
+   .header__actions {
+       display: flex;
+       align-items: center;
+       gap: 10px;
+   }
+
+   /* COMMON GLASS BUTTON */
+   .glassButton {
+       height: 42px;
+       padding: 0 18px;
+       border: none;
+       outline: none;
+       cursor: pointer;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       border-radius: 999px;
+       background: rgba(255, 255, 255, .10);
+       backdrop-filter: blur(14px);
+       -webkit-backdrop-filter: blur(14px);
+       border: 1px solid rgba(255, 255, 255, .12);
+       color: #ffffff;
+       font-size: 13px;
+       font-weight: 600;
+       transition: all .35s ease;
+   }
+
+   .glassButton:hover {
+       background: #ffffff;
+       color: #0b6d2a;
+       transform: translateY(-2px);
+   }
+
+   /* ICON BUTTON */
+   .iconButton {
+       width: 42px;
+       height: 42px;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       border: none;
+       outline: none;
+       cursor: pointer;
+       border-radius: 50%;
+       background: rgba(255, 255, 255, .10);
+       backdrop-filter: blur(14px);
+       border: 1px solid rgba(255, 255, 255, .12);
+       color: #ffffff;
+       font-size: 18px;
+       transition: all .35s ease;
+   }
+
+   .iconButton:hover {
+       background: #ffffff;
+       color: #ff0000;
+       transform: translateY(-2px);
+   }
+
+   .youtubeButton {
+       border: none;
+       background: none;
+       cursor: pointer;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       transition: .35s;
+   }
+
+   .youtubeButton:hover {
+       transform: scale(1.08);
+   }
+
+
+   /* GALLERY BUTTON */
+   .galleryButton {
+       width: 42px;
+       height: 42px;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       border: none;
+       outline: none;
+       cursor: pointer;
+       border-radius: 50%;
+       background: #ffffff;
+       color: #0b6d2a;
+       font-size: 18px;
+       box-shadow: 0 8px 18px rgba(0, 0, 0, .15);
+       transition: all .35s ease;
+   }
+
+   .galleryButton:hover {
+       transform: translateY(-2px) rotate(10deg);
+       background: #0b6d2a;
+       color: #ffffff;
+   }
+
+   /* HOVER EFFECT */
+   .menuButton,
+   .glassButton,
+   .iconButton,
+   .galleryButton,
+   .logo img {
+       transition: all .35s ease;
+   }
+
+   /* RESPONSIVE */
+   @media(max-width:1200px) {
+       .clubInfo h2 {
+           font-size: 24px;
+       }
+   }
+
+   @media(max-width:992px) {
+       .header__wrapper {
+           padding: 15px 20px;
+       }
+
+       .glassButton {
+           display: none;
+       }
+   }
+
+   @media(max-width:768px) {
+       .header__wrapper {
+           padding: 14px 15px;
+       }
+
+       .clubInfo h2 {
+           font-size: 18px;
+           line-height: 24px;
+       }
+
+       .clubInfo p {
+           display: none;
+       }
+
+       .logo img {
+           width: 55px;
+       }
+   }
+
+   @media(max-width:500px) {
+       .clubInfo {
+           display: none;
+       }
+   }
