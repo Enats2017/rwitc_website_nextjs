@@ -1,3 +1,3 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const UPLOAD_URL = `${API_URL}/uploads`;
+export const UPLOAD_URL = "http://91.99.229.154/uploads";

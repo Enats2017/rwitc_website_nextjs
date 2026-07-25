@@ -1,4 +1,5 @@
 "use client";
+import { UPLOAD_URL } from "../../../services/api";
 import "./TopHeader.css";
 import { FaBars, FaCamera, } from "react-icons/fa";
 export default function TopHeader() {
@@ -9,7 +10,7 @@ export default function TopHeader() {
                 <div className="header__brand">
                     <button className="menuButton"> <FaBars /> </button>
                     <div className="logo">
-                        <img src="/image/rwitc_logo_white.png" alt="RWITC Logo" draggable="false" />
+                        <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" draggable="false"/>
                     </div>
                     <div className="clubInfo">
                         <h2> Royal Western India Turf Club Ltd. </h2>

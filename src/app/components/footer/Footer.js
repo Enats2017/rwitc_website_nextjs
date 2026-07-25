@@ -1,12 +1,12 @@
 "use client";
+import { UPLOAD_URL } from "../../../services/api";
 import { useEffect, useState } from "react";
 import "./Footer.css";
-import { FaFacebookF, FaInstagram, FaYoutube, FaXTwitter, FaGooglePlay, } from "react-icons/fa6";
+import { FaFacebookF, FaInstagram, FaYoutube, FaXTwitter, FaGooglePlay, FaApple, } from "react-icons/fa6";
 export default function Footer() {
     const [currentTemp, setCurrentTemp] = useState(null);
     const [currentIcon, setCurrentIcon] = useState("🌦️");
     const [weather, setWeather] = useState([]);
-
     const codeToIcon = (code) => {
         if (code === 0) return "☀️";
         if ([1, 2].includes(code)) return "🌤️";
@@ -18,97 +18,113 @@ export default function Footer() {
     };
 
     useEffect(() => {
-
         async function loadWeather() {
-
-            const res = await fetch(
-                "https://api.open-meteo.com/v1/forecast?latitude=19.0760&longitude=72.8777&daily=weathercode,temperature_2m_max,temperature_2m_min&current_weather=true&timezone=Asia%2FKolkata"
-            );
-
+            const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=19.0760&longitude=72.8777&daily=weathercode,temperature_2m_max,temperature_2m_min&current_weather=true&timezone=Asia%2FKolkata");
             const data = await res.json();
-
             setCurrentTemp(Math.round(data.current_weather.temperature));
             setCurrentIcon(codeToIcon(data.current_weather.weathercode));
-
-            const days = data.daily.time.map((dateStr, i) => {
-                const dayName = new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" });
-                return {
-                    day: dayName,
-                    icon: codeToIcon(data.daily.weathercode[i]),
-                    max: `${Math.round(data.daily.temperature_2m_max[i])}°`,
-                    min: `${Math.round(data.daily.temperature_2m_min[i])}°`,
-                };
-            });
-
+            const days = data.daily.time.map((dateStr, i) => ({
+                day: new Date(dateStr).toLocaleDateString("en-US", {
+                    weekday: "short",
+                }),
+                icon: codeToIcon(data.daily.weathercode[i]),
+                max: `${Math.round(data.daily.temperature_2m_max[i])}°`,
+                min: `${Math.round(data.daily.temperature_2m_min[i])}°`,
+            }));
             setWeather(days);
-
         }
-
         loadWeather();
-
     }, []);
+
     return (
         <footer className="footer">
             <div className="footerTop">
-                {/* TOP ROW: DOWNLOAD + LOGO/SOCIAL */}
+                {/* TOP ROW */}
                 <div className="footerTopRow">
                     {/* DOWNLOAD */}
                     <div className="downloadCard">
-                        <img src="/image/android.png" alt="Android" className="appImage" />
-                        <div className="downloadText">
-                            <h3>Get Our App</h3>
-                            <p>Available on Android</p>
+                        <div className="downloadInfo">
+                            <img src={`${UPLOAD_URL}/android.png`} alt="Get Our App" className="appImage" />
+                            <div className="downloadText">
+                                <h3>Get Our App</h3>
+                                <p>Available on Android &amp; iOS</p>
+                            </div>
                         </div>
-                        <button className="contactButton"> <FaGooglePlay /> Download </button>
+                        <div className="downloadButtons">
+                            <a
+                                href="https://play.google.com/store/apps/details?id=com.nabil_shah.test"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="contactButton"
+                            >
+                                <FaGooglePlay />
+                                <span>
+                                    <small>Get it on</small>
+                                    Google Play
+                                </span>
+                            </a>
+                            <a
+                                href="#"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="contactButton contactButtonApple"
+                            >
+                                <FaApple />
+                                <span>
+                                    <small>Download on the</small>
+                                    App Store
+                                </span>
+                            </a>
+                        </div>
                     </div>
-
-                    {/* RIGHT: LOGO + SOCIAL */}
+                    {/* RIGHT */}
                     <div className="footerRightCol">
-                        <img src="/image/rwitc_logo_white.png" alt="RWITC" className="footerLogo" />
-                        <p className="footerText">
-                            Royal Western India Turf Club Ltd.<br />
-                            Since 1925 • Pune & Mumbai Race Courses
+                        <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC" className="footerLogo" />
+                        <p className="footerText"> Royal Western India Turf Club Ltd.<br />
+                            Since 1925 • Pune &amp; Mumbai Race Courses
                         </p>
                         <div className="socialIcons">
-                            <a href="#" className="iconFacebook" aria-label="Facebook"><FaFacebookF /></a>
-                            <a href="#" className="iconX" aria-label="X"><FaXTwitter /></a>
-                            <a href="#" className="iconInstagram" aria-label="Instagram"><FaInstagram /></a>
-                            <a href="#" className="iconYoutube" aria-label="YouTube"><FaYoutube /></a>
+                            <a href="#" className="iconFacebook" aria-label="Facebook"> <FaFacebookF /> </a>
+                            <a href="#" className="iconX" aria-label="X"> <FaXTwitter /> </a>
+                            <a href="#" className="iconInstagram" aria-label="Instagram"> <FaInstagram /> </a>
+                            <a href="#" className="iconYoutube" aria-label="YouTube"><FaYoutube /> </a>
                         </div>
-
                         <button className="contactUsBtn"> Contact Us </button>
                     </div>
                 </div>
-
-                {/* WEATHER - FULL WIDTH */}
+                {/* WEATHER */}
                 <div className="weatherCard">
                     <div className="weatherMain">
                         <h3>MUMBAI</h3>
                         <div className="weatherMainRow">
                             <span>{currentIcon}</span>
-                            <h1>{currentTemp !== null ? `+${currentTemp}°C` : "..."}</h1>
+                            <h1>
+                                {currentTemp !== null
+                                    ? `+${currentTemp}°C`
+                                    : "..."}
+                            </h1>
                         </div>
                     </div>
                     <div className="weatherDays">
-                        {
-                            weather.map((item, index) => (
-                                <div
-                                    className="weatherDay"
-                                    key={index}
-                                >
-                                    <h4>{item.day}</h4>
-                                    <span>{item.icon}</span>
-                                    <div className="weatherTemps">
-                                        <strong>{item.max}</strong>
-                                        <small>{item.min}</small>
-                                    </div>
+                        {weather.map((item, index) => (
+                            <div
+                                className="weatherDay"
+                                key={index}
+                            >
+                                <h4>{item.day}</h4>
+                                <span>{item.icon}</span>
+                                <div className="weatherTemps">
+                                    <strong>{item.max}</strong>
+                                    <small>{item.min}</small>
                                 </div>
-                            ))
-                        }
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
-            <div className="footerBottom"> © 2025 ROYAL WESTERN INDIA TURF CLUB PRIVATE LIMITED </div>
+            <div className="footerBottom">
+                © 2025 ROYAL WESTERN INDIA TURF CLUB PRIVATE LIMITED
+            </div>
         </footer>
     );
 }

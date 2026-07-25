@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.next/
+_next/
+
+out/
+
+404.html
+index.html
+_not-found.html
+_not-found/
+
+*.txt
+
+favicon.ico
+file.svg
+globe.svg
+next.svg
+vercel.svg
+window.svg

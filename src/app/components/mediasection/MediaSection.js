@@ -116,7 +116,7 @@ export default function MediaSection() {
     }
     return (
         <section className="mediaSection">
-            <img src="/image/Horses_BW_1.jpg" alt="" className="mediaSectionBg" draggable="false" />
+            <img src={`${UPLOAD_URL}/Horses_BW_1.jpg`} alt="" className="mediaSectionBg" draggable="false" />
             <div className="mediaSectionOverlay"></div>
             <div className="mediaSectionContent">
                 <div className="mediaContainer">
@@ -164,7 +164,7 @@ export default function MediaSection() {
                 </div>
                 {/* RUNNING TICKER */}
                 <div className="newsTicker">
-                    <img src="/image/rwitc_logo_white.png" alt="RWITC Logo" className="tickerLogo" draggable="false" />
+                    <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" className="tickerLogo" draggable="false" />
                     <div className="tickerTrack">
                         <p> A view of Royal Western India&apos;s Turf Club&apos;s new clubhouse, which aims to embody the perfect fusion of heritage, classic charm and contemporary luxury. </p>
                     </div>
