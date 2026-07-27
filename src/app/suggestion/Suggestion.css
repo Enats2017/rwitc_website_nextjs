@@ -1,0 +1,440 @@
+/* ================= SUGGESTION PAGE ================= */
+
+.suggestionPage {
+  width: 100%;
+  padding: 70px 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.suggestionWrapper {
+  width: 100%;
+  max-width: 1600px;
+  min-height: 590px;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: 35% 23% 42%;
+  gap: 0;
+  align-items: stretch;
+}
+
+/* ================= LEFT IMAGE ================= */
+
+.suggestionImageSide {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+  min-height: 590px;
+  overflow: visible;
+}
+
+.suggestionImageShape {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+  height: 590px;
+  overflow: hidden;
+
+  background: #ffffff;
+  clip-path: ellipse(96% 82% at 2% 50%);
+}
+
+.suggestionImageShape img {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+}
+
+.suggestionCurveLight {
+  position: absolute;
+  top: 0;
+  right: -24px;
+  z-index: 5;
+
+  width: 95px;
+  height: 590px;
+
+  border-left: 5px solid #168b3b;
+  border-radius: 50% 0 0 50%;
+
+  pointer-events: none;
+}
+
+.suggestionCurveLight::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 15px;
+  z-index: -1;
+
+  width: 55px;
+  height: 100%;
+
+  background: #e4f2e8;
+  border-radius: 50% 0 0 50%;
+}
+
+/* ================= MIDDLE INFORMATION ================= */
+
+.suggestionInfoSide {
+  position: relative;
+  z-index: 3;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+
+  padding: 50px 42px 50px 55px;
+  background: #ffffff;
+}
+
+.suggestionInfoSide h1 {
+  margin: 0;
+
+  color: #073719;
+  font-size: 36px;
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+.suggestionDivider {
+  width: 48px;
+  height: 3px;
+
+  background: #15933d;
+  border-radius: 999px;
+}
+
+.suggestionIntro {
+  max-width: 340px;
+  margin: 0;
+
+  color: #444444;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.suggestionDetailsList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  margin-top: 14px;
+}
+
+.suggestionDetailItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.suggestionDetailIcon {
+  flex-shrink: 0;
+
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #15933d;
+  border: 2px solid #15933d;
+  border-radius: 50%;
+  font-size: 18px;
+}
+
+.suggestionDetailText h4 {
+  margin: 0 0 4px;
+
+  color: #111111;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.suggestionDetailText p {
+  margin: 0;
+
+  color: #555555;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ================= RIGHT FORM ================= */
+
+.suggestionFormCard {
+  position: relative;
+  z-index: 3;
+
+  align-self: center;
+  margin: 30px 30px 30px 0;
+  padding: 38px 34px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  border-radius: 18px;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.08),
+    0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.suggestionFormRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.suggestionField {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.suggestionFieldLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #0b1f12;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.suggestionFieldLabel svg {
+  color: #0b6d2a;
+  font-size: 15px;
+}
+
+.suggestionField input,
+.suggestionField textarea {
+  width: 100%;
+  padding: 14px 16px;
+
+  color: #222222;
+  background: #ffffff;
+  border: 1px solid #dedede;
+  border-radius: 6px;
+  outline: none;
+
+  font-family: inherit;
+  font-size: 14px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.suggestionField input::placeholder,
+.suggestionField textarea::placeholder {
+  color: #9a9a9a;
+}
+
+.suggestionField input:focus,
+.suggestionField textarea:focus {
+  border-color: #0b6d2a;
+  box-shadow: 0 0 0 3px rgba(11, 109, 42, 0.12);
+}
+
+.suggestionField textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ================= CAPTCHA ================= */
+
+.suggestionCaptchaBox {
+  width: 100%;
+  max-width: 320px;
+  min-height: 78px;
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  background: #fafafa;
+  border: 1px solid #d9d9d9;
+  border-radius: 5px;
+}
+
+.suggestionCaptchaContent {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.suggestionCaptchaLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  color: #333333;
+  font-size: 14px;
+}
+
+.suggestionCaptchaCheckbox {
+  flex-shrink: 0;
+
+  width: 26px;
+  height: 26px;
+
+  background: #ffffff;
+  border: 2px solid #777777;
+}
+
+.suggestionCaptchaNotice {
+  margin: 0;
+
+  color: #666666;
+  font-size: 8px;
+  line-height: 1.15;
+}
+
+.suggestionCaptchaNotice a {
+  color: #555555;
+  text-decoration: underline;
+}
+
+.suggestionCaptchaBadge {
+  flex-shrink: 0;
+  min-width: 62px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: #555555;
+  line-height: 1.05;
+}
+
+.suggestionCaptchaBadge img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.suggestionCaptchaBadge span {
+  margin-top: 2px;
+
+  color: #555555;
+  font-size: 9px;
+}
+
+.suggestionCaptchaBadge small {
+  margin-top: 2px;
+
+  color: #777777;
+  font-size: 7px;
+  white-space: nowrap;
+}
+
+/* ================= SUBMIT BUTTON ================= */
+
+.suggestionSubmitBtn {
+  width: 100%;
+  padding: 14px 20px;
+
+  color: #ffffff;
+  background: linear-gradient(
+    90deg,
+    #20a342 0%,
+    #148c38 55%,
+    #0d7b31 100%
+  );
+
+  border: none;
+  border-radius: 999px;
+
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.suggestionSubmitBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(11, 109, 42, 0.3);
+}
+
+.suggestionSubmitBtn:active {
+  transform: scale(0.98);
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1100px) {
+  .suggestionWrapper {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 0 24px;
+  }
+
+  .suggestionImageSide {
+    min-height: auto;
+  }
+
+  .suggestionImageShape {
+    height: 420px;
+    clip-path: ellipse(100% 82% at 50% 50%);
+  }
+
+  .suggestionCurveLight {
+    display: none;
+  }
+
+  .suggestionInfoSide {
+    padding: 0;
+  }
+
+  .suggestionFormCard {
+    margin: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .suggestionPage {
+    padding: 50px 18px;
+  }
+
+  .suggestionWrapper {
+    padding: 0;
+  }
+
+  .suggestionImageShape {
+    height: 320px;
+  }
+
+  .suggestionInfoSide h1 {
+    font-size: 30px;
+  }
+
+  .suggestionFormCard {
+    padding: 26px 20px;
+  }
+
+  .suggestionFormRow {
+    grid-template-columns: 1fr;
+  }
+
+  .suggestionCaptchaBox {
+    max-width: 100%;
+  }
+}

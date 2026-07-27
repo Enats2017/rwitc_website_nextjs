@@ -1,0 +1,291 @@
+/* ================= HANDICAPS PAGE ================= */
+
+.handicapsPage {
+    width: 100%;
+    background: linear-gradient(180deg, #f7fbf7 0%, #eef6ef 100%);
+    padding-bottom: 60px;
+}
+
+/* ---- HERO ---- */
+.handicapsHero {
+    width: 100%;
+    text-align: center;
+    padding: 10px 20px 40px;
+    background: linear-gradient(160deg, #0d7a30 0%, #0b6d2a 55%, #094f20 100%);
+    color: #ffffff;
+}
+
+.handicapsEyebrow {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .14);
+    border: 1px solid rgba(255, 255, 255, .25);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.handicapsHero h1 {
+    margin-top: 18px;
+    font-size: 44px;
+    font-weight: 800;
+    letter-spacing: .3px;
+}
+
+.handicapsClub {
+    margin-top: 18px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .6px;
+    color: rgba(255, 255, 255, .75);
+    text-transform: uppercase;
+}
+
+.handicapsHint {
+    margin-top: 12px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, .7);
+    font-weight: 500;
+}
+
+.handicapsMeeting {
+    margin-top: 6px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, .82);
+    font-weight: 500;
+}
+
+/* ---- CONTAINER ---- */
+.handicapsContainer {
+    width: 100%;
+    max-width: 1200px;
+    margin: -30px auto 0;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ---- STATE (LOADING / ERROR / EMPTY) ---- */
+.stateBox {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 60px 20px;
+    text-align: center;
+    color: #555;
+    font-size: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
+}
+
+.stateError {
+    color: #b3261e;
+}
+
+.loader {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 3px solid rgba(11, 109, 42, .15);
+    border-top-color: #0b6d2a;
+    animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- RACE BLOCK CARD ---- */
+.raceBlock {
+    background: rgba(255, 255, 255, .85);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, .6);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .08);
+    overflow: hidden;
+    transition: box-shadow .35s ease, transform .35s ease;
+}
+
+.raceBlock:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 55px rgba(0, 0, 0, .12);
+}
+
+/* ---- RACE HEADER ---- */
+.raceBlockHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, #16a34a, #0b6d2a);
+    color: #ffffff;
+}
+
+.raceBlockHeaderLeft {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.raceIndex {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .16);
+    border: 1px solid rgba(255, 255, 255, .25);
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.raceBlockHeader h2 {
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.raceNarrative {
+    margin-top: 4px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, .82);
+}
+
+.raceBlockHeaderRight {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.raceTag {
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .16);
+    border: 1px solid rgba(255, 255, 255, .3);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.raceTagAccent {
+    background: #ffffff;
+    color: #0b6d2a;
+}
+
+/* ---- WEIGHT NOTE ---- */
+.weightNote {
+    padding: 12px 28px;
+    background: #fff7e6;
+    color: #8a5a00;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(0, 0, 0, .05);
+}
+
+/* ---- TABLE ---- */
+.tableWrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.horsesTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+}
+
+.horsesTable thead th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    color: #0b6d2a;
+    padding: 14px 18px;
+    background: #f2f8f3;
+    border-bottom: 1px solid rgba(11, 109, 42, .12);
+}
+
+.horsesTable tbody td {
+    padding: 13px 18px;
+    font-size: 14px;
+    color: #222;
+    border-bottom: 1px solid rgba(0, 0, 0, .05);
+}
+
+.horsesTable tbody tr:hover {
+    background: rgba(11, 109, 42, .04);
+}
+
+.orderCell {
+    font-weight: 700;
+    color: #0b6d2a;
+    width: 40px;
+}
+
+.horseNameCell {
+    font-weight: 700;
+    color: #111;
+    white-space: nowrap;
+}
+
+.breedingCell {
+    color: #555;
+    font-size: 13px;
+}
+
+.notesCell {
+    color: #777;
+    font-size: 12.5px;
+}
+
+/* ---- BAN NOTES ---- */
+.banNotes {
+    padding: 14px 28px 20px;
+    font-size: 13px;
+    color: #b3261e;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+
+    .handicapsHero {
+        padding: 44px 16px 60px;
+    }
+
+    .handicapsHero h1 {
+        font-size: 32px;
+    }
+
+    .handicapsContainer {
+        margin-top: -40px;
+        padding: 0 16px;
+        gap: 20px;
+    }
+
+    .raceBlockHeader {
+        padding: 20px;
+        flex-direction: column;
+    }
+
+    .raceBlockHeader h2 {
+        font-size: 18px;
+    }
+
+    .horsesTable thead th,
+    .horsesTable tbody td {
+        padding: 11px 14px;
+        font-size: 13px;
+    }
+}

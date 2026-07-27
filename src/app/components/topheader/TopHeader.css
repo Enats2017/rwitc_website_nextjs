@@ -264,3 +264,12 @@
            display: none;
        }
    }
+
+
+   .brandLink {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    text-decoration: none;
+    cursor: pointer;
+}

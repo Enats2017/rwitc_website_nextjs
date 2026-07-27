@@ -68,7 +68,7 @@ export default function NewsRoom() {
 
                 {/* LEFT CARD */}
 
-                <div className="raceCard">
+               <div className="raceCard" id="top-stories">
 
                     <div className="cardTag">
 
@@ -194,18 +194,18 @@ export default function NewsRoom() {
 
                         {
 
-                            !showAll && news.length > 5 && (
+                            news.length > 5 && (
 
                                 
-                                <a    href="#"
+                                <a href="#"
                                     className="viewAll"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        setShowAll(true);
+                                        setShowAll(!showAll);
                                     }}
                                 >
 
-                                    View All News
+                                    {showAll ? "View Less News" : "View All News"}
 
                                 </a>
 

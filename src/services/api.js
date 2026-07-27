@@ -1,3 +1,7 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// live
+// export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// export const UPLOAD_URL = "http://91.99.229.154/uploads";
 
-export const UPLOAD_URL = "http://91.99.229.154/uploads";
+// local
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+export const UPLOAD_URL = "http://localhost/uploads";
