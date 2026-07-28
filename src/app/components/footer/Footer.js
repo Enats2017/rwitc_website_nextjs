@@ -2,7 +2,7 @@
 import { UPLOAD_URL } from "../../../services/api";
 import { useEffect, useState } from "react";
 import "./Footer.css";
-import { FaFacebookF, FaInstagram, FaYoutube, FaXTwitter } from "react-icons/fa6";
+import { FaFacebookF, FaInstagram, FaYoutube, FaXTwitter, FaApple } from "react-icons/fa6";
 
 export default function Footer() {
     const [currentTemp, setCurrentTemp] = useState(null);
@@ -98,17 +98,29 @@ export default function Footer() {
 
                     </div>
 
-                    {/* RIGHT - APP */}
+                    {/* RIGHT - APP (Android + iOS) */}
                     <div className="footerApp">
                         <p className="getAppText">Get our app</p>
-                        
-                        <a    href="https://play.google.com/store/apps/details?id=com.nabil_shah.test"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="appCircle"
-                        >
-                            <img src={`${UPLOAD_URL}/android.png`} alt="Get Our App" />
-                        </a>
+
+                        <div className="appIconsRow">
+                            <a href="https://play.google.com/store/apps/details?id=com.nabil_shah.test"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="appCircle"
+                                aria-label="Get it on Google Play"
+                            >
+                                <img src={`${UPLOAD_URL}/android.png`} alt="Get Our App - Android" />
+                            </a>
+
+                            <a href="#"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="appCircle"
+                                aria-label="Download on the App Store"
+                            >
+                                <FaApple className="appleIcon" />
+                            </a>
+                        </div>
                     </div>
 
                 </div>

@@ -76,7 +76,12 @@
     color: #ffffff;
     transform: rotate(8deg) scale(1.05);
 }
-
+/* ARROW BUTTON - hover state */
+.featureCard:hover .arrowBtn {
+    background: #ffffff;
+    color: #0b6d2a;
+    transform: translateX(4px);
+}
 /* TITLE */
 .overlay h3 {
     color: #ffffff;
@@ -108,7 +113,8 @@
 }
 
 .arrowBtn:hover {
-    background: #0b6d2a;
+    background: #ffffff;
+    color: #0b6d2a;
     transform: translateX(4px);
 }
 
