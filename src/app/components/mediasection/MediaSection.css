@@ -7,7 +7,7 @@
        margin-right: auto;
        overflow: hidden;
        padding: 0 40px 70px;
-       margin-top: -220px;
+       margin-top: -180px;
        background: #ffffff;
        border-radius: 40px 40px 0 0;
        z-index: 4;
@@ -17,14 +17,14 @@
    .mediaSectionContent {
        position: relative;
        z-index: 2;
-       padding-top: 40px;
+       padding-top: 30px;
    }
 
 /* CONTAINER (ALL 3 IN ONE ROW) */
    .mediaContainer {
        width: 100%;
        display: flex;
-       gap: 24px;
+       gap: 19px;
        align-items: stretch;
        max-width: 1400px;
        margin: 0 auto;

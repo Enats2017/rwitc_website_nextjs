@@ -23,23 +23,21 @@ body {
 }
 
 /* WRAPPER */
-.header__wrapper{
-    width:100%;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+.header__wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-    padding:10px 34px;
+    padding: 10px 34px;
 
-    background:linear-gradient(
-        180deg,
-        #0b6f2b 0%,
-        #075322 100%
-    );
+    background: linear-gradient(180deg,
+            #0b6f2b 0%,
+            #075322 100%);
 
-    border-bottom:1px solid rgba(255,255,255,.08);
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
 
-    min-height:72px;
+    min-height: 72px;
 }
 
 /* BRAND / LOGO */
@@ -53,7 +51,7 @@ body {
 }
 
 .logo img {
-    width: 42px;
+    width: 60px;
     height: auto;
     object-fit: contain;
     display: block;
@@ -64,62 +62,59 @@ body {
     transform: scale(1.05);
 }
 
-.clubInfo h2{
+.clubInfo h2 {
 
-    color:#fff;
-
-    font-size:14px;
-
-    line-height:17px;
-
-    font-weight:700;
-
-    letter-spacing:.2px;
-
-}
-.rightGroup{
-    display:flex;
-    align-items:center;
-    justify-content:flex-end;
-    gap:18px;
-    flex:1;
-    min-width:0;
+    color: #fff;
+    font-size: 20px;
+    line-height: 26px;
+    font-weight: 700;
+    letter-spacing: .6px;
 }
 
-.navLinks{
-    display:flex;
-    align-items:center;
-    gap:18px;
-    flex-wrap:nowrap;
-    white-space:nowrap;
+.rightGroup {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+    flex: 1;
+    min-width: 0;
 }
-.navItem{
 
-    display:flex;
+.navLinks {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
 
-    align-items:center;
+.navItem {
 
-    gap:4px;
+    display: flex;
 
-    color:#fff;
+    align-items: center;
 
-    font-size:13px;
+    gap: 4px;
 
-    font-weight:600;
+    color: #fff;
 
-    padding:4px 0;
+    font-size: 15px;
 
-    text-decoration:none;
+    font-weight: 600;
 
-    background:none;
+    padding: 4px 0;
 
-    border:none;
+    text-decoration: none;
 
-    cursor:pointer;
+    background: none;
 
-    transition:.25s;
+    border: none;
 
-    position:relative;
+    cursor: pointer;
+
+    transition: .25s;
+
+    position: relative;
 
 }
 
@@ -139,7 +134,7 @@ body {
     bottom: -2px;
     width: 100%;
     height: 2px;
-    background: #ffffff;
+    /* background: #ffffff; */
     border-radius: 2px;
 }
 
@@ -149,6 +144,12 @@ body {
 
     margin-top:1px;
 
+    transition: transform .25s ease;
+
+}
+
+.chevronIcon.open {
+    transform: rotate(180deg);
 }
 
 /* DROPDOWN WRAPPER */
@@ -182,7 +183,17 @@ body {
     z-index: 50;
 }
 
-.navDropdownWrap:hover .navDropdownMenu {
+/* extra invisible bridge so mouse can travel from button to menu without gap issues */
+.navDropdownWrap::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 14px;
+}
+
+.navDropdownMenu.open {
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -205,11 +216,11 @@ body {
     color: #0b6d2a;
 }
 
-.header__actions{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-shrink:0;
+.header__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 /* CALENDAR ICON BOX */
@@ -236,42 +247,89 @@ body {
     color: #ffffff;
 }
 
-.liveStreamButton{
-
-    height:40px;
-
-    padding:0 20px;
-
-    border-radius:10px;
-
-    background:#2db84d;
-
-    color:#fff;
-
-    font-size:13px;
-
-    font-weight:600;
-
-    text-decoration:none;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    white-space:nowrap;
-
-    transition:.3s;
-
+/* HEADER LIVE STREAM BUTTON — glossy shiny pill */
+.headerLiveBtn {
+    height: 40px;
+    padding: 0 22px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+    white-space: nowrap;
+    background: #2fb457;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .2);
+    position: relative;
+    overflow: hidden;
+    transition: transform .3s ease, box-shadow .3s ease, background .3s ease;
 }
 
-.liveStreamButton:hover{
+.headerLiveBtn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, .55),
+        transparent
+    );
+    transform: skewX(-20deg);
+    transition: left .6s ease;
+    pointer-events: none;
+    z-index: 2;
+}
 
-    background:#34c759;
+.headerLiveBtn:hover {
+    background: #0b6d2a;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, .3), 0 0 18px rgba(11, 109, 42, .4);
+}
 
-    color:#fff;
+.headerLiveBtn:hover::before {
+    left: 150%;
+}
 
+.headerLiveBtnIcon {
+    display: none;
+    color: #ffffff;
+    font-size: 14px;
+    position: relative;
+    z-index: 2;
+}
+
+.headerLiveBtnText {
+    display: inline-block;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    position: relative;
+    z-index: 2;
+}
+
+/* MOBILE/TABLET: only icon, no text */
+@media (max-width: 992px) {
+    .headerLiveBtn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border-radius: 10px;
+    }
+
+    .headerLiveBtnIcon {
+        display: block;
+        margin-left: 2px;
+    }
+
+    .headerLiveBtnText {
+        display: none;
+    }
 }
 
 /* MOBILE HAMBURGER - hidden on desktop */
@@ -311,14 +369,15 @@ body {
     right: -320px;
     width: 300px;
     max-width: 82%;
-    height: 100%;
+    height: 82vh;
+    max-height: 620px;
     background: #ffffff;
     z-index: 200;
     display: flex;
     flex-direction: column;
     box-shadow: -10px 0 40px rgba(0, 0, 0, .25);
     transition: right .35s ease;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .mobileMenu.open {
@@ -356,6 +415,9 @@ body {
     display: flex;
     flex-direction: column;
     padding: 10px 8px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .mobileNavItem {
@@ -384,10 +446,22 @@ body {
 }
 
 .mobileDropdownMenu {
+    display: grid;
+    grid-template-rows: 0fr;
+    background: #f7fbf7;
+    overflow: hidden;
+    transition: grid-template-rows .45s ease;
+}
+
+.mobileDropdownMenu.open {
+    grid-template-rows: 1fr;
+}
+
+.mobileDropdownInner {
     display: flex;
     flex-direction: column;
-    background: #f7fbf7;
-    padding: 4px 0 4px 18px;
+    min-height: 0;
+    padding: 0 0 0 18px;
 }
 
 .mobileDropdownLink {

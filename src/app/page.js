@@ -1,6 +1,5 @@
 import TopHeader from "./components/topheader/TopHeader";
 import Hero from "./components/hero/Hero";
-import LiveStreamButton from "./components/livestream/LiveStreamButton";
 import MediaSection from "./components/mediasection/MediaSection";
 import NewsRoom from "./components/newsroom/NewsRoom";
 import FeatureSection from "./components/featureSection/FeatureSection";
@@ -11,7 +10,6 @@ export default function Home() {
     <>
       <TopHeader />
       <Hero/>
-      <LiveStreamButton/>
       <MediaSection/>
       <NewsRoom/>
       <FeatureSection/>

@@ -1,14 +1,30 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./TopHeader.css";
-import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown } from "react-icons/fa";
+import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay } from "react-icons/fa";
 
 export default function TopHeader() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
+    const [desktopOpenDropdown, setDesktopOpenDropdown] = useState(null);
+    const closeTimerRef = useRef(null);
 
     const toggleDropdown = (name) => {
         setOpenDropdown(openDropdown === name ? null : name);
+    };
+
+    const handleDropdownEnter = (name) => {
+        if (closeTimerRef.current) {
+            clearTimeout(closeTimerRef.current);
+            closeTimerRef.current = null;
+        }
+        setDesktopOpenDropdown(name);
+    };
+
+    const handleDropdownLeave = () => {
+        closeTimerRef.current = setTimeout(() => {
+            setDesktopOpenDropdown(null);
+        }, 300);
     };
 
     const navItems = [
@@ -77,16 +93,18 @@ export default function TopHeader() {
                                 <div
                                     className="navDropdownWrap"
                                     key={item.key}
+                                    onMouseEnter={() => handleDropdownEnter(item.key)}
+                                    onMouseLeave={handleDropdownLeave}
                                 >
                                     <button
                                         type="button"
                                         className="navItem navItemDropdown"
-                                        onClick={() => toggleDropdown(item.key)}
+                                        onClick={() => setDesktopOpenDropdown(desktopOpenDropdown === item.key ? null : item.key)}
                                     >
                                         {item.label}
-                                        <FaChevronDown className="chevronIcon" />
+                                        <FaChevronDown className={`chevronIcon ${desktopOpenDropdown === item.key ? "open" : ""}`} />
                                     </button>
-                                    <div className="navDropdownMenu">
+                                    <div className={`navDropdownMenu ${desktopOpenDropdown === item.key ? "open" : ""}`}>
                                         {item.children.map((child) => (
                                             <a href={child.href} className="navDropdownLink" key={child.label}>
                                                 {child.label}
@@ -111,13 +129,14 @@ export default function TopHeader() {
                             <FaCalendarAlt />
                         </button>
 
-                        <a
-                            href="https://youtube.com/@rwitcltd9390/shorts"
+                      <a href="#"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="liveStreamButton"
+                            className="headerLiveBtn"
+                            aria-label="Watch Live Stream"
                         >
-                            Watch Live Stream
+                            <FaPlay className="headerLiveBtnIcon" />
+                            <span className="headerLiveBtnText">Watch Live Stream</span>
                         </a>
 
                         <button
@@ -161,15 +180,15 @@ export default function TopHeader() {
                                         className={`chevronIcon ${openDropdown === item.key ? "rotated" : ""}`}
                                     />
                                 </button>
-                                {openDropdown === item.key && (
-                                    <div className="mobileDropdownMenu">
+                                <div className={`mobileDropdownMenu ${openDropdown === item.key ? "open" : ""}`}>
+                                    <div className="mobileDropdownInner">
                                         {item.children.map((child) => (
                                             <a href={child.href} className="mobileDropdownLink" key={child.label}>
                                                 {child.label}
                                             </a>
                                         ))}
                                     </div>
-                                )}
+                                </div>
                             </div>
                         ) : (
 
@@ -184,7 +203,7 @@ export default function TopHeader() {
                     ))}
 
 
-                    <a href="https://youtube.com/@rwitcltd9390/shorts"
+                    <a href="#"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mobileLiveStreamButton"
