@@ -220,7 +220,7 @@
    }
 
    /* INFO BOXES (Pre-Race / Post-Race / Track Work) */
-   .infoBoxes {
+    .infoBoxes {
        width: 100%;
        max-width: 1400px;
        margin: 32px auto 0;
@@ -350,7 +350,7 @@
        opacity: .8;
    }
 
-   /* RESPONSIVE */
+/* RESPONSIVE */
    @media(max-width:1200px) {
        .mediaSection {
            padding: 60px 30px;
@@ -358,16 +358,24 @@
    }
 
    @media(max-width:992px) {
+       .mediaSection {
+           margin-top: -100px;
+           border-radius: 30px 30px 0 0;
+       }
+
        .mediaContainer {
            flex-wrap: wrap;
        }
 
        .videoArea {
            flex: 1 1 100%;
+           max-width: 100%;
        }
 
        .adsArea {
-           flex: 1 1 calc(50% - 12px);
+           flex: 1 1 100%;
+           max-width: 100%;
+           height: 280px;
        }
 
        .infoBoxes {
@@ -381,20 +389,46 @@
 
    @media(max-width:768px) {
        .mediaSection {
-           padding: 50px 20px;
+           padding: 40px 16px 50px;
+           margin-top: -70px;
+           border-radius: 24px 24px 0 0;
+       }
+
+       .mediaSectionContent {
+           padding-top: 0px;
        }
 
        .mediaContainer {
            gap: 16px;
        }
 
+       .videoArea {
+           border-radius: 16px;
+       }
+
        .adsArea {
            flex: 1 1 100%;
+           height: 230px;
+           border-radius: 16px;
+       }
+
+       .adsImgWrap {
+           border-radius: 10px;
+       }
+
+       .adsNavBtn {
+           width: 28px;
+           height: 28px;
+           font-size: 11px;
+           opacity: 1;
+           visibility: visible;
+           background: rgba(0, 0, 0, .45);
        }
 
        .newsTicker {
            padding: 12px 16px;
            gap: 12px;
+           margin-top: 24px;
        }
 
        .tickerLogo {
@@ -409,6 +443,7 @@
        .infoBoxes {
            flex-direction: column;
            gap: 16px;
+           margin-top: 24px;
        }
 
        .infoBox {
@@ -428,6 +463,15 @@
    }
 
    @media(max-width:480px) {
+       .mediaSection {
+           padding: 30px 12px 40px;
+           margin-top: -55px;
+       }
+
+       .adsArea {
+           height: 200px;
+       }
+
        .tickerLogo {
            width: 18px;
            height: 18px;

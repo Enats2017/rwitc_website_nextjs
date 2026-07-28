@@ -13,6 +13,13 @@ body {
     width: 100%;
     overflow-x: hidden;
     background: #ffffff;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;
 }
 
 /* HEADER */
@@ -27,16 +34,10 @@ body {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-
+    align-items: center;  
     padding: 10px 34px;
-
-    background: linear-gradient(180deg,
-            #0b6f2b 0%,
-            #075322 100%);
-
+    background: linear-gradient(180deg,#0b6f2b 0%,#075322 100%);
     border-bottom: 1px solid rgba(255, 255, 255, .08);
-
     min-height: 72px;
 }
 
@@ -89,31 +90,18 @@ body {
 }
 
 .navItem {
-
     display: flex;
-
     align-items: center;
-
     gap: 4px;
-
     color: #fff;
-
     font-size: 15px;
-
     font-weight: 600;
-
     padding: 4px 0;
-
     text-decoration: none;
-
     background: none;
-
     border: none;
-
     cursor: pointer;
-
     transition: .25s;
-
     position: relative;
 
 }
@@ -139,11 +127,8 @@ body {
 }
 
 .chevronIcon{
-
     font-size:8px;
-
     margin-top:1px;
-
     transition: transform .25s ease;
 
 }
@@ -366,11 +351,11 @@ body {
 .mobileMenu {
     position: fixed;
     top: 0;
-    right: -320px;
-    width: 300px;
-    max-width: 82%;
-    height: 82vh;
-    max-height: 620px;
+    right: -260px;
+    width: 250px;
+    max-width: 75%;
+    height: auto;
+    max-height: 88vh;
     background: #ffffff;
     z-index: 200;
     display: flex;
@@ -416,8 +401,6 @@ body {
     flex-direction: column;
     padding: 10px 8px;
     overflow-y: auto;
-    flex: 1;
-    min-height: 0;
 }
 
 .mobileNavItem {
