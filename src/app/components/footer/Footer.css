@@ -3,195 +3,57 @@
     width: 100%;
     background: linear-gradient(160deg, #0d7a30 0%, #0b6d2a 55%, #094f20 100%);
     color: #ffffff;
-    margin-top: 100px;
+    margin-top: 0px;
 }
 
 /* TOP AREA */
 .footerTop {
-    max-width: 1400px;
+    max-width: 1500px;
     margin: auto;
-    padding: 60px 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+    padding: 36px 40px;
 }
 
-/* TOP ROW (DOWNLOAD + LOGO/SOCIAL SIDE BY SIDE) */
-.footerTopRow {
+/* MAIN ROW - LEFT | WEATHER | APP */
+.footerMain {
     display: grid;
-    grid-template-columns: 1.6fr 1fr;
+    grid-template-columns: 1fr 2.2fr auto;
     gap: 40px;
-    align-items: stretch;
+    align-items: center;
 }
 
-/* DOWNLOAD CARD */
-.downloadCard {
+/* LEFT COLUMN */
+.footerLeft {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 18px;
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(255, 255, 255, .14);
-    border-radius: 20px;
-    padding: 24px 28px;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, .15), inset 0 1px 0 rgba(255, 255, 255, .15);
-    transition: .35s ease;
-}
-
-.downloadCard:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 22px 45px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .15);
-}
-
-/* TOP PART: ICON + TEXT */
-.downloadInfo {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-
-.appImage {
-    flex-shrink: 0;
-    width: 52px;
-    height: 52px;
-    object-fit: contain;
-}
-
-.downloadText {
-    flex: 1;
-}
-
-.downloadText h3 {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0 0 4px;
-}
-
-.downloadText p {
-    font-size: 13px;
-    color: rgba(255, 255, 255, .7);
-    margin: 0;
-}
-
-/* BOTTOM PART: TWO STORE BUTTONS SIDE BY SIDE */
-.downloadButtons {
-    display: flex;
     gap: 14px;
-    flex-wrap: wrap;
 }
 
-/* CONTACT / DOWNLOAD BUTTON */
-.contactButton {
-    flex: 1;
-    min-width: 170px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    border-radius: 14px;
-    background: #ffffff;
-    color: #0b6d2a;
-    font-size: 20px;
-    transition: .35s ease;
-}
-
-.contactButton span {
+.footerBrandRow {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    line-height: 1.15;
-    font-size: 14px;
-    font-weight: 700;
-    text-align: left;
-}
-
-.contactButton span small {
-    font-size: 10.5px;
-    font-weight: 500;
-    color: rgba(11, 109, 42, .65);
-    text-transform: uppercase;
-    letter-spacing: .3px;
-}
-
-.contactButton:hover {
-    background: #16a34a;
-    color: #ffffff;
-    transform: translateY(-3px);
-    box-shadow: 0 12px 25px rgba(0, 0, 0, .2);
-}
-
-.contactButton:hover span small {
-    color: rgba(255, 255, 255, .75);
-}
-
-.contactButton:active {
-    transform: scale(.96);
-}
-
-/* APPLE BUTTON — ab Android button jaisa hi white, hover pe green (upar wala .contactButton hi apply hoga) */
-.contactButtonApple {
-    background: #ffffff;
-    color: #0b6d2a;
-}
-
-.contactButtonApple span small {
-    color: rgba(11, 109, 42, .65);
-}
-
-.contactButtonApple:hover {
-    background: #16a34a;
-    color: #ffffff;
-    box-shadow: 0 12px 25px rgba(0, 0, 0, .2);
-}
-
-.contactButtonApple:hover span small {
-    color: rgba(255, 255, 255, .75);
-}
-
-/* RIGHT COLUMN (LOGO + SOCIAL) - NARROW, MATCHES DOWNLOAD HEIGHT */
-.footerRightCol {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    text-align: center;
-    gap: 6px;
-    padding-top: 0;
+    gap: 14px;
 }
 
 .footerLogo {
-    width: 64px;
-    margin-bottom: 6px;
+    width: 54px;
+    flex-shrink: 0;
 }
 
-.footerText {
-    font-size: 13px;
-    line-height: 20px;
-    color: rgba(255, 255, 255, .85);
-    margin-bottom: 10px;
-}
-
-/* SOCIAL ICONS (ORIGINAL BRAND COLORS) */
+/* SOCIAL ICONS */
 .socialIcons {
     display: flex;
     gap: 10px;
-    margin-bottom: 16px;
 }
 
 .socialIcons a {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 15px;
+    font-size: 14px;
     transition: .3s ease;
     box-shadow: 0 6px 14px rgba(0, 0, 0, .2);
 }
@@ -201,38 +63,44 @@
     box-shadow: 0 10px 22px rgba(0, 0, 0, .3);
 }
 
-/* FACEBOOK - brand blue */
 .iconFacebook {
     background: #1877F2;
 }
 
-/* X (TWITTER) - brand black */
 .iconX {
     background: #000000;
     border: 1px solid rgba(255, 255, 255, .2);
 }
 
-/* INSTAGRAM - brand gradient */
 .iconInstagram {
     background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
 }
 
-/* YOUTUBE - brand red */
 .iconYoutube {
     background: #FF0000;
 }
 
-/* CONTACT US BUTTON (BELOW SOCIAL ICONS) */
+/* DESCRIPTION TEXT */
+.footerText {
+    font-size: 13px;
+    line-height: 20px;
+    color: rgba(255, 255, 255, .85);
+    margin: 0;
+    max-width: 300px;
+}
+
+/* CONTACT US BUTTON */
 .contactUsBtn {
+    align-self: flex-start;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 24px;
-    border: 1px solid rgba(255, 255, 255, .4);
+    padding: 10px 22px;
+    border: none;
     outline: none;
     cursor: pointer;
     border-radius: 50px;
-    background: transparent;
+    background: #16a34a;
     color: #ffffff;
     font-size: 13px;
     font-weight: 700;
@@ -250,37 +118,24 @@
     transform: scale(.96);
 }
 
-/* WEATHER CARD (FULL WIDTH) */
-.weatherCard {
+/* WEATHER INLINE - no card box, just content in the green bg */
+.weatherInline {
     display: flex;
-    width: 100%;
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(255, 255, 255, .14);
-    border-radius: 20px;
-    overflow: hidden;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, .15), inset 0 1px 0 rgba(255, 255, 255, .15);
-    transition: .35s ease;
-}
-
-.weatherCard:hover {
-    box-shadow: 0 22px 45px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .15);
+    align-items: center;
+    gap: 24px;
 }
 
 .weatherMain {
-    width: 220px;
     flex-shrink: 0;
-    background: rgba(255, 255, 255, .07);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding: 24px 26px;
-    gap: 8px;
+    gap: 4px;
+    padding-right: 24px;
+    border-right: 1px solid rgba(255, 255, 255, .15);
 }
 
 .weatherMain h3 {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, .8);
@@ -290,134 +145,193 @@
 .weatherMainRow {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .weatherMainRow span {
-    font-size: 32px;
+    font-size: 28px;
     line-height: 1;
 }
 
 .weatherMainRow h1 {
-    font-size: 34px;
+    font-size: 30px;
     font-weight: 800;
     margin: 0;
     line-height: 1;
 }
 
-/* FORECAST DAYS */
+.weatherDesc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, .65);
+    margin: 0;
+}
+
+/* FORECAST DAYS - inline row, no dividers/box */
 .weatherDays {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
 }
 
 .weatherDay {
-    padding: 18px 10px;
     text-align: center;
-    border-left: 1px solid rgba(255, 255, 255, .1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     transition: .3s ease;
 }
 
-.weatherDay:hover {
-    background: rgba(255, 255, 255, .08);
-}
-
 .weatherDay h4 {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     margin: 0;
     color: rgba(255, 255, 255, .9);
 }
 
 .weatherDay span {
-    font-size: 24px;
+    font-size: 20px;
     line-height: 1;
 }
 
 .weatherTemps {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
 }
 
 .weatherTemps strong {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
 }
 
 .weatherTemps small {
-    font-size: 12px;
+    font-size: 11px;
     color: rgba(255, 255, 255, .6);
 }
 
-/* BOTTOM BAR */
+/* RIGHT - APP */
+.footerApp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.getAppText {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+
+.appCircle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .3s ease;
+}
+
+.appCircle:hover {
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, .2);
+}
+/* BOTTOM BAR - white, everything centered */
 .footerBottom {
-    text-align: center;
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 18px 40px;
     background: #ffffff;
     color: #111;
-    font-size: 14px;
-    font-weight: 600
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.footerLinks {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.footerLinks a {
+    color: #111;
+    text-decoration: none;
+}
+
+.footerLinks a:hover {
+    color: #0b6d2a;
+    text-decoration: underline;
+}
+
+.footerDivider {
+    color: #999;
 }
 
 /* RESPONSIVE */
-@media(max-width:1100px) {
-    .footerTopRow {
+@media (max-width: 1100px) {
+    .footerMain {
         grid-template-columns: 1fr;
-        gap: 24px;
+        gap: 30px;
     }
 
-    .footerRightCol {
+    .footerLeft {
         align-items: center;
+        text-align: center;
     }
-}
 
-@media(max-width:900px) {
-    .weatherCard {
+    .footerBrandRow {
         flex-direction: column;
     }
 
+    .contactUsBtn {
+        align-self: center;
+    }
+
+    .weatherInline {
+        flex-direction: column;
+        gap: 16px;
+    }
+
     .weatherMain {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, .15);
+        padding-right: 0;
+        padding-bottom: 12px;
+        align-items: center;
+    }
+
+    .weatherDays {
         width: 100%;
+    }
+}
+
+@media (max-width: 700px) {
+    .footerTop {
+        padding: 30px 20px;
     }
 
     .weatherDays {
         grid-template-columns: repeat(4, 1fr);
-    }
-
-    .weatherDay {
-        border-left: none;
-        border-bottom: 1px solid rgba(255, 255, 255, .1);
-    }
-
-    .downloadButtons {
-        flex-direction: column;
-    }
-}
-
-@media(max-width:600px) {
-    .footerTop {
-        padding: 45px 20px;
-    }
-
-    .weatherDays {
-        grid-template-columns: repeat(2, 1fr);
+        row-gap: 14px;
     }
 
     .weatherMainRow h1 {
-        font-size: 26px;
+        font-size: 24px;
     }
 
-    .downloadCard {
-        padding: 18px 20px;
-    }
-
-    .downloadInfo {
-        gap: 14px;
+    .footerBottom {
+        flex-direction: column;
+        text-align: center;
+        padding: 16px 20px;
     }
 }

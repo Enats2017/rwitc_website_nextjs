@@ -2,11 +2,13 @@
 import { UPLOAD_URL } from "../../../services/api";
 import { useEffect, useState } from "react";
 import "./Footer.css";
-import { FaFacebookF, FaInstagram, FaYoutube, FaXTwitter, FaGooglePlay, FaApple, } from "react-icons/fa6";
+import { FaFacebookF, FaInstagram, FaYoutube, FaXTwitter } from "react-icons/fa6";
+
 export default function Footer() {
     const [currentTemp, setCurrentTemp] = useState(null);
     const [currentIcon, setCurrentIcon] = useState("🌦️");
     const [weather, setWeather] = useState([]);
+
     const codeToIcon = (code) => {
         if (code === 0) return "☀️";
         if ([1, 2].includes(code)) return "🌤️";
@@ -39,91 +41,87 @@ export default function Footer() {
     return (
         <footer className="footer">
             <div className="footerTop">
-                {/* TOP ROW */}
-                <div className="footerTopRow">
-                    {/* DOWNLOAD */}
-                    <div className="downloadCard">
-                        <div className="downloadInfo">
-                            <img src={`${UPLOAD_URL}/android.png`} alt="Get Our App" className="appImage" />
-                            <div className="downloadText">
-                                <h3>Get Our App</h3>
-                                <p>Available on Android &amp; iOS</p>
-                            </div>
+
+                <div className="footerMain">
+
+                    {/* LEFT */}
+                    <div className="footerLeft">
+                        <div className="footerBrandRow">
+                            <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC" className="footerLogo" />
                         </div>
-                        <div className="downloadButtons">
-                            <a
-                                href="https://play.google.com/store/apps/details?id=com.nabil_shah.test"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="contactButton"
-                            >
-                                <FaGooglePlay />
-                                <span>
-                                    <small>Get it on</small>
-                                    Google Play
-                                </span>
-                            </a>
-                            <a
-                                href="#"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="contactButton contactButtonApple"
-                            >
-                                <FaApple />
-                                <span>
-                                    <small>Download on the</small>
-                                    App Store
-                                </span>
-                            </a>
-                        </div>
-                    </div>
-                    {/* RIGHT */}
-                    <div className="footerRightCol">
-                        <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC" className="footerLogo" />
-                        <p className="footerText"> Royal Western India Turf Club Ltd.<br />
-                            Since 1925 • Pune &amp; Mumbai Race Courses
-                        </p>
+
                         <div className="socialIcons">
                             <a href="#" className="iconFacebook" aria-label="Facebook"> <FaFacebookF /> </a>
                             <a href="#" className="iconX" aria-label="X"> <FaXTwitter /> </a>
                             <a href="#" className="iconInstagram" aria-label="Instagram"> <FaInstagram /> </a>
-                            <a href="#" className="iconYoutube" aria-label="YouTube"><FaYoutube /> </a>
+                            <a href="#" className="iconYoutube" aria-label="YouTube"> <FaYoutube /> </a>
                         </div>
+
+                        <p className="footerText">
+                            A legacy of excellence in horse racing since 1932. Experience the thrill, heritage and prestige.
+                        </p>
+
                         <button className="contactUsBtn"> Contact Us </button>
                     </div>
-                </div>
-                {/* WEATHER */}
-                <div className="weatherCard">
-                    <div className="weatherMain">
-                        <h3>MUMBAI</h3>
-                        <div className="weatherMainRow">
-                            <span>{currentIcon}</span>
-                            <h1>
-                                {currentTemp !== null
-                                    ? `+${currentTemp}°C`
-                                    : "..."}
-                            </h1>
-                        </div>
-                    </div>
-                    <div className="weatherDays">
-                        {weather.map((item, index) => (
-                            <div
-                                className="weatherDay"
-                                key={index}
-                            >
-                                <h4>{item.day}</h4>
-                                <span>{item.icon}</span>
-                                <div className="weatherTemps">
-                                    <strong>{item.max}</strong>
-                                    <small>{item.min}</small>
-                                </div>
+
+                    {/* MIDDLE - WEATHER INLINE */}
+                    <div className="weatherInline">
+
+                        <div className="weatherMain">
+                            <h3>MUMBAI</h3>
+                            <div className="weatherMainRow">
+                                <span>{currentIcon}</span>
+                                <h1>
+                                    {currentTemp !== null
+                                        ? `+${currentTemp}°C`
+                                        : "..."}
+                                </h1>
                             </div>
-                        ))}
+                            <p className="weatherDesc">Partly Cloudy</p>
+                        </div>
+
+                        <div className="weatherDays">
+                            {weather.map((item, index) => (
+                                <div
+                                    className="weatherDay"
+                                    key={index}
+                                >
+                                    <h4>{item.day}</h4>
+                                    <span>{item.icon}</span>
+                                    <div className="weatherTemps">
+                                        <strong>{item.max}</strong>
+                                        <small>{item.min}</small>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
                     </div>
+
+                    {/* RIGHT - APP */}
+                    <div className="footerApp">
+                        <p className="getAppText">Get our app</p>
+                        
+                        <a    href="https://play.google.com/store/apps/details?id=com.nabil_shah.test"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="appCircle"
+                        >
+                            <img src={`${UPLOAD_URL}/android.png`} alt="Get Our App" />
+                        </a>
+                    </div>
+
                 </div>
+
             </div>
+
             <div className="footerBottom">
-                © 2025 ROYAL WESTERN INDIA TURF CLUB PRIVATE LIMITED
+                <span>© 2026 ROYAL WESTERN INDIA TURF CLUB PRIVATE LIMITED. ALL RIGHTS RESERVED.</span>
+                <span className="footerLinks">
+                    <a href="#">Privacy Policy</a>
+                    <span className="footerDivider">|</span>
+                    <a href="#">Terms &amp; Conditions</a>
+                </span>
             </div>
         </footer>
     );

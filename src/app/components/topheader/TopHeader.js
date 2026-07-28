@@ -1,46 +1,204 @@
 "use client";
+import { useState } from "react";
 import "./TopHeader.css";
-import { FaBars, FaCamera, } from "react-icons/fa";
+import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown } from "react-icons/fa";
+
 export default function TopHeader() {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [openDropdown, setOpenDropdown] = useState(null);
+
+    const toggleDropdown = (name) => {
+        setOpenDropdown(openDropdown === name ? null : name);
+    };
+
+    const navItems = [
+        { label: "Home", href: "/" },
+        { label: "About Us", href: "/about" },
+        {
+            label: "Races",
+            key: "races",
+            children: [
+                { label: "Race Card", href: "/races/race-card" },
+                { label: "Racing Fixtures", href: "/races/fixtures" },
+                { label: "Results", href: "/races/results" },
+            ],
+        },
+        {
+            label: "Horses",
+            key: "horses",
+            children: [
+                { label: "Rating of all Horses", href: "/horses/rating" },
+                { label: "Trainerwise Horses", href: "/horses/trainerwise" },
+                { label: "Performance Profile", href: "/horses/performance" },
+            ],
+        },
+        {
+            label: "Information",
+            key: "information",
+            children: [
+                { label: "Tote Dividends", href: "/information/tote-dividends" },
+                { label: "Money Leaders", href: "/information/money-leaders" },
+                { label: "Indian Stud Book", href: "/information/stud-book" },
+            ],
+        },
+        {
+            label: "Media",
+            key: "media",
+            children: [
+                { label: "Video Archives", href: "/media/videos" },
+                { label: "Gallery", href: "/media/gallery" },
+                { label: "News Room", href: "/media/news" },
+            ],
+        },
+        { label: "Contact", href: "/contact" },
+    ];
+
     return (
         <header className="header">
             <div className="header__wrapper">
-               {/* LEFT SIDE */}
-                <div className="header__brand">
-                    <button className="menuButton"> <FaBars /> </button>
-                    <a href="/" className="brandLink">
-                        <div className="logo">
-                            <img src="/image/rwitc_logo_white.png" alt="RWITC Logo" draggable="false" />
-                        </div>
-                        <div className="clubInfo">
-                            <h2> Royal Western India Turf Club Ltd. </h2>
-                            <p> Since 1925 • Pune & Mumbai Race Courses </p>
-                        </div>
+
+                {/* LEFT SIDE - LOGO */}
+                <a href="/" className="brandLink">
+                    <div className="logo">
+                        <img src="/image/rwitc_logo_white.png" alt="RWITC Logo" draggable="false" />
+                    </div>
+                    <div className="clubInfo">
+                        <h2>Royal Western India<br />Turf Club Ltd.</h2>
+                    </div>
+                </a>
+
+                {/* RIGHT SIDE GROUP - NAV + ICON + LIVE BUTTON (all together on the right) */}
+                <div className="rightGroup">
+
+                    {/* NAV LINKS (desktop) */}
+                    <nav className="navLinks">
+                        {navItems.map((item) => (
+                            item.children ? (
+                                <div
+                                    className="navDropdownWrap"
+                                    key={item.key}
+                                >
+                                    <button
+                                        type="button"
+                                        className="navItem navItemDropdown"
+                                        onClick={() => toggleDropdown(item.key)}
+                                    >
+                                        {item.label}
+                                        <FaChevronDown className="chevronIcon" />
+                                    </button>
+                                    <div className="navDropdownMenu">
+                                        {item.children.map((child) => (
+                                            <a href={child.href} className="navDropdownLink" key={child.label}>
+                                                {child.label}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                <a href={item.href} className="navItem" key={item.label}>
+                                    {item.label}
+                                </a>
+                            )
+                        ))}
+                    </nav>
+
+                    <div className="header__actions">
+
+                        <button
+                            className="calendarButton"
+                            aria-label="Calendar"
+                        >
+                            <FaCalendarAlt />
+                        </button>
+
+                        <a
+                            href="https://youtube.com/@rwitcltd9390/shorts"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="liveStreamButton"
+                        >
+                            Watch Live Stream
+                        </a>
+
+                        <button
+                            className="menuButton"
+                            aria-label="Menu"
+                            onClick={() => setMenuOpen(true)}
+                        >
+                            <FaBars />
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {/* MOBILE SLIDE MENU */}
+            <div className={`mobileMenu ${menuOpen ? "open" : ""}`}>
+                <div className="mobileMenuHeader">
+                    <img src="/image/rwitc_logo_white.png" alt="RWITC" className="mobileLogo" />
+                    <button
+                        className="mobileCloseButton"
+                        aria-label="Close menu"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        <FaTimes />
+                    </button>
+                </div>
+
+                <div className="mobileMenuLinks">
+                    {navItems.map((item) => (
+                        item.children ? (
+                            <div className="mobileDropdownWrap" key={item.key}>
+                                <button
+                                    type="button"
+                                    className="mobileNavItem"
+                                    onClick={() => toggleDropdown(item.key)}
+                                >
+                                    {item.label}
+                                    <FaChevronDown
+                                        className={`chevronIcon ${openDropdown === item.key ? "rotated" : ""}`}
+                                    />
+                                </button>
+                                {openDropdown === item.key && (
+                                    <div className="mobileDropdownMenu">
+                                        {item.children.map((child) => (
+                                            <a href={child.href} className="mobileDropdownLink" key={child.label}>
+                                                {child.label}
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+
+                            <a href={item.href}
+                                className="mobileNavItem"
+                                key={item.label}
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                {item.label}
+                            </a>
+                        )
+                    ))}
+
+
+                    <a href="https://youtube.com/@rwitcltd9390/shorts"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mobileLiveStreamButton"
+                    >
+                        Watch Live Stream
                     </a>
                 </div>
-                {/* RIGHT SIDE */}
-                <div className="header__actions">
-                    <a href="/suggestion" className="glassButton"> Suggestions </a>
-                    <a href="/contact" className="glassButton"> Contact </a>
-                    <button
-                        className="glassButton"
-                        onClick={() => {
-                            document.getElementById("top-stories")?.scrollIntoView({ behavior: "smooth" });
-                        }}
-                    > Top Stories </button>
-                  <a href="https://youtube.com/@rwitcltd9390/shorts"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="youtubeButton"
->
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="42" height="42">
-        <path fill="#FF0000" d="M549.655 124.083c-6.281-23.65-24.814-42.183-48.464-48.464C458.797 64 288 64 288 64S117.203 64 74.809 75.619c-23.65 6.281-42.183 24.814-48.464 48.464C16 166.477 16 256 16 256s0 89.523 10.345 131.917c6.281 23.65 24.814 42.183 48.464 48.464C117.203 448 288 448 288 448s170.797 0 213.191-11.619c23.65-6.281 42.183-24.814 48.464-48.464C560 345.523 560 256 560 256s0-89.523-10.345-131.917z" />
-        <path fill="#ffffff" d="M232 334.5V177.5L361 256 232 334.5z" />
-    </svg>
-</a>
-                    <button className="galleryButton"> <FaCamera /> </button>
-                </div>
             </div>
+
+            {/* OVERLAY */}
+            {menuOpen && (
+                <div className="mobileOverlay" onClick={() => setMenuOpen(false)} />
+            )}
+
         </header>
     );
 }
