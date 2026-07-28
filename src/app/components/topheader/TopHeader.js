@@ -158,7 +158,7 @@ export default function TopHeader() {
             {/* MOBILE SLIDE MENU */}
             <div className={`mobileMenu ${menuOpen ? "open" : ""}`}>
                 <div className="mobileMenuHeader">
-                    <img src="/image/rwitc_logo_white.png" alt="RWITC" className="mobileLogo" />
+                    <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC" className="mobileLogo" />
                     <button
                         className="mobileCloseButton"
                         aria-label="Close menu"
