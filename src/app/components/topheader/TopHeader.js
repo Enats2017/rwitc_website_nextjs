@@ -1,6 +1,8 @@
 "use client";
 import { useState, useRef } from "react";
+import Link from "next/link";
 import "./TopHeader.css";
+import { UPLOAD_URL } from "../../../services/api";
 import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay } from "react-icons/fa";
 
 export default function TopHeader() {
@@ -74,14 +76,14 @@ export default function TopHeader() {
             <div className="header__wrapper">
 
                 {/* LEFT SIDE - LOGO */}
-                <a href="/" className="brandLink">
+                <Link href="/" className="brandLink">
                     <div className="logo">
-                        <img src="/image/rwitc_logo_white.png" alt="RWITC Logo" draggable="false" />
+                        <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" draggable="false" />
                     </div>
                     <div className="clubInfo">
                         <h2>Royal Western India<br />Turf Club Ltd.</h2>
                     </div>
-                </a>
+                </Link>
 
                 {/* RIGHT SIDE GROUP - NAV + ICON + LIVE BUTTON (all together on the right) */}
                 <div className="rightGroup">
