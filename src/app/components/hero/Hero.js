@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { UPLOAD_URL } from "../../../services/api";
 import "./Hero.css";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay, EffectFade, } from "swiper/modules";
+import { Navigation, Autoplay, EffectFade, Pagination, } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/effect-fade";
+import "swiper/css/pagination";
 import { getBanners } from "../../../services/bannerService";
 export default function Hero() {
   const prevRef = useRef(null);
@@ -23,7 +24,7 @@ export default function Hero() {
     <section className="hero">
       <Swiper
         key={images.length}
-        modules={[Navigation, Autoplay, EffectFade,]}
+        modules={[Navigation, Autoplay, EffectFade, Pagination,]}
         slidesPerView={1}
         loop={images.length > 1}
         // loop={true}
@@ -31,6 +32,10 @@ export default function Hero() {
         navigation={{
           prevEl: prevRef.current,
           nextEl: nextRef.current,
+        }}
+        pagination={{
+          clickable: true,
+          el: ".heroPagination",
         }}
         onBeforeInit={(swiper) => {
           swiper.params.navigation.prevEl = prevRef.current;
@@ -80,6 +85,15 @@ export default function Hero() {
           />
         </svg>
       </button>
+      <div className="heroPagination"></div>
+      <div className="heroCurve">
+        <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+          <path
+             d="M0,40 C360,120 1080,120 1440,40 L1440,120 L0,120 Z"
+            fill="#ffffff"
+          />
+        </svg>
+      </div>
     </section>
   );
 }

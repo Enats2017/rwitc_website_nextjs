@@ -1,13 +1,47 @@
 "use client";
 import { UPLOAD_URL } from "../../../services/api";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import "./MediaSection.css";
+import { FaPlay, FaVolumeMute, FaVolumeUp, FaExpand, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
 import {
     getMedia,
     getRaceMedia
 } from "../../../services/mediaService";
 export default function MediaSection() {
+
+    const videoRef = useRef(null);
+    const [isPlaying, setIsPlaying] = useState(true);
+    const [isMuted, setIsMuted] = useState(true);
+    const adsPrevRef = useRef(null);
+    const adsNextRef = useRef(null);
+
+    const togglePlay = () => {
+        if (!videoRef.current) return;
+        if (videoRef.current.paused) {
+            videoRef.current.play();
+            setIsPlaying(true);
+        } else {
+            videoRef.current.pause();
+            setIsPlaying(false);
+        }
+    };
+
+    const toggleMute = () => {
+        if (!videoRef.current) return;
+        videoRef.current.muted = !videoRef.current.muted;
+        setIsMuted(videoRef.current.muted);
+    };
+
+    const toggleFullscreen = () => {
+        if (videoRef.current?.requestFullscreen) {
+            videoRef.current.requestFullscreen();
+        }
+    };
 
     const [media, setMedia] = useState([]);
     const [raceMedia, setRaceMedia] = useState({
@@ -116,8 +150,6 @@ export default function MediaSection() {
     }
     return (
         <section className="mediaSection">
-            <img src={`${UPLOAD_URL}/Horses_BW_1.jpg`} alt="" className="mediaSectionBg" draggable="false" />
-            <div className="mediaSectionOverlay"></div>
             <div className="mediaSectionContent">
                 <div className="mediaContainer">
                     {/* LEFT VIDEO */}
@@ -144,22 +176,60 @@ export default function MediaSection() {
                             )
                         }
                     </div>
-                    {
-                        images.map((item) => (
+                   {
+                        images.length > 0 && (
+                            <div className="adsArea">
+                                <Swiper
+                                    key={images.length}
+                                    modules={[Navigation, Autoplay]}
+                                    slidesPerView={images.length > 1 ? 2 : 1}
+                                    spaceBetween={12}
+                                    loop={images.length > 2}
+                                    speed={800}
+                                    autoplay={
+                                        images.length > 2
+                                            ? { delay: 3500, disableOnInteraction: false }
+                                            : false
+                                    }
+                                    navigation={{
+                                        prevEl: adsPrevRef.current,
+                                        nextEl: adsNextRef.current,
+                                    }}
+                                    onBeforeInit={(swiper) => {
+                                        swiper.params.navigation.prevEl = adsPrevRef.current;
+                                        swiper.params.navigation.nextEl = adsNextRef.current;
+                                    }}
+                                    className="adsSwiper"
+                                >
+                                    {
+                                        images.map((item) => (
+                                            <SwiperSlide key={item.id}>
+                                                <div className="adsImgWrap">
+                                                    <img
+                                                        src={`${UPLOAD_URL}/${item.path}`}
+                                                        alt={item.path}
+                                                        className="adsImgMain"
+                                                    />
+                                                </div>
+                                            </SwiperSlide>
+                                        ))
+                                    }
+                                </Swiper>
 
-                            <div
-                                className="adsArea"
-                                key={item.id}
-                            >
-
-                                <img
-                                    src={`${UPLOAD_URL}/${item.path}`}
-                                    alt={item.path}
-                                />
-
+                                {
+                                    images.length > 2 && (
+                                        <>
+                                            <button ref={adsPrevRef} className="adsNavBtn adsNavPrev" aria-label="Previous">
+                                                <FaChevronLeft />
+                                            </button>
+                                            <button ref={adsNextRef} className="adsNavBtn adsNavNext" aria-label="Next">
+                                                <FaChevronRight />
+                                            </button>
+                                        </>
+                                    )
+                                }
                             </div>
-
-                        ))
+                        )
                     }
                 </div>
                 {/* RUNNING TICKER */}
