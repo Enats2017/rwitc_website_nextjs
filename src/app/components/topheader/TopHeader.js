@@ -8,6 +8,7 @@ import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay } from "react-ico
 /* ---------- DESKTOP: nested submenu — CLICK ONLY, vertical ---------- */
 function DesktopDropdownList({ items, level = 0 }) {
     const [openKey, setOpenKey] = useState(null);
+    const [selectedLeaf, setSelectedLeaf] = useState(null);
 
     const handleToggle = (key) => {
         setOpenKey(openKey === key ? null : key);
@@ -22,7 +23,7 @@ function DesktopDropdownList({ items, level = 0 }) {
                         <div className="navDropdownItemWrap" key={key}>
                             <button
                                 type="button"
-                                className="navDropdownLink navDropdownLinkParent"
+                                className={`navDropdownLink navDropdownLinkParent ${openKey === key ? "active" : ""}`}
                                 onClick={() => handleToggle(key)}
                             >
                                 {item.label}
@@ -35,7 +36,12 @@ function DesktopDropdownList({ items, level = 0 }) {
                     );
                 }
                 return (
-                    <a href={item.href} className="navDropdownLink" key={key}>
+                    
+                    <a    href={item.href}
+                        className={`navDropdownLink ${selectedLeaf === key ? "active" : ""}`}
+                        key={key}
+                        onClick={() => setSelectedLeaf(key)}
+                    >
                         {item.label}
                     </a>
                 );
@@ -108,14 +114,93 @@ export default function TopHeader() {
     };
 
     const navItems = [
-    { label: "The Club", href: "/rwitc-website" },
-    { label: "Horse Racing", href: "/rwitc-website" },
-    { label: "Betting &\nEntertainment", href: "/rwitc-website" },
-    { label: "Membership", href: "/rwitc-website" },
-    { label: "Come Racing", href: "/rwitc-website" },
-    { label: "Advertising &\nSponsership", href: "/rwitc-website" },
-    { label: "Downloads", href: "/rwitc-website" },
-];
+        {
+            label: "Club",
+            key: "club",
+            children: [
+                { label: "About Us", href: "/club/about" },
+                { label: "History", href: "/club/history" },
+                {
+                    label: "Committee",
+                    key: "committee",
+                    children: [
+                        { label: "Managing Committee", href: "/club/committee/managing" },
+                        { label: "Stewards", href: "/club/committee/stewards" },
+                    ],
+                },
+                { label: "Contact", href: "/club/contact" },
+            ],
+        },
+        {
+            label: "Racing",
+            key: "racing",
+            children: [
+                {
+                    label: "Race Card",
+                    key: "race-card",
+                    children: [
+                        { label: "Today's Race Card", href: "/racing/race-card/today" },
+                        { label: "Tomorrow's Race Card", href: "/racing/race-card/tomorrow" },
+                        { label: "Race Card Archive", href: "/racing/race-card/archive" },
+                    ],
+                },
+                { label: "Racing Fixtures", href: "/racing/fixtures" },
+                { label: "Results", href: "/racing/results" },
+            ],
+        },
+        {
+            label: "Wagering",
+            key: "wagering",
+            children: [
+                { label: "Tote Dividends", href: "/wagering/tote-dividends" },
+                { label: "Betting Rules", href: "/wagering/betting-rules" },
+                {
+                    label: "Money Leaders",
+                    key: "money-leaders",
+                    children: [
+                        { label: "Owners", href: "/wagering/money-leaders/owners" },
+                        { label: "Jockeys", href: "/wagering/money-leaders/jockeys" },
+                        { label: "Trainers", href: "/wagering/money-leaders/trainers" },
+                    ],
+                },
+            ],
+        },
+        {
+            label: "Membership",
+            key: "membership",
+            children: [
+                { label: "Membership Types", href: "/membership/types" },
+                { label: "How to Apply", href: "/membership/apply" },
+                { label: "Membership Fees", href: "/membership/fees" },
+            ],
+        },
+        {
+            label: "Experience",
+            key: "experience",
+            children: [
+                { label: "Dining", href: "/experience/dining" },
+                { label: "Events", href: "/experience/events" },
+                { label: "Facilities", href: "/experience/facilities" },
+            ],
+        },
+        {
+            label: "Partners",
+            key: "partners",
+            children: [
+                { label: "Sponsors", href: "/partners/sponsors" },
+                { label: "Hospitality Partners", href: "/partners/hospitality" },
+            ],
+        },
+        {
+            label: "Downloads",
+            key: "downloads",
+            children: [
+                { label: "Race Card PDF", href: "/downloads/race-card" },
+                { label: "Membership Form", href: "/downloads/membership-form" },
+                { label: "Annual Report", href: "/downloads/annual-report" },
+            ],
+        },
+    ];
 
     return (
         <header className="header">
@@ -126,7 +211,8 @@ export default function TopHeader() {
                         <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" draggable="false" />
                     </div>
                     <div className="clubInfo">
-                        <h2>Royal Western India Turf Club Ltd.</h2>
+                        <h2 className="clubNameFull">Royal Western India Turf Club Ltd.</h2>
+                        <h2 className="clubNameShort">RWITC</h2>
                     </div>
                 </Link>
 
@@ -147,7 +233,6 @@ export default function TopHeader() {
                                         onClick={() => setDesktopOpenDropdown(desktopOpenDropdown === item.key ? null : item.key)}
                                     >
                                         {item.label}
-                                        <FaChevronDown className={`chevronIcon ${desktopOpenDropdown === item.key ? "open" : ""}`} />
                                     </button>
                                     {desktopOpenDropdown === item.key && (
                                         <DesktopDropdownList items={item.children} level={0} />

@@ -1,171 +1,179 @@
-   /* SPONSORS SECTION */
-   .sponsorsSection {
-       width: 100%;
-       padding: 0px 0 60px;
-       background: #ffffff;
-       overflow: hidden;
-   }
+/* SPONSORS SECTION */
+.sponsorsSection {
+    width: 100%;
+    padding: 0px 0 60px;
+    background: #ffffff;
+    overflow: hidden;
+}
 
-   /* CONTAINER */
-   .sponsorsContainer {
-       width: 100%;
-       max-width: 1600px;
-       margin: auto;
-   }
+/* CONTAINER */
+.sponsorsContainer {
+    width: 100%;
+    max-width: 1600px;
+    margin: auto;
+}
 
-   /* HEADING */
-   .sponsorsHeading {
-       text-align: center;
-       margin-bottom: 25px;
-   }
+/* HEADING */
+.sponsorsHeading {
+    text-align: center;
+    margin-bottom: 25px;
+}
 
-   .sponsorsHeading span {
-       display: inline-block;
-       padding: 12px 28px;
-       border-radius: 999px;
-       background: #0b6d2a;
-       color: #ffffff;
-       font-size: 14px;
-       font-weight: 700;
-       letter-spacing: 1px;
-   }
+.sponsorsHeading span {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 999px;
+    background: #0b6d2a;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
 
-   .sponsorsHeading h2 {
-       margin-top: 18px;
-       font-size: 42px;
-       font-weight: 800;
-       color: #111;
-   }
+.sponsorsHeading h2 {
+    margin-top: 18px;
+    font-size: 42px;
+    font-weight: 800;
+    color: #111;
+}
 
-   /* SLIDER */
-   .sponsorsSlider {
-       width: 100%;
-       overflow: hidden;
-       position: relative;
-   }
+/* SLIDER */
+.sponsorsSlider {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
 
-   /* TRACK */
-   .sponsorsTrack {
-       display: flex;
-       align-items: center;
-       width: max-content;
-       animation: sponsorScroll 35s linear infinite;
-   }
+/* TRACK */
+.sponsorsTrack {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    animation: sponsorScroll 35s linear infinite;
+}
 
-   /* STOP ON HOVER */
-   .sponsorsSlider:hover .sponsorsTrack {
-       animation-play-state: paused;
-   }
+/* STOP ON HOVER */
+.sponsorsSlider:hover .sponsorsTrack {
+    animation-play-state: paused;
+}
 
-   /* SPONSOR ITEM */
-   .sponsorItem {
-       flex-shrink: 0;
-       width: auto;
-       height: 140px;
-       margin: 0 16px;
-       display: flex;
-       justify-content: center;
-       align-items: center;
-   }
+/* SPONSOR ITEM */
+.sponsorItem {
+    flex-shrink: 0;
+    width: auto;
+    height: auto;
+    margin: 0 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-   /* LOGO IMAGE */
-   .sponsorItem img {
-       width: auto;
-       height: 120px;
-       max-width: none;
-       max-height: none;
-       object-fit: contain;
-   }
+/* LOGO IMAGE */
+.sponsorItem img {
+    width: auto;
+    height: 120px;
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
+}
 
-   /* HOVER EFFECT */
-   .sponsorItem:hover {
-       transform: translateY(-8px);
-   }
+/* HOVER EFFECT */
+.sponsorItem:hover {
+    transform: translateY(-8px);
+}
 
-   .sponsorItem:hover img {
-       transform: scale(1.08);
-   }
+.sponsorItem:hover img {
+    transform: scale(1.08);
+}
 
-   /* SCROLL ANIMATION */
-   @keyframes sponsorScroll {
-       0% {
-           transform: translateX(0);
-       }
+/* SCROLL ANIMATION */
+@keyframes sponsorScroll {
+    0% {
+        transform: translateX(0);
+    }
 
-       100% {
-           transform: translateX(-50%);
-       }
-   }
+    100% {
+        transform: translateX(-50%);
+    }
+}
 
-   /* RESPONSIVE */
-   @media(max-width:1200px) {
-       .sponsorItem {
-           width: 180px;
-           height: 110px;
-           margin: 0 18px;
-       }
+/* RESPONSIVE */
+@media(max-width:1200px) {
+    .sponsorItem {
+        width: 180px;
+        height: 110px;
+        margin: 0 18px;
+    }
 
-       .sponsorItem img {
-           max-width: 150px;
-           max-height: 80px;
-       }
-   }
+    .sponsorItem img {
+        max-width: 150px;
+        max-height: 80px;
+    }
+}
 
-   @media(max-width:768px) {
-       .sponsorsSection {
-           padding: 0px 0;
-       }
+@media(max-width:768px) {
+    .sponsorsSection {
+        padding: 30px 0 40px;
+    }
 
-       .sponsorsHeading {
-           margin-bottom: 40px;
-       }
+    .sponsorsHeading {
+        margin-bottom: 20px;
+    }
 
-       .sponsorsHeading span {
-           padding: 10px 22px;
-           font-size: 12px;
-       }
+    .sponsorsHeading span {
+        padding: 10px 22px;
+        font-size: 12px;
+    }
 
-       .sponsorsHeading h2 {
-           font-size: 30px;
-           margin-top: 14px;
-       }
+    .sponsorsHeading h2 {
+        font-size: 30px;
+        margin-top: 14px;
+    }
 
-       .sponsorItem {
-           width: 280px;
-           height: 160px;
-           margin: 0 5px;
-       }
+    .sponsorItem {
+        width: auto;
+        height: auto;
+        margin: 0 10px;
+    }
 
-       .sponsorItem img {
-           max-width: 250px;
-           max-height: 145px;
-       }
-   }
+    .sponsorItem img {
+        height: 90px;
+        width: auto;
+        max-width: none;
+        max-height: none;
+    }
+}
 
-   @media(max-width:480px) {
-       .sponsorsSection {
-           padding: 0px 0;
-       }
+@media(max-width:480px) {
+    .sponsorsSection {
+        padding: 25px 0 35px;
+    }
 
-       .sponsorsHeading h2 {
-           font-size: 24px;
-       }
+    .sponsorsHeading {
+        margin-bottom: 16px;
+    }
 
-       .sponsorItem {
-           width: 120px;
-           height: 70px;
-           margin: 0 10px;
-       }
+    .sponsorsHeading h2 {
+        font-size: 24px;
+    }
 
-       .sponsorItem img {
-           max-width: 95px;
-           max-height: 50px;
-       }
-   }
+    .sponsorItem {
+        width: auto;
+        height: auto;
+        margin: 0 6px;
+    }
 
-   /* SMOOTH EFFECT */
-   .sponsorsTrack,
-   .sponsorItem,
-   .sponsorItem img {
-       transition: all .35s ease;
-   }
+    .sponsorItem img {
+        height: 55px;
+        width: auto;
+        max-width: none;
+        max-height: none;
+    }
+}
+
+/* SMOOTH EFFECT */
+.sponsorsTrack,
+.sponsorItem,
+.sponsorItem img {
+    transition: all .35s ease;
+}

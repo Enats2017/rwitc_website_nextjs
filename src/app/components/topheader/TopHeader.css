@@ -33,9 +33,9 @@ body::-webkit-scrollbar {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center;  
     padding: 10px 34px;
-    background: linear-gradient(180deg, #0b6f2b 0%, #075322 100%);
+    background: linear-gradient(180deg,#0b6f2b 0%,#075322 100%);
     border-bottom: 1px solid rgba(255, 255, 255, .08);
     min-height: 72px;
 }
@@ -63,10 +63,14 @@ body::-webkit-scrollbar {
 
 .clubInfo h2 {
     color: #fff;
-    font-size: 16px;
+    font-size: 20px;
     line-height: 26px;
     font-weight: 700;
-    letter-spacing: .6px;
+    letter-spacing: .3px;
+}
+
+.clubNameShort {
+    display: none;
 }
 
 .rightGroup {
@@ -81,7 +85,7 @@ body::-webkit-scrollbar {
 .navLinks {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 10px;
     flex-wrap: nowrap;
     white-space: nowrap;
 }
@@ -89,9 +93,9 @@ body::-webkit-scrollbar {
 .navItem {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     color: #fff;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 600;
     padding: 4px 0;
     text-decoration: none;
@@ -100,9 +104,6 @@ body::-webkit-scrollbar {
     cursor: pointer;
     transition: .25s;
     position: relative;
-    white-space: nowrap;
-    text-align: left;
-    line-height: normal;
 }
 
 .navItem:hover,
@@ -123,9 +124,9 @@ body::-webkit-scrollbar {
     border-radius: 2px;
 }
 
-.chevronIcon {
-    font-size: 8px;
-    margin-top: 1px;
+.chevronIcon{
+    font-size:8px;
+    margin-top:1px;
     transition: transform .25s ease;
 }
 
@@ -142,23 +143,40 @@ body::-webkit-scrollbar {
     background: transparent !important;
     box-shadow: none !important;
 }
-
 .navDropdownMenu {
     position: absolute;
     top: 42px;
-    left: 50%;
-    transform: translateX(-50%) translateY(0);
+    left: 0;
+    width: max-content;
     min-width: 210px;
+    max-width: 260px;
     max-height: 260px;
     overflow-y: auto;
-    background: #ffffff;
+    overflow-x: hidden;
+    background-color: #00000099;
     border-radius: 12px;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, .18);
+    box-shadow: 2px 2px 3px #eeeeee4a;
     padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 2px;
     z-index: 50;
+    opacity: 0;
+    transform: translateY(-8px);
+    animation: navDropdownEnter .25s ease forwards;
+    -webkit-transition: all .25s;
+    transition: all .25s;
+}
+
+@keyframes navDropdownEnter {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .navDropdownMenu::-webkit-scrollbar,
@@ -186,16 +204,17 @@ body::-webkit-scrollbar {
     display: block;
     padding: 9px 12px;
     border-radius: 9px;
-    color: #1c1c1c;
+    color: #ffffff;
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
     transition: .2s ease;
 }
 
-.navDropdownLink:hover {
-    background: rgba(11, 109, 42, .08);
-    color: #0b6d2a;
+.navDropdownLink:hover,
+.navDropdownLink.active {
+    background: #0b6d2a;
+    color: #ffffff;
 }
 
 .navDropdownItemWrap {
@@ -219,7 +238,7 @@ body::-webkit-scrollbar {
     font-size: 8px;
     margin-left: 10px;
     flex-shrink: 0;
-    color: #777;
+    color: #ffffff;
     transition: transform .25s ease;
 }
 
@@ -232,18 +251,20 @@ body::-webkit-scrollbar {
     position: relative;
     max-height: 220px;
     overflow-y: auto;
-    background: #f4faf5;
+    background-color: #00000099;
     border-radius: 9px;
     margin: 2px 0 4px 10px;
     padding: 6px;
     display: flex;
     flex-direction: column;
     gap: 2px;
+    opacity: 0;
+    animation: navDropdownEnter .2s ease forwards;
 }
 
 .navSubMenu .navDropdownLink {
     font-size: 11.5px;
-    color: #2c2c2c;
+    color: #ffffff;
 }
 
 .header__actions {
@@ -300,10 +321,12 @@ body::-webkit-scrollbar {
     left: -120%;
     width: 60%;
     height: 100%;
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(255, 255, 255, .55),
-            transparent);
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, .55),
+        transparent
+    );
     transform: skewX(-20deg);
     transition: left .6s ease;
     pointer-events: none;
@@ -435,12 +458,6 @@ body::-webkit-scrollbar {
     font-size: 15px;
 }
 
-.navItem {
-    white-space: pre-line;
-    text-align: center;
-    line-height: 18px;
-}
-
 .mobileMenuLinks {
     display: flex;
     flex-direction: column;
@@ -561,11 +578,11 @@ body::-webkit-scrollbar {
     }
 
     .navLinks {
-        gap: 10px;
+        gap: 14px;
     }
 
     .navItem {
-        font-size: 10px;
+        font-size: 12px;
     }
 }
 
@@ -589,7 +606,7 @@ body::-webkit-scrollbar {
     }
 
     .clubInfo h2 {
-        font-size: 10px;
+        font-size: 20px;
         line-height: 16px;
     }
 
@@ -606,6 +623,16 @@ body::-webkit-scrollbar {
 
 @media (max-width: 480px) {
     .clubInfo {
+        display: block;
+    }
+
+    .clubNameFull {
         display: none;
+    }
+
+    .clubNameShort {
+        display: block;
+        font-size: 20px;
+        line-height: 18px;
     }
 }
