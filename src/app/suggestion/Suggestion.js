@@ -8,6 +8,7 @@ import {
   FaLightbulb,
   FaCheckCircle,
   FaHeadset,
+  FaHorse,
 } from "react-icons/fa";
 import "./Suggestion.css";
 
@@ -35,73 +36,88 @@ export default function Suggestion() {
   };
 
   return (
-    <section className="suggestionPage">
-      <div className="suggestionWrapper">
+    <main className="suggestionPage">
 
-        {/* LEFT IMAGE */}
-        <div className="suggestionImageSide">
-          <div className="suggestionImageShape">
-            <img
-              src="/image/horse_race2.jpg"
-              alt="Royal Western India Turf Club racecourse"
-            />
+      {/* BACKGROUND IMAGE */}
+      <img
+        src="/image/horse_race2.jpg"
+        alt="Royal Western India Turf Club racecourse"
+        className="suggestionBgImage"
+      />
+      <div className="suggestionBgOverlay"></div>
+
+      <section className="suggestionShell">
+
+        {/* LEFT SIDE INTRO TEXT */}
+        <div className="suggestionIntro">
+
+          <span className="suggestionIntroScript">We're Listening</span>
+
+          <h1>Share Your Suggestions</h1>
+
+          <div className="suggestionIntroDivider">
+            <span className="suggestionIntroLine"></span>
+            <FaHorse className="suggestionIntroHorse" />
+            <span className="suggestionIntroLine"></span>
           </div>
 
-          <div className="suggestionCurveLight" />
-        </div>
-
-        {/* MIDDLE INFORMATION */}
-        <div className="suggestionInfoSide">
-          <h1>Share Your Suggestions</h1>
-          <span className="suggestionDivider" />
-
-          <p className="suggestionIntro">
-            Your ideas help us improve. Share your suggestion or feedback and
+          <p>
+            Your ideas help us improve.
+            <br />
+            Share your suggestion or feedback and
+            <br />
             our team will review it carefully.
           </p>
 
-          <div className="suggestionDetailsList">
-            <div className="suggestionDetailItem">
-              <span className="suggestionDetailIcon">
+          <div className="suggestionInfoList">
+
+            <div className="suggestionInfoItem">
+              <span className="suggestionInfoIcon">
                 <FaLightbulb />
               </span>
 
-              <div className="suggestionDetailText">
-                <h4>Share Your Idea</h4>
+              <div>
+                <strong>Share Your Idea</strong>
                 <p>Tell us what you would like us to improve.</p>
               </div>
             </div>
 
-            <div className="suggestionDetailItem">
-              <span className="suggestionDetailIcon">
+            <div className="suggestionInfoItem">
+              <span className="suggestionInfoIcon">
                 <FaCheckCircle />
               </span>
 
-              <div className="suggestionDetailText">
-                <h4>Every Suggestion Matters</h4>
+              <div>
+                <strong>Every Suggestion Matters</strong>
                 <p>Every genuine submission is reviewed by our team.</p>
               </div>
             </div>
 
-            <div className="suggestionDetailItem">
-              <span className="suggestionDetailIcon">
+            <div className="suggestionInfoItem">
+              <span className="suggestionInfoIcon">
                 <FaHeadset />
               </span>
 
-              <div className="suggestionDetailText">
-                <h4>Need Assistance?</h4>
+              <div>
+                <strong>Need Assistance?</strong>
                 <p>Our support team is available to help you.</p>
               </div>
             </div>
+
           </div>
+
         </div>
 
-        {/* RIGHT FORM */}
-        <form className="suggestionFormCard" onSubmit={handleSubmit}>
-          <div className="suggestionFormRow">
+        {/* RIGHT SIDE FORM CARD */}
+        <div className="suggestionFormCard">
+
+          <form className="suggestionForm" onSubmit={handleSubmit}>
+
+            {/* NAME */}
             <div className="suggestionField">
-              <label className="suggestionFieldLabel" htmlFor="suggestion-name">
-                <FaUser /> Name
+              <label htmlFor="suggestion-name">
+                <FaUser className="suggestionFieldLabelIcon" />
+                Name
               </label>
 
               <input
@@ -111,12 +127,15 @@ export default function Suggestion() {
                 placeholder="Enter Name"
                 value={formData.name}
                 onChange={handleChange}
+                required
               />
             </div>
 
+            {/* EMAIL */}
             <div className="suggestionField">
-              <label className="suggestionFieldLabel" htmlFor="suggestion-email">
-                <FaEnvelope /> Email
+              <label htmlFor="suggestion-email">
+                <FaEnvelope className="suggestionFieldLabelIcon" />
+                Email
               </label>
 
               <input
@@ -126,57 +145,81 @@ export default function Suggestion() {
                 placeholder="Enter Email"
                 value={formData.email}
                 onChange={handleChange}
+                required
               />
             </div>
-          </div>
 
-          <div className="suggestionField">
-            <label
-              className="suggestionFieldLabel"
-              htmlFor="suggestion-message"
-            >
-              <FaCommentDots /> Suggestion
-            </label>
+            {/* SUGGESTION */}
+            <div className="suggestionField">
+              <label htmlFor="suggestion-message">
+                <FaCommentDots className="suggestionFieldLabelIcon" />
+                Suggestion
+              </label>
 
-            <textarea
-              id="suggestion-message"
-              name="message"
-              placeholder="Type Your Suggestion"
-              value={formData.message}
-              onChange={handleChange}
-            />
-          </div>
+              <textarea
+                id="suggestion-message"
+                name="message"
+                placeholder="Type Your Suggestion"
+                rows="4"
+                value={formData.message}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          {/* Replace this placeholder with your real Google reCAPTCHA component if available. */}
-          <div className="suggestionCaptchaBox">
-            <div className="suggestionCaptchaContent">
-              <div className="suggestionCaptchaLeft">
-                <span className="suggestionCaptchaCheckbox" />
-                <span>I&apos;m not a robot</span>
+            {/* CAPTCHA UI */}
+            <div className="suggestionCaptcha">
+
+              <div className="captchaLeft">
+
+                <label className="captchaCheck">
+
+                  <input
+                    type="checkbox"
+                    aria-label="I'm not a robot"
+                    required
+                  />
+
+                  <span className="captchaCustomBox"></span>
+
+                  <span className="captchaText">
+                    I'm not a robot
+                  </span>
+
+                </label>
+
+                <span className="captchaNotice">
+                  reCAPTCHA is changing its terms of service.{" "}
+                  <a href="#">Take action.</a>
+                </span>
+
               </div>
 
-              <p className="suggestionCaptchaNotice">
-                reCAPTCHA is changing its terms of service.
-                <br />
-                <a href="#">Take action.</a>
-              </p>
+              <div className="captchaBrand">
+
+                <div className="captchaLogo">
+                  ↻
+                </div>
+
+                <span>reCAPTCHA</span>
+
+                <small>Privacy - Terms</small>
+
+              </div>
+
             </div>
 
-            <div className="suggestionCaptchaBadge">
-              <img
-                src="/image/recaptcha-logo.png"
-                alt="reCAPTCHA"
-              />
-              <span>reCAPTCHA</span>
-              <small>Privacy - Terms</small>
-            </div>
-          </div>
+            {/* SUBMIT BUTTON */}
+            <button type="submit" className="suggestionSubmitButton">
+              <span>Submit</span>
+            </button>
 
-          <button type="submit" className="suggestionSubmitBtn">
-            Submit
-          </button>
-        </form>
-      </div>
-    </section>
+          </form>
+
+        </div>
+
+      </section>
+
+    </main>
   );
 }
