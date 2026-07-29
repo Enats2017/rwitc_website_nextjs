@@ -61,7 +61,11 @@ export default function Footer() {
                             A legacy of excellence in horse racing since 1932. Experience the thrill, heritage and prestige.
                         </p>
 
-                        <button className="contactUsBtn"> Contact Us </button>
+                        <div className="contactBtnRow">
+   <a href="/Contact" className="contactUsBtn">Contact Us</a> 
+    <button className="contactUsBtn">About Us</button>
+    <button className="contactUsBtn">Suggestion</button>
+</div>
                     </div>
 
                     {/* MIDDLE - WEATHER INLINE */}

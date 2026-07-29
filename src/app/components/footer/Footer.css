@@ -92,6 +92,13 @@
     max-width: 300px;
 }
 
+/* CONTACT BUTTON ROW */
+.contactBtnRow {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 /* CONTACT US BUTTON */
 .contactUsBtn {
     align-self: flex-start;
@@ -128,10 +135,22 @@
     display: flex;
     align-items: center;
     gap: 28px;
-    padding: 0 40px;
     border-left: 1px solid rgba(255, 255, 255, .16);
     border-right: 1px solid rgba(255, 255, 255, .16);
+    padding: 0 40px;
     height: 100%;
+}
+
+.contactBtnRow {
+    display: flex;
+    gap: 12px;
+    flex-wrap: nowrap;
+}
+
+.contactBtnRow .contactUsBtn {
+    padding: 11px 18px;
+    font-size: 12px;
+    white-space: nowrap;
 }
 
 .weatherMain {

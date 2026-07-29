@@ -108,56 +108,14 @@ export default function TopHeader() {
     };
 
     const navItems = [
-        // { label: "Home", href: "/rwitc-website" },
-        // { label: "About Us", href: "/about" },
-        // { label: "Suggestions", href: "/suggestions" },
-        {
-            label: "Races",
-            key: "races",
-            children: [
-                {
-                    label: "Race Card",
-                    key: "race-card",
-                    children: [
-                        { label: "Today's Race Card", href: "/races/race-card/today" },
-                        { label: "Tomorrow's Race Card", href: "/races/race-card/tomorrow" },
-                        { label: "Weekend Race Card", href: "/races/race-card/weekend" },
-                        { label: "Race Card Archive", href: "/races/race-card/archive" },
-                    ],
-                },
-                { label: "Racing Fixtures", href: "/races/fixtures" },
-                { label: "Results", href: "/races/results" },
-            ],
-        },
-        {
-            label: "Horses",
-            key: "horses",
-            children: [
-                { label: "Rating of all Horses", href: "/horses/rating" },
-                { label: "Trainerwise Horses", href: "/horses/trainerwise" },
-                { label: "Performance Profile", href: "/horses/performance" },
-            ],
-        },
-        {
-            label: "Information",
-            key: "information",
-            children: [
-                { label: "Tote Dividends", href: "/information/tote-dividends" },
-                { label: "Money Leaders", href: "/information/money-leaders" },
-                { label: "Indian Stud Book", href: "/information/stud-book" },
-            ],
-        },
-        {
-            label: "Media",
-            key: "media",
-            children: [
-                { label: "Video Archives", href: "/media/videos" },
-                { label: "Gallery", href: "/media/gallery" },
-                { label: "News Room", href: "/media/news" },
-            ],
-        },
-        // { label: "Contact", href: "/contact" },
-    ];
+    { label: "The Club", href: "/#" },
+    { label: "Horse Racing", href: "/#" },
+    { label: "Betting & Entertainment", href: "/#" },
+    { label: "Membership", href: "/#" },
+    { label: "Come Racing", href: "/#" },
+    { label: "Advertising & Sponsership", href: "/#" },
+    { label: "Downloads", href: "/#" },
+];
 
     return (
         <header className="header">
