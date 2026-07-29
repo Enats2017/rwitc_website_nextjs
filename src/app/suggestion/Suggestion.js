@@ -10,6 +10,7 @@ import {
   FaHeadset,
   FaHorse,
 } from "react-icons/fa";
+import { UPLOAD_URL } from "../../services/api";
 import "./Suggestion.css";
 
 export default function Suggestion() {
@@ -40,7 +41,7 @@ export default function Suggestion() {
 
       {/* BACKGROUND IMAGE */}
       <img
-        src="/image/horse_race2.jpg"
+        src={`${UPLOAD_URL}/body_img5.jpeg`}
         alt="Royal Western India Turf Club racecourse"
         className="suggestionBgImage"
       />

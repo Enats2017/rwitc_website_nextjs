@@ -30,21 +30,13 @@
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    background:
-        linear-gradient(90deg,
-            rgba(3, 22, 11, 0.86) 0%,
-            rgba(3, 22, 11, 0.68) 28%,
-            rgba(3, 22, 11, 0.42) 50%,
-            rgba(3, 22, 11, 0.22) 68%,
-            rgba(3, 22, 11, 0.12) 100%),
-        linear-gradient(180deg,
-            rgba(2, 15, 8, 0.35) 0%,
-            rgba(2, 15, 8, 0.1) 20%,
-            rgba(2, 15, 8, 0.1) 75%,
-            rgba(2, 15, 8, 0.4) 100%);
-}
+    background: linear-gradient(90deg,
+            #023115 0%, #043312d4 28%, #0129128c 50%,
+            #03160b38 68%, #03160b1f 100%),
+        linear-gradient(#020f0859 0%, #020f081a 20% 75%, #020f0866 100%);
+}  
  
-/* SHELL */
+/* SHELL */       
 .suggestionShell {
     position: relative;
     z-index: 2;
