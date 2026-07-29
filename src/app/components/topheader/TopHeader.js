@@ -5,6 +5,84 @@ import "./TopHeader.css";
 import { UPLOAD_URL } from "../../../services/api";
 import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay } from "react-icons/fa";
 
+/* ---------- DESKTOP: nested submenu — CLICK ONLY, vertical ---------- */
+function DesktopDropdownList({ items, level = 0 }) {
+    const [openKey, setOpenKey] = useState(null);
+
+    const handleToggle = (key) => {
+        setOpenKey(openKey === key ? null : key);
+    };
+
+    return (
+        <div className={level === 0 ? "navDropdownMenu open" : "navSubMenu open"}>
+            {items.map((item) => {
+                const key = item.key || item.label;
+                if (item.children) {
+                    return (
+                        <div className="navDropdownItemWrap" key={key}>
+                            <button
+                                type="button"
+                                className="navDropdownLink navDropdownLinkParent"
+                                onClick={() => handleToggle(key)}
+                            >
+                                {item.label}
+                                <FaChevronDown className={`subChevron ${openKey === key ? "open" : ""}`} />
+                            </button>
+                            {openKey === key && (
+                                <DesktopDropdownList items={item.children} level={level + 1} />
+                            )}
+                        </div>
+                    );
+                }
+                return (
+                    <a href={item.href} className="navDropdownLink" key={key}>
+                        {item.label}
+                    </a>
+                );
+            })}
+        </div>
+    );
+}
+
+/* ---------- MOBILE: recursive accordion (click-only, vertical nested) ---------- */
+function MobileDropdownList({ items, onNavigate }) {
+    const [openKeys, setOpenKeys] = useState({});
+
+    const toggle = (key) => {
+        setOpenKeys((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    return (
+        <div className="mobileDropdownInner">
+            {items.map((item) => {
+                const key = item.key || item.label;
+                if (item.children) {
+                    return (
+                        <div className="mobileDropdownWrap" key={key}>
+                            <button
+                                type="button"
+                                className="mobileDropdownLink mobileDropdownParent"
+                                onClick={() => toggle(key)}
+                            >
+                                {item.label}
+                                <FaChevronDown className={`chevronIcon ${openKeys[key] ? "rotated" : ""}`} />
+                            </button>
+                            <div className={`mobileSubMenu ${openKeys[key] ? "open" : ""}`}>
+                                <MobileDropdownList items={item.children} onNavigate={onNavigate} />
+                            </div>
+                        </div>
+                    );
+                }
+                return (
+                    <a href={item.href} className="mobileDropdownLink" key={key} onClick={onNavigate}>
+                        {item.label}
+                    </a>
+                );
+            })}
+        </div>
+    );
+}
+
 export default function TopHeader() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
@@ -26,17 +104,27 @@ export default function TopHeader() {
     const handleDropdownLeave = () => {
         closeTimerRef.current = setTimeout(() => {
             setDesktopOpenDropdown(null);
-        }, 300);
+        }, 150);
     };
 
     const navItems = [
-        { label: "Home", href: "/" },
-        { label: "About Us", href: "/about" },
+        // { label: "Home", href: "/rwitc-website" },
+        // { label: "About Us", href: "/about" },
+        // { label: "Suggestions", href: "/suggestions" },
         {
             label: "Races",
             key: "races",
             children: [
-                { label: "Race Card", href: "/races/race-card" },
+                {
+                    label: "Race Card",
+                    key: "race-card",
+                    children: [
+                        { label: "Today's Race Card", href: "/races/race-card/today" },
+                        { label: "Tomorrow's Race Card", href: "/races/race-card/tomorrow" },
+                        { label: "Weekend Race Card", href: "/races/race-card/weekend" },
+                        { label: "Race Card Archive", href: "/races/race-card/archive" },
+                    ],
+                },
                 { label: "Racing Fixtures", href: "/races/fixtures" },
                 { label: "Results", href: "/races/results" },
             ],
@@ -68,27 +156,24 @@ export default function TopHeader() {
                 { label: "News Room", href: "/media/news" },
             ],
         },
-        { label: "Contact", href: "/contact" },
+        // { label: "Contact", href: "/contact" },
     ];
 
     return (
         <header className="header">
             <div className="header__wrapper">
 
-                {/* LEFT SIDE - LOGO */}
                 <Link href="/" className="brandLink">
                     <div className="logo">
                         <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" draggable="false" />
                     </div>
                     <div className="clubInfo">
-                        <h2>Royal Western India<br />Turf Club Ltd.</h2>
+                        <h2>Royal Western India Turf Club Ltd.</h2>
                     </div>
                 </Link>
 
-                {/* RIGHT SIDE GROUP - NAV + ICON + LIVE BUTTON (all together on the right) */}
                 <div className="rightGroup">
 
-                    {/* NAV LINKS (desktop) */}
                     <nav className="navLinks">
                         {navItems.map((item) => (
                             item.children ? (
@@ -106,13 +191,9 @@ export default function TopHeader() {
                                         {item.label}
                                         <FaChevronDown className={`chevronIcon ${desktopOpenDropdown === item.key ? "open" : ""}`} />
                                     </button>
-                                    <div className={`navDropdownMenu ${desktopOpenDropdown === item.key ? "open" : ""}`}>
-                                        {item.children.map((child) => (
-                                            <a href={child.href} className="navDropdownLink" key={child.label}>
-                                                {child.label}
-                                            </a>
-                                        ))}
-                                    </div>
+                                    {desktopOpenDropdown === item.key && (
+                                        <DesktopDropdownList items={item.children} level={0} />
+                                    )}
                                 </div>
                             ) : (
                                 <a href={item.href} className="navItem" key={item.label}>
@@ -124,28 +205,16 @@ export default function TopHeader() {
 
                     <div className="header__actions">
 
-                        <button
-                            className="calendarButton"
-                            aria-label="Calendar"
-                        >
+                        <button className="calendarButton" aria-label="Calendar">
                             <FaCalendarAlt />
                         </button>
 
-                      <a href="#"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="headerLiveBtn"
-                            aria-label="Watch Live Stream"
-                        >
+                        <a href="#" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
                             <FaPlay className="headerLiveBtnIcon" />
                             <span className="headerLiveBtnText">Watch Live Stream</span>
                         </a>
 
-                        <button
-                            className="menuButton"
-                            aria-label="Menu"
-                            onClick={() => setMenuOpen(true)}
-                        >
+                        <button className="menuButton" aria-label="Menu" onClick={() => setMenuOpen(true)}>
                             <FaBars />
                         </button>
 
@@ -159,11 +228,7 @@ export default function TopHeader() {
             <div className={`mobileMenu ${menuOpen ? "open" : ""}`}>
                 <div className="mobileMenuHeader">
                     <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC" className="mobileLogo" />
-                    <button
-                        className="mobileCloseButton"
-                        aria-label="Close menu"
-                        onClick={() => setMenuOpen(false)}
-                    >
+                    <button className="mobileCloseButton" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
                         <FaTimes />
                     </button>
                 </div>
@@ -172,53 +237,31 @@ export default function TopHeader() {
                     {navItems.map((item) => (
                         item.children ? (
                             <div className="mobileDropdownWrap" key={item.key}>
-                                <button
-                                    type="button"
-                                    className="mobileNavItem"
-                                    onClick={() => toggleDropdown(item.key)}
-                                >
+                                <button type="button" className="mobileNavItem" onClick={() => toggleDropdown(item.key)}>
                                     {item.label}
-                                    <FaChevronDown
-                                        className={`chevronIcon ${openDropdown === item.key ? "rotated" : ""}`}
-                                    />
+                                    <FaChevronDown className={`chevronIcon ${openDropdown === item.key ? "rotated" : ""}`} />
                                 </button>
                                 <div className={`mobileDropdownMenu ${openDropdown === item.key ? "open" : ""}`}>
-                                    <div className="mobileDropdownInner">
-                                        {item.children.map((child) => (
-                                            <a href={child.href} className="mobileDropdownLink" key={child.label}>
-                                                {child.label}
-                                            </a>
-                                        ))}
-                                    </div>
+                                    <MobileDropdownList
+                                        items={item.children}
+                                        onNavigate={() => setMenuOpen(false)}
+                                    />
                                 </div>
                             </div>
                         ) : (
-
-                            <a href={item.href}
-                                className="mobileNavItem"
-                                key={item.label}
-                                onClick={() => setMenuOpen(false)}
-                            >
+                            <a href={item.href} className="mobileNavItem" key={item.label} onClick={() => setMenuOpen(false)}>
                                 {item.label}
                             </a>
                         )
                     ))}
 
-
-                    <a href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mobileLiveStreamButton"
-                    >
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="mobileLiveStreamButton">
                         Watch Live Stream
                     </a>
                 </div>
             </div>
 
-            {/* OVERLAY */}
-            {menuOpen && (
-                <div className="mobileOverlay" onClick={() => setMenuOpen(false)} />
-            )}
+            {menuOpen && <div className="mobileOverlay" onClick={() => setMenuOpen(false)} />}
 
         </header>
     );

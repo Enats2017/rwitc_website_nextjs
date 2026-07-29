@@ -51,10 +51,10 @@ export default function Footer() {
                         </div>
 
                         <div className="socialIcons">
-                            <a href="#" className="iconFacebook" aria-label="Facebook"> <FaFacebookF /> </a>
-                            <a href="#" className="iconX" aria-label="X"> <FaXTwitter /> </a>
-                            <a href="#" className="iconInstagram" aria-label="Instagram"> <FaInstagram /> </a>
-                            <a href="#" className="iconYoutube" aria-label="YouTube"> <FaYoutube /> </a>
+                            <a href="https://www.facebook.com/rwitcmumbai" className="iconFacebook" aria-label="Facebook"> <FaFacebookF /> </a>
+                            <a href="https://x.com/rwitcmumbai" className="iconX" aria-label="X"> <FaXTwitter /> </a>
+                            <a href="https://www.instagram.com/rwitcmumbai" className="iconInstagram" aria-label="Instagram"> <FaInstagram /> </a>
+                            <a href="https://www.youtube.com/@rwitcltd9390" className="iconYoutube" aria-label="YouTube"> <FaYoutube /> </a>
                         </div>
 
                         <p className="footerText">

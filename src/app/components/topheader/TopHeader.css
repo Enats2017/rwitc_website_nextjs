@@ -29,19 +29,17 @@ body::-webkit-scrollbar {
     z-index: 100;
 }
 
-/* WRAPPER */
 .header__wrapper {
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;  
+    align-items: center;
     padding: 10px 34px;
-    background: linear-gradient(180deg,#0b6f2b 0%,#075322 100%);
+    background: linear-gradient(180deg, #0b6f2b 0%, #075322 100%);
     border-bottom: 1px solid rgba(255, 255, 255, .08);
     min-height: 72px;
 }
 
-/* BRAND / LOGO */
 .brandLink {
     display: flex;
     align-items: center;
@@ -64,7 +62,6 @@ body::-webkit-scrollbar {
 }
 
 .clubInfo h2 {
-
     color: #fff;
     font-size: 20px;
     line-height: 26px;
@@ -103,7 +100,6 @@ body::-webkit-scrollbar {
     cursor: pointer;
     transition: .25s;
     position: relative;
-
 }
 
 .navItem:hover,
@@ -114,7 +110,6 @@ body::-webkit-scrollbar {
     outline: none;
 }
 
-/* underline for Home (active look) */
 .navLinks .navItem:first-child::after {
     content: "";
     position: absolute;
@@ -122,27 +117,24 @@ body::-webkit-scrollbar {
     bottom: -2px;
     width: 100%;
     height: 2px;
-    /* background: #ffffff; */
     border-radius: 2px;
 }
 
-.chevronIcon{
-    font-size:8px;
-    margin-top:1px;
+.chevronIcon {
+    font-size: 8px;
+    margin-top: 1px;
     transition: transform .25s ease;
-
 }
 
 .chevronIcon.open {
     transform: rotate(180deg);
 }
 
-/* DROPDOWN WRAPPER */
+/* DROPDOWN WRAPPER (top level) */
 .navDropdownWrap {
     position: relative;
 }
 
-/* Dropdown toggle button - force transparent bg in every state */
 .navItemDropdown {
     background: transparent !important;
     box-shadow: none !important;
@@ -152,8 +144,10 @@ body::-webkit-scrollbar {
     position: absolute;
     top: 42px;
     left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    min-width: 190px;
+    transform: translateX(-50%) translateY(0);
+    min-width: 210px;
+    max-height: 260px;
+    overflow-y: auto;
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 20px 45px rgba(0, 0, 0, .18);
@@ -161,14 +155,21 @@ body::-webkit-scrollbar {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity .25s ease, transform .25s ease, visibility .25s ease;
     z-index: 50;
 }
 
-/* extra invisible bridge so mouse can travel from button to menu without gap issues */
+.navDropdownMenu::-webkit-scrollbar,
+.navSubMenu::-webkit-scrollbar {
+    width: 5px;
+}
+
+.navDropdownMenu::-webkit-scrollbar-thumb,
+.navSubMenu::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, .15);
+    border-radius: 10px;
+}
+
+/* invisible bridge so mouse can travel from button to menu without gap closing it */
 .navDropdownWrap::after {
     content: "";
     position: absolute;
@@ -176,13 +177,6 @@ body::-webkit-scrollbar {
     right: 0;
     top: 100%;
     height: 14px;
-}
-
-.navDropdownMenu.open {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
 }
 
 .navDropdownLink {
@@ -201,6 +195,54 @@ body::-webkit-scrollbar {
     color: #0b6d2a;
 }
 
+.navDropdownItemWrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.navDropdownLinkParent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+}
+
+.subChevron {
+    font-size: 8px;
+    margin-left: 10px;
+    flex-shrink: 0;
+    color: #777;
+    transition: transform .25s ease;
+}
+
+.subChevron.open {
+    transform: rotate(180deg);
+}
+
+/* opens BELOW the parent item, inline, vertical */
+.navSubMenu {
+    position: relative;
+    max-height: 220px;
+    overflow-y: auto;
+    background: #f4faf5;
+    border-radius: 9px;
+    margin: 2px 0 4px 10px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.navSubMenu .navDropdownLink {
+    font-size: 11.5px;
+    color: #2c2c2c;
+}
+
 .header__actions {
     display: flex;
     align-items: center;
@@ -208,7 +250,6 @@ body::-webkit-scrollbar {
     flex-shrink: 0;
 }
 
-/* CALENDAR ICON BOX */
 .calendarButton {
     width: 40px;
     height: 40px;
@@ -232,7 +273,6 @@ body::-webkit-scrollbar {
     color: #ffffff;
 }
 
-/* HEADER LIVE STREAM BUTTON — glossy shiny pill */
 .headerLiveBtn {
     height: 40px;
     padding: 0 22px;
@@ -257,12 +297,10 @@ body::-webkit-scrollbar {
     left: -120%;
     width: 60%;
     height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, .55),
-        transparent
-    );
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, .55),
+            transparent);
     transform: skewX(-20deg);
     transition: left .6s ease;
     pointer-events: none;
@@ -298,7 +336,6 @@ body::-webkit-scrollbar {
     z-index: 2;
 }
 
-/* MOBILE/TABLET: only icon, no text */
 @media (max-width: 992px) {
     .headerLiveBtn {
         width: 40px;
@@ -317,7 +354,6 @@ body::-webkit-scrollbar {
     }
 }
 
-/* MOBILE HAMBURGER - hidden on desktop */
 .menuButton {
     display: none;
     width: 42px;
@@ -445,6 +481,17 @@ body::-webkit-scrollbar {
     flex-direction: column;
     min-height: 0;
     padding: 0 0 0 18px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.mobileDropdownInner::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mobileDropdownInner::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, .15);
+    border-radius: 10px;
 }
 
 .mobileDropdownLink {
@@ -458,6 +505,30 @@ body::-webkit-scrollbar {
 
 .mobileDropdownLink:last-child {
     border-bottom: none;
+}
+
+.mobileDropdownParent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.mobileSubMenu {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    transition: grid-template-rows .35s ease;
+    background: #eef6ee;
+}
+
+.mobileSubMenu.open {
+    grid-template-rows: 1fr;
 }
 
 .mobileLiveStreamButton {
