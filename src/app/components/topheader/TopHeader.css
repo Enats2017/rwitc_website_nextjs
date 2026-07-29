@@ -63,7 +63,7 @@ body::-webkit-scrollbar {
 
 .clubInfo h2 {
     color: #fff;
-    font-size: 20px;
+    font-size: 16px;
     line-height: 26px;
     font-weight: 700;
     letter-spacing: .6px;
@@ -81,7 +81,7 @@ body::-webkit-scrollbar {
 .navLinks {
     display: flex;
     align-items: center;
-    gap: 26px;
+    gap: 18px;
     flex-wrap: nowrap;
     white-space: nowrap;
 }
@@ -91,7 +91,7 @@ body::-webkit-scrollbar {
     align-items: center;
     gap: 6px;
     color: #fff;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     padding: 4px 0;
     text-decoration: none;
@@ -561,11 +561,11 @@ body::-webkit-scrollbar {
     }
 
     .navLinks {
-        gap: 14px;
+        gap: 10px;
     }
 
     .navItem {
-        font-size: 12px;
+        font-size: 10px;
     }
 }
 
@@ -589,7 +589,7 @@ body::-webkit-scrollbar {
     }
 
     .clubInfo h2 {
-        font-size: 13px;
+        font-size: 10px;
         line-height: 16px;
     }
 

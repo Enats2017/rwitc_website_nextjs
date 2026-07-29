@@ -108,13 +108,13 @@ export default function TopHeader() {
     };
 
     const navItems = [
-    { label: "The Club", href: "/#" },
-    { label: "Horse Racing", href: "/#" },
-    { label: "Betting & Entertainment", href: "/#" },
-    { label: "Membership", href: "/#" },
-    { label: "Come Racing", href: "/#" },
-    { label: "Advertising & Sponsership", href: "/#" },
-    { label: "Downloads", href: "/#" },
+    { label: "The Club", href: "/rwitc-website" },
+    { label: "Horse Racing", href: "/rwitc-website" },
+    { label: "Betting &\nEntertainment", href: "/rwitc-website" },
+    { label: "Membership", href: "/rwitc-website" },
+    { label: "Come Racing", href: "/rwitc-website" },
+    { label: "Advertising &\nSponsership", href: "/rwitc-website" },
+    { label: "Downloads", href: "/rwitc-website" },
 ];
 
     return (
