@@ -32,7 +32,7 @@ export default function Sponsors() {
                 <div className="sponsorsHeading">
 
                     <span>
-                        OUR SPONSORS & TRUSTED PARTNERS
+                        SPONSORS
                     </span>
 
                 </div>

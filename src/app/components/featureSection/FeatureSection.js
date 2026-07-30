@@ -4,7 +4,6 @@ import { UPLOAD_URL } from "../../../services/api";
 import "./FeatureSection.css";
 
 import {
-    FaArrowRight,
     FaTrophy,
     FaUserTie,
     FaUsers,
@@ -45,9 +44,6 @@ export default function FeatureSection() {
                             <div className="featureIcon">{item.icon}</div>
                             <h3>{item.title}</h3>
                         </div>
-                        <button className="arrowBtn">
-                            <FaArrowRight />
-                        </button>
                     </div>
                 ))}
             </div>

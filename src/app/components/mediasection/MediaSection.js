@@ -8,10 +8,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import {
-    getMedia,
-    getRaceMedia
-} from "../../../services/mediaService";
+import { getMedia, getRaceMedia} from "../../../services/mediaService";
 export default function MediaSection() {
 
     const videoRef = useRef(null);
@@ -69,6 +66,14 @@ export default function MediaSection() {
 
     const video = media.find(item => item.type == 2);
     const images = media.filter(item => item.type == 1);
+
+    // video is there or not
+    const hasVideo = Boolean(video);
+
+    // ✅ when video is there so max 2 slider or video is not there so max 3 sliders of imgs
+    const maxSlides = hasVideo ? 2 : 3;
+    const slidesPerView = Math.min(images.length, maxSlides) || 1;
+    const canLoop = images.length > slidesPerView;
 
     const preRaceDates = raceMedia.preRace.map(item =>
         new Date(item.racedate).toLocaleDateString(
@@ -152,11 +157,9 @@ export default function MediaSection() {
         <section className="mediaSection">
             <div className="mediaSectionContent">
                 <div className="mediaContainer">
-                    {/* LEFT VIDEO */}
-                    <div className="videoArea" id="live-video">
-                        {
-                            media.length > 0 && (
-
+                    {
+                        hasVideo && (
+                            <div className="videoArea" id="live-video">
                                 <video
                                     controls
                                     autoPlay
@@ -172,22 +175,21 @@ export default function MediaSection() {
                                     />
 
                                 </video>
-
-                            )
-                        }
-                    </div>
-                   {
+                            </div>
+                        )
+                    }
+                    {
                         images.length > 0 && (
-                            <div className="adsArea">
+                            <div className={`adsArea ${!hasVideo ? "adsAreaFull" : ""}`}>
                                 <Swiper
-                                    key={images.length}
+                                    key={`${images.length}-${hasVideo}`}
                                     modules={[Navigation, Autoplay]}
-                                    slidesPerView={images.length > 1 ? 2 : 1}
+                                    slidesPerView={slidesPerView}
                                     spaceBetween={12}
-                                    loop={images.length > 2}
+                                    loop={canLoop}
                                     speed={800}
                                     autoplay={
-                                        images.length > 2
+                                        canLoop
                                             ? { delay: 3500, disableOnInteraction: false }
                                             : false
                                     }
@@ -217,7 +219,7 @@ export default function MediaSection() {
                                 </Swiper>
 
                                 {
-                                    images.length > 2 && (
+                                    canLoop && (
                                         <>
                                             <button ref={adsPrevRef} className="adsNavBtn adsNavPrev" aria-label="Previous">
                                                 <FaChevronLeft />

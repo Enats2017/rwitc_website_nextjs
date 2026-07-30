@@ -1,26 +1,17 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import "./NewsRoom.css";
-
-import {
-    FaTrophy,
-    FaRegNewspaper,
-    FaChevronLeft,
-    FaChevronRight,
-} from "react-icons/fa";
-
+import { FaTrophy, FaRegNewspaper, FaChevronLeft, FaChevronRight,} from "react-icons/fa";
 import { UPLOAD_URL } from "../../../services/api";
 import { getNews } from "../../../services/newsService";
 import { getTopStories } from "../../../services/topStoriesService";
+import Watermark from "../../../security/Watermark";
 
 export default function NewsRoom() {
-
     const [news, setNews] = useState([]);
     const [topStories, setTopStories] = useState([]);
     const [showAll, setShowAll] = useState(false);
     const [raceHeight, setRaceHeight] = useState(null);
-
     const newsCardRef = useRef(null);
 
     useEffect(() => {
@@ -51,11 +42,23 @@ export default function NewsRoom() {
         console.log(item);
     };
 
+    // Block right-click (context menu) inside this section only
+    const handleContextMenu = (e) => {
+        e.preventDefault();
+    };
+
     const visibleNews = showAll ? news : news.slice(0, 5);
 
     return (
 
-        <section className="newsRoom">
+        <section
+            className="newsRoom"
+            style={{ position: "relative" }}
+            onContextMenu={handleContextMenu}
+        >
+
+            {/* Watermark shown only inside this NewsRoom section (data coming from DB) */}
+            <Watermark />
 
             <div className="newsContainer">
 

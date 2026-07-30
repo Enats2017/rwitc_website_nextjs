@@ -3,7 +3,21 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import "./TopHeader.css";
 import { UPLOAD_URL } from "../../../services/api";
-import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay } from "react-icons/fa";
+import {
+    FaBars,
+    FaTimes,
+    FaCalendarAlt,
+    FaChevronDown,
+    FaPlay,
+    FaHome,
+    FaUniversity,
+    FaHorseHead,
+    FaTags,
+    FaUsers,
+    FaStar,
+    FaHandshake,
+    FaCloudDownloadAlt,
+} from "react-icons/fa";
 
 /* ---------- DESKTOP: nested submenu — CLICK ONLY, vertical ---------- */
 function DesktopDropdownList({ items, level = 0 }) {
@@ -93,6 +107,7 @@ export default function TopHeader() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
     const [desktopOpenDropdown, setDesktopOpenDropdown] = useState(null);
+    const [activeNav, setActiveNav] = useState("home");
     const closeTimerRef = useRef(null);
 
     const toggleDropdown = (name) => {
@@ -113,10 +128,13 @@ export default function TopHeader() {
         }, 150);
     };
 
+    // Nav items now carry their own icon for both desktop icon-row and mobile menu list
     const navItems = [
+        { label: "Home", key: "home", href: "/", icon: <FaHome /> },
         {
             label: "Club",
             key: "club",
+            icon: <FaUniversity />,
             children: [
                 { label: "About Us", href: "/club/about" },
                 { label: "History", href: "/club/history" },
@@ -134,6 +152,7 @@ export default function TopHeader() {
         {
             label: "Racing",
             key: "racing",
+            icon: <FaHorseHead />,
             children: [
                 {
                     label: "Race Card",
@@ -151,6 +170,7 @@ export default function TopHeader() {
         {
             label: "Wagering",
             key: "wagering",
+            icon: <FaTags />,
             children: [
                 { label: "Tote Dividends", href: "/wagering/tote-dividends" },
                 { label: "Betting Rules", href: "/wagering/betting-rules" },
@@ -168,6 +188,7 @@ export default function TopHeader() {
         {
             label: "Membership",
             key: "membership",
+            icon: <FaUsers />,
             children: [
                 { label: "Membership Types", href: "/membership/types" },
                 { label: "How to Apply", href: "/membership/apply" },
@@ -177,6 +198,7 @@ export default function TopHeader() {
         {
             label: "Experience",
             key: "experience",
+            icon: <FaStar />,
             children: [
                 { label: "Dining", href: "/experience/dining" },
                 { label: "Events", href: "/experience/events" },
@@ -186,14 +208,16 @@ export default function TopHeader() {
         {
             label: "Partners",
             key: "partners",
+            icon: <FaHandshake />,
             children: [
                 { label: "Sponsors", href: "/partners/sponsors" },
                 { label: "Hospitality Partners", href: "/partners/hospitality" },
             ],
         },
         {
-            label: "Downloads",
+            label: "Download",
             key: "downloads",
+            icon: <FaCloudDownloadAlt />,
             children: [
                 { label: "Race Card PDF", href: "/downloads/race-card" },
                 { label: "Membership Form", href: "/downloads/membership-form" },
@@ -204,84 +228,103 @@ export default function TopHeader() {
 
     return (
         <header className="header">
-            <div className="header__wrapper">
+
+            {/* ROW 1: LOGO + BACKGROUND STRIP + CALENDAR/LIVE STREAM BUTTONS */}
+            <div className="headerTopRow">
+
+                {/* Mobile-only hamburger, sits left of the logo on small screens */}
+                <button className="menuButton" aria-label="Menu" onClick={() => setMenuOpen(true)}>
+                    <FaBars />
+                </button>
 
                 <Link href="/" className="brandLink">
                     <div className="logo">
                         <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" draggable="false" />
                     </div>
                     <div className="clubInfo">
-                        <h2 className="clubNameFull">Royal Western India Turf Club Ltd.</h2>
-                        <h2 className="clubNameShort">RWITC</h2>
+                        <h1 className="clubNameShort">RWITC</h1>
+                        <p className="clubNameFull">Royal Western India Turf Club Ltd</p>
                     </div>
                 </Link>
 
-                <div className="rightGroup">
+                <div className="headerTopActions">
+                    <button className="calendarButton" aria-label="Calendar">
+                        <FaCalendarAlt />
+                        <span className="calendarButtonText">Calendar</span>
+                    </button>
 
-                    <nav className="navLinks">
-                        {navItems.map((item) => (
-                            item.children ? (
-                                <div
-                                    className="navDropdownWrap"
-                                    key={item.key}
-                                    onMouseEnter={() => handleDropdownEnter(item.key)}
-                                    onMouseLeave={handleDropdownLeave}
-                                >
-                                    <button
-                                        type="button"
-                                        className="navItem navItemDropdown"
-                                        onClick={() => setDesktopOpenDropdown(desktopOpenDropdown === item.key ? null : item.key)}
-                                    >
-                                        {item.label}
-                                    </button>
-                                    {desktopOpenDropdown === item.key && (
-                                        <DesktopDropdownList items={item.children} level={0} />
-                                    )}
-                                </div>
-                            ) : (
-                                <a href={item.href} className="navItem" key={item.label}>
-                                    {item.label}
-                                </a>
-                            )
-                        ))}
-                    </nav>
-
-                    <div className="header__actions">
-
-                        <button className="calendarButton" aria-label="Calendar">
-                            <FaCalendarAlt />
-                        </button>
-
-                        <a href="#" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
-                            <FaPlay className="headerLiveBtnIcon" />
-                            <span className="headerLiveBtnText">Watch Live Stream</span>
-                        </a>
-
-                        <button className="menuButton" aria-label="Menu" onClick={() => setMenuOpen(true)}>
-                            <FaBars />
-                        </button>
-
-                    </div>
-
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
+                        <FaPlay className="headerLiveBtnIcon" />
+                        <span className="headerLiveBtnText">Live Stream</span>
+                    </a>
                 </div>
 
             </div>
 
+            {/* ROW 2: ICON NAV ROW (desktop only) */}
+            <nav className="navLinks">
+                {navItems.map((item) =>
+                    item.children ? (
+                        <div
+                            className="navDropdownWrap"
+                            key={item.key}
+                            onMouseEnter={() => handleDropdownEnter(item.key)}
+                            onMouseLeave={handleDropdownLeave}
+                        >
+                            <button
+                                type="button"
+                                className={`navItem navItemDropdown ${activeNav === item.key ? "active" : ""}`}
+                                onClick={() => {
+                                    setActiveNav(item.key);
+                                    setDesktopOpenDropdown(desktopOpenDropdown === item.key ? null : item.key);
+                                }}
+                            >
+                                <span className="navItemIcon">{item.icon}</span>
+                                {item.label}
+                                <FaChevronDown className="navItemChevron" />
+                            </button>
+                            {desktopOpenDropdown === item.key && (
+                                <DesktopDropdownList items={item.children} level={0} />
+                            )}
+                        </div>
+                    ) : (
+                        
+                        <a    href={item.href}
+                            className={`navItem ${activeNav === item.key ? "active" : ""}`}
+                            key={item.key}
+                            onClick={() => setActiveNav(item.key)}
+                        >
+                            <span className="navItemIcon">{item.icon}</span>
+                            {item.label}
+                        </a>
+                    )
+                )}
+            </nav>
+
             {/* MOBILE SLIDE MENU */}
             <div className={`mobileMenu ${menuOpen ? "open" : ""}`}>
                 <div className="mobileMenuHeader">
-                    <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC" className="mobileLogo" />
+                    <div className="mobileMenuBrand">
+                        <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC" className="mobileLogo" />
+                        <div className="mobileClubInfo">
+                            <h2 className="mobileClubNameShort">RWITC</h2>
+                            <p className="mobileClubNameFull">Royal Western India Turf Club Ltd</p>
+                        </div>
+                    </div>
                     <button className="mobileCloseButton" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
                         <FaTimes />
                     </button>
                 </div>
 
                 <div className="mobileMenuLinks">
-                    {navItems.map((item) => (
+                    {navItems.map((item) =>
                         item.children ? (
                             <div className="mobileDropdownWrap" key={item.key}>
                                 <button type="button" className="mobileNavItem" onClick={() => toggleDropdown(item.key)}>
-                                    {item.label}
+                                    <span className="mobileNavItemLeft">
+                                        <span className="mobileNavItemIcon">{item.icon}</span>
+                                        {item.label}
+                                    </span>
                                     <FaChevronDown className={`chevronIcon ${openDropdown === item.key ? "rotated" : ""}`} />
                                 </button>
                                 <div className={`mobileDropdownMenu ${openDropdown === item.key ? "open" : ""}`}>
@@ -292,15 +335,19 @@ export default function TopHeader() {
                                 </div>
                             </div>
                         ) : (
-                            <a href={item.href} className="mobileNavItem" key={item.label} onClick={() => setMenuOpen(false)}>
-                                {item.label}
+                            
+                            <a    href={item.href}
+                                className="mobileNavItem"
+                                key={item.key}
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                <span className="mobileNavItemLeft">
+                                    <span className="mobileNavItemIcon">{item.icon}</span>
+                                    {item.label}
+                                </span>
                             </a>
                         )
-                    ))}
-
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="mobileLiveStreamButton">
-                        Watch Live Stream
-                    </a>
+                    )}
                 </div>
             </div>
 
