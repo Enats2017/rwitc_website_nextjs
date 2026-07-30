@@ -62,10 +62,10 @@ export default function Footer() {
                         </p>
 
                         <div className="contactBtnRow">
-   <a href="/Contact" className="contactUsBtn">Contact Us</a> 
-    <button className="contactUsBtn">About Us</button>
-    <a href="/suggestion" className="contactUsBtn">Suggestion</a>
-</div>
+                            <a href="contact.html" className="contactUsBtn">Contact Us</a>
+                            <button className="contactUsBtn">About Us</button>
+                            <a href="suggestion.html" className="contactUsBtn">Suggestion</a>
+                        </div>
                     </div>
 
                     {/* MIDDLE - WEATHER INLINE */}

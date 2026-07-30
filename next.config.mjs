@@ -5,7 +5,6 @@
 //   basePath: "/rwitc-website",
 //   assetPrefix: "/rwitc-website",
 // };
-
 // export default nextConfig;
 
 // local
