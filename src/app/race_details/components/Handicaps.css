@@ -57,6 +57,19 @@
     font-weight: 500;
 }
 
+.downloadHandicapsBtn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: rgba(255, 255, 255, .16);
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
 /* ---- CONTAINER ---- */
 .handicapsContainer {
     width: 100%;

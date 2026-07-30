@@ -12,11 +12,45 @@ export async function getHandicaps(date) {
             throw new Error("Failed to fetch handicaps");
         }
 
-        const data = await response.json();
+        const json = await response.json();
+
+        if (!json.success) {
+            throw new Error(json.error || "Failed to fetch handicaps");
+        }
+
+        const data = json.data;
 
         return {
-            meeting: data.data?.meeting || null,
-            races: data.data?.races || [],
+            meeting: data?.formatted_date || null,
+            dayNarrative: data?.day_narrative || null,
+            downloadFile: data?.download_file || null,
+            races: (data?.races || []).map((race) => ({
+                srno: race.srno,
+                race_name: race.race_name,
+                narrent: race.narr_ent,
+                distance: race.distance,
+                grade: race.grade,
+                foreign_jockeys_eligible: race.foreign_jockeys_eligible,
+                weight_note: race.hterms,
+                ss_ban: race.ss_ban_horses || [],
+                vo_ban: race.vo_ban_horses || [],
+                mk_ban: race.mk_ban_horses || [],
+                horses: (race.weights || []).map((horse) => ({
+                horseseq: horse.HORSESEQ ?? horse.horseseq,
+                order: horse.SORDER ?? horse.order,
+                name: horse.NAME || horse.name,
+                color: horse.COLOR || horse.color || "",
+                sex: horse.SEX || horse.sex || "",
+                age: horse.AGE ?? horse.age ?? null,
+                weight: horse.WEIGHT ?? horse.weight,
+                rating: horse.HRATING ?? horse.rating,
+                breeding: horse.breeding ||
+        [horse.SIRE, horse.DAM, horse.DAMNAT]
+            .filter(Boolean)
+            .join(" / "),
+    trainer: horse.TRAINERNME || horse.trainer
+}))
+            }))
         };
 
     } catch (error) {

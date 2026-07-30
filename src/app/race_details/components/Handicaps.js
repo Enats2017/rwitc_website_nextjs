@@ -14,6 +14,7 @@ export default function Handicaps() {
     const [error, setError] = useState(null);
     const [meeting, setMeeting] = useState(null);
     const [races, setRaces] = useState([]);
+    const [downloadFile, setDownloadFile] = useState(null);
 
     useEffect(() => {
 
@@ -34,6 +35,7 @@ export default function Handicaps() {
 
                 setMeeting(data.meeting);
                 setRaces(data.races);
+                setDownloadFile(data.downloadFile);
 
             } catch (err) {
 
@@ -56,6 +58,16 @@ export default function Handicaps() {
         <section className="handicapsPage">
 
            <div className="handicapsHero">
+    {downloadFile && (
+        <a
+            href={downloadFile}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="downloadHandicapsBtn"
+        >
+            Download Handicaps
+        </a>
+    )}
     <h1>Handicaps</h1>
     {meeting && <p className="handicapsMeeting">{meeting}</p>}
     <p className="handicapsHint">
