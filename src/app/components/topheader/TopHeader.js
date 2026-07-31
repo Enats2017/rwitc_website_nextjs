@@ -17,6 +17,7 @@ import {
     FaStar,
     FaHandshake,
     FaCloudDownloadAlt,
+    FaImages,
 } from "react-icons/fa";
 
 /* ---------- DESKTOP: nested submenu — CLICK ONLY, vertical ---------- */
@@ -50,8 +51,8 @@ function DesktopDropdownList({ items, level = 0 }) {
                     );
                 }
                 return (
-                    
-                    <a    href={item.href}
+
+                    <a href={item.href}
                         className={`navDropdownLink ${selectedLeaf === key ? "active" : ""}`}
                         key={key}
                         onClick={() => setSelectedLeaf(key)}
@@ -108,6 +109,7 @@ export default function TopHeader() {
     const [openDropdown, setOpenDropdown] = useState(null);
     const [desktopOpenDropdown, setDesktopOpenDropdown] = useState(null);
     const [activeNav, setActiveNav] = useState("home");
+    const [hoverNav, setHoverNav] = useState(null);
     const closeTimerRef = useRef(null);
 
     const toggleDropdown = (name) => {
@@ -273,14 +275,19 @@ export default function TopHeader() {
                 <div className="headerTopActions">
                     <button className="calendarButton" aria-label="Calendar">
                         <FaCalendarAlt />
-                        <span className="calendarButtonText">Calendar</span>
+                        <span className="calendarButtonText">Racing Fixtures</span>
                     </button>
 
-                   <a href="#" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
-    <FaPlay className="headerLiveBtnIcon" />
-    <span className="headerLiveBtnText">Live Stream</span>
-    <span className="headerLiveBtnTextShort">Live</span>
-</a>
+                    <Link href="/race_details?type=photos" className="calendarButton" aria-label="Gallery">
+                        <FaImages />
+                        <span className="calendarButtonText">Gallery</span>
+                    </Link>
+
+                    <a href="#" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
+                        <FaPlay className="headerLiveBtnIcon" />
+                        <span className="headerLiveBtnText">Live Stream</span>
+                        <span className="headerLiveBtnTextShort">Live</span>
+                    </a>
                 </div>
 
             </div>
@@ -292,12 +299,25 @@ export default function TopHeader() {
                         <div
                             className="navDropdownWrap"
                             key={item.key}
-                            onMouseEnter={() => handleDropdownEnter(item.key)}
-                            onMouseLeave={handleDropdownLeave}
+                            onMouseEnter={() => {
+                                setHoverNav(item.key);
+                                handleDropdownEnter(item.key);
+                            }}
+                            onMouseLeave={() => {
+                                setHoverNav(null);
+                                handleDropdownLeave();
+                            }}
                         >
                             <button
                                 type="button"
-                                className={`navItem navItemDropdown ${activeNav === item.key ? "active" : ""}`}
+                                className={`navItem navItemDropdown ${hoverNav
+                                        ? hoverNav === item.key
+                                            ? "active"
+                                            : ""
+                                        : activeNav === item.key
+                                            ? "active"
+                                            : ""
+                                    }`}
                                 onClick={() => {
                                     setActiveNav(item.key);
                                     setDesktopOpenDropdown(desktopOpenDropdown === item.key ? null : item.key);
@@ -312,9 +332,16 @@ export default function TopHeader() {
                             )}
                         </div>
                     ) : (
-                        
-                        <a    href={item.href}
-                            className={`navItem ${activeNav === item.key ? "active" : ""}`}
+
+                        <a href={item.href}
+                            className={`navItem ${hoverNav
+                                    ? hoverNav === item.key
+                                        ? "active"
+                                        : ""
+                                    : activeNav === item.key
+                                        ? "active"
+                                        : ""
+                                }`}
                             key={item.key}
                             onClick={() => setActiveNav(item.key)}
                         >
@@ -359,8 +386,8 @@ export default function TopHeader() {
                                 </div>
                             </div>
                         ) : (
-                            
-                            <a    href={item.href}
+
+                            <a href={item.href}
                                 className="mobileNavItem"
                                 key={item.key}
                                 onClick={() => setMenuOpen(false)}

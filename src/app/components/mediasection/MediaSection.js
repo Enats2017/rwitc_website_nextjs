@@ -8,7 +8,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { getMedia, getRaceMedia} from "../../../services/mediaService";
+import { getMedia, getRaceMedia } from "../../../services/mediaService";
 export default function MediaSection() {
 
     const videoRef = useRef(null);

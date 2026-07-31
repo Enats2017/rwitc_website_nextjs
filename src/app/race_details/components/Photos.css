@@ -1,0 +1,383 @@
+.photosSection {
+    position: relative;
+    width: 100%;
+    padding: 60px 30px 70px;
+    background: #ffffff;
+    overflow: hidden;
+    text-align: center;
+}
+
+.photosSectionBg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 500px 260px at 0% 0%, rgba(11, 109, 42, .08), transparent 70%),
+        radial-gradient(ellipse 500px 260px at 100% 0%, rgba(11, 109, 42, .08), transparent 70%);
+}
+
+.photosHeader {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto 40px;
+}
+
+.photosLabel {
+    color: #0b6d2a;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.photosDate {
+    color: #08501f;
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+}
+
+.photosDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.dividerLine {
+    width: 90px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #0b6d2a);
+}
+
+.photosDivider .dividerLine:last-child {
+    background: linear-gradient(90deg, #0b6d2a, transparent);
+}
+
+.horseIcon {
+    font-size: 34px;
+    color: #00843d;
+    margin: 0 16px;
+    flex-shrink: 0;
+}
+
+.photosSearchBar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.dateInputWrap {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d8dee2;
+    border-radius: 10px;
+    padding: 0 14px;
+    height: 46px;
+    background: #ffffff;
+}
+
+.dateInput {
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1c1c1c;
+    background: transparent;
+    height: 100%;
+    width: 150px;
+    font-family: inherit;
+}
+
+.searchBtn {
+    height: 46px;
+    padding: 0 26px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 10px;
+    background: #0b6d2a;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    transition: .25s ease;
+}
+
+.searchBtn:hover {
+    background: #08501f;
+}
+
+/* ================= PHOTO GRID (big + thumbnails, when > 4 photos) ================= */
+.photosGrid {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    gap: 14px;
+    align-items: stretch;
+}
+
+.photoMain {
+    position: relative;
+    flex: 1 1 42%;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 340px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .12);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    transition: transform .25s ease;
+}
+
+.photoMain:hover {
+    transform: scale(1.01);
+}
+
+.photoBadge {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(8, 80, 31, .88);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .3px;
+}
+
+.badgeTime {
+    font-weight: 500;
+    opacity: .9;
+}
+
+/* FIX: grid rows now have a real height via minmax + grid-auto-rows,
+   instead of relying on the parent's height (which was 0 on mobile,
+   causing thumbnails to collapse and only the main photo to show) */
+.photoThumbGrid {
+    flex: 1 1 58%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 14px;
+}
+
+.photoThumb {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .1);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    transition: transform .3s ease;
+    /* FIX: guarantees visible height on every screen size */
+    aspect-ratio: 1 / 1;
+}
+
+.photoThumb:hover {
+    transform: scale(1.05);
+}
+
+/* ================= UNIFORM GRID (1-4 photos, or extra photos after "View All") ================= */
+.photosGridUniform {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    max-width: 900px;
+}
+
+.photoUniform {
+    aspect-ratio: 4 / 3;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .12);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    transition: transform .25s ease;
+}
+
+.photoUniform:hover {
+    transform: scale(1.02);
+}
+
+.extraPhotosGrid {
+    margin-top: 24px;
+    animation: extraFadeIn .3s ease;
+}
+
+@keyframes extraFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.photoHint {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 14px auto 0;
+    color: #8a8f94;
+    font-size: 12.5px;
+    font-style: italic;
+}
+
+.noPhotos {
+    position: relative;
+    z-index: 1;
+    padding: 60px 20px;
+    color: #6b7280;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* ================= VIEW ALL BUTTON ================= */
+.viewAllWrap {
+    position: relative;
+    z-index: 1;
+    margin-top: 34px;
+}
+
+.viewAllBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    border: 1.5px solid #0b6d2a;
+    border-radius: 30px;
+    background: transparent;
+    color: #08501f;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: .25s ease;
+}
+
+.viewAllBtn:hover {
+    background: #0b6d2a;
+    color: #ffffff;
+}
+
+/* ================= LIGHTBOX (zoom on click) ================= */
+.photoLightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .85);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    animation: lightboxFadeIn .2s ease;
+}
+
+@keyframes lightboxFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.lightboxImg {
+    max-width: 90vw;
+    max-height: 88vh;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+    cursor: default;
+    animation: lightboxZoomIn .25s ease;
+}
+
+@keyframes lightboxZoomIn {
+    from {
+        transform: scale(.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.lightboxClose {
+    position: absolute;
+    top: 24px;
+    right: 30px;
+    width: 42px;
+    height: 42px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .15);
+    color: #ffffff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .2s ease;
+}
+
+.lightboxClose:hover {
+    background: rgba(255, 255, 255, .3);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+    .photosGrid {
+        flex-direction: column;
+    }
+
+    .photoMain {
+        min-height: 260px;
+    }
+
+    /* FIX: 2-column grid on mobile, aspect-ratio on .photoThumb keeps
+       every thumbnail visible instead of just the first one */
+    .photoThumbGrid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .photosDate {
+        font-size: 30px;
+    }
+
+    .photosSearchBar {
+        flex-direction: column;
+    }
+
+    .dateInputWrap,
+    .searchBtn {
+        width: 100%;
+    }
+
+    .photosGridUniform {
+        grid-template-columns: 1fr 1fr;
+    }
+}

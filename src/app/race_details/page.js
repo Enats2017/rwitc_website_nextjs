@@ -1,5 +1,4 @@
 "use client";
-
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import TopHeader from "../components/topheader/TopHeader";
@@ -7,6 +6,7 @@ import Footer from "../components/footer/Footer";
 import Handicaps from "./components/Handicaps";
 import Declarations from "./components/Declarations";
 import Acceptance from "./components/Acceptance";
+import Photos from "./components/Photos";
 
 function RaceDetailsContent() {
 
@@ -21,6 +21,8 @@ function RaceDetailsContent() {
         ContentComponent = <Declarations />;
     } else if (type === "acceptances") {
         ContentComponent = <Acceptance />;
+    } else if (type === "photos") {
+        ContentComponent = <Photos />;
     } else {
         ContentComponent = <p>Invalid or missing type parameter.</p>;
     }
