@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import "./TopHeader.css";
 import { UPLOAD_URL } from "../../../services/api";
@@ -128,9 +128,32 @@ export default function TopHeader() {
         }, 150);
     };
 
+    useEffect(() => {
+        const handleOutsideClick = (e) => {
+            if (!e.target.closest(".navDropdownWrap")) {
+                setDesktopOpenDropdown(null);
+            }
+        };
+        document.addEventListener("click", handleOutsideClick);
+        return () => document.removeEventListener("click", handleOutsideClick);
+    }, []);
+    // FIX: reset mobile menu + all dropdown states when switching between
+    // mobile <-> desktop widths, so nothing stays stuck open on resize
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth > 992) {
+                setMenuOpen(false);
+                setOpenDropdown(null);
+            } else {
+                setDesktopOpenDropdown(null);
+            }
+        };
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
     // Nav items now carry their own icon for both desktop icon-row and mobile menu list
     const navItems = [
-        { label: "Home", key: "home", href: "/", icon: <FaHome /> },
+        // { label: "Home", key: "home", href: "/", icon: <FaHome /> },
         {
             label: "Club",
             key: "club",
@@ -243,7 +266,7 @@ export default function TopHeader() {
                     </div>
                     <div className="clubInfo">
                         <h1 className="clubNameShort">RWITC</h1>
-                        <p className="clubNameFull">Royal Western India Turf Club Ltd</p>
+                        <p className="clubNameFull">Royal Western India Turf Club Ltd.</p>
                     </div>
                 </Link>
 
@@ -253,10 +276,11 @@ export default function TopHeader() {
                         <span className="calendarButtonText">Calendar</span>
                     </button>
 
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
-                        <FaPlay className="headerLiveBtnIcon" />
-                        <span className="headerLiveBtnText">Live Stream</span>
-                    </a>
+                   <a href="#" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
+    <FaPlay className="headerLiveBtnIcon" />
+    <span className="headerLiveBtnText">Live Stream</span>
+    <span className="headerLiveBtnTextShort">Live</span>
+</a>
                 </div>
 
             </div>
