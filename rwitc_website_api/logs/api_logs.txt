@@ -1,0 +1,17 @@
+[2026-07-27 11:17:08] RACE_MEDIA_API_ERROR | Call to undefined function remoteFileExists()
+[2026-08-01 11:15:30] RATE_LIMIT | IP: ::1 | API: banner_get | blocked for 60s
+[2026-08-01 11:15:30] RATE_LIMIT | IP: ::1 | API: top_stories_get | blocked for 60s
+[2026-08-01 11:15:30] RATE_LIMIT | IP: ::1 | API: sponsors_get | blocked for 60s
+[2026-08-01 11:15:30] RATE_LIMIT | IP: ::1 | API: news_get | blocked for 60s
+[2026-08-01 11:15:30] RATE_LIMIT | IP: ::1 | API: images_upload_get | blocked for 60s
+[2026-08-01 11:15:31] RATE_LIMIT | IP: ::1 | API: race_media_get | blocked for 60s
+[2026-08-01 11:17:19] RATE_LIMIT | IP: ::1 | API: images_upload_get | blocked for 60s
+[2026-08-01 11:17:19] RATE_LIMIT | IP: ::1 | API: news_get | blocked for 60s
+[2026-08-01 11:17:19] RATE_LIMIT | IP: ::1 | API: sponsors_get | blocked for 60s
+s
+[2026-08-01 11:17:20] RATE_LIMIT | IP: ::1 | API: race_media_get | blocked for 60s
+[2026-08-01 11:19:23] RATE_LIMIT | IP: ::1 | API: news_get | blocked for 60s
+[2026-08-01 11:19:23] RATE_LIMIT | IP: ::1 | API: banner_get | blocked for 60s
+[2026-08-01 11:19:23] RATE_LIMIT | IP: ::1 | API: top_stories_get | blocked for 60s
+[2026-08-01 11:19:23] RATE_LIMIT | IP: ::1 | API: sponsors_get | blocked for 60s
+[2026-08-01 11:19:23] RATE_LIMIT | IP: ::1 | API: images_upload_get | blocked for 60s

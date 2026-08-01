@@ -1,0 +1,445 @@
+.trackWorkSection {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    padding: 50px 20px 70px;
+    background: #ffffff;
+}
+
+.trackWorkHeader {
+    text-align: center;
+    margin-bottom: 26px;
+}
+
+.trackWorkTitle {
+    color: #08501f;
+    font-size: 38px;
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+.trackWorkDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.dividerLine {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #d4a017);
+}
+
+.trackWorkDivider .dividerLine:last-child,
+.bottomDivider .dividerLine:last-child {
+    background: linear-gradient(90deg, #d4a017, transparent);
+}
+
+.horseIcon {
+    font-size: 22px;
+    color: #08501f;
+}
+
+.horseIconGold {
+    font-size: 20px;
+    color: #d4a017;
+}
+
+/* ================= SEARCH BARS ================= */
+.searchBarsRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.searchBarGroup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dateInputWrap,
+.textInputWrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #d8dee2;
+    border-radius: 10px;
+    padding: 0 14px;
+    height: 46px;
+    background: #ffffff;
+}
+
+.textInputWrap {
+    width: 300px;
+}
+
+.inputIcon {
+    color: #d4a017;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.dateInput,
+.textInput {
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1c1c1c;
+    background: transparent;
+    height: 100%;
+    width: 100%;
+    font-family: inherit;
+}
+
+.textInput::placeholder {
+    color: #9aa0a6;
+    font-weight: 500;
+}
+
+.searchBtnDark {
+    height: 46px;
+    padding: 0 26px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 10px;
+    background: #08501f;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    transition: .25s ease;
+}
+
+.searchBtnDark:hover {
+    background: #063a16;
+}
+
+.searchBtnGold {
+    height: 46px;
+    padding: 0 26px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    border-radius: 10px;
+    background: #d4a017;
+    color: #1c1c1c;
+    font-size: 14px;
+    font-weight: 700;
+    transition: .25s ease;
+}
+
+.searchBtnGold:hover {
+    background: #b98910;
+}
+
+/* ================= BADGE ================= */
+.trackworkBadgeWrap {
+    text-align: center;
+    margin-bottom: 28px;
+    position: relative;
+}
+
+.trackworkBadgeWrap::before,
+.trackworkBadgeWrap::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 25%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #d4a017);
+}
+
+.trackworkBadgeWrap::before {
+    left: 0;
+}
+
+.trackworkBadgeWrap::after {
+    right: 0;
+    background: linear-gradient(90deg, #d4a017, transparent);
+}
+
+.trackworkBadge {
+    display: inline-block;
+    background: #08501f;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    padding: 10px 26px;
+    border-radius: 30px;
+}
+
+/* ================= MAIN CARD ================= */
+.trackWorkCard {
+    background: #ffffff;
+    border: 1px solid #e5e8ea;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, .06);
+    overflow: hidden;
+}
+
+.trackCardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    cursor: pointer;
+    color: #08501f;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+.trackCardHeaderLeft {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ================= SELECT TRACK ROW ================= */
+.selectTrackRow {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 0 22px 18px;
+    border-bottom: 1px solid #eef1f2;
+}
+
+.selectTrackLabel {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a4f54;
+}
+
+.radioOption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1c1c1c;
+    cursor: pointer;
+    position: relative;
+}
+
+.radioOption input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.radioCustom {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #08501f;
+    display: inline-block;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.radioOption input:checked + .radioCustom::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background: #08501f;
+}
+
+/* ================= DISTANCE SECTIONS ================= */
+.distanceSection {
+    border-bottom: 1px solid #eef1f2;
+}
+
+.distanceSection:last-of-type {
+    border-bottom: none;
+}
+
+.distanceHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 22px;
+    background: #f6f8f7;
+    cursor: pointer;
+    color: #08501f;
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: .3px;
+}
+
+.distanceHeaderLeft {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.horseList {
+    list-style: none;
+    margin: 0;
+    padding: 6px 22px;
+}
+
+/* FIX: on desktop the row is name-left / meta-right on ONE line.
+   On mobile the row stacks (name on top, meta below) but the meta
+   group (time + tag) stays together as its own row instead of the
+   tag dropping onto a separate, misaligned line under the name. */
+.horseRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    padding: 10px 0;
+    border-bottom: 1px dashed #eef1f2;
+    font-size: 13.5px;
+    color: #1c1c1c;
+}
+
+.horseRow:last-child {
+    border-bottom: none;
+}
+
+.horseName {
+    font-weight: 700;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.jockeyName {
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.horseMeta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.horseTime {
+    font-weight: 600;
+    color: #1c1c1c;
+    white-space: nowrap;
+}
+
+.horseTag {
+    background: #e6f4ea;
+    color: #08501f;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+/* ================= MOCK RACE CARDS ================= */
+.mockRaceCard {
+    margin: 18px 22px;
+    padding: 16px 18px;
+    background: #f6f8f7;
+    border-radius: 10px;
+    border: 1px solid #eef1f2;
+}
+
+.mockRaceHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #08501f;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.mockRaceIcon {
+    font-size: 13px;
+}
+
+.mockRaceEntries {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #3a3f44;
+}
+
+/* ================= BOTTOM DIVIDER ================= */
+.bottomDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px 22px 30px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 720px) {
+        .trackworkBadgeWrap::before,
+    .trackworkBadgeWrap::after {
+        display: none;
+    }
+    .searchBarsRow {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .searchBarGroup {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .textInputWrap {
+        width: 100%;
+    }
+
+    .searchBtnDark,
+    .searchBtnGold {
+        width: 100%;
+    }
+
+    .selectTrackRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    /* FIX: name takes its own full-width line, and the meta group
+       (time + tag) sits on the next line but stays right-aligned
+       together — the tag no longer drifts under the name alone. */
+    .horseRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .horseName {
+        width: 100%;
+    }
+
+    .horseMeta {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .trackWorkTitle {
+        font-size: 28px;
+    }
+
+    .textInputWrap {
+        width: 100%;
+    }
+}
