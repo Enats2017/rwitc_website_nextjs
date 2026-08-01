@@ -14,10 +14,54 @@ export async function getDeclarations(date) {
             throw new Error(json.message || "Failed to fetch declarations");
         }
 
+        const data = json.data;
+
+        // Archive dates (date > 2022-09-25): API returns raw
+        // Declarations_<date>.html markup as-is. Pass it straight through.
+        if (data?.mode === "html") {
+            return {
+                mode: "html",
+                html: data.html || "",
+                dayNarrative: "",
+                downloadFile: data?.download_file || null,
+                downloadAvailable: data?.download_available || false,
+                races: [],
+                pools: [],
+            };
+        }
+
+        // DB-sourced dates (date <= 2022-09-25): structured JSON.
         return {
-            dayNarrative: json.data?.day_narrative || "",
-            races: json.data?.races || [],
-            pools: json.data?.pools || [],
+            mode: "json",
+            html: null,
+            dayNarrative: data?.day_narrative || "",
+            downloadFile: data?.download_file || null,
+            downloadAvailable: data?.download_available || false,
+            races: (data?.races || []).map((race) => ({
+                ...race,
+                horses: (race.horses || []).map((horse) => ({
+                    card_no: horse.card_no,
+                    weight: horse.weight,
+                    rating: horse.rating,
+                    horse_weight: horse.horse_weight,
+                    shoe: horse.shoe,
+                    draw: horse.draw_no,
+                    horse: {
+                        name: horse.name,
+                        sire: horse.sire,
+                        dam: horse.dam,
+                        dam_nationality: horse.dam_nation,
+                    },
+                    trainer: {
+                        name: horse.trainer,
+                    },
+                    jockey: {
+                        name: horse.jockey,
+                        allowance: horse.jockey_allowance,
+                    },
+                })),
+            })),
+            pools: data?.pools || [],
         };
 
     } catch (error) {

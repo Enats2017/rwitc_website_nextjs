@@ -1,257 +1,217 @@
-/* ================= ACCEPTANCE PAGE ================= */
+/* ================= ACCEPTANCE PAGE — PLAIN DOCUMENT STYLE ================= */
 
-.acceptancePage {
+/* ---- ARCHIVE HTML (raw Acceptance_<date>.html passthrough, iframe-isolated) ---- */
+.acceptancePage .docArchiveHtml {
     width: 100%;
-    background: linear-gradient(180deg, #f7fbf7 0%, #eef6ef 100%);
-    padding-bottom: 60px;
+    border: none;
+    display: block;
+    min-height: 200px;
 }
 
-/* ---- HERO ---- */
-.acceptanceHero {
+.acceptancePage .docPage {
     width: 100%;
-    text-align: center;
-    padding: 10px 20px 40px;
-    background: linear-gradient(160deg, #0d7a30 0%, #0b6d2a 55%, #094f20 100%);
-    color: #ffffff;
+    background: #ffffff;
+    padding: 48px 16px 60px;
 }
 
-.acceptanceEyebrow {
+/* ---- GREEN PILL BADGE ---- */
+.acceptancePage .docBadgeWrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.acceptancePage .docBadge {
     display: inline-block;
-    padding: 8px 20px;
+    padding: 12px 32px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, .14);
-    border: 1px solid rgba(255, 255, 255, .25);
+    background: #16a34a;
+    margin-top: 20px;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* ---- CONTAINER (bordered card) ---- */
+.acceptancePage .docContainer {
+    position: relative;
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 28px 32px 40px;
+    border: 1px solid #e2e2e2;
+    border-radius: 4px;
+}
+
+/* ---- DOWNLOAD BUTTON (kept for future use) ---- */
+.acceptancePage .docDownloadBtn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: #c9c2a8;
+    color: #1a1a1a;
+    padding: 6px 14px;
+    border-radius: 4px;
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    text-decoration: none;
 }
 
-.acceptanceHero h1 {
-    margin-top: 18px;
-    font-size: 44px;
+.acceptancePage .docDownloadBtn:hover {
+    background: #bdb494;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* ---- HEADER ---- */
+.acceptancePage .docHeader {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.acceptancePage .docClub {
+    font-size: 15px;
     font-weight: 800;
-    letter-spacing: .3px;
+    color: #111;
+    margin: 0 0 10px;
 }
 
-.acceptanceClub {
-    margin-top: 18px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: .6px;
-    color: rgba(255, 255, 255, .75);
-    text-transform: uppercase;
-}
-
-.acceptanceHint {
-    margin-top: 12px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, .7);
-    font-weight: 500;
-}
-
-.acceptanceNarrative {
-    margin-top: 6px;
+.acceptancePage .docMeeting {
     font-size: 14px;
-    color: rgba(255, 255, 255, .82);
-    font-weight: 500;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 14px;
     white-space: pre-line;
 }
 
-/* ---- CONTAINER ---- */
-.acceptanceContainer {
-    width: 100%;
-    max-width: 1200px;
-    margin: -30px auto 0;
-    padding: 0 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
+.acceptancePage .docWatermark {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #c9c9c9;
+    margin: 0 0 6px;
 }
 
-/* ---- STATE ---- */
-.stateBox {
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 60px 20px;
+.acceptancePage .docHint {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+/* ---- STATE (loading / error / empty) ---- */
+.acceptancePage .docStateBox {
     text-align: center;
+    padding: 60px 20px;
     color: #555;
     font-size: 15px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
 }
 
-.stateError {
+.acceptancePage .docStateError {
     color: #b3261e;
 }
 
-.loader {
+.acceptancePage .docLoader {
     width: 34px;
     height: 34px;
     margin: 0 auto 16px;
     border-radius: 50%;
     border: 3px solid rgba(11, 109, 42, .15);
     border-top-color: #0b6d2a;
-    animation: spin .8s linear infinite;
+    animation: docSpinAcc .8s linear infinite;
 }
 
-@keyframes spin {
+@keyframes docSpinAcc {
     to { transform: rotate(360deg); }
 }
 
-/* ---- RACE BLOCK CARD ---- */
-.raceBlock {
-    background: rgba(255, 255, 255, .85);
-    backdrop-filter: blur(14px) saturate(160%);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, .6);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .08);
-    overflow: hidden;
-    transition: box-shadow .35s ease, transform .35s ease;
+/* ---- RACE BLOCK ---- */
+.acceptancePage .docRaceBlock {
+    margin-bottom: 28px;
 }
 
-.raceBlock:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 22px 55px rgba(0, 0, 0, .12);
-}
-
-/* ---- RACE HEADER ---- */
-.raceBlockHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 16px;
-    padding: 24px 28px;
-    background: linear-gradient(135deg, #16a34a, #0b6d2a);
+.acceptancePage .docRaceBar {
+    background: #16a34a;
     color: #ffffff;
+    padding: 14px 20px;
+    border-radius: 4px;
+    margin-bottom: 14px;
 }
 
-.raceBlockHeaderLeft {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-}
-
-.raceIndex {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, .16);
-    border: 1px solid rgba(255, 255, 255, .25);
+.acceptancePage .docRaceName {
+    font-size: 15px;
     font-weight: 800;
-    font-size: 14px;
+    margin: 0 0 4px;
 }
 
-.raceBlockHeader h2 {
-    font-size: 21px;
-    font-weight: 700;
-    line-height: 1.3;
-}
-
-.raceNarrative {
-    margin-top: 4px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, .82);
-}
-
-.raceBlockHeaderRight {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: flex-start;
-}
-
-.raceTag {
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, .16);
-    border: 1px solid rgba(255, 255, 255, .3);
-    font-size: 12px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.raceTagAccent {
-    background: #ffffff;
-    color: #0b6d2a;
-}
-
-.raceTagVoid {
-    background: #b3261e;
-    border-color: #b3261e;
-    color: #ffffff;
-}
-
-/* ---- WEIGHT NOTES ---- */
-.weightNotes {
-    padding: 12px 28px;
-    background: #fff7e6;
-    border-bottom: 1px solid rgba(0, 0, 0, .05);
-}
-
-.weightNotes p {
-    color: #8a5a00;
+.acceptancePage .docRaceMeta {
     font-size: 13px;
     font-weight: 600;
-    margin: 2px 0;
+    margin: 0;
+}
+
+.acceptancePage .docRaceNarration {
+    font-size: 12.5px;
+    font-weight: 500;
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, .9);
+}
+
+.acceptancePage .docForeignTag {
+    font-weight: 800;
+}
+
+.acceptancePage .docVoidTag {
+    background: #b3261e;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.acceptancePage .docWeightNotes p {
+    font-size: 13px;
+    font-weight: 700;
+    color: #8a5a00;
+    margin: 0 0 4px;
 }
 
 /* ---- TABLE ---- */
-.tableWrap {
+.acceptancePage .docTableWrap {
     width: 100%;
     overflow-x: auto;
 }
 
-.horsesTable {
+.acceptancePage .docTable {
     width: 100%;
     border-collapse: collapse;
     min-width: 720px;
 }
 
-.horsesTable thead th {
+.acceptancePage .docTable thead th {
     text-align: left;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .4px;
-    text-transform: uppercase;
-    color: #0b6d2a;
-    padding: 14px 18px;
-    background: #f2f8f3;
-    border-bottom: 1px solid rgba(11, 109, 42, .12);
+    font-size: 13px;
+    font-weight: 800;
+    color: #111;
+    padding: 10px 14px;
+    border: 1px solid #d9d9d9;
+    background: #f7f7f7;
 }
 
-.horsesTable tbody td {
-    padding: 13px 18px;
-    font-size: 14px;
+.acceptancePage .docTable tbody td {
+    padding: 10px 14px;
+    font-size: 13.5px;
     color: #222;
-    border-bottom: 1px solid rgba(0, 0, 0, .05);
+    border: 1px solid #e2e2e2;
     vertical-align: top;
 }
 
-.horsesTable tbody tr:hover {
-    background: rgba(11, 109, 42, .04);
-}
-
-.orderCell {
-    font-weight: 700;
-    color: #0b6d2a;
-    width: 50px;
-}
-
-.horseNameCell {
+.acceptancePage .docHorseName {
     font-weight: 700;
     color: #111;
 }
 
-.breedingCell {
+.acceptancePage .docBreeding {
     display: block;
     font-weight: 400;
     color: #777;
@@ -259,98 +219,50 @@
     margin-top: 2px;
 }
 
-.notesCell {
-    color: #777;
-    font-size: 12.5px;
-}
-
-/* ---- OPERATION / TRACK NOTES ---- */
-.operationNotes {
-    padding: 14px 28px 20px;
-    font-size: 13px;
-    color: #555;
-    background: #f9f9f9;
-    border-top: 1px dashed rgba(0, 0, 0, .08);
-}
-
-.operationNotes strong {
-    color: #0b6d2a;
-}
-
 /* ---- POOLS ---- */
-.poolsBlock {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 26px 28px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, .06);
+.acceptancePage .docPoolsBlock {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed #d9d9d9;
 }
 
-.poolsBlock h3 {
-    font-size: 16px;
-    font-weight: 800;
-    color: #0b6d2a;
-    margin-bottom: 16px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-}
-
-.poolsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 12px;
-}
-
-.poolCard {
-    background: #f2f8f3;
-    border-radius: 12px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.poolName {
-    font-size: 11px;
-    font-weight: 700;
-    color: #0b6d2a;
-    letter-spacing: .3px;
-}
-
-.poolRaces {
+.acceptancePage .docPoolsTitle {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 8px;
+}
+
+.acceptancePage .docPoolLine {
+    font-size: 13px;
     color: #222;
+    margin: 2px 0;
 }
 
 /* ---- RESPONSIVE ---- */
 @media (max-width: 768px) {
 
-    .acceptanceHero {
-        padding: 44px 16px 60px;
+    .acceptancePage .docBadge {
+        font-size: 16px;
+        padding: 10px 24px;
     }
 
-    .acceptanceHero h1 {
-        font-size: 32px;
+    .acceptancePage .docContainer {
+        padding: 60px 16px 28px;
     }
 
-    .acceptanceContainer {
-        margin-top: -40px;
-        padding: 0 16px;
-        gap: 20px;
+    .acceptancePage .docDownloadBtn {
+        top: 14px;
+        right: 14px;
     }
 
-    .raceBlockHeader {
-        padding: 20px;
-        flex-direction: column;
+    .acceptancePage .docWatermark {
+        font-size: 24px;
     }
 
-    .raceBlockHeader h2 {
-        font-size: 18px;
-    }
-
-    .horsesTable thead th,
-    .horsesTable tbody td {
-        padding: 11px 14px;
-        font-size: 13px;
+    .acceptancePage .docTable thead th,
+    .acceptancePage .docTable tbody td {
+        padding: 8px 10px;
+        font-size: 12.5px;
     }
 }
