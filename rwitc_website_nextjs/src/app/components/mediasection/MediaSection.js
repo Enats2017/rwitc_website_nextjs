@@ -9,6 +9,15 @@ import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { getMedia, getRaceMedia } from "../../../services/mediaService";
+
+// Converts any date/datetime value coming from the API ("2026-07-20",
+// "2026-07-20 00:00:00", or an ISO string) into a clean "YYYY-MM-DD"
+// string, so the URL never ends up with a raw space/time part in it.
+function toDateOnly(dateStr) {
+    if (!dateStr) return "";
+    return String(dateStr).split(" ")[0].split("T")[0];
+}
+
 export default function MediaSection() {
 
     const videoRef = useRef(null);
@@ -267,7 +276,7 @@ export default function MediaSection() {
                                                 {
                                                     item[row.key].available ? (
                                                         <Link
-                                                            href={`/race_details?type=${row.key}&date=${item.racedate}`}
+                                                            href={`/race_details?type=${row.key}&date=${toDateOnly(item.racedate)}`}
                                                             className="statusDot active"
                                                             prefetch={false}
                                                         />
@@ -310,7 +319,7 @@ export default function MediaSection() {
                                                 {
                                                     item[row.key].available ? (
                                                         <Link
-                                                            href={`/race_details?type=${row.key}&date=${item.racedate}`}
+                                                            href={`/race_details?type=${row.key}&date=${toDateOnly(item.racedate)}`}
                                                             className="statusDot active"
                                                             prefetch={false}
                                                         />
@@ -345,7 +354,7 @@ export default function MediaSection() {
                                             <td key={colIndex}>
 
                                                 <Link
-                                                    href={`/race_details?type=trackWork&date=${item.trackwork_date}`}
+                                                    href={`/race_details?type=trackWork&id=${item.id}`}
                                                     className="trackWorkLink"
                                                     prefetch={false}
                                                 >

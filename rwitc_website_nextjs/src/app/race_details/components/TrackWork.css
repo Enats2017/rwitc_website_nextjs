@@ -78,6 +78,12 @@
     width: 300px;
 }
 
+/* Wrapper needs relative positioning so the autocomplete list can
+   anchor itself directly below the input. */
+.horseInputWrap {
+    position: relative;
+}
+
 .inputIcon {
     color: #d4a017;
     font-size: 14px;
@@ -136,6 +142,78 @@
 
 .searchBtnGold:hover {
     background: #b98910;
+}
+
+/* ================= HORSENAME AUTOCOMPLETE DROPDOWN ================= */
+.autocompleteList {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: #ffffff;
+    border: 1px solid #d8dee2;
+    border-radius: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+    max-height: 220px;
+    overflow-y: auto;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, .08);
+}
+
+.autocompleteItem {
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1c1c1c;
+    cursor: pointer;
+}
+
+.autocompleteItem:hover {
+    background: #d4a017;
+    color: #ffffff;
+}
+
+/* ================= HORSE SEARCH MATCHES ================= */
+.horseMatchesWrap {
+    max-width: 720px;
+    margin: 0 auto 22px;
+    text-align: center;
+}
+
+.horseMatchesMsg {
+    font-size: 13.5px;
+    color: #8a1f1f;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.horseMatchesList {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+}
+
+.horseMatchBtn {
+    border: 1px solid #08501f;
+    background: #ffffff;
+    color: #08501f;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.horseMatchBtn:hover {
+    background: #08501f;
+    color: #ffffff;
 }
 
 /* ================= BADGE ================= */
@@ -204,173 +282,76 @@
     gap: 10px;
 }
 
-/* ================= SELECT TRACK ROW ================= */
-.selectTrackRow {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    flex-wrap: wrap;
-    padding: 0 22px 18px;
-    border-bottom: 1px solid #eef1f2;
-}
-
-.selectTrackLabel {
-    font-size: 13px;
-    font-weight: 700;
-    color: #4a4f54;
-}
-
-.radioOption {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13.5px;
+/* ================= STATE MESSAGES ================= */
+.trackworkStateMsg {
+    padding: 30px 22px;
+    text-align: center;
+    font-size: 14px;
     font-weight: 600;
-    color: #1c1c1c;
-    cursor: pointer;
-    position: relative;
-}
-
-.radioOption input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.radioCustom {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid #08501f;
-    display: inline-block;
-    position: relative;
-    flex-shrink: 0;
-}
-
-.radioOption input:checked + .radioCustom::after {
-    content: "";
-    position: absolute;
-    inset: 2px;
-    border-radius: 50%;
-    background: #08501f;
-}
-
-/* ================= DISTANCE SECTIONS ================= */
-.distanceSection {
-    border-bottom: 1px solid #eef1f2;
-}
-
-.distanceSection:last-of-type {
-    border-bottom: none;
-}
-
-.distanceHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 22px;
-    background: #f6f8f7;
-    cursor: pointer;
-    color: #08501f;
-    font-size: 13.5px;
-    font-weight: 700;
-    letter-spacing: .3px;
-}
-
-.distanceHeaderLeft {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.horseList {
-    list-style: none;
-    margin: 0;
-    padding: 6px 22px;
-}
-
-/* FIX: on desktop the row is name-left / meta-right on ONE line.
-   On mobile the row stacks (name on top, meta below) but the meta
-   group (time + tag) stays together as its own row instead of the
-   tag dropping onto a separate, misaligned line under the name. */
-.horseRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px 16px;
-    padding: 10px 0;
-    border-bottom: 1px dashed #eef1f2;
-    font-size: 13.5px;
-    color: #1c1c1c;
-}
-
-.horseRow:last-child {
-    border-bottom: none;
-}
-
-.horseName {
-    font-weight: 700;
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.jockeyName {
-    font-weight: 500;
     color: #6b7280;
 }
 
-.horseMeta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
+.trackworkStateMsgError {
+    color: #b3261e;
 }
 
-.horseTime {
-    font-weight: 600;
-    color: #1c1c1c;
-    white-space: nowrap;
-}
-
-.horseTag {
-    background: #e6f4ea;
-    color: #08501f;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 6px;
-    white-space: nowrap;
-}
-
-/* ================= MOCK RACE CARDS ================= */
-.mockRaceCard {
-    margin: 18px 22px;
-    padding: 16px 18px;
-    background: #f6f8f7;
-    border-radius: 10px;
-    border: 1px solid #eef1f2;
-}
-
-.mockRaceHeader {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #08501f;
+/* ================= RAW DB HTML CONTENT ================= */
+.trackworkContent {
+    padding: 18px 22px 6px;
     font-size: 13.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-}
-
-.mockRaceIcon {
-    font-size: 13px;
-}
-
-.mockRaceEntries {
-    font-size: 13px;
     line-height: 1.7;
-    color: #3a3f44;
+    color: #1c1c1c;
+    overflow-x: auto;
+}
+
+.trackworkContent table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+
+.trackworkContent th,
+.trackworkContent td {
+    padding: 8px 10px;
+    border-bottom: 1px dashed #eef1f2;
+    text-align: left;
+    vertical-align: top;
+}
+
+.trackworkContent th {
+    color: #08501f;
+    font-weight: 700;
+    background: #f6f8f7;
+}
+
+.trackworkContent h1,
+.trackworkContent h2,
+.trackworkContent h3,
+.trackworkContent h4 {
+    color: #08501f;
+    margin: 14px 0 8px;
+}
+
+.trackworkContent p {
+    margin: 0 0 10px;
+}
+
+.trackworkContent ul,
+.trackworkContent ol {
+    margin: 0 0 12px;
+    padding-left: 20px;
+}
+
+.trackworkContent a {
+    color: #08501f;
+    text-decoration: underline;
+}
+
+.trackworkContent .highlightHorse {
+    background: #ffe08a;
+    color: #1c1c1c;
+    padding: 0 2px;
+    border-radius: 2px;
 }
 
 /* ================= BOTTOM DIVIDER ================= */
@@ -382,12 +363,24 @@
     padding: 24px 22px 30px;
 }
 
+.horseMatchesHeading {
+    font-size: 14px;
+    font-weight: 700;
+    color: #08501f;
+    text-align: center;
+    margin: 0 0 12px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
 /* ================= RESPONSIVE ================= */
 @media (max-width: 720px) {
-        .trackworkBadgeWrap::before,
+
+    .trackworkBadgeWrap::before,
     .trackworkBadgeWrap::after {
         display: none;
     }
+
     .searchBarsRow {
         flex-direction: column;
         align-items: stretch;
@@ -408,29 +401,8 @@
         width: 100%;
     }
 
-    .selectTrackRow {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    /* FIX: name takes its own full-width line, and the meta group
-       (time + tag) sits on the next line but stays right-aligned
-       together — the tag no longer drifts under the name alone. */
-    .horseRow {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-    }
-
-    .horseName {
-        width: 100%;
-    }
-
-    .horseMeta {
-        width: 100%;
-        justify-content: flex-end;
-        flex-wrap: wrap;
+    .trackworkContent {
+        font-size: 13px;
     }
 }
 

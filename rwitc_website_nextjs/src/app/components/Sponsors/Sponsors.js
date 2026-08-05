@@ -52,7 +52,7 @@ export default function Sponsors() {
 
                                     <img
 
-                                        src={`${UPLOAD_URL}/${item.source}`}
+                                        src={`${UPLOAD_URL}/sponsors/${item.source}`}
 
                                         alt={item.title}
 
@@ -77,7 +77,7 @@ export default function Sponsors() {
 
                                     <img
 
-                                        src={`${UPLOAD_URL}/${item.source}`}
+                                        src={`${UPLOAD_URL}/sponsors/${item.source}`}
 
                                         alt={item.title}
 
