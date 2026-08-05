@@ -1,10 +1,36 @@
+/* HERO WRAPPER (TRANSPARENT GREEN BG) */
+.heroWrapper {
+    width: 100%;
+    padding: 0 0 175px 0;
+    background: rgba(8, 80, 31, 0.891);
+    clip-path: ellipse(95% 100% at 50% 0%);
+}
+
+@media(max-width:992px) {
+    .heroWrapper {
+        padding: 0 0 150px 0;
+    }
+}
+
+@media(max-width:768px) {
+    .heroWrapper {
+        padding: 0 0 120px 0;
+    }
+}
+
+@media(max-width:500px) {
+    .heroWrapper {
+        padding: 0 0 75px 0;
+    }
+}
+
 /* HERO SECTION */
    .hero {
        width: 100%;
        height: 100vh;
        overflow: hidden;
        position: relative;
-       background: #000;
+       /* clip-path: ellipse(90% 100% at 50% 0%); */
    }
 
    /* SWIPER */

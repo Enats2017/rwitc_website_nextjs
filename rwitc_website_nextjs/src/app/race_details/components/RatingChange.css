@@ -1,0 +1,109 @@
+/* ================= RATING CHANGE PAGE — PLAIN DOCUMENT STYLE ================= */
+
+/* ---- ARCHIVE HTML (raw Rating_change_<date>.html passthrough, iframe-isolated) ---- */
+.ratingChangePage .docArchiveHtml {
+    width: 100%;
+    border: none;
+    display: block;
+    min-height: 200px;
+}
+
+.ratingChangePage .docPage {
+    width: 100%;
+    background: #ffffff;
+    padding: 48px 16px 60px;
+}
+
+/* ---- GREEN PILL BADGE ---- */
+.ratingChangePage .docBadgeWrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.ratingChangePage .docBadge {
+    display: inline-block;
+    padding: 12px 32px;
+    border-radius: 999px;
+    background: #16a34a;
+    margin-top: 20px;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* ---- CONTAINER (bordered card) ---- */
+.ratingChangePage .docContainer {
+    position: relative;
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 20px 24px 32px;
+    border: 1px solid #e2e2e2;
+    border-radius: 4px;
+}
+
+/* ---- DOWNLOAD BUTTON (kept for future use) ---- */
+.ratingChangePage .docDownloadBtn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: #c9c2a8;
+    color: #1a1a1a;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.ratingChangePage .docDownloadBtn:hover {
+    background: #bdb494;
+    text-decoration: underline;
+}
+
+/* ---- STATE (loading / error / empty) ---- */
+.ratingChangePage .docStateBox {
+    text-align: center;
+    padding: 60px 20px;
+    color: #555;
+    font-size: 15px;
+}
+
+.ratingChangePage .docStateError {
+    color: #b3261e;
+}
+
+.ratingChangePage .docLoader {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 3px solid rgba(11, 109, 42, .15);
+    border-top-color: #0b6d2a;
+    animation: docSpinRating .8s linear infinite;
+}
+
+@keyframes docSpinRating {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+
+    .ratingChangePage .docBadge {
+        font-size: 16px;
+        padding: 10px 24px;
+    }
+
+    .ratingChangePage .docContainer {
+        padding: 60px 16px 28px;
+    }
+
+    .ratingChangePage .docDownloadBtn {
+        top: 14px;
+        right: 14px;
+    }
+}

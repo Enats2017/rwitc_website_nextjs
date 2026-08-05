@@ -2,6 +2,7 @@
 
 import { UPLOAD_URL } from "../../../services/api";
 import "./FeatureSection.css";
+import Link from "next/link";
 
 import {
     FaTrophy,
@@ -27,25 +28,37 @@ export default function FeatureSection() {
         { title: "Video Archives", icon: <FaVideo />, image: "body_img4.jpeg" },
         { title: "Money Leaders", icon: <FaBriefcase />, image: "body_img5.jpeg" },
         { title: "Racing Fixtures", icon: <FaCalendarAlt />, image: "body_img6.jpeg" },
-        { title: "Entries For Sweepstake Races", icon: <FaFlagCheckered />, image: "body_img7.jpeg", wide: true },
+        { title: "Entries For Sweepstake Races", icon: <FaFlagCheckered />, image: "body_img7.jpeg", wide: true, link: "/race_details?type=sweepstakes" },
         { title: "Indian Stud Book", icon: <FaBook />, image: "body_img2.jpeg", wide: true },
     ];
 
     return (
         <section className="featureSection">
             <div className="featureGrid">
-                {features.map((item, index) => (
-                    <div
-                        key={index}
-                        className={`featureCard ${item.wide ? "wide" : ""}`}
-                        style={{ backgroundImage: `url(${UPLOAD_URL}/${item.image})` }}
-                    >
-                        <div className="overlay">
-                            <div className="featureIcon">{item.icon}</div>
-                            <h3>{item.title}</h3>
-                        </div>
-                    </div>
-                ))}
+                {features.map((item, index) => {
+
+    const cardContent = (
+        <div
+            className={`featureCard ${item.wide ? "wide" : ""}`}
+            style={{ backgroundImage: `url(${UPLOAD_URL}/${item.image})` }}
+        >
+            <div className="overlay">
+                <div className="featureIcon">{item.icon}</div>
+                <h3>{item.title}</h3>
+            </div>
+        </div>
+    );
+
+    if (item.link) {
+        return (
+            <Link href={item.link} key={index} style={{ display: "contents" }}>
+                {cardContent}
+            </Link>
+        );
+    }
+
+    return <div key={index}>{cardContent}</div>;
+})}
             </div>
         </section>
     );

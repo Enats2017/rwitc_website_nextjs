@@ -351,10 +351,11 @@ export default function Acceptance() {
                     <div className="docPoolsBlock">
                         <p className="docPoolsTitle">Pools</p>
                         {pools.map((pool, pIdx) => (
-                            <p className="docPoolLine" key={pIdx}>
-                                {pool.name} : {pool.races}
-                            </p>
-                        ))}
+    <div className="docPoolRow" key={pIdx}>
+        <span className="docPoolName">{pool.pool_name}</span>
+        <span className="docPoolValue">{pool.members}</span>
+    </div>
+))}
                     </div>
                 )}
 

@@ -1,0 +1,117 @@
+.raceDayReportPage .docPage {
+    width: 100%;
+    background: #ffffff;
+    padding: 48px 16px 60px;
+}
+
+.raceDayReportPage .docBadgeWrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.raceDayReportPage .docBadge {
+    display: inline-block;
+    padding: 12px 32px;
+    border-radius: 999px;
+    background: #16a34a;
+    margin-top: 20px;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.raceDayReportPage .docContainer {
+    position: relative;
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 28px 32px 40px;
+    border: none;
+}
+
+.raceDayReportPage .docDownloadBtn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: transparent;
+    color: #333333;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: underline;
+    border: none;
+    cursor: pointer;
+}
+
+.raceDayReportPage .docDownloadBtn:hover {
+    color: #16a34a;
+}
+
+.raceDayReportPage .docHeader {
+    display: none;
+}
+
+.raceDayReportPage .docStateBox {
+    text-align: center;
+    padding: 60px 20px;
+    color: #555;
+    font-size: 15px;
+}
+
+.raceDayReportPage .docStateError {
+    color: #b3261e;
+}
+
+.raceDayReportPage .docLoader {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 3px solid rgba(11, 109, 42, .15);
+    border-top-color: #0b6d2a;
+    animation: docSpinRDR .8s linear infinite;
+}
+
+@keyframes docSpinRDR {
+    to { transform: rotate(360deg); }
+}
+
+.raceDayReportPage .docArchiveHtml {
+    width: 100%;
+    border: none;
+    display: block;
+    min-height: 200px;
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+
+    .raceDayReportPage .docBadge {
+        font-size: 16px;
+        padding: 10px 24px;
+    }
+
+    .raceDayReportPage .docContainer {
+        padding: 60px 16px 28px;
+    }
+
+    .raceDayReportPage .docDownloadBtn {
+        top: 14px;
+        right: 14px;
+    }
+}
+
+.raceDayReportPage .docBackLink {
+    display: inline-block;
+    color: #333333;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-bottom: 12px;
+}
+
+.raceDayReportPage .docBackLink:hover {
+    color: #16a34a;
+}

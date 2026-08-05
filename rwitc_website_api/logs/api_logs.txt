@@ -15,3 +15,8 @@ s
 [2026-08-01 11:19:23] RATE_LIMIT | IP: ::1 | API: top_stories_get | blocked for 60s
 [2026-08-01 11:19:23] RATE_LIMIT | IP: ::1 | API: sponsors_get | blocked for 60s
 [2026-08-01 11:19:23] RATE_LIMIT | IP: ::1 | API: images_upload_get | blocked for 60s
+[2026-08-03 14:50:40] RATINGS_CHANGE_API_WARNING | Missing file on disk: /var/www/html/rwitc_website//RAT29036_2026-03-29.HTM
+[2026-08-04 06:44:53] RATINGS_CHANGE_API_WARNING | Missing file on disk: /var/www/html/rwitc_website//RAT17076_2026-07-17.HTM
+[2026-08-04 06:45:34] RATINGS_CHANGE_API_WARNING | Missing file on disk: /var/www/html/rwitc_website//RAT30036_2026-03-30.HTM
+[2026-08-04 06:54:25] RATINGS_CHANGE_API_WARNING | Missing file on disk: /var/www/html/rwitc_website//RAT29036_2026-03-29.HTM
+[2026-08-04 06:56:34] RATINGS_CHANGE_API_WARNING | Missing file on disk: /var/www/html/rwitc_website//RAT30036_2026-03-30.HTM

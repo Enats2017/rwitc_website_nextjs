@@ -12,7 +12,7 @@
 // ============================================================
 
 // Set this to false when deploying to the live server
-define("IS_LOCAL", true);
+define("IS_LOCAL", true);   
 
 if (IS_LOCAL) {
 
@@ -25,6 +25,13 @@ if (IS_LOCAL) {
 
     // Filesystem path PHP uses to check if a file exists
     define("RUN_RACES_LOCAL_PATH", "C:/xampp/htdocs/run_races");
+
+    // Raceday Report .HTM files of local folder path
+    define("RACEDAY_REPORT_DIR", "C:/xampp/htdocs/racedayreports/");
+
+    // Raceday Report .HTM files of public URL (for download link)
+    define("RACEDAY_REPORT_PUBLIC_BASE", "http://localhost/racedayreports/");
+
 
 } else {
 

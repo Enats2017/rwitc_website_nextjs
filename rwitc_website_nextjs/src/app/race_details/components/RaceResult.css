@@ -1,0 +1,224 @@
+/* ================= RACE RESULT PAGE — PLAIN DOCUMENT STYLE ================= */
+
+/* ---- ARCHIVE HTML (raw Race_results_<date>.html passthrough, iframe-isolated) ---- */
+.raceResultPage .docArchiveHtml {
+    width: 100%;
+    border: none;
+    display: block;
+    min-height: 200px;
+    overflow: hidden;
+}
+
+.raceResultPage .docPage {
+    width: 100%;
+    background: #ffffff;
+    padding: 48px 16px 60px;
+}
+
+/* ---- GREEN PILL BADGE ---- */
+.raceResultPage .docBadgeWrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.raceResultPage .docBadge {
+    display: inline-block;
+    padding: 12px 32px;
+    border-radius: 999px;
+    background: #16a34a;
+    margin-top: 20px;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* ---- CONTAINER (bordered card) ---- */
+.raceResultPage .docContainer {
+    position: relative;
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 28px 32px 40px;
+    border: 1px solid #e2e2e2;
+    border-radius: 4px;
+}
+
+/* ---- DOWNLOAD BUTTON ---- */
+.raceResultPage .docDownloadBtn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: #c9c2a8;
+    color: #1a1a1a;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.raceResultPage .docDownloadBtn:hover {
+    background: #bdb494;
+    text-decoration: underline;
+}
+
+/* ---- HEADER ---- */
+.raceResultPage .docHeader {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.raceResultPage .docClub {
+    font-size: 15px;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 10px;
+}
+
+.raceResultPage .docWatermark {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #c9c9c9;
+    margin: 0 0 6px;
+}
+
+.raceResultPage .docHint {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+/* ---- STATE (loading / error / empty) ---- */
+.raceResultPage .docStateBox {
+    text-align: center;
+    padding: 60px 20px;
+    color: #555;
+    font-size: 15px;
+}
+
+.raceResultPage .docStateError {
+    color: #b3261e;
+}
+
+.raceResultPage .docLoader {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 3px solid rgba(11, 109, 42, .15);
+    border-top-color: #0b6d2a;
+    animation: docSpinResult .8s linear infinite;
+}
+
+@keyframes docSpinResult {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- RACE BLOCK ---- */
+.raceResultPage .docRaceBlock {
+    margin-bottom: 28px;
+}
+
+.raceResultPage .docRaceBar {
+    background: #16a34a;
+    color: #ffffff;
+    padding: 14px 20px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+}
+
+.raceResultPage .docRaceName {
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0 0 4px;
+}
+
+.raceResultPage .docRaceMeta {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.raceResultPage .docVoidTag {
+    background: #b3261e;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* ---- TABLE ---- */
+.raceResultPage .docTableWrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.raceResultPage .docTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+.raceResultPage .docTable thead th {
+    text-align: left;
+    font-size: 13px;
+    font-weight: 800;
+    color: #111;
+    padding: 10px 14px;
+    border: 1px solid #d9d9d9;
+    background: #f7f7f7;
+}
+
+.raceResultPage .docTable tbody td {
+    padding: 10px 14px;
+    font-size: 13.5px;
+    color: #222;
+    border: 1px solid #e2e2e2;
+    vertical-align: top;
+}
+
+.raceResultPage .docHorseName {
+    font-weight: 700;
+    color: #111;
+}
+
+.raceResultPage .docBreeding {
+    display: block;
+    font-weight: 400;
+    color: #777;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+
+    .raceResultPage .docBadge {
+        font-size: 16px;
+        padding: 10px 24px;
+    }
+
+    .raceResultPage .docContainer {
+        padding: 60px 16px 28px;
+    }
+
+    .raceResultPage .docDownloadBtn {
+        top: 14px;
+        right: 14px;
+    }
+
+    .raceResultPage .docWatermark {
+        font-size: 24px;
+    }
+
+    .raceResultPage .docTable thead th,
+    .raceResultPage .docTable tbody td {
+        padding: 8px 10px;
+        font-size: 12.5px;
+    }
+}

@@ -21,6 +21,7 @@ export default function Hero() {
     loadBanner();
   }, []);
   return (
+    <div className="heroWrapper">
     <section className="hero">
       <Swiper
         key={images.length}
@@ -86,14 +87,7 @@ export default function Hero() {
         </svg>
       </button>
       <div className="heroPagination"></div>
-      <div className="heroCurve">
-        <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-          <path
-             d="M0,40 C360,120 1080,120 1440,40 L1440,120 L0,120 Z"
-            fill="#ffffff"
-          />
-        </svg>
-      </div>
     </section>
+    </div>
   );
 }

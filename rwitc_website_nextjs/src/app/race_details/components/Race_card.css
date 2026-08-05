@@ -1,0 +1,324 @@
+/* ================= RACE CARD PAGE — PLAIN DOCUMENT STYLE ================= */
+
+.racecardPage .docPage {
+    width: 100%;
+    background: #ffffff;
+    padding: 48px 16px 60px;
+}
+
+.racecardPage .docBadgeWrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.racecardPage .docBadge {
+    display: inline-block;
+    padding: 12px 32px;
+    border-radius: 999px;
+    margin-top: 20px;
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.racecardPage .docContainer {
+    position: relative;
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 28px 32px 40px;
+    border: 1px solid #e2e2e2;
+    border-radius: 4px;
+}
+
+.racecardPage .docDownloadBtn {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: #c9c2a8;
+    color: #1a1a1a;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.racecardPage .docDownloadBtn:hover {
+    background: #bdb494;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.racecardPage .docHeader {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.racecardPage .docClub {
+    font-size: 15px;
+    font-weight: 800;
+    color: #111;
+    margin: 0 0 10px;
+}
+
+.racecardPage .docMeeting {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 8px;
+}
+
+.racecardPage .docWatermark {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    color: #c9c9c9;
+    margin: 6px 0;
+}
+
+.racecardPage .docHint {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.racecardPage .docStateBox {
+    text-align: center;
+    padding: 60px 20px;
+    color: #555;
+    font-size: 15px;
+}
+
+.racecardPage .docStateError {
+    color: #b3261e;
+}
+
+.racecardPage .docLoader {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 3px solid rgba(11, 109, 42, .15);
+    border-top-color: #0b6d2a;
+    animation: docSpinRC .8s linear infinite;
+}
+
+@keyframes docSpinRC {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- ARCHIVE HTML ---- */
+.racecardPage .docArchiveHtml {
+    width: 100%;
+    border: none;
+    display: block;
+    min-height: 200px;
+    overflow: hidden;
+}
+
+/* ---- RACE BLOCK ---- */
+.racecardPage .docRaceBlock {
+    margin-bottom: 28px;
+}
+
+.racecardPage .docRaceBar {
+    background: #16a34a;
+    color: #ffffff;
+    padding: 14px 20px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+}
+
+.racecardPage .docRaceName {
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0 0 4px;
+}
+
+.racecardPage .docRaceMeta {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.racecardPage .docRaceNarration {
+    font-size: 12.5px;
+    font-weight: 500;
+    margin: 6px 0 0;
+    color: rgba(255, 255, 255, .9);
+}
+
+.racecardPage .docForeignTag {
+    font-weight: 800;
+}
+
+/* ---- HORSE CARD ---- */
+.racecardPage .docHorseCard {
+    background: #f4f4f4;
+    border: 1px solid #e2e2e2;
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.racecardPage .docHorseTop {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.racecardPage .docHorseNo {
+    font-weight: 800;
+    color: #111;
+}
+
+.racecardPage .docHorseName {
+    font-weight: 800;
+    color: #111;
+    flex: 1;
+}
+
+.racecardPage .docHorseWeight,
+.racecardPage .docHorseJockey {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+
+.racecardPage .docHorseRow {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #333;
+    margin: 3px 0;
+    gap: 12px;
+}
+
+.racecardPage .docHorseDraw {
+    white-space: nowrap;
+}
+
+.racecardPage .docHorseTrainer {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.racecardPage .docHorseColours {
+    font-style: italic;
+}
+
+.racecardPage .docViewRunsBtn {
+    margin-top: 10px;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.racecardPage .docViewRunsBtn:hover {
+    background: #12833b;
+}
+
+/* ---- PERFORMANCE TABLE ---- */
+.racecardPage .docTableWrap {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 12px;
+}
+
+.racecardPage .docTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+}
+
+.racecardPage .docTable thead th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 800;
+    color: #111;
+    padding: 8px 10px;
+    border: 1px solid #d9d9d9;
+    background: #f7f7f7;
+}
+
+.racecardPage .docTable tbody td {
+    padding: 8px 10px;
+    font-size: 12.5px;
+    color: #222;
+    border: 1px solid #e2e2e2;
+}
+
+/* ---- POOLS ---- */
+.racecardPage .docPoolsBlock {
+    margin-top: 20px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.racecardPage .docPoolsTitle {
+    font-size: 13px;
+    font-weight: 800;
+    color: #111;
+    margin: 0;
+    padding: 10px 14px;
+    background: #e2e2e2;
+    text-transform: uppercase;
+}
+
+.racecardPage .docPoolRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 14px;
+    font-size: 13px;
+    border-top: 1px solid #e2e2e2;
+}
+
+.racecardPage .docPoolName,
+.racecardPage .docPoolValue {
+    color: #333333;
+    font-weight: 600;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+
+    .racecardPage .docBadge {
+        font-size: 16px;
+        padding: 10px 24px;
+    }
+
+    .racecardPage .docContainer {
+        padding: 60px 16px 28px;
+    }
+
+    .racecardPage .docDownloadBtn {
+        top: 14px;
+        right: 14px;
+    }
+
+    .racecardPage .docWatermark {
+        font-size: 24px;
+    }
+
+    .racecardPage .docHorseRow {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .racecardPage .docTable thead th,
+    .racecardPage .docTable tbody td {
+        padding: 6px 8px;
+        font-size: 11.5px;
+    }
+}
