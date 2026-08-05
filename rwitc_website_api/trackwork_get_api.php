@@ -86,12 +86,14 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 // ?date=YYYY-MM-DD                 -> single record by date
 // ?date=YYYY-MM-DD&horsename=xxx   -> single record by date + horse filter
 // ?q=byhorse&horsename=xxx         -> list of dates matching a horse name
+// ?q=horsenames&letter=xxx         -> autocomplete list of horse names
 // -------------------------------------------------------------
 
 $trackworkID = isset($_GET["id"]) ? $_GET["id"] : "";
 $rawDate     = isset($_GET["date"]) ? trim($_GET["date"]) : "";
 $horseName   = isset($_GET["horsename"]) ? trim($_GET["horsename"]) : "";
 $q           = isset($_GET["q"]) ? trim($_GET["q"]) : "";
+$letter      = isset($_GET["letter"]) ? trim($_GET["letter"]) : "";
 
 // Validate id (must be a positive integer if supplied)
 if ($trackworkID !== "" && !ctype_digit((string) $trackworkID)) {
@@ -136,9 +138,10 @@ if ($rawDate !== "") {
 // Cache key must vary per param combination
 $cacheKey = "trackwork_"
     . ($q === "byhorse" ? "byhorse_" . strtolower($horseName)
-        : ($trackworkID ? "id_" . $trackworkID
-            : "date_" . ($dateParam !== "" ? $dateParam : "none")
-              . "_horse_" . strtolower($horseName)));
+        : ($q === "horsenames" ? "horsenames_" . strtolower($letter)
+            : ($trackworkID ? "id_" . $trackworkID
+                : "date_" . ($dateParam !== "" ? $dateParam : "none")
+                  . "_horse_" . strtolower($horseName))));
 
 // Return cached response if available
 if ($security->serveCache($cacheKey)) {
@@ -155,6 +158,82 @@ if ($security->serveCache($cacheKey)) {
 }
 
 try {
+    if ($q === "horsenames") {
+
+        if ($letter === "") {
+            throw new InvalidArgumentException("letter is required when q=horsenames");
+        }
+
+        // Only pull rows that could possibly contain the letter,
+        // most recent first, capped to keep the extraction cheap.
+        $stmt = $conn->prepare("
+            SELECT trackwork
+            FROM trackwork
+            WHERE LOWER(trackwork) LIKE ?
+            ORDER BY trackwork_date DESC
+            LIMIT 200
+        ");
+
+        if ($stmt === false) {
+            throw new Exception($conn->error);
+        }
+
+        $likeTerm = "%" . strtolower($letter) . "%";
+        $stmt->bind_param("s", $likeTerm);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        $namesFound = [];
+
+        while ($row = $result->fetch_assoc()) {
+
+            $html = $row["trackwork"];
+
+            // Strip tags so regex works on plain text, and matches
+            // the "Name (Jockey)" pattern that appears throughout
+            // trackwork entries.
+            $plainText = strip_tags($html);
+
+            if (preg_match_all(
+                '/([A-Za-z][A-Za-z\'\s]{1,40}?)\s*\(/',
+                $plainText,
+                $matches
+            )) {
+
+                foreach ($matches[1] as $candidate) {
+
+                    $name = trim($candidate);
+
+                    if ($name === "") {
+                        continue;
+                    }
+
+                    // Keep only names that actually start with the
+                    // typed letters (case-insensitive).
+                    if (stripos($name, $letter) === 0) {
+                        $namesFound[strtoupper($name)] = $name;
+                    }
+                }
+            }
+        }
+
+        $stmt->close();
+
+        $namesList = array_values($namesFound);
+        sort($namesList);
+        $namesList = array_slice($namesList, 0, 10);
+
+        $response = [
+            "mode"    => "horsenames",
+            "letter"  => $letter,
+            "count"   => count($namesList),
+            "results" => $namesList
+        ];
+
+        $security->respondAndCache($cacheKey, $response);
+        exit;
+    }
 
     // ---------------------------------------------------------
     // Mode 1: list of trackwork dates matching a horse name

@@ -1,0 +1,10 @@
+cat > .gitignore << 'EOF'
+lib/name_service54.zip
+lib/service04.txt
+lib/service_54.txt
+lib/error_log
+admin/error_log
+images/newdesign/error_log
+rwitc_website_api/cache/
+rwitc_website_api/rate_limits/
+EOF
