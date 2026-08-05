@@ -1,113 +1,16 @@
 "use client";
-
-import { useState } from "react";
-import {
-    FaCalendarAlt,
-    FaSearch,
-    FaChevronUp,
-    FaChevronDown,
-    FaFlag,
-} from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { FaCalendarAlt, FaSearch, FaChevronUp, FaChevronDown, } from "react-icons/fa";
 import { GiHorseHead } from "react-icons/gi";
+import { getTrackwork, getTrackworkById, searchTrackworkByHorse, getHorseNameSuggestions, } from "../../../services/trackworkService";
 import "./TrackWork.css";
-
-// TODO: replace with real API data once the trackwork endpoint is ready.
-// Two tracks share the exact same shape — "Select Track" radio switches
-// which one is displayed, per the requested feedback. Heading always
-// stays "Inner Sand Track" regardless of the selection.
-const TRACKWORK_DATA = {
-    inner: {
-        distances: [
-            {
-                id: "600",
-                label: "600 METRES",
-                horses: [
-                    { id: 1, name: "Axlrod", jockey: "T.S.Jodha", time: "600/35." },
-                ],
-            },
-            {
-                id: "800",
-                label: "800 METRES",
-                horses: [
-                    { id: 1, name: "Diego Garcia", jockey: "Shrikant", time: "55, 600/41." },
-                    { id: 2, name: "Tropical Paradise", jockey: "Parmar", time: "57, 600/42.", tag: "Pair moved together." },
-                    { id: 3, name: "Midnight Express", jockey: "Parmar", time: "51, 600/37." },
-                    { id: 4, name: "Latios", jockey: "Prasad", time: "53, 600/39." },
-                    { id: 5, name: "Liam", jockey: "Omkar", time: "56, 600/41." },
-                    { id: 6, name: "Field Of Gold", jockey: "Shubham", time: "55, 600/40." },
-                    { id: 7, name: "Monterey", jockey: "C.S.Jodha", withHorse: "Cashel King", withJockey: "Neeraj", time: "54, 600/41.", tag: "Pair level." },
-                    { id: 8, name: "Styx", jockey: "T.S.Jodha", time: "55, 600/41." },
-                ],
-            },
-            {
-                id: "1000",
-                label: "1000 METRES",
-                horses: [
-                    { id: 1, name: "Thalassa", jockey: "Umesh", time: "1-08, 800/54, 600/41." },
-                    { id: 2, name: "Baille", jockey: "Gore", withHorse: "Dreams Come True", withJockey: "V.Walker", time: "1-09, 800/52, 600/38.", tag: "Former finished ahead." },
-                    { id: 3, name: "Queen Of Beauties", jockey: "Akshay G", time: "1-07, 800/50, 600/38." },
-                    { id: 4, name: "Desert Diamond", jockey: "Amyn", withHorse: "Echo", withJockey: "Umesh", time: "1-09, 800/54, 600/42.", tag: "Former finished ahead." },
-                    { id: 5, name: "Escondio", jockey: "Mosin", time: "1-10, 800/54, 600/40." },
-                    { id: 6, name: "Seneca", jockey: "Sandesh", time: "1-09, 800/54, 600/40." },
-                    { id: 7, name: "Amazing Ruler", jockey: "Amyn", withHorse: "Undercover", withJockey: "Umesh", time: "1-09, 800/51, 600/38.", tag: "Pair level." },
-                    { id: 8, name: "Endurance", jockey: "Yash", withHorse: "Dream Alliance", withJockey: "C.S.Jodha", time: "1-11, 800/56, 600/43.", tag: "Former finished ahead." },
-                    { id: 9, name: "Gold Bar", jockey: "Ramswarup", time: "1-07, 800/52, 600/39." },
-                    { id: 10, name: "Scaramouche", jockey: "T.S.Jodha", time: "1-08, 800/53, 600/40." },
-                    { id: 11, name: "Mansa Musa", jockey: "T.S.Jodha", time: "1-08, 800/53, 600/39." },
-                ],
-            },
-            {
-                id: "1200",
-                label: "1200 METRES",
-                horses: [
-                    { id: 1, name: "Fighton", jockey: "P.Dhebe", time: "1-23, 1000/1-07, 800/51, 600/39." },
-                    { id: 2, name: "Age Of Reason", jockey: "Neeraj", time: "1-26, 1000/1-11, 800/56, 600/42." },
-                    { id: 3, name: "Bee Magical", jockey: "Yash", withHorse: "Minari", withJockey: "Neeraj", time: "1-21, 1000/1-08, 800/54, 600/41.", tag: "Former finished ahead." },
-                    { id: 4, name: "Pinnacle", jockey: "Yash", time: "1-20, 1000/1-06, 800/52, 600/40." },
-                    { id: 5, name: "Break Point", jockey: "Kaviraj", time: "1-26, 1000/1-09, 800/52, 600/40." },
-                ],
-            },
-        ],
-        bannedMockRace: {
-            title: "BANNED MOCK RACE – 1200 METRES",
-            entries: "BIG BAY (S.J.Sunil), SHAMARA (P.Dhebe), FUNNY BUNNY (T.S.Jodha), SABALENKA (Akshay G), G VALENTINO (Shrikant), EXOTIC STAR (S.Mosin), JURACAN (C.S.Jodha), RENAISSANCE (A.S.Peter), DANCING STAR (J.Chinoy), ESTEBAN (Avinash), RAFAEL – Wdrn. : won by 7 lgths in 1-10.525 secs.",
-        },
-        openMockRace: {
-            title: "OPEN MOCK RACE – 1200 METRES",
-            entries: "EARTH (H.Gore), NEBULA (T.S.Jodha), FOXY (P.Vinod), COFFEE AT ELEVEN (Prasad), GOLDEN AXL (J.Chinoy), ENRICH (Suraj N), MIAMI VICE (Parmar), RED ROSE (Akshay G), INQUILAB (P.Dhebe), AQUILIUS (Siddharth), SON OF A GUN – Wdrn. : won by Nose in 1-11.291 secs.",
-        },
-    },
-    outer: {
-        distances: [
-            {
-                id: "600",
-                label: "600 METRES",
-                horses: [
-                    { id: 1, name: "Sample Horse A", jockey: "R.Kumar", time: "600/36." },
-                ],
-            },
-            {
-                id: "800",
-                label: "800 METRES",
-                horses: [
-                    { id: 1, name: "Sample Horse B", jockey: "S.Mehta", time: "56, 600/40." },
-                ],
-            },
-        ],
-        bannedMockRace: {
-            title: "BANNED MOCK RACE – 1200 METRES",
-            entries: "No banned mock race recorded for the outer sand track on this date.",
-        },
-        openMockRace: {
-            title: "OPEN MOCK RACE – 1200 METRES",
-            entries: "No open mock race recorded for the outer sand track on this date.",
-        },
-    },
-};
 
 function toInputDate(dateStr) {
     if (!dateStr) return new Date().toISOString().slice(0, 10);
-    const d = new Date(dateStr);
+    // Handle values that may still carry a time part ("YYYY-MM-DD HH:MM:SS")
+    const cleaned = String(dateStr).split(" ")[0].split("T")[0];
+    const d = new Date(cleaned);
     if (isNaN(d)) return new Date().toISOString().slice(0, 10);
     return d.toISOString().slice(0, 10);
 }
@@ -125,40 +28,144 @@ function toBadgeDate(dateStr) {
 }
 
 export default function TrackWork() {
-    const [inputDate, setInputDate] = useState(toInputDate());
-    const [appliedDate, setAppliedDate] = useState(toInputDate());
-    const [horseSearch, setHorseSearch] = useState("");
-    const [selectedTrack, setSelectedTrack] = useState("inner");
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const urlDate = searchParams.get("date");
+    const urlId = searchParams.get("id");
+    const urlHorse = searchParams.get("horsename") || "";
+    const urlQ = searchParams.get("q");
+    const urlSubmit = searchParams.get("submit");
+    const [inputDate, setInputDate] = useState(() => toInputDate(urlDate));
+    const [appliedDate, setAppliedDate] = useState(() => toInputDate(urlDate));
+    const [appliedId, setAppliedId] = useState(urlId || null);
+    const [activeHorseName, setActiveHorseName] = useState(urlHorse);
+    const [horseSearch, setHorseSearch] = useState(urlHorse);
+    const [horseMatches, setHorseMatches] = useState(null); // null = not searched yet
+    const [horseSearchLoading, setHorseSearchLoading] = useState(false);
+    const [horseSearchError, setHorseSearchError] = useState("");
+    const [matchedHorseTerm, setMatchedHorseTerm] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [cardOpen, setCardOpen] = useState(true);
-    const [openSections, setOpenSections] = useState({
-        "600": true,
-        "800": true,
-        "1000": true,
-        "1200": true,
-    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [found, setFound] = useState(false);
+    const [trackworkHtml, setTrackworkHtml] = useState("");
 
-    const trackData = TRACKWORK_DATA[selectedTrack];
+    useEffect(() => {
+        let cancelled = false;
+        async function fetchData() {
+            setLoading(true);
+            setError("");
 
-    const toggleSection = (id) => {
-        setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
-    };
+            try {
+                const result = appliedId
+                    ? await getTrackworkById(appliedId, activeHorseName)
+                    : await getTrackwork(appliedDate, activeHorseName);
 
+                if (cancelled) return;
+
+                setFound(result.found);
+                setTrackworkHtml(result.html);
+                if (result.date) {
+                    const normalized = toInputDate(result.date);
+                    setInputDate(normalized);
+                    setAppliedDate(normalized);
+                }
+            } catch (err) {
+                if (cancelled) return;
+                setError("Unable to load trackwork data. Please try again.");
+                setFound(false);
+                setTrackworkHtml("");
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        }
+        fetchData();
+        return () => {
+            cancelled = true;
+        };
+    }, [appliedDate, appliedId, activeHorseName]);
     const handleDateSearch = () => {
+        setHorseMatches(null);
+        setHorseSearchError("");
+        setActiveHorseName("");
+        setAppliedId(null);
         setAppliedDate(inputDate);
-        // TODO: trigger real API fetch by date here
+        router.push(
+            `/race_details?type=trackWork&date=${inputDate}`
+        );
+    };
+    const handleHorseInputChange = async (e) => {
+        const value = e.target.value;
+        setHorseSearch(value);
+
+        if (value.trim().length < 2) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+        const results = await getHorseNameSuggestions(value.trim());
+        setSuggestions(results);
+        setShowSuggestions(results.length > 0);
     };
 
-    const handleHorseSearch = () => {
-        // TODO: trigger real API fetch by horse name here
+    const handleSuggestionClick = (name) => {
+        setHorseSearch(name);
+        setSuggestions([]);
+        setShowSuggestions(false);
     };
 
-    const filterHorses = (horses) => {
-        if (!horseSearch.trim()) return horses;
-        const term = horseSearch.trim().toLowerCase();
-        return horses.filter(
-            (h) =>
-                h.name.toLowerCase().includes(term) ||
-                (h.withHorse && h.withHorse.toLowerCase().includes(term))
+    const handleHorseSearch = async () => {
+        const term = horseSearch.trim();
+        router.push(
+            `/race_details?type=trackWork&horsename=${encodeURIComponent(
+                term
+            )}&q=byhorse&submit=Search`
+        );
+        if (!term) {
+            setHorseMatches(null);
+            setHorseSearchError("");
+            setMatchedHorseTerm("");
+            return;
+        }
+
+        setShowSuggestions(false);
+        setHorseSearchLoading(true);
+        setHorseSearchError("");
+
+        try {
+            const results = await searchTrackworkByHorse(term);
+            setHorseMatches(results);
+            setMatchedHorseTerm(term);
+
+            if (results.length === 0) {
+                setHorseSearchError(`No trackwork records found for "${term}".`);
+            }
+        } catch (err) {
+            setHorseMatches(null);
+            setMatchedHorseTerm("");
+            setHorseSearchError("Unable to search for the horse. Please try again.");
+        } finally {
+            setHorseSearchLoading(false);
+        }
+    };
+
+    const handlePickMatch = (dateStr) => {
+        const normalized = toInputDate(dateStr);
+
+        setInputDate(normalized);
+        setActiveHorseName(matchedHorseTerm);
+        setAppliedId(null);
+        setAppliedDate(normalized);
+
+        setHorseMatches(null);
+        setHorseSearchError("");
+
+        router.push(
+            `/race_details?type=trackWork&date=${normalized}&horsename=${encodeURIComponent(
+                matchedHorseTerm
+            )}`
         );
     };
 
@@ -190,21 +197,70 @@ export default function TrackWork() {
                 </div>
 
                 <div className="searchBarGroup">
-                    <div className="textInputWrap">
+                    <div className="textInputWrap horseInputWrap">
                         <FaSearch className="inputIcon" />
                         <input
                             type="text"
                             className="textInput"
                             placeholder="Search Trackwork By Horsename"
                             value={horseSearch}
-                            onChange={(e) => setHorseSearch(e.target.value)}
+                            onChange={handleHorseInputChange}
+                            onKeyDown={(e) => e.key === "Enter" && handleHorseSearch()}
+                            onFocus={() => setShowSuggestions(suggestions.length > 0)}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                            autoComplete="off"
                         />
+
+                        {showSuggestions && (
+                            <ul className="autocompleteList">
+                                {suggestions.map((name, i) => (
+                                    <li
+                                        key={i}
+                                        className="autocompleteItem"
+                                        onMouseDown={() => handleSuggestionClick(name)}
+                                    >
+                                        {name}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                     <button type="button" className="searchBtnGold" onClick={handleHorseSearch}>
-                        Search
+                        {horseSearchLoading ? "Searching..." : "Search"}
                     </button>
                 </div>
             </div>
+
+            {horseMatches !== null && (
+                <div className="horseMatchesWrap">
+                    {/* Same heading as old PHP page: "Matched Trackworks for Horse X" */}
+                    {horseMatches.length > 0 && (
+                        <h3 className="horseMatchesHeading">
+                            Matched Trackworks for Horse {matchedHorseTerm}
+                        </h3>
+                    )}
+
+                    {horseSearchError && (
+                        <p className="horseMatchesMsg">{horseSearchError}</p>
+                    )}
+
+                    {horseMatches.length > 0 && (
+                        <ul className="horseMatchesList">
+                            {horseMatches.map((m) => (
+                                <li key={m.id}>
+                                    <button
+                                        type="button"
+                                        className="horseMatchBtn"
+                                        onClick={() => handlePickMatch(m.trackwork_date)}
+                                    >
+                                        {toBadgeDate(m.trackwork_date)}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
 
             <div className="trackworkBadgeWrap">
                 <span className="trackworkBadge">
@@ -217,113 +273,32 @@ export default function TrackWork() {
                     className="trackCardHeader"
                     onClick={() => setCardOpen((prev) => !prev)}
                 >
-                    <span className="trackCardHeaderLeft">
-                        Inner Sand Track
-                    </span>
+                    <span className="trackCardHeaderLeft">Trackwork Report</span>
                     {cardOpen ? <FaChevronUp /> : <FaChevronDown />}
                 </div>
 
                 {cardOpen && (
                     <>
-                        <div className="selectTrackRow" onClick={(e) => e.stopPropagation()}>
-                            <span className="selectTrackLabel">Select Track :</span>
+                        {loading && (
+                            <p className="trackworkStateMsg">Loading trackwork...</p>
+                        )}
 
-                            <label className="radioOption">
-                                <input
-                                    type="radio"
-                                    name="trackSelect"
-                                    checked={selectedTrack === "inner"}
-                                    onChange={() => setSelectedTrack("inner")}
-                                />
-                                <span className="radioCustom" />
-                                Inner Sand Track
-                            </label>
+                        {!loading && error && (
+                            <p className="trackworkStateMsg trackworkStateMsgError">{error}</p>
+                        )}
 
-                            <label className="radioOption">
-                                <input
-                                    type="radio"
-                                    name="trackSelect"
-                                    checked={selectedTrack === "outer"}
-                                    onChange={() => setSelectedTrack("outer")}
-                                />
-                                <span className="radioCustom" />
-                                Outer Sand Track
-                            </label>
-                        </div>
-
-                        {trackData.distances.map((section) => {
-                            const filtered = filterHorses(section.horses);
-                            if (horseSearch.trim() && filtered.length === 0) return null;
-
-                            return (
-                                <div className="distanceSection" key={section.id}>
-                                    <div
-                                        className="distanceHeader"
-                                        onClick={() => toggleSection(section.id)}
-                                    >
-                                        <span className="distanceHeaderLeft">
-                                            {section.label}
-                                        </span>
-                                        {openSections[section.id] ? (
-                                            <FaChevronUp />
-                                        ) : (
-                                            <FaChevronDown />
-                                        )}
-                                    </div>
-
-                                    {openSections[section.id] && (
-                                        <ol className="horseList">
-                                            {filtered.map((horse) => (
-                                                <li className="horseRow" key={horse.id}>
-                                                    <span className="horseName">
-                                                        {horse.name}{" "}
-                                                        <span className="jockeyName">
-                                                            ({horse.jockey})
-                                                        </span>
-                                                        {horse.withHorse && (
-                                                            <>
-                                                                {" "}
-                                                                {horse.withHorse}{" "}
-                                                                <span className="jockeyName">
-                                                                    ({horse.withJockey})
-                                                                </span>
-                                                            </>
-                                                        )}
-                                                    </span>
-
-                                                    <span className="horseMeta">
-                                                        <span className="horseTime">{horse.time}</span>
-                                                        {horse.tag && (
-                                                            <span className="horseTag">{horse.tag}</span>
-                                                        )}
-                                                    </span>
-                                                </li>
-                                            ))}
-                                        </ol>
-                                    )}
-                                </div>
-                            );
-                        })}
-
-                        <div className="mockRaceCard">
-                            <div className="mockRaceHeader">
-                                <FaFlag className="mockRaceIcon" />
-                                {trackData.bannedMockRace.title}
-                            </div>
-                            <p className="mockRaceEntries">
-                                {trackData.bannedMockRace.entries}
+                        {!loading && !error && !found && (
+                            <p className="trackworkStateMsg">
+                                No trackwork record is available for the selected date.
                             </p>
-                        </div>
+                        )}
 
-                        <div className="mockRaceCard">
-                            <div className="mockRaceHeader">
-                                <FaFlag className="mockRaceIcon" />
-                                {trackData.openMockRace.title}
-                            </div>
-                            <p className="mockRaceEntries">
-                                {trackData.openMockRace.entries}
-                            </p>
-                        </div>
+                        {!loading && !error && found && (
+                            <div
+                                className="trackworkContent"
+                                dangerouslySetInnerHTML={{ __html: trackworkHtml }}
+                            />
+                        )}
 
                         <div className="bottomDivider">
                             <span className="dividerLine" />
