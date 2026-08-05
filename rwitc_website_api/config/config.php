@@ -2,7 +2,11 @@
 
 $host = "localhost";
 $user = "root"; 
-$password = "vcare@2025";
+// live 
+// $password = "vcare@2025";
+
+// local 
+$password = "";
 $database = "rwitc_website";
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
