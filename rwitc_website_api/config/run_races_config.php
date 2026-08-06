@@ -12,7 +12,7 @@
 // ============================================================
 
 // Set this to false when deploying to the live server
-define("IS_LOCAL", true);   
+define("IS_LOCAL", true);
 
 if (IS_LOCAL) {
 
@@ -32,7 +32,11 @@ if (IS_LOCAL) {
     // Raceday Report .HTM files of public URL (for download link)
     define("RACEDAY_REPORT_PUBLIC_BASE", "http://localhost/racedayreports/");
 
+    // Sweepstake .htm files public URL (for file_url in API response)
+    define("STATIC_SWEEPSTAKE_URL", "http://localhost/staticpages/sweepstakes/");
 
+    // Dividends .htm files public URL (for API response)
+    define("STATIC_DIVIDENDS_URL", "http://localhost/staticpages/dividends/");
 } else {
 
     // ----------------------------------------------------
@@ -45,4 +49,9 @@ if (IS_LOCAL) {
 
     define("RUN_RACES_LOCAL_PATH", $_SERVER["DOCUMENT_ROOT"] . "/run_races");
 
+    // Sweepstake .htm files public URL (production)
+    define("STATIC_SWEEPSTAKE_URL", "https://rwitc.com/staticpages/sweepstakes/");
+
+    // Dividends .htm files public URL (production)
+    define("STATIC_DIVIDENDS_URL", "https://rwitc.com/staticpages/dividends/");
 }

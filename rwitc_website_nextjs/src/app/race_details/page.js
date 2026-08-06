@@ -13,6 +13,7 @@ import TrackWork from "./components/TrackWork";
 import RatingChange from "./components/RatingChange"; 
 import RaceDayReport from "./components/RaceDayReport";
 import Sweepstake from "./components/Sweepstake";
+import Dividends from "./components/Dividends";
 
 function RaceDetailsContent() {
 
@@ -41,6 +42,8 @@ function RaceDetailsContent() {
         ContentComponent = <Photos />;
     } else if (type === "trackWork") {
         ContentComponent = <TrackWork />;
+    } else if (type === "dividends") {
+        ContentComponent = <Dividends/>;
     } else {
         ContentComponent = <p>Invalid or missing type parameter.</p>;
     }

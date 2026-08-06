@@ -9,3 +9,4 @@ rwitc_website_api/cache/
 rwitc_website_api/rate_limits/
 EOF
 images/Club-House-11-02-2026.mp4
+rwitc_website_api/logs/api_logs.txt

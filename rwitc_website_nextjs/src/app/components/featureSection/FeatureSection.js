@@ -24,7 +24,7 @@ export default function FeatureSection() {
         { title: "Trainerwise Horses In Training", icon: <FaUserTie />, image: "body_img2.jpeg" },
         { title: "Webportal For Owners / Trainers", icon: <FaUsers />, image: "body_img4.jpeg" },
         { title: "Rating of all Horses", icon: <FaStar />, image: "body_img3.jpeg" },
-        { title: "Tote Dividends", icon: <FaMoneyBillWave />, image: "body_img3.jpeg" },
+        { title: "Tote Dividends", icon: <FaMoneyBillWave />, image: "body_img3.jpeg", wide: true, link: "/race_details?type=dividends",},
         { title: "Video Archives", icon: <FaVideo />, image: "body_img4.jpeg" },
         { title: "Money Leaders", icon: <FaBriefcase />, image: "body_img5.jpeg" },
         { title: "Racing Fixtures", icon: <FaCalendarAlt />, image: "body_img6.jpeg" },

@@ -1,0 +1,258 @@
+/* =========================================================
+   VISION & MISSION PAGE
+========================================================= */
+
+.aboutPage {
+    width: 100%;
+    background: #f7f9fb;
+    min-height: 100vh;
+    padding: 60px 20px 90px;
+}
+
+/* HEADING — no background, clean typography */
+.aboutTitleWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 44px;
+}
+
+.aboutHeading {
+    font-size: 40px;
+    font-weight: 800;
+    color: #0d3b1f;
+    letter-spacing: .3px;
+    position: relative;
+    padding-bottom: 16px;
+    text-align: center;
+}
+
+/* SECTION DIVIDER */
+.sectionDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 0px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 2px;
+    border-radius: 999px;
+}
+
+.dividerLineLeft {
+    background: linear-gradient(to right, transparent, #d97706);
+}
+
+.dividerLineRight {
+    background: linear-gradient(to left, transparent, #16a34a);
+}
+
+.dividerIcon {
+    font-size: 22px;
+    color: #0d3b1f;
+    flex-shrink: 0;
+}
+
+/* CONTENT CARD */
+.aboutCard {
+    width: 92%;
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 60px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
+    border: 1px solid #eef1f4;
+}
+
+/* CONTENT TEXT */
+.aboutContent {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+.aboutContent p {
+    color: #374151;
+    font-size: 17.5px;
+    line-height: 1.9;
+    text-align: justify;
+    letter-spacing: .1px;
+}
+
+.aboutContent p::selection {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+/* INTRO LINE */
+.visionIntroLine {
+    font-weight: 700;
+    color: #111827;
+    text-align: left !important;
+}
+
+/* VISION / MISSION LIST */
+.visionList {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.visionList li {
+    position: relative;
+    padding-left: 28px;
+    color: #374151;
+    font-size: 17.5px;
+    line-height: 1.85;
+    text-align: justify;
+    letter-spacing: .1px;
+}
+
+.visionList li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #16a34a;
+}
+
+/* TABLET */
+@media (max-width: 992px) {
+
+    .aboutHeading {
+        font-size: 32px;
+    }
+
+    .aboutCard {
+        padding: 44px;
+    }
+
+    .aboutContent p,
+    .visionList li {
+        font-size: 16.5px;
+        line-height: 1.85;
+    }
+
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+    .aboutPage {
+        padding: 40px 14px 70px;
+    }
+
+    .aboutTitleWrap {
+        margin-bottom: 30px;
+    }
+
+    .aboutHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
+
+    .sectionDivider {
+        max-width: 320px;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .dividerIcon {
+        font-size: 18px;
+    }
+
+    .aboutCard {
+        padding: 28px 22px;
+        border-radius: 22px;
+    }
+
+    .aboutContent {
+        gap: 20px;
+    }
+
+    .aboutContent p,
+    .visionList li {
+        font-size: 15.5px;
+        line-height: 1.85;
+        text-align: left;
+    }
+
+    .visionList {
+        gap: 14px;
+    }
+
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+    .aboutHeading {
+        font-size: 22px;
+    }
+
+    .sectionDivider {
+        max-width: 240px;
+    }
+
+    .aboutCard {
+        padding: 22px 16px;
+    }
+
+    .aboutContent p,
+    .visionList li {
+        font-size: 14.5px;
+        line-height: 1.8;
+    }
+
+    .visionList li {
+        padding-left: 22px;
+    }
+
+}
+
+/* SCROLL ANIMATION */
+.aboutCard {
+    animation: fadeUp .6s ease both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #16a34a;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #15803d;
+}

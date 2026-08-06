@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import "./TopHeader.css";
-import { UPLOAD_URL } from "../../../services/api";
+import { UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL } from "../../../services/api";
 import {
     FaBars,
     FaTimes,
@@ -51,8 +51,9 @@ function DesktopDropdownList({ items, level = 0 }) {
                     );
                 }
                 return (
-
                     <a href={item.href}
+                        target={item.target || undefined}
+                        rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
                         className={`navDropdownLink ${selectedLeaf === key ? "active" : ""}`}
                         key={key}
                         onClick={() => setSelectedLeaf(key)}
@@ -95,7 +96,13 @@ function MobileDropdownList({ items, onNavigate }) {
                     );
                 }
                 return (
-                    <a href={item.href} className="mobileDropdownLink" key={key} onClick={onNavigate}>
+                    <a href={item.href}
+                        target={item.target || undefined}
+                        rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+                        className="mobileDropdownLink"
+                        key={key}
+                        onClick={onNavigate}
+                    >
                         {item.label}
                     </a>
                 );
@@ -161,35 +168,72 @@ export default function TopHeader() {
             key: "club",
             icon: <FaUniversity />,
             children: [
-                { label: "About Us", href: "/club/about" },
-                { label: "History", href: "/club/history" },
+                { label: "About RWITC", href: "/menubar?type=about" },
+                { label: "Vision & Mission", href: "/menubar?type=vision-mission" },
                 {
-                    label: "Committee",
-                    key: "committee",
+                    label: "Organization & Management",
+                    key: "organization-management",
                     children: [
-                        { label: "Managing Committee", href: "/club/committee/managing" },
-                        { label: "Stewards", href: "/club/committee/stewards" },
+                        { label: "Structure", href: "/menubar?type=structure" },
+                        { label: "Managing Committee", href: "/menubar?type=managing-committee" },
+                        { label: "Stewards of the Club", href: "/menubar?type=stewardsclub" },
+                        { label: "Board of Appeal", href: "/menubar?type=boardappeal" },
+                        { label: "Working Group", href: `${NEWS_URL}/WORKINGGROUPS2023-24.pdf`, target: "_blank" },
                     ],
                 },
-                { label: "Contact", href: "/club/contact" },
+                {
+                    label: "History",
+                    key: "history",
+                    children: [
+                        { label: "Timeline/Major Events", href: "/menubar?type=timeline" },
+                        { label: "Bequeathing a Colonial Legacy", href: "/menubar?type=bequeathingcoloniallegacy" },
+                    ],
+                },
+                {
+                    label: "Charities",
+                    key: "charities",
+                    children: [
+                        { label: "Charity Race Days", href: "/menubar?type=charityracedays" },
+                    ],
+                },
+                { label: "Contributing to the Community", href: "/menubar?type=contributingcommunity" },
+                { label: "Responsible Gambling", href: "/menubar?type=responsible-gambling" },
+                { label: "Careers", href: "/menubar?type=careersclub" },
+                { label: "Feedback", href: "/suggestion" },
+                { label: "Email to Chairman", href: "/contact" },
+                { label: "MGT-7", href: `${NEW_URL}/RWITC_MGT-7.pdf`, target: "_blank" },
+                { label: "Register of Directors", href: `${NEW_URL}/Register_of_Directors.pdf`, target: "_blank" },
+                { label: "Register of Contracts - I", href: `${NEW_URL}/Register_of_Contracts-I.pdf`, target: "_blank" },
+                { label: "Register of Contracts - II", href: `${NEW_URL}/Register_of_Contracts-Part-II.pdf`, target: "_blank" },
+                { label: "Notice for the 110th AGM", href: `${NEWS_URL}/AGM_Notice_18_09_2025.pdf`, target: "_blank" },
+                { label: "110th Annual Report", href: `${NEWS_URL}/110th_Clubs_Annual_Report_March_31_2025.pdf`, target: "_blank" },
+                { label: "Scrutinizer's Report (AGM)", href: `${NEWS_URL}/Scrutinizers_Report.pdf`, target: "_blank" },
+                { label: "EGM Notice", href: `${RWITC_UPLOAD_URL}/EGM_Notice_30_01_2026.pdf`, target: "_blank" },
+                { label: "Proceedings of EGM", href: `${RWITC_UPLOAD_URL}/Meeting.mp4`, target: "_blank" },
+                { label: "Scrutinizer's Report (EGM)", href: `${NEWS_URL}/Scrutinisers_Report-EGM.pdf`, target: "_blank" },
             ],
         },
         {
-            label: "Racing",
+            label: "Horse Racing",
             key: "racing",
             icon: <FaHorseHead />,
             children: [
-                {
-                    label: "Race Card",
-                    key: "race-card",
-                    children: [
-                        { label: "Today's Race Card", href: "/racing/race-card/today" },
-                        { label: "Tomorrow's Race Card", href: "/racing/race-card/tomorrow" },
-                        { label: "Race Card Archive", href: "/racing/race-card/archive" },
-                    ],
-                },
-                { label: "Racing Fixtures", href: "/racing/fixtures" },
-                { label: "Results", href: "/racing/results" },
+                { label: "Medication Rules 2024", href: "/racing/#" },
+                { label: "Beginners Guide", href: "/racing/#" },
+                { label: "Sweepstake Entries", href: "/racing/#" },
+                { label: "Rules of Racing", href: "/racing/#" },
+                { label: "Racing Calendar", href: "/racing/#" },
+                { label: "Jockey's Statistics", href: "/racing/#" },
+                { label: "Jockey's Riding Weight", href: "/racing/#" },
+                { label: "Trainer's Statistics", href: "/racing/#" },
+                { label: "Memorandum & Articles of Association", href: "/racing/#" },
+                { label: "Notice From Stewards", href: "/racing/#" },
+                { label: "Ready Reckoner", href: "/racing/#" },
+                { label: "Body Weight of Horses", href: "/racing/#" },
+                { label: "Record Timings", href: "/racing/#" },
+                { label: "Standard Timings", href: "/racing/#" },
+                { label: "Saddle Cloth Numbers", href: "/racing/#" },
+
             ],
         },
         {
@@ -197,17 +241,13 @@ export default function TopHeader() {
             key: "wagering",
             icon: <FaTags />,
             children: [
-                { label: "Tote Dividends", href: "/wagering/tote-dividends" },
-                { label: "Betting Rules", href: "/wagering/betting-rules" },
-                {
-                    label: "Money Leaders",
-                    key: "money-leaders",
-                    children: [
-                        { label: "Owners", href: "/wagering/money-leaders/owners" },
-                        { label: "Jockeys", href: "/wagering/money-leaders/jockeys" },
-                        { label: "Trainers", href: "/wagering/money-leaders/trainers" },
-                    ],
-                },
+                { label: "Overview", href: "/wagering/#" },
+                { label: "Beginners luck in Racing", href: "/wagering/#" },
+                { label: "Wagering Terms", href: "/wagering/#" },
+                { label: "Betting Pools", href: "/wagering/#" },
+                { label: "National Tote Pools", href: "/wagering/#" },
+                { label: "Betting Channels", href: "/wagering/#" },
+                { label: "Deduction Norms", href: "/wagering/#" },
             ],
         },
         {
@@ -215,19 +255,22 @@ export default function TopHeader() {
             key: "membership",
             icon: <FaUsers />,
             children: [
-                { label: "Membership Types", href: "/membership/types" },
-                { label: "How to Apply", href: "/membership/apply" },
-                { label: "Membership Fees", href: "/membership/fees" },
+                { label: "Overview", href: "/membership/#" },
+                { label: "Club Membership Privileges", href: "/membership/#" },
+                { label: "Categories", href: "/membership/#" },
+                { label: "Affiliated Clubs with RWITC", href: "/membership/#" },
             ],
         },
         {
-            label: "Experience",
-            key: "experience",
+            label: "Come Racing",
+            key: "comeracing",
             icon: <FaStar />,
             children: [
-                { label: "Dining", href: "/experience/dining" },
-                { label: "Events", href: "/experience/events" },
-                { label: "Facilities", href: "/experience/facilities" },
+                { label: "Overview", href: "/experience/#" },
+                { label: "Mumbai Race Course", href: "/experience/#" },
+                { label: "Pune Race Course", href: "/experience/#" },
+                { label: "How to get there", href: "/experience/#" },
+                { label: "Race Course Services & Others", href: "/experience/#" },
             ],
         },
         {
@@ -235,8 +278,9 @@ export default function TopHeader() {
             key: "partners",
             icon: <FaHandshake />,
             children: [
-                { label: "Sponsors", href: "/partners/sponsors" },
-                { label: "Hospitality Partners", href: "/partners/hospitality" },
+                { label: "Sponsor's Privileges", href: "/partners/#" },
+                { label: "Advertising & Sponsorship Opportunities", href: "/partners/#" },
+                { label: "Contact Us", href: "/partners/#" },
             ],
         },
         {
@@ -244,9 +288,9 @@ export default function TopHeader() {
             key: "downloads",
             icon: <FaCloudDownloadAlt />,
             children: [
-                { label: "Race Card PDF", href: "/downloads/race-card" },
-                { label: "Membership Form", href: "/downloads/membership-form" },
-                { label: "Annual Report", href: "/downloads/annual-report" },
+                { label: "Forms", href: "/downloads/#" },
+                { label: "Chart", href: "/downloads/#" },
+                { label: "Prospectus", href: "/downloads/#" },
             ],
         },
     ];
@@ -311,12 +355,12 @@ export default function TopHeader() {
                             <button
                                 type="button"
                                 className={`navItem navItemDropdown ${hoverNav
-                                        ? hoverNav === item.key
-                                            ? "active"
-                                            : ""
-                                        : activeNav === item.key
-                                            ? "active"
-                                            : ""
+                                    ? hoverNav === item.key
+                                        ? "active"
+                                        : ""
+                                    : activeNav === item.key
+                                        ? "active"
+                                        : ""
                                     }`}
                                 onClick={() => {
                                     setActiveNav(item.key);
@@ -335,12 +379,12 @@ export default function TopHeader() {
 
                         <a href={item.href}
                             className={`navItem ${hoverNav
-                                    ? hoverNav === item.key
-                                        ? "active"
-                                        : ""
-                                    : activeNav === item.key
-                                        ? "active"
-                                        : ""
+                                ? hoverNav === item.key
+                                    ? "active"
+                                    : ""
+                                : activeNav === item.key
+                                    ? "active"
+                                    : ""
                                 }`}
                             key={item.key}
                             onClick={() => setActiveNav(item.key)}

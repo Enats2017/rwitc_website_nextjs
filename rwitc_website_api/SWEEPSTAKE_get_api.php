@@ -6,6 +6,7 @@ header("Access-Control-Allow-Methods: GET");
 
 // Load database and security
 require_once __DIR__ . "/config/config.php";
+require_once __DIR__ . "/config/run_races_config.php";
 require_once __DIR__ . "/ApiSecurity.php";
 
 // --------------------------------------------------
@@ -13,7 +14,7 @@ require_once __DIR__ . "/ApiSecurity.php";
 // --------------------------------------------------
 
 const SWEEPSTAKE_COLUMNS = "id, sweepstake_date, title, comments, filename";
-const SWEEPSTAKE_BASE_URL = "https://rwitc.com/staticpages/sweepstakes/";
+// const SWEEPSTAKE_BASE_URL = "https://rwitc.com/staticpages/sweepstakes/";
 
 // --------------------------------------------------
 // LOG SETUP
@@ -106,7 +107,7 @@ function formatSweepstakeRow(array $row): array
         "title"          => $row["title"],
         "comments"       => $row["comments"],
         "filename"       => $row["filename"],
-        "file_url"       => SWEEPSTAKE_BASE_URL . $row["filename"],
+        "file_url"       => STATIC_SWEEPSTAKE_URL . $row["filename"],
     ];
 }
 
