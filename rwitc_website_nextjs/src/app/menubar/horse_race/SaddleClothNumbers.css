@@ -1,0 +1,439 @@
+/* =========================================================
+   SADDLE CLOTH NUMBERS PAGE
+========================================================= */
+
+.aboutPage {
+    width: 100%;
+    background: #f7f9fb;
+    min-height: 100vh;
+    padding: 60px 20px 90px;
+}
+
+.aboutContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* HEADING */
+.aboutTitleWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.aboutHeading {
+    font-size: 40px;
+    font-weight: 800;
+    color: #0d3b1f;
+    letter-spacing: .3px;
+    position: relative;
+    padding-bottom: 16px;
+    text-align: center;
+}
+
+/* SECTION DIVIDER */
+.sectionDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 2px;
+    border-radius: 999px;
+}
+
+.dividerLineLeft {
+    background: linear-gradient(to right, transparent, #d97706);
+}
+
+.dividerLineRight {
+    background: linear-gradient(to left, transparent, #16a34a);
+}
+
+.dividerIcon {
+    font-size: 22px;
+    color: #0d3b1f;
+    flex-shrink: 0;
+}
+
+/* CONTENT CARD */
+.aboutCard {
+    width: 96%;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 44px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
+    border: 1px solid #eef1f4;
+}
+
+/* =========================================================
+   SADDLE SECTION HEADER
+========================================================= */
+
+.saddleSection {
+    padding-top: 36px;
+}
+
+.saddleTitleBlock {
+    text-align: center;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px dashed #d7dee2;
+}
+
+.saddleClubName {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0d3b1f;
+    letter-spacing: .2px;
+    margin: 0 0 4px;
+}
+
+.saddleSubTitle {
+    font-size: 14px;
+    font-weight: 700;
+    color: #14532d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 8px;
+}
+
+.saddleGeneratedOn {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #8b95a1;
+    margin: 0;
+}
+
+/* =========================================================
+   TABLE — fixed layout so long names never spill the border
+========================================================= */
+
+.statsTableWrap {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid #e5e9ec;
+    -webkit-overflow-scrolling: touch;
+}
+
+.statsTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.statsTable,
+.statsTable th,
+.statsTable td {
+    box-sizing: border-box;
+}
+
+/* Coloured saddle-cloth banner — background/text set inline per
+   section from the parsed cloth label, this just handles shape. */
+.clothLabelRow {
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+}
+
+.clothLabelRowLight {
+    box-shadow: inset 0 0 0 1px rgba(17, 24, 39, .12);
+}
+
+.statsTable thead tr:nth-child(2) th {
+    background: #d9ead9;
+    color: #14532d;
+    font-size: 12.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    padding: 13px 8px;
+    text-align: center;
+    border-bottom: 1px solid #cfe4cf;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+/* Column widths — sum to 100% */
+.colSaddle { width: 8%; }
+.colHorseName { width: 19%; }
+.colColorSex { width: 11%; }
+.colAge { width: 7%; }
+.colSire { width: 19%; }
+.colDame { width: 19%; }
+.colTrainer { width: 17%; }
+
+.statsTable thead th.colHorseName {
+    text-align: left;
+    padding-left: 16px;
+}
+
+.statsTable tbody td {
+    padding: 11px 8px;
+    text-align: center;
+    font-size: 13px;
+    color: #374151;
+    border-bottom: 1px solid #eef1f4;
+    vertical-align: middle;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.statsTable tbody td.colHorseName {
+    font-weight: 700;
+    color: #111827;
+    text-align: left;
+    padding-left: 16px;
+}
+
+.statsTable tbody tr:nth-child(even) {
+    background: #fafcfa;
+}
+
+.statsTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.statsTable tbody tr:hover {
+    background: #f0f7f0;
+}
+
+.saddleBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 26px;
+    padding: 0 6px;
+    border-radius: 8px;
+    background: #14532d;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.noResults {
+    padding: 30px 10px !important;
+    text-align: center !important;
+    color: #9aa4ab;
+    font-weight: 600;
+}
+
+/* =========================================================
+   VIEW MORE / VIEW LESS
+========================================================= */
+
+.viewMoreWrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.viewMoreBtn {
+    border: 1.5px solid #14532d;
+    background: #ffffff;
+    color: #14532d;
+    font-size: 13.5px;
+    font-weight: 700;
+    padding: 10px 26px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.viewMoreBtn:hover {
+    background: #14532d;
+    color: #ffffff;
+}
+
+.viewMoreBtn:focus-visible {
+    outline: 2px solid #16a34a;
+    outline-offset: 2px;
+}
+
+/* TABLET */
+@media (max-width: 992px) {
+
+    .aboutHeading {
+        font-size: 32px;
+    }
+
+    .aboutCard {
+        padding: 32px;
+    }
+
+    .statsTable thead tr:nth-child(2) th,
+    .statsTable tbody td {
+        font-size: 12px;
+        padding: 10px 6px;
+    }
+
+}
+
+/* MOBILE — table switches to a min-width and scrolls
+   horizontally, keeping text readable and inside borders. */
+@media (max-width: 768px) {
+
+    .aboutPage {
+        padding: 40px 14px 70px;
+    }
+
+    .aboutContainer {
+        gap: 22px;
+    }
+
+    .aboutTitleWrap {
+        margin-bottom: 6px;
+    }
+
+    .aboutHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
+
+    .sectionDivider {
+        max-width: 320px;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .dividerIcon {
+        font-size: 18px;
+    }
+
+    .aboutCard {
+        padding: 22px 16px;
+        border-radius: 20px;
+    }
+
+    .saddleClubName {
+        font-size: 17px;
+    }
+
+    .saddleSubTitle {
+        font-size: 12.5px;
+    }
+
+    .statsTable {
+        table-layout: auto;
+        min-width: 900px;
+    }
+
+    .colSaddle { width: 70px; }
+    .colHorseName { width: 170px; }
+    .colColorSex { width: 90px; }
+    .colAge { width: 60px; }
+    .colSire { width: 160px; }
+    .colDame { width: 160px; }
+    .colTrainer { width: 150px; }
+
+    .statsTableWrap::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .statsTableWrap::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .statsTableWrap::-webkit-scrollbar-thumb {
+        background: #16a34a;
+        border-radius: 10px;
+    }
+
+    .statsTable thead tr:nth-child(2) th,
+    .statsTable tbody td {
+        font-size: 12px;
+        padding: 9px 8px;
+        white-space: nowrap;
+    }
+
+    .statsTable tbody td.colHorseName {
+        white-space: normal;
+    }
+
+    .clothLabelRow {
+        font-size: 12.5px;
+        padding: 11px 8px;
+    }
+
+    .viewMoreBtn {
+        width: 100%;
+    }
+
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+    .aboutHeading {
+        font-size: 22px;
+    }
+
+    .sectionDivider {
+        max-width: 240px;
+    }
+
+    .aboutCard {
+        padding: 16px 12px;
+    }
+
+    .statsTable {
+        min-width: 800px;
+    }
+
+    .statsTable thead tr:nth-child(2) th,
+    .statsTable tbody td {
+        font-size: 11px;
+        padding: 8px 6px;
+    }
+
+}
+
+/* SCROLL ANIMATION */
+.aboutCard {
+    animation: fadeUp .6s ease both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #16a34a;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #15803d;
+}

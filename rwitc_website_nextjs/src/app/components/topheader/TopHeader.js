@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import "./TopHeader.css";
-import { UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL } from "../../../services/api";
+import { UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL, STATIC_URL } from "../../../services/api";
 import {
     FaBars,
     FaTimes,
@@ -218,21 +218,21 @@ export default function TopHeader() {
             key: "racing",
             icon: <FaHorseHead />,
             children: [
-                { label: "Medication Rules 2024", href: "/racing/#" },
-                { label: "Beginners Guide", href: "/racing/#" },
-                { label: "Sweepstake Entries", href: "/racing/#" },
-                { label: "Rules of Racing", href: "/racing/#" },
-                { label: "Racing Calendar", href: "/racing/#" },
-                { label: "Jockey's Statistics", href: "/racing/#" },
-                { label: "Jockey's Riding Weight", href: "/racing/#" },
-                { label: "Trainer's Statistics", href: "/racing/#" },
-                { label: "Memorandum & Articles of Association", href: "/racing/#" },
-                { label: "Notice From Stewards", href: "/racing/#" },
-                { label: "Ready Reckoner", href: "/racing/#" },
-                { label: "Body Weight of Horses", href: "/racing/#" },
-                { label: "Record Timings", href: "/racing/#" },
-                { label: "Standard Timings", href: "/racing/#" },
-                { label: "Saddle Cloth Numbers", href: "/racing/#" },
+                { label: "Medication Rules 2024", href: `${NEW_URL}/Medication Rules.pdf`, target: "_blank" },
+                { label: "Beginners Guide", href: "/menubar?type=beginners-guide" },
+                { label: "Sweepstake Entries", href: "/race_details?type=sweepstakes" },
+                { label: "Rules of Racing", href: `${NEW_URL}/rulesofracing2025.pdf`, target: "_blank" },
+                { label: "Racing Calendar", href: `${STATIC_URL}/racingCalendar.pdf`, target: "_blank" },
+                { label: "Jockey's Statistics", href: "/menubar?type=jockeystatistics" },
+                { label: "Jockey's Riding Weight", href: "/menubar?type=jockeyridingweight" },
+                { label: "Trainer's Statistics", href: "/menubar?type=trainerstatistics" },
+                { label: "Memorandum & Articles of Association", href: `${NEW_URL}/memorandum2025.pdf`, target: "_blank" },
+                { label: "Notice From Stewards", href: "/menubar?type=noticefromstewards" },
+                { label: "Ready Reckoner", href: "/menubar?type=readyreckoner" },
+                { label: "Body Weight of Horses", href: "/menubar?type=bodyweighthorse" },
+                { label: "Record Timings", href: "/menubar?type=recordtimings" },
+                { label: "Standard Timings", href: `${NEW_URL}/standard_timings.pdf`, target: "_blank" },
+                { label: "Saddle Cloth Numbers", href: "/menubar?type=saddleclothnumbers" },
 
             ],
         },
@@ -241,13 +241,13 @@ export default function TopHeader() {
             key: "wagering",
             icon: <FaTags />,
             children: [
-                { label: "Overview", href: "/wagering/#" },
-                { label: "Beginners luck in Racing", href: "/wagering/#" },
-                { label: "Wagering Terms", href: "/wagering/#" },
-                { label: "Betting Pools", href: "/wagering/#" },
-                { label: "National Tote Pools", href: "/wagering/#" },
-                { label: "Betting Channels", href: "/wagering/#" },
-                { label: "Deduction Norms", href: "/wagering/#" },
+                { label: "Overview", href: "/menubar?type=wageringoverview" },
+                { label: "Beginners luck in Racing", href: "/menubar?type=beginnersluckracing" },
+                { label: "Wagering Terms", href: "/menubar?type=wageringterms" },
+                { label: "Betting Pools", href: "/menubar?type=betting-pools" },
+                { label: "National Tote Pools", href: "/menubar?type=national-tote-pools" },
+                { label: "Betting Channels", href: "/menubar?type=betting-channels" },
+                { label: "Deduction Norms", href: "/menubar?type=deduction-norms" },
             ],
         },
         {

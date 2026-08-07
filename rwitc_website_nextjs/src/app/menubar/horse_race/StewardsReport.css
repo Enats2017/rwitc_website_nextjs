@@ -1,0 +1,193 @@
+/* =========================================================
+   STEWARDS REPORT (NOTICE DETAIL) PAGE
+========================================================= */
+
+.aboutPage {
+    width: 100%;
+    background: #f7f9fb;
+    min-height: 100vh;
+    padding: 60px 20px 90px;
+}
+
+.aboutTitleWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 44px;
+}
+
+.aboutHeading {
+    font-size: 40px;
+    font-weight: 800;
+    color: #0d3b1f;
+    letter-spacing: .3px;
+    padding-bottom: 16px;
+    text-align: center;
+}
+
+.sectionDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 0px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 2px;
+    border-radius: 999px;
+}
+
+.dividerLineLeft {
+    background: linear-gradient(to right, transparent, #d97706);
+}
+
+.dividerLineRight {
+    background: linear-gradient(to left, transparent, #16a34a);
+}
+
+.dividerIcon {
+    font-size: 22px;
+    color: #0d3b1f;
+    flex-shrink: 0;
+}
+
+.aboutCard {
+    width: 92%;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 50px 60px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
+    border: 1px solid #eef1f4;
+    animation: fadeUp .6s ease both;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* BACK LINK */
+.noticeBackLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #16a34a;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    margin-bottom: 28px;
+}
+
+.noticeBackLink:hover {
+    text-decoration: underline;
+}
+
+/* NOT FOUND STATE */
+.noticeNotFound {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+/* LETTER STYLE CONTENT */
+.noticeDetailWrap {
+    text-align: center;
+}
+
+.noticeClubName {
+    font-size: 20px;
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: .5px;
+    margin-bottom: 18px;
+}
+
+.noticeLabel {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: #374151;
+    margin-bottom: 26px;
+}
+
+.noticeTo {
+    text-align: left;
+    font-size: 15.5px;
+    color: #374151;
+    margin-bottom: 22px;
+}
+
+.noticeHeading {
+    font-size: 17px;
+    font-weight: 800;
+    color: #111827;
+    text-decoration: underline;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.noticeBody {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.noticeBody p {
+    font-size: 15.5px;
+    line-height: 1.85;
+    color: #374151;
+}
+
+.noticeSignOff {
+    text-align: left;
+}
+
+.noticeSignOff p {
+    font-size: 15px;
+    color: #374151;
+    line-height: 1.7;
+}
+
+/* TABLET */
+@media (max-width: 992px) {
+
+    .aboutHeading { font-size: 32px; }
+    .aboutCard { padding: 38px; }
+
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+    .aboutPage { padding: 40px 14px 70px; }
+    .aboutTitleWrap { margin-bottom: 30px; }
+    .aboutHeading { font-size: 26px; padding-bottom: 12px; }
+    .sectionDivider { max-width: 320px; gap: 12px; margin-top: 20px; }
+    .dividerIcon { font-size: 18px; }
+    .aboutCard { padding: 26px 20px; border-radius: 20px; }
+    .noticeClubName { font-size: 17px; }
+    .noticeHeading { font-size: 15px; }
+    .noticeBody p,
+    .noticeTo,
+    .noticeSignOff p { font-size: 14.5px; }
+
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+    .aboutHeading { font-size: 22px; }
+    .sectionDivider { max-width: 240px; }
+    .aboutCard { padding: 20px 16px; }
+
+}

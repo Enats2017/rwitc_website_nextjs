@@ -1,0 +1,415 @@
+/* =========================================================
+   DEDUCTION NORMS PAGE
+========================================================= */
+
+.aboutPage {
+    width: 100%;
+    background: #f7f9fb;
+    min-height: 100vh;
+    padding: 60px 20px 90px;
+    box-sizing: border-box;
+}
+
+/* HEADING */
+.aboutTitleWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 44px;
+}
+
+.aboutHeading {
+    font-size: 40px;
+    font-weight: 800;
+    color: #0d3b1f;
+    letter-spacing: .3px;
+    position: relative;
+    padding-bottom: 16px;
+    text-align: center;
+}
+
+/* SECTION DIVIDER */
+.sectionDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 0px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 2px;
+    border-radius: 999px;
+}
+
+.dividerLineLeft {
+    background: linear-gradient(to right, transparent, #d97706);
+}
+
+.dividerLineRight {
+    background: linear-gradient(to left, transparent, #16a34a);
+}
+
+.dividerIcon {
+    font-size: 22px;
+    color: #0d3b1f;
+    flex-shrink: 0;
+}
+
+/* CONTENT CARD */
+.aboutCard {
+    width: 92%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 60px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
+    border: 1px solid #eef1f4;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.aboutContent {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.aboutContent p {
+    color: #374151;
+    font-size: 16.5px;
+    line-height: 1.85;
+    text-align: justify;
+    letter-spacing: .1px;
+}
+
+.aboutContent p strong {
+    color: #111827;
+}
+
+.aboutContent p::selection {
+    background: #16a34a;
+    color: #ffffff;
+}
+
+.dnMainHeading {
+    font-size: 21px;
+    font-weight: 800;
+    color: #111827;
+    text-decoration: underline;
+    line-height: 1.5;
+}
+
+.dnUnderlineHeading {
+    font-size: 19px;
+    font-weight: 800;
+    color: #16a34a;
+    text-decoration: underline;
+    margin-top: 6px;
+}
+
+.dnSignOff {
+    margin-top: 10px;
+}
+
+/* =========================================================
+   TABLES
+
+   Why the header text was "overlapping" on phone:
+   somewhere the project's global CSS (reset/tailwind/normalize)
+   sets a rule like `table th, table td { white-space: nowrap }`
+   or similar, further up the cascade. With table-layout:fixed
+   and a narrow column, a nowrap header refuses to break onto a
+   second line — it just keeps drawing past its own column's
+   edge, straight on top of the next column's text. That's the
+   visual "overlap".
+
+   Fix: force the wrap behaviour back on with !important so
+   nothing further up the cascade can win, on top of the
+   <colgroup> in the JSX (inline styles, so no CSS class can
+   override those column widths either).
+========================================================= */
+
+.statsTableWrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-radius: 16px;
+    border: 1px solid #e5e9ec;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+}
+
+.statsTable {
+    width: 100%;
+    max-width: 100%;
+    min-width: 420px;
+    border-collapse: collapse;
+    table-layout: fixed !important;
+}
+
+.statsTable th,
+.statsTable td {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    box-sizing: border-box !important;
+    vertical-align: middle;
+}
+
+.statsTable thead th {
+    background: #d9ead9;
+    color: #14532d;
+    font-size: 14px;
+    font-weight: 800;
+    padding: 12px 10px;
+    text-align: center;
+    line-height: 1.35;
+    border-bottom: 1px solid #cfe4cf;
+    border-right: 1px solid #b9d6b9;
+}
+
+.statsTable thead th:last-child {
+    border-right: none;
+}
+
+.statsTable tbody td {
+    padding: 12px 10px;
+    text-align: center;
+    font-size: 15px;
+    color: #374151;
+    line-height: 1.5;
+    border-bottom: 1px solid #eef1f4;
+    border-right: 1px solid #f2f5f7;
+}
+
+.statsTable tbody td:last-child {
+    border-right: none;
+}
+
+.statsTable tbody td.colOdds {
+    font-weight: 700;
+    color: #111827;
+    text-align: left;
+}
+
+.statsTable tbody td.colPercent {
+    font-weight: 800;
+    color: #16a34a;
+}
+
+.statsTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.statsTable tbody tr:hover {
+    background: #f7faf7;
+}
+
+/* =========================================================
+   ROMAN NUMERAL LIST (i, ii, iii...)
+========================================================= */
+
+.dnRomanList {
+    list-style: lower-roman;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+    padding-left: 30px;
+    min-width: 0;
+}
+
+.dnRomanList li {
+    color: #374151;
+    font-size: 16.5px;
+    line-height: 1.85;
+    text-align: justify;
+    padding-left: 6px;
+}
+
+/* TABLET */
+@media (max-width: 992px) {
+
+    .aboutHeading {
+        font-size: 32px;
+    }
+
+    .aboutCard {
+        padding: 44px;
+    }
+
+    .aboutContent p,
+    .dnRomanList li {
+        font-size: 15.5px;
+        line-height: 1.8;
+    }
+
+    .dnMainHeading {
+        font-size: 19px;
+    }
+
+    .dnUnderlineHeading {
+        font-size: 17px;
+    }
+
+    .statsTable thead th,
+    .statsTable tbody td {
+        font-size: 14px;
+        padding: 10px 8px;
+    }
+
+}
+
+/* MOBILE — table stays a normal 2-column table; the wrapper
+   scrolls sideways if the columns need more room than the
+   screen has. No restacking, no card view. */
+@media (max-width: 768px) {
+
+    .aboutPage {
+        padding: 40px 14px 70px;
+    }
+
+    .aboutTitleWrap {
+        margin-bottom: 30px;
+    }
+
+    .aboutHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
+
+    .sectionDivider {
+        max-width: 320px;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .dividerIcon {
+        font-size: 18px;
+    }
+
+    .aboutCard {
+        padding: 26px 18px;
+        border-radius: 22px;
+    }
+
+    .aboutContent {
+        gap: 18px;
+    }
+
+    .aboutContent p,
+    .dnRomanList li {
+        font-size: 14.5px;
+        line-height: 1.8;
+        text-align: left;
+    }
+
+    .dnMainHeading {
+        font-size: 17px;
+    }
+
+    .dnUnderlineHeading {
+        font-size: 15.5px;
+    }
+
+    .dnRomanList {
+        padding-left: 22px;
+        gap: 12px;
+    }
+
+    .statsTable {
+        min-width: 400px;
+    }
+
+    .statsTable thead th,
+    .statsTable tbody td {
+        font-size: 12.5px;
+        padding: 8px 6px;
+    }
+
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+    .aboutHeading {
+        font-size: 22px;
+    }
+
+    .sectionDivider {
+        max-width: 240px;
+    }
+
+    .aboutCard {
+        padding: 20px 14px;
+    }
+
+    .aboutContent p,
+    .dnRomanList li {
+        font-size: 14px;
+    }
+
+    .dnMainHeading {
+        font-size: 15.5px;
+    }
+
+    .dnUnderlineHeading {
+        font-size: 14.5px;
+    }
+
+    .statsTable {
+        min-width: 360px;
+    }
+
+    .statsTable thead th,
+    .statsTable tbody td {
+        font-size: 11.5px;
+        padding: 7px 5px;
+    }
+
+}
+
+/* SCROLL ANIMATION */
+.aboutCard {
+    animation: fadeUp .6s ease both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #16a34a;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #15803d;
+}

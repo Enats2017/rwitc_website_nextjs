@@ -1,0 +1,329 @@
+/* =========================================================
+   JOCKEY'S RIDING WEIGHT PAGE
+========================================================= */
+
+.aboutPage {
+    width: 100%;
+    background: #f7f9fb;
+    min-height: 100vh;
+    padding: 60px 20px 90px;
+}
+
+/* HEADING */
+.aboutTitleWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 44px;
+}
+
+.aboutHeading {
+    font-size: 40px;
+    font-weight: 800;
+    color: #0d3b1f;
+    letter-spacing: .3px;
+    position: relative;
+    padding-bottom: 16px;
+    text-align: center;
+}
+
+/* SECTION DIVIDER */
+.sectionDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 0px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 2px;
+    border-radius: 999px;
+}
+
+.dividerLineLeft {
+    background: linear-gradient(to right, transparent, #d97706);
+}
+
+.dividerLineRight {
+    background: linear-gradient(to left, transparent, #16a34a);
+}
+
+.dividerIcon {
+    font-size: 22px;
+    color: #0d3b1f;
+    flex-shrink: 0;
+}
+
+/* CONTENT CARD */
+.aboutCard {
+    width: 96%;
+    max-width: 1300px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 44px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
+    border: 1px solid #eef1f4;
+}
+
+/* =========================================================
+   SEASON BANNER
+========================================================= */
+
+.jrwSeasonBanner {
+    background: #fff9c4;
+    border: 1px solid #eede8a;
+    border-radius: 16px;
+    text-align: center;
+    padding: 24px 20px;
+    margin-bottom: 34px;
+}
+
+.jrwSeasonBanner h2 {
+    color: #14532d;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.jrwSeasonBanner p {
+    color: #14532d;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* =========================================================
+   SECTION BAR (group titles)
+========================================================= */
+
+.jrwSectionBar {
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    text-align: center;
+    padding: 12px 16px;
+    margin: 34px 0 22px;
+}
+
+.jrwSectionBar span {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1f2937;
+    text-decoration: underline;
+}
+
+/* =========================================================
+   TABLES
+========================================================= */
+
+.jrwTwoColWrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.jrwTableWrap {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #e5e9ec;
+}
+
+.jrwTableNarrow {
+    max-width: 560px;
+}
+
+.jrwTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 320px;
+}
+
+.jrwTable thead th {
+    background: #f1f5f9;
+    color: #111827;
+    font-size: 13.5px;
+    font-weight: 800;
+    padding: 12px 10px;
+    text-align: center;
+    border-bottom: 1px solid #dfe6ea;
+    border-right: 1px solid #eef1f4;
+}
+
+.jrwTable thead th:last-child {
+    border-right: none;
+}
+
+.jrwTable tbody td {
+    padding: 10px 10px;
+    text-align: center;
+    font-size: 14.5px;
+    color: #374151;
+    border-bottom: 1px solid #eef1f4;
+    border-right: 1px solid #f2f5f7;
+}
+
+.jrwTable tbody td:last-child {
+    border-right: none;
+}
+
+.jrwTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.jrwTable tbody tr:hover {
+    background: #f7faf7;
+}
+
+.colNo {
+    width: 60px;
+}
+
+.colName {
+    text-align: left !important;
+}
+
+.colWeight {
+    width: 100px;
+}
+
+.colAllowance {
+    width: 110px;
+}
+
+.colWinners {
+    width: 90px;
+}
+
+.colTrainer {
+    text-align: left !important;
+    min-width: 220px;
+}
+
+/* TABLET */
+@media (max-width: 992px) {
+
+    .aboutHeading {
+        font-size: 32px;
+    }
+
+    .aboutCard {
+        padding: 32px;
+    }
+
+    .jrwTwoColWrap {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+    .aboutPage {
+        padding: 40px 14px 70px;
+    }
+
+    .aboutTitleWrap {
+        margin-bottom: 30px;
+    }
+
+    .aboutHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
+
+    .sectionDivider {
+        max-width: 320px;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .dividerIcon {
+        font-size: 18px;
+    }
+
+    .aboutCard {
+        padding: 22px 16px;
+        border-radius: 20px;
+    }
+
+    .jrwSeasonBanner {
+        padding: 18px 14px;
+    }
+
+    .jrwSeasonBanner h2 {
+        font-size: 18px;
+    }
+
+    .jrwSeasonBanner p {
+        font-size: 14px;
+    }
+
+    .jrwSectionBar span {
+        font-size: 14px;
+    }
+
+    .jrwTable thead th,
+    .jrwTable tbody td {
+        font-size: 13px;
+        padding: 8px 6px;
+    }
+
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+    .aboutHeading {
+        font-size: 22px;
+    }
+
+    .sectionDivider {
+        max-width: 240px;
+    }
+
+    .aboutCard {
+        padding: 16px 12px;
+    }
+
+}
+
+/* SCROLL ANIMATION */
+.aboutCard {
+    animation: fadeUp .6s ease both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #16a34a;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #15803d;
+}

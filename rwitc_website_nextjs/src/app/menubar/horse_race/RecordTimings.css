@@ -1,0 +1,350 @@
+/* =========================================================
+   RECORD TIMINGS PAGE
+========================================================= */
+
+.aboutPage {
+    width: 100%;
+    background: #f7f9fb;
+    min-height: 100vh;
+    padding: 60px 20px 90px;
+}
+
+/* HEADING */
+.aboutTitleWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 44px;
+}
+
+.aboutHeading {
+    font-size: 40px;
+    font-weight: 800;
+    color: #0d3b1f;
+    letter-spacing: .3px;
+    position: relative;
+    padding-bottom: 16px;
+    text-align: center;
+}
+
+/* SECTION DIVIDER */
+.sectionDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 0px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 2px;
+    border-radius: 999px;
+}
+
+.dividerLineLeft {
+    background: linear-gradient(to right, transparent, #d97706);
+}
+
+.dividerLineRight {
+    background: linear-gradient(to left, transparent, #16a34a);
+}
+
+.dividerIcon {
+    font-size: 22px;
+    color: #0d3b1f;
+    flex-shrink: 0;
+}
+
+/* CONTENT CARD */
+.aboutCard {
+    width: 96%;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 44px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
+    border: 1px solid #eef1f4;
+}
+
+/* =========================================================
+   SUB HEADINGS
+========================================================= */
+
+.recordSubHeading {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: #14532d;
+    margin: 0 0 20px;
+}
+
+.recordSubHeadingSpaced {
+    margin-top: 48px;
+}
+
+/* =========================================================
+   TABLE
+   DESKTOP/LAPTOP: fixed layout, fits inside the card — no scroll.
+   MOBILE (@media below): switches to a min-width table so it
+   scrolls horizontally instead of squeezing text.
+========================================================= */
+
+.statsTableWrap {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid #e5e9ec;
+    -webkit-overflow-scrolling: touch;
+}
+
+.statsTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.statsTable thead th {
+    background: #d9ead9;
+    color: #14532d;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    padding: 16px 18px;
+    text-align: center;
+    border-bottom: 1px solid #cfe4cf;
+}
+
+.statsTable thead th:not(:last-child) {
+    border-right: 1px solid #b9d6b9;
+}
+
+.statsTable thead th.colDistance {
+    width: 160px;
+}
+
+.statsTable tbody td {
+    padding: 16px 18px;
+    text-align: center;
+    font-size: 14px;
+    color: #374151;
+    border-bottom: 1px solid #eef1f4;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+
+.statsTable tbody td:not(:last-child) {
+    border-right: 1px solid #e2e8ec;
+}
+
+.statsTable tbody td.colDistance {
+    font-weight: 700;
+    color: #dc2626;
+}
+
+.statsTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.statsTable tbody tr:hover {
+    background: #f7faf7;
+}
+
+/* ENTRY CELL — horse name, date, time stacked */
+.colEntry {
+    display: table-cell;
+}
+
+.entryName {
+    display: block;
+    font-weight: 800;
+    color: #1d4ed8;
+    margin-bottom: 4px;
+}
+
+.entryLine {
+    display: block;
+    font-size: 13px;
+    color: #374151;
+    line-height: 1.5;
+}
+
+.recordLine strong {
+    color: #111827;
+    font-weight: 800;
+}
+
+/* TABLET — still fits, just tighter */
+@media (max-width: 992px) {
+
+    .aboutHeading {
+        font-size: 32px;
+    }
+
+    .aboutCard {
+        padding: 32px;
+    }
+
+    .recordSubHeading {
+        font-size: 18px;
+    }
+
+    .statsTable thead th,
+    .statsTable tbody td {
+        font-size: 13px;
+        padding: 13px 12px;
+    }
+
+}
+
+/* MOBILE — ONLY here the table switches to a min-width and
+   scrolls horizontally, keeping text at a readable size. */
+@media (max-width: 768px) {
+
+    .aboutPage {
+        padding: 40px 14px 70px;
+    }
+
+    .aboutTitleWrap {
+        margin-bottom: 30px;
+    }
+
+    .aboutHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
+
+    .sectionDivider {
+        max-width: 320px;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .dividerIcon {
+        font-size: 18px;
+    }
+
+    .aboutCard {
+        padding: 22px 16px;
+        border-radius: 20px;
+    }
+
+    .recordSubHeading {
+        font-size: 16px;
+    }
+
+    .recordSubHeadingSpaced {
+        margin-top: 36px;
+    }
+
+    .statsTable {
+        table-layout: auto;
+        min-width: 640px;
+    }
+
+    .statsTable thead th.colDistance {
+        width: 120px;
+    }
+
+    .statsTableWrap::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .statsTableWrap::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .statsTableWrap::-webkit-scrollbar-thumb {
+        background: #16a34a;
+        border-radius: 10px;
+    }
+
+    .statsTable thead th,
+    .statsTable tbody td {
+        font-size: 12px;
+        padding: 11px 10px;
+    }
+
+    .entryLine {
+        font-size: 11px;
+    }
+
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+    .aboutHeading {
+        font-size: 22px;
+    }
+
+    .sectionDivider {
+        max-width: 240px;
+    }
+
+    .aboutCard {
+        padding: 16px 12px;
+    }
+
+    .recordSubHeading {
+        font-size: 15px;
+    }
+
+    .statsTable {
+        min-width: 560px;
+    }
+
+    .statsTable thead th.colDistance {
+        width: 100px;
+    }
+
+    .statsTable thead th,
+    .statsTable tbody td {
+        font-size: 11px;
+        padding: 9px 8px;
+    }
+
+    .entryLine {
+        font-size: 10px;
+    }
+
+}
+
+/* SCROLL ANIMATION */
+.aboutCard {
+    animation: fadeUp .6s ease both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CUSTOM SCROLLBAR (page-level, unrelated to table) */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #16a34a;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #15803d;
+}
