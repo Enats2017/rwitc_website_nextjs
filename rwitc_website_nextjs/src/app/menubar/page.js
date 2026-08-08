@@ -32,85 +32,81 @@ import BettingPools from "./wagering/BettingPools";
 import NationalTotePools from "./wagering/NationalTotePools";
 import BettingChannels from "./wagering/BettingChannels";
 import DeductionNorms from "./wagering/DeductionNorms";
+import MembershipOverview from "./membership/MembershipOverview";
+import ClubMembershipPrivileges from "./membership/ClubMembershipPrivileges";
+import MembershipCategories from "./membership/MembershipCategories";
+import ComeRacingOverview from "./comeracing/ComeRacingOverview";
+import MumbaiRaceCourse from "./comeracing/MumbaiRaceCourse";
+import PuneRaceCourse from "./comeracing/PuneRaceCourse";
+import HowToGetThere from "./comeracing/HowToGetThere";
+import RaceCourseServicesOthers from "./comeracing/RaceCourseServicesOthers";
+import PartnersOverview from "./partners/PartnersOverview";
+import SponsorPrivileges from "./partners/SponsorPrivileges";
+import PartnersOpportunities from "./partners/PartnersOpportunities";
+import ContactForAdvertising from "./partners/ContactForAdvertising";
+import ApplicationForm from "./downloads/ApplicationForm";
 
 function MenuBarContent() {
     const searchParams = useSearchParams();
     const type = searchParams.get("type");
     switch (type) {
-        case "about":
-            return <About />;
-        case "vision-mission":
-            return <VissionMission />;
-        case "structure":
-            return <Structure />;
-        case "managing-committee":
-            return <ManagingCommittee />;
-        case "stewardsclub":
-            return <StewardsClub />;
-        case "boardappeal":
-            return <BoardAppeal />;
-        case "timeline":
-            return <TimeLine />;
-        case "bequeathingcoloniallegacy":
-            return <BequeathingColonialLegacy />
-        case "charityracedays":
-            return <CharityRaceDays />
-        case "contributingcommunity":
-            return <ContributingCommunity />
-        case "responsible-gambling":
-            return <ResponsibleGambling />;
-        case "careersclub":
-            return <CareersClub />;
-        case "beginners-guide":
-            return <BeginnersGuide />;
-        case "jockeystatistics":
-            return <JockeyStatistics />;
-        case "jockeyridingweight":
-            return <JockeyRidingWeight />;
-        case "trainerstatistics":
-            return <TrainerStatistics />;
-        case "noticefromstewards":
-            return <NoticeFromStewards />;
-        case "steward-notice":
-            return <StewardsReport />;
-        case "readyreckoner":
-            return <ReadyReckoner />;
-        case "bodyweighthorse":
-            return <BodyWeightHorse />;
-        case "recordtimings":
-            return <RecordTimings />;
-        case "saddleclothnumbers":
-            return <SaddleClothNumbers />;
-        case "wageringoverview":
-            return <WageringOverview />;
-        case "beginnersluckracing":
-            return <BeginnersluckRacing />;
-        case "wageringterms":
-            return <WageringTerms />;
-        case "betting-pools":
-            return <BettingPools />;
-        case "national-tote-pools":
-            return <NationalTotePools />;
-        case "betting-channels":
-            return <BettingChannels />;
-        case "deduction-norms":
-            return <DeductionNorms />;
+        case "about": return <About />;
+        case "vision-mission": return <VissionMission />;
+        case "structure": return <Structure />;
+        case "managing-committee": return <ManagingCommittee />;
+        case "stewardsclub": return <StewardsClub />;
+        case "boardappeal": return <BoardAppeal />;
+        case "timeline": return <TimeLine />;
+        case "bequeathingcoloniallegacy": return <BequeathingColonialLegacy />
+        case "charityracedays": return <CharityRaceDays />
+        case "contributingcommunity": return <ContributingCommunity />
+        case "responsible-gambling": return <ResponsibleGambling />;
+        case "careersclub": return <CareersClub />;
+        case "beginners-guide": return <BeginnersGuide />;
+        case "jockeystatistics": return <JockeyStatistics />;
+        case "jockeyridingweight": return <JockeyRidingWeight />;
+        case "trainerstatistics": return <TrainerStatistics />;
+        case "noticefromstewards": return <NoticeFromStewards />;
+        case "steward-notice": return <StewardsReport />;
+        case "readyreckoner": return <ReadyReckoner />;
+        case "bodyweighthorse": return <BodyWeightHorse />;
+        case "recordtimings": return <RecordTimings />;
+        case "saddleclothnumbers": return <SaddleClothNumbers />;
+        case "wageringoverview": return <WageringOverview />;
+        case "beginnersluckracing": return <BeginnersluckRacing />;
+        case "wageringterms": return <WageringTerms />;
+        case "betting-pools": return <BettingPools />;
+        case "national-tote-pools": return <NationalTotePools />;
+        case "betting-channels": return <BettingChannels />;
+        case "deduction-norms": return <DeductionNorms />;
+        case "membership-overview": return <MembershipOverview />;
+        case "club-membership-privileges": return <ClubMembershipPrivileges />;
+        case "membership-categories": return <MembershipCategories />;
+        case "comeracing-overview": return <ComeRacingOverview />;
+        case "mumbai-race-course": return <MumbaiRaceCourse />;
+        case "pune-race-course": return <PuneRaceCourse />;
+        case "how-to-get-there": return <HowToGetThere />;
+        case "race-course-services-others": return <RaceCourseServicesOthers />;
+        case "partners-overview": return <PartnersOverview />;
+        case "sponsor-privileges": return <SponsorPrivileges />;
+        case "partners-opportunities": return <PartnersOpportunities />;
+        case "partners-contact": return <ContactForAdvertising />;
+        case "application-forms": return <ApplicationForm />;
 
-        default:
-            return (
-                <h2
-                    style={{
-                        minHeight: "60vh",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "24px",
-                        fontWeight: "600",
-                    }}
-                >
-                    Page Not Found
-                </h2>
-            );
+        default: return (
+            <h2
+                style={{
+                    minHeight: "60vh",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "24px",
+                    fontWeight: "600",
+                }}
+            >
+                Page Not Found
+            </h2>
+        );
     }
 }
 export default function MenuBarPage() {

@@ -1,0 +1,254 @@
+/* =========================================================
+   HOW TO GET THERE PAGE
+========================================================= */
+
+.aboutPage {
+    width: 100%;
+    background: #f7f9fb;
+    min-height: 100vh;
+    padding: 60px 20px 90px;
+}
+
+/* HEADING */
+.aboutTitleWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 44px;
+}
+
+.aboutHeading {
+    font-size: 40px;
+    font-weight: 800;
+    color: #0d3b1f;
+    letter-spacing: .3px;
+    position: relative;
+    padding-bottom: 16px;
+    text-align: center;
+}
+
+/* SECTION DIVIDER */
+.sectionDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 0px;
+    width: 100%;
+    max-width: 480px;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 2px;
+    border-radius: 999px;
+}
+
+.dividerLineLeft {
+    background: linear-gradient(to right, transparent, #d97706);
+}
+
+.dividerLineRight {
+    background: linear-gradient(to left, transparent, #16a34a);
+}
+
+.dividerIcon {
+    font-size: 22px;
+    color: #0d3b1f;
+    flex-shrink: 0;
+}
+
+/* CONTENT CARD */
+.aboutCard {
+    width: 92%;
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 60px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
+    border: 1px solid #eef1f4;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* CONTENT */
+.aboutContent {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+/* MAP BLOCK */
+.mapBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.mapLabel {
+    font-size: 21px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.mapFrameWrap {
+    width: 100%;
+    height: 340px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e5e9ec;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .06);
+}
+
+.mapLargerLink {
+    align-self: flex-start;
+    color: #16a34a;
+    font-weight: 700;
+    font-size: 14.5px;
+    text-decoration: none;
+}
+
+.mapLargerLink:hover {
+    text-decoration: underline;
+}
+
+/* DIVIDER BETWEEN THE TWO MAPS */
+.mapDivider {
+    height: 1px;
+    background: #eef1f4;
+    width: 100%;
+}
+
+/* TABLET */
+@media (max-width: 992px) {
+
+    .aboutHeading {
+        font-size: 32px;
+    }
+
+    .aboutCard {
+        padding: 44px;
+    }
+
+    .mapFrameWrap {
+        height: 300px;
+    }
+
+    .mapLabel {
+        font-size: 19px;
+    }
+
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+    .aboutPage {
+        padding: 40px 14px 70px;
+    }
+
+    .aboutTitleWrap {
+        margin-bottom: 30px;
+    }
+
+    .aboutHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
+
+    .sectionDivider {
+        max-width: 320px;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .dividerIcon {
+        font-size: 18px;
+    }
+
+    .aboutCard {
+        padding: 28px 22px;
+        border-radius: 22px;
+    }
+
+    .aboutContent {
+        gap: 30px;
+    }
+
+    .mapFrameWrap {
+        height: 240px;
+        border-radius: 12px;
+    }
+
+    .mapLabel {
+        font-size: 17px;
+    }
+
+    .mapLargerLink {
+        font-size: 13.5px;
+    }
+
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+    .aboutHeading {
+        font-size: 22px;
+    }
+
+    .sectionDivider {
+        max-width: 240px;
+    }
+
+    .aboutCard {
+        padding: 22px 16px;
+    }
+
+    .mapFrameWrap {
+        height: 200px;
+    }
+
+    .mapLabel {
+        font-size: 15.5px;
+    }
+
+}
+
+/* SCROLL ANIMATION */
+.aboutCard {
+    animation: fadeUp .6s ease both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #16a34a;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #15803d;
+}

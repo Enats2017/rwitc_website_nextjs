@@ -255,10 +255,10 @@ export default function TopHeader() {
             key: "membership",
             icon: <FaUsers />,
             children: [
-                { label: "Overview", href: "/membership/#" },
-                { label: "Club Membership Privileges", href: "/membership/#" },
-                { label: "Categories", href: "/membership/#" },
-                { label: "Affiliated Clubs with RWITC", href: "/membership/#" },
+                { label: "Overview", href: "/menubar?type=membership-overview" },
+                { label: "Club Membership Privileges", href: "/menubar?type=club-membership-privileges" },
+                { label: "Categories", href: "/menubar?type=membership-categories" },
+                { label: "Affiliated Clubs with RWITC", href: `${NEWS_URL}/Affiliation.pdf`, target: "_blank" },
             ],
         },
         {
@@ -266,11 +266,11 @@ export default function TopHeader() {
             key: "comeracing",
             icon: <FaStar />,
             children: [
-                { label: "Overview", href: "/experience/#" },
-                { label: "Mumbai Race Course", href: "/experience/#" },
-                { label: "Pune Race Course", href: "/experience/#" },
-                { label: "How to get there", href: "/experience/#" },
-                { label: "Race Course Services & Others", href: "/experience/#" },
+                { label: "Overview", href: "/menubar?type=comeracing-overview" },
+                { label: "Mumbai Race Course", href: "/menubar?type=mumbai-race-course" },
+                { label: "Pune Race Course", href: "/menubar?type=pune-race-course" },
+                { label: "How to get there", href: "/menubar?type=how-to-get-there" },
+                { label: "Race Course Services & Others", href: "/menubar?type=race-course-services-others" },
             ],
         },
         {
@@ -278,9 +278,10 @@ export default function TopHeader() {
             key: "partners",
             icon: <FaHandshake />,
             children: [
-                { label: "Sponsor's Privileges", href: "/partners/#" },
-                { label: "Advertising & Sponsorship Opportunities", href: "/partners/#" },
-                { label: "Contact Us", href: "/partners/#" },
+                { label: "Overview", href: "/menubar?type=partners-overview" },
+                { label: "Sponsor's Privileges", href: "/menubar?type=sponsor-privileges" },
+                { label: "Advertising & Sponsorship Opportunities", href: "/menubar?type=partners-opportunities" },
+                { label: "Contact Us", href: "/menubar?type=partners-contact" },
             ],
         },
         {
@@ -288,9 +289,9 @@ export default function TopHeader() {
             key: "downloads",
             icon: <FaCloudDownloadAlt />,
             children: [
-                { label: "Forms", href: "/downloads/#" },
-                { label: "Chart", href: "/downloads/#" },
-                { label: "Prospectus", href: "/downloads/#" },
+                { label: "Forms", href: "/menubar?type=application-forms" },
+                { label: "Chart", href: `${NEW_URL}/aplication_forms/CHART.pdf`, target: "_blank" },
+                { label: "Prospectus", href: `${NEW_URL}/aplication_forms/PROSPECTUS.pdf`, target: "_blank" },
             ],
         },
     ];
