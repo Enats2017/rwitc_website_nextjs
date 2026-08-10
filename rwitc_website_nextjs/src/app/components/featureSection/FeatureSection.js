@@ -20,8 +20,8 @@ import {
 export default function FeatureSection() {
 
     const features = [
-        { title: "Performance Profile of Horses", icon: <FaTrophy />, image: "body_img1.jpeg" },
-        { title: "Trainerwise Horses In Training", icon: <FaUserTie />, image: "body_img2.jpeg" },
+        { title: "Performance Profile of Horses", icon: <FaTrophy />, image: "body_img1.jpeg", link: "/race_details?type=performanceProfile" },
+        { title: "Trainerwise Horses In Training", icon: <FaUserTie />, image: "body_img2.jpeg", link: "/race_details?type=trainerHorses" },
         { title: "Webportal For Owners / Trainers", icon: <FaUsers />, image: "body_img4.jpeg" },
         { title: "Rating of all Horses", icon: <FaStar />, image: "body_img3.jpeg" },
         { title: "Tote Dividends", icon: <FaMoneyBillWave />, image: "body_img3.jpeg", wide: true, link: "/race_details?type=dividends",},

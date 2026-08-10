@@ -1,0 +1,290 @@
+/* ================= TRAINER WISE HORSES IN TRAINING ================= */
+
+.trainerHorsesSection {
+    --th-green: #0e663e;
+    --th-green-dark: #0a4b2d;
+    --th-green-soft: #eef7f1;
+    --th-border: #eaecee;
+    --th-text: #1f2937;
+
+    width: 100%;
+    background: #f4f6f8;
+    padding: 40px 20px 70px;
+    display: flex;
+    justify-content: center;
+    font-family: 'Inter', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.thWrap {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ---- MAIN CARD ---- */
+.thCard {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 14px 40px rgba(10, 75, 45, .08);
+    overflow: hidden;
+}
+
+/* ---- HEADER ---- */
+.thHeader {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 28px;
+    background: linear-gradient(135deg, var(--th-green) 0%, var(--th-green-dark) 100%);
+    border-radius: 20px 20px 0 0;
+}
+
+.thHeaderIcon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 22px;
+}
+
+.thHeaderTitle {
+    margin: 0;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+
+/* ---- BODY / GRID ---- */
+.thBody {
+    padding: 12px 20px 20px;
+}
+
+.thGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.thItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--th-border);
+    text-align: left;
+    padding: 16px 12px;
+    cursor: pointer;
+    font: inherit;
+    color: var(--th-text);
+    border-radius: 10px;
+    transition: background .2s ease;
+}
+
+.thGrid .thItem:nth-child(4n+1) { border-right: 1px solid var(--th-border); }
+.thGrid .thItem:nth-child(4n+2) { border-right: 1px solid var(--th-border); }
+.thGrid .thItem:nth-child(4n+3) { border-right: 1px solid var(--th-border); }
+
+.thItem:hover {
+    background: var(--th-green-soft);
+}
+
+.thItemActive {
+    background: var(--th-green-soft);
+}
+
+.thBadge {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--th-green);
+    color: #ffffff;
+    font-size: 12.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.thName {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--th-text);
+}
+
+/* ---- STATE (loading / empty) ---- */
+.thState {
+    text-align: center;
+    padding: 50px 20px;
+    color: #6b7280;
+    font-size: 14.5px;
+}
+
+.thLoader {
+    width: 32px;
+    height: 32px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    border: 3px solid rgba(14, 102, 62, .15);
+    border-top-color: var(--th-green);
+    animation: thSpin .8s linear infinite;
+}
+
+@keyframes thSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- RESULTS CARD (selected trainer's horses) ---- */
+.thResultsCard {
+    width: 100%;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 14px 40px rgba(10, 75, 45, .08);
+    padding: 28px 28px 32px;
+    animation: thFadeIn .35s ease both;
+}
+
+@keyframes thFadeIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.thResultsHeader {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.thResultsTitle {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--th-green-dark);
+}
+
+.thResultsSub {
+    margin: 0;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* ---- HORSES TABLE ---- */
+.thTableWrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.thTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.thTable thead th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--th-green-dark);
+    background: var(--th-green-soft);
+    padding: 12px 14px;
+    border: 1px solid var(--th-border);
+    white-space: nowrap;
+}
+
+.thTable tbody td {
+    font-size: 13.5px;
+    color: var(--th-text);
+    padding: 12px 14px;
+    border: 1px solid var(--th-border);
+    white-space: nowrap;
+}
+
+.thTable tbody tr:hover {
+    background: var(--th-green-soft);
+}
+
+.thTable td.thAlignLeft {
+    white-space: normal;
+    text-align: left;
+}
+
+.thTable a {
+    color: var(--th-green);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.thTable a:hover {
+    text-decoration: underline;
+}
+
+.thSire {
+    margin: 0;
+    color: var(--th-text);
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 992px) {
+
+    .thGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .thGrid .thItem:nth-child(4n+3) { border-right: none; }
+    .thGrid .thItem:nth-child(odd) { border-right: 1px solid var(--th-border); }
+    .thGrid .thItem:nth-child(even) { border-right: none; }
+}
+
+@media (max-width: 600px) {
+
+    .trainerHorsesSection {
+        padding: 28px 12px 50px;
+    }
+
+    .thHeader {
+        padding: 16px 18px;
+    }
+
+    .thHeaderTitle {
+        font-size: 16px;
+    }
+
+    .thHeaderIcon {
+        width: 32px;
+        height: 32px;
+        font-size: 17px;
+    }
+
+    .thGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .thGrid .thItem { border-right: none !important; }
+
+    .thBody {
+        padding: 8px 12px 12px;
+    }
+
+    .thResultsCard {
+        padding: 18px 16px 22px;
+    }
+
+    .thResultsTitle {
+        font-size: 18px;
+    }
+
+    .thTable thead th,
+    .thTable tbody td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+}

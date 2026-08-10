@@ -14,6 +14,10 @@ import RatingChange from "./components/RatingChange";
 import RaceDayReport from "./components/RaceDayReport";
 import Sweepstake from "./components/Sweepstake";
 import Dividends from "./components/Dividends";
+import PerformanceProfile from "./components/Performanceprofile";
+import TrainerHorsesList from "./components/TrainerHorsesList";
+import TrainerHorsesResults from "./components/TrainerHorsesResults";
+
 
 function RaceDetailsContent() {
 
@@ -38,6 +42,12 @@ function RaceDetailsContent() {
         ContentComponent = <RaceDayReport />; 
     } else if (type === "sweepstakes") {
         ContentComponent = <Sweepstake />;
+    } else if (type === "performanceProfile") {
+        ContentComponent = <PerformanceProfile />;
+    } else if (type === "trainerHorses") {
+        ContentComponent = <TrainerHorsesList />;
+    } else if (type === "trainerHorsesResults") {
+        ContentComponent = <TrainerHorsesResults />;
     } else if (type === "photos") {
         ContentComponent = <Photos />;
     } else if (type === "trackWork") {

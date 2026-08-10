@@ -195,11 +195,15 @@ function buildSireDameDetails($sire, $sirenat, $dam, $damnat)
     return $details;
 }
 
+/**
+ * Build the video reference for a run. Only returns the query params
+ * (e.g. "d=29032026&rno=5") rather than a full URL, so the frontend
+ * can construct/host the link itself.
+ */
 function buildVideoLink($raceDate, $dayRaceNo)
 {
     if (strtotime($raceDate) >= strtotime("2015-07-23")) {
-        return "https://www.rwitcraces.com/RaceArchives.aspx?d="
-            . date("dmY", strtotime($raceDate))
+        return "d=" . date("dmY", strtotime($raceDate))
             . "&rno=" . $dayRaceNo;
     }
     return null;
@@ -276,16 +280,6 @@ try {
     }
     while ($jvalue = $declResult->fetch_assoc()) {
         $dec_datas[$jvalue["HORSESEQ"] . "_" . $jvalue["RACEDATE"]] = $jvalue["RACENO"];
-    }
-
-    // Horse sequence migration map
-    $horse_migration_datas = [];
-    $migResult = $conn->query("SELECT * FROM `updated_horsesequence_number` WHERE 1=1");
-    if ($migResult === false) {
-        throw new Exception($conn->error);
-    }
-    while ($jvalue = $migResult->fetch_assoc()) {
-        $horse_migration_datas[$jvalue["seq_no"]] = $jvalue["id"];
     }
 
     // --------------------------------------------------
@@ -371,10 +365,6 @@ try {
             $rowHorseName = $odvalue["HORSENM"];
             $rowOldHorseName = $odvalue["HORSENMOLD"];
             $rowHorseId = $odvalue["HORSESEQ"];
-
-            if (isset($horse_migration_datas[$rowHorseId])) {
-                $rowHorseId = $horse_migration_datas[$rowHorseId];
-            }
 
             $include = true;
             if (isset($horse_data[$rowHorseName])) {

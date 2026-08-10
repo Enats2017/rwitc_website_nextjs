@@ -1,0 +1,505 @@
+/* ================= PERFORMANCE PROFILE PAGE — MODERN MINIMAL PREMIUM ================= */
+
+.performanceProfilePage {
+    --pp-bg: #FFFFFF;
+    --pp-green: #1F7A3E;
+    --pp-green-dark: #134E2A;
+    --pp-gray-light: #F5F7F8;
+    --pp-border: #E5E7EB;
+    --pp-text: #1F2937;
+
+    width: 100%;
+    background: var(--pp-bg);
+    font-family: 'Inter', 'Manrope', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 56px 16px 64px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ppPageWrap {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ---- CARD CONTAINER ---- */
+.performanceProfilePage .ppCard {
+    position: relative;
+    width: 100%;
+    max-width: 1100px;
+    background: var(--pp-bg);
+    border: 1px solid var(--pp-border);
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(19, 78, 42, 0.04), 0 16px 40px rgba(19, 78, 42, 0.06);
+    padding: 40px 40px 44px;
+    overflow: visible;
+}
+
+/* Top accent bar */
+.performanceProfilePage .ppCard::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(90deg, var(--pp-green) 0%, var(--pp-green-dark) 100%);
+}
+
+
+
+
+
+/* ---- HEADER (icon + title) ---- */
+.performanceProfilePage .ppHeader {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.performanceProfilePage .ppHorseIcon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.performanceProfilePage .ppHorseIcon svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--pp-green);
+}
+
+.performanceProfilePage .ppTitle {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--pp-green-dark);
+    margin: 0;
+}
+
+/* ---- SEARCH ROW ---- */
+.performanceProfilePage .ppSearchRow {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: var(--pp-gray-light);
+    border: 1px solid var(--pp-border);
+    border-radius: 16px;
+    padding: 22px 28px;
+}
+
+.performanceProfilePage .ppLabelGroup {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.performanceProfilePage .ppSearchIconWrap {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+}
+
+.performanceProfilePage .ppSearchIconWrap svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--pp-green);
+}
+
+.performanceProfilePage .ppLabel {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--pp-text);
+    white-space: nowrap;
+}
+
+/* ---- INPUT WRAPPER (autocomplete anchor) ---- */
+.performanceProfilePage .ppInputWrap {
+    position: relative;
+    flex: 1 1 320px;
+    min-width: 260px;
+    max-width: 500px;
+}
+
+.performanceProfilePage .ppInput {
+    width: 100%;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--pp-text);
+    background: #FFFFFF;
+    border: 1px solid var(--pp-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.performanceProfilePage .ppInput::placeholder {
+    color: #9CA3AF;
+}
+
+.performanceProfilePage .ppInput:focus {
+    border-color: var(--pp-green);
+    box-shadow: 0 0 0 4px rgba(31, 122, 62, 0.12);
+}
+
+/* ---- AUTOCOMPLETE DROPDOWN ---- */
+.performanceProfilePage .ppSuggestions {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    border: 1px solid var(--pp-border);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(19, 78, 42, 0.12);
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 20;
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+}
+
+.performanceProfilePage .ppSuggestionItem {
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--pp-text);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.performanceProfilePage .ppSuggestionItem:hover,
+.performanceProfilePage .ppSuggestionItem.active {
+    background: var(--pp-gray-light);
+    color: var(--pp-green-dark);
+}
+
+.performanceProfilePage .ppSuggestionEmpty {
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #9CA3AF;
+}
+
+/* ---- SUBMIT BUTTON ---- */
+.performanceProfilePage .ppSubmitBtn {
+    flex-shrink: 0;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: #FFFFFF;
+    background: var(--pp-green);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 32px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(31, 122, 62, 0.25);
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.performanceProfilePage .ppSubmitBtn:hover {
+    background: var(--pp-green-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(19, 78, 42, 0.3);
+}
+
+.performanceProfilePage .ppSubmitBtn:active {
+    transform: translateY(0);
+}
+
+.performanceProfilePage .ppSubmitBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ---- RESULTS AREA (placeholder, styled to match) ---- */
+.performanceProfilePage .ppResults {
+    position: relative;
+    z-index: 1;
+    margin-top: 32px;
+}
+
+.performanceProfilePage .ppResultsEmpty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6B7280;
+    font-size: 14px;
+}
+
+/* ---- RESULTS CARD (profile data after submit) ---- */
+.ppResultsCard {
+    width: 100%;
+    background: var(--pp-bg);
+    border: 1px solid var(--pp-border);
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(19, 78, 42, 0.04), 0 16px 40px rgba(19, 78, 42, 0.06);
+    padding: 32px 36px 36px;
+}
+
+.ppResultsLoading,
+.ppResultsError {
+    text-align: center;
+    font-size: 15px;
+    color: #6B7280;
+    padding: 20px 0;
+}
+
+.ppResultsError {
+    color: #B3261E;
+}
+
+.ppResultsHeader {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.ppResultsHorseName {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--pp-green-dark);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    margin: 0 0 8px;
+}
+
+.ppResultsSireDame {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pp-text);
+    margin: 0;
+}
+
+/* ---- RUNS TABLE ---- */
+.ppTableWrap {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 28px;
+}
+
+.ppRunsTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ppRunsTable thead th {
+    text-align: left;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--pp-green-dark);
+    background: var(--pp-gray-light);
+    padding: 12px 14px;
+    border: 1px solid var(--pp-border);
+    white-space: nowrap;
+}
+
+.ppRunsTable tbody td {
+    font-size: 13.5px;
+    color: var(--pp-text);
+    padding: 12px 14px;
+    border: 1px solid var(--pp-border);
+    white-space: nowrap;
+}
+
+.ppRunsTable tbody tr:hover {
+    background: var(--pp-gray-light);
+}
+
+.ppVideoIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: var(--pp-green);
+    color: #FFFFFF;
+    font-size: 11px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.ppVideoIcon:hover {
+    background: var(--pp-green-dark);
+}
+
+/* ---- TOTALS TABLE ---- */
+.ppTotalsWrap {
+    width: 100%;
+}
+
+.ppTotalsTitle {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--pp-green-dark);
+    background: var(--pp-gray-light);
+    border: 1px solid var(--pp-border);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    padding: 12px;
+    margin: 0;
+}
+
+.ppTotalsTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ppTotalsTable thead th {
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--pp-green-dark);
+    background: var(--pp-gray-light);
+    padding: 12px;
+    border: 1px solid var(--pp-border);
+}
+
+.ppTotalsTable tbody td {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pp-text);
+    padding: 12px;
+    border: 1px solid var(--pp-border);
+    border-radius: 0 0 12px 12px;
+}
+
+/* ---- RACENO CLICKABLE LINK ---- */
+.ppRaceNoLink {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-weight: 700;
+    color: var(--pp-green);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.ppRaceNoLink:hover {
+    color: var(--pp-green-dark);
+}
+
+/* ---- BACK BUTTON (race result view) ---- */
+.ppBackBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--pp-gray-light);
+    border: 1px solid var(--pp-border);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--pp-green-dark);
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: background 0.2s ease;
+}
+
+.ppBackBtn:hover {
+    background: #E9EDEA;
+}
+
+/* ---- RACE RESULT TITLE ---- */
+.ppRaceResultTitle {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--pp-green-dark);
+    margin: 0 0 8px;
+}
+
+.ppSireDameSmall {
+    font-size: 11.5px;
+    font-weight: 400;
+    color: #6B7280;
+}
+
+
+
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+
+    .performanceProfilePage {
+        padding: 32px 12px 40px;
+    }
+
+    .performanceProfilePage .ppCard {
+        padding: 28px 20px 32px;
+        border-radius: 16px;
+    }
+
+    .performanceProfilePage .ppTitle {
+        font-size: 24px;
+    }
+
+    
+
+    .performanceProfilePage .ppSearchRow {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 18px 18px;
+    }
+
+    .performanceProfilePage .ppLabelGroup {
+        justify-content: flex-start;
+    }
+
+    .performanceProfilePage .ppInputWrap {
+        max-width: none;
+    }
+
+    .performanceProfilePage .ppSubmitBtn {
+        width: 100%;
+    }
+
+    .ppResultsCard {
+        padding: 20px 16px 24px;
+        border-radius: 16px;
+    }
+
+    .ppResultsHorseName {
+        font-size: 19px;
+    }
+
+    .ppRunsTable thead th,
+    .ppRunsTable tbody td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .ppTotalsTable thead th,
+    .ppTotalsTable tbody td {
+        padding: 8px;
+        font-size: 12px;
+    }
+}

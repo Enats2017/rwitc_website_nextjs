@@ -6,7 +6,6 @@ header("Access-Control-Allow-Methods: GET");
 
 // Load database and security
 require_once __DIR__ . "/config/config.php";
-require_once __DIR__ . "/config/run_races_config.php";
 require_once __DIR__ . "/ApiSecurity.php";
 
 // --------------------------------------------------
@@ -66,88 +65,9 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 $raceno = $_GET["raceno"] ?? "";
 $racedate = $_GET["racedate"] ?? "";
 
-if ($racedate === "" || strtotime($racedate) === false) {
+if ($raceno === "" || $racedate === "" || strtotime($racedate) === false) {
     $security->respondError(
-        "A valid racedate parameter (YYYY-MM-DD) is required",
-        400
-    );
-    exit;
-}
-
-// --------------------------------------------------
-// ARCHIVE MODE (racedate > 2022-09-25): served from a static
-// Race_results_<date>.html file on disk, same pattern as
-// Acceptance/Declarations/Handicaps. The whole day's races live in
-// one file, so raceno is not required/used here.
-// --------------------------------------------------
-
-if ($racedate > "2022-09-25") {
-
-    $cacheKey = "race_result_html_" . md5($racedate);
-
-    if ($security->serveCache($cacheKey)) {
-        exit;
-    }
-
-    $htmlFile = RUN_RACES_LOCAL_PATH . "/Race_results_" . $racedate . ".html";
-
-    if (!file_exists($htmlFile)) {
-        $security->respondError("No race results found for this date", 404);
-        exit;
-    }
-
-    try {
-
-        $htmlContent = file_get_contents($htmlFile);
-
-        if ($htmlContent === false) {
-            throw new Exception("Unable to read archive file: " . $htmlFile);
-        }
-
-        $htmFile = RUN_RACES_LOCAL_PATH . "/Race_results_" . $racedate . ".htm";
-        $downloadAvailable = file_exists($htmFile);
-        $downloadFile = $downloadAvailable
-            ? RUN_RACES_BASE_URL . "/Race_results_" . $racedate . ".htm"
-            : null;
-
-        $response = [
-            "found"              => true,
-            "date"               => $racedate,
-            "mode"               => "html",
-            "html"               => $htmlContent,
-            "download_file"      => $downloadFile,
-            "download_available" => $downloadAvailable
-        ];
-
-        $security->respondAndCache($cacheKey, $response);
-
-    } catch (Throwable $error) {
-
-        $security->logLine("RACE_RESULT_HTML_READ_ERROR | " . $error->getMessage());
-        $security->respondError("Internal server error", 500);
-
-    } finally {
-
-        if (isset($conn)) {
-            $conn->close();
-        }
-
-        if (isset($handle) && is_resource($handle)) {
-            fclose($handle);
-        }
-    }
-
-    exit;
-}
-
-// --------------------------------------------------
-// JSON MODE (racedate <= 2022-09-25): DB-driven, per race.
-// raceno is required here since results are fetched race by race.
-// --------------------------------------------------
-
-if ($raceno === "") {
-    $security->respondError(
-        "raceno parameter is required for this date",
+        "raceno and a valid racedate parameter are required",
         400
     );
     exit;
