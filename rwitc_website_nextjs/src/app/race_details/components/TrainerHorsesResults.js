@@ -92,7 +92,7 @@ export default function TrainerHorsesResults() {
                                             <td>{i + 1}</td>
                                             <td className="thAlignLeft">
 
-                                                <Link href={`/race_details?type=performanceProfile&as_values=${encodeURIComponent(horse.HORSENM)}&horseseq=${horse.HORSESEQ}`}
+                                                <Link href={`/race_details/?type=performanceProfile&as_values=${encodeURIComponent(horse.HORSENM)}&horseseq=${horse.HORSESEQ}`}
                                                 >
                                                     {horse.HORSENM}
                                                 </Link>
@@ -102,7 +102,7 @@ export default function TrainerHorsesResults() {
                                             <td className="thAlignLeft">
                                                 <p className="thSire">{horse.SIRE}-</p>
                                                 <Link
-                                                    href={`/race_details?type=foalRecords&mareName=${encodeURIComponent(horse.DAM)}&damnat=${horse.DAMNAT || ""}`}
+                                                    href={`/race_details/?type=foalRecords&mareName=${encodeURIComponent(horse.DAM)}&damnat=${horse.DAMNAT || ""}`}
                                                 >
                                                     {horse.DAM} {horse.DAMNAT ? `[${horse.DAMNAT}]` : ""}
                                                 </Link>
