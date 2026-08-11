@@ -12,7 +12,7 @@
 // ============================================================
 
 // Set this to false when deploying to the live server
-define("IS_LOCAL", false);
+define("IS_LOCAL", true);
 
 if (IS_LOCAL) {
 
@@ -47,7 +47,7 @@ if (IS_LOCAL) {
 
     define("RUN_RACES_BASE_URL", "http://91.99.229.154/rwitc-website/run_races");
 
-    define("RUN_RACES_LOCAL_PATH", $_SERVER["DOCUMENT_ROOT"] . "run_races");
+    define("RUN_RACES_LOCAL_PATH", realpath(__DIR__ . "/../../run_races"));
 
     // Sweepstake .htm files public URL (production)
     define("STATIC_SWEEPSTAKE_URL", "http://91.99.229.154/rwitc-website/staticpages/sweepstakes/");
