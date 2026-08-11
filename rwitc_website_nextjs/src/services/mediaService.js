@@ -19,5 +19,5 @@ export async function getRaceMedia() {
 
     const json = await res.json();
 
-    return json.data || {};
+    return json.data || { preRace: [], postRace: [], trackWork: [] };
 }

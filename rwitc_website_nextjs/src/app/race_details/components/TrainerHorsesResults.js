@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { getTrainerHorses } from "../../../services/TrainerhorsesService";
 import "./Trainerhorses.css";
 
@@ -90,21 +91,21 @@ export default function TrainerHorsesResults() {
                                         <tr key={horse.HORSESEQ}>
                                             <td>{i + 1}</td>
                                             <td className="thAlignLeft">
-                                                
-                                                <a  href={`/race_details?type=performanceProfile&as_values=${encodeURIComponent(horse.HORSENM)}&horseseq=${horse.HORSESEQ}`}
+
+                                                <Link href={`/race_details?type=performanceProfile&as_values=${encodeURIComponent(horse.HORSENM)}&horseseq=${horse.HORSESEQ}`}
                                                 >
                                                     {horse.HORSENM}
-                                                </a>
+                                                </Link>
                                             </td>
                                             <td>{horse.RATING}</td>
                                             <td>{horse.COLOR} {horse.SEX} {horse.AGE}</td>
                                             <td className="thAlignLeft">
                                                 <p className="thSire">{horse.SIRE}-</p>
-                                                <a
+                                                <Link
                                                     href={`/race_details?type=foalRecords&mareName=${encodeURIComponent(horse.DAM)}&damnat=${horse.DAMNAT || ""}`}
                                                 >
                                                     {horse.DAM} {horse.DAMNAT ? `[${horse.DAMNAT}]` : ""}
-                                                </a>
+                                                </Link>
                                             </td>
                                             <td className="thAlignLeft">{formatOwnership(horse)}</td>
                                         </tr>

@@ -143,7 +143,7 @@ function fetchByDatesIn($conn, $sql, array $dates)
 
 try {
 
-    $runRacesBaseUrl = "http://localhost/run_races/";
+    $runRacesBaseUrl = "http://91.99.229.154/run_races/";
 
     // ==================================================
     // PRE-RACE

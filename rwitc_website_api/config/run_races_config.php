@@ -12,7 +12,7 @@
 // ============================================================
 
 // Set this to false when deploying to the live server
-define("IS_LOCAL", true);
+define("IS_LOCAL", false);
 
 if (IS_LOCAL) {
 
@@ -45,13 +45,13 @@ if (IS_LOCAL) {
     // TODO: confirm the exact production URL + server path
     // before going live, then update these two lines only.
 
-    define("RUN_RACES_BASE_URL", "https://rwitc.com/run_races");
+    define("RUN_RACES_BASE_URL", "http://91.99.229.154/rwitc-website/run_races");
 
-    define("RUN_RACES_LOCAL_PATH", $_SERVER["DOCUMENT_ROOT"] . "/run_races");
+    define("RUN_RACES_LOCAL_PATH", $_SERVER["DOCUMENT_ROOT"] . "run_races");
 
     // Sweepstake .htm files public URL (production)
-    define("STATIC_SWEEPSTAKE_URL", "https://rwitc.com/staticpages/sweepstakes/");
+    define("STATIC_SWEEPSTAKE_URL", "http://91.99.229.154/rwitc-website/staticpages/sweepstakes/");
 
     // Dividends .htm files public URL (production)
-    define("STATIC_DIVIDENDS_URL", "https://rwitc.com/staticpages/dividends/");
+    define("STATIC_DIVIDENDS_URL", "http://91.99.229.154/rwitc-website/staticpages/dividends/");
 }
