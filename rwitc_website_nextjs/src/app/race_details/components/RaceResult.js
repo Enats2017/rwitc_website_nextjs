@@ -13,7 +13,7 @@ const ARCHIVE_STYLES_RACE_RESULT = `
     table { width: 100% !important; max-width: 100% !important; table-layout: fixed; border-collapse: collapse; }
     body { overflow-x: hidden !important; }
     td, th { word-break: break-word; padding: 10px 12px !important; border: 1px solid #cccccc; }
-    span, a { display: inline-block; text-decoration: none; color: #333333; }
+    span, a { display: inline-block; text-decoration: none; color: #333333; font-weight: bold; }
     th { color: #000 !important; font-weight: 700; text-align: center; background: #fff; }
     td { text-align: center; color: #222 !important; font-weight: 400; background: #fff; }
     .alignLeft, td.alignLeft { text-align: left !important; }
@@ -21,7 +21,7 @@ const ARCHIVE_STYLES_RACE_RESULT = `
     .download { display: none !important; }
     h3 { font-size: 22px; color: #000; margin: 10px 0; font-weight: 700; }
     .pageHeader, .pageHeading { text-align: center; width: 100%; }
-    .subHeading { font-size: 14px; font-weight: 700; color: #000; text-align: center; display: block; width: 100%; }
+    .subHeading { font-size: 14px; font-weight: 700; color: #000; margin-left: 2% !important; display: block; width: 100%; }
 </style>
 `;
 

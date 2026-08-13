@@ -15,13 +15,31 @@ require_once __DIR__ . "/ApiSecurity.php";
 // not on this API server, so post-cutoff "does this file exist" checks
 // have to be done over HTTP instead of via local file_exists().
 
-if (!defined('RUN_RACES_BASE_URL')) {
-    define('RUN_RACES_BASE_URL', 'https://www.rwitc.com/run_races/');
-}
+
+// =========== Live Url ===================
+
+// if (!defined('RUN_RACES_BASE_URL')) {
+//     define('RUN_RACES_BASE_URL', 'https://www.rwitc.com/run_races/');
+// }
+
+// if (!defined('RACEDAY_REPORT_BASE_URL')) {
+//     define('RACEDAY_REPORT_BASE_URL', 'https://www.rwitc.com/staticpages/racedayreports/');
+// }
+
+
+
+// ========== Local Url ===================
+
+require_once __DIR__ . "/config/run_races_config.php";
 
 if (!defined('RACEDAY_REPORT_BASE_URL')) {
-    define('RACEDAY_REPORT_BASE_URL', 'https://www.rwitc.com/staticpages/racedayreports/');
+    define('RACEDAY_REPORT_BASE_URL', RACEDAY_REPORT_PUBLIC_BASE);
 }
+
+
+
+
+
 
 // Timeouts for the remote existence checks (seconds)
 const REMOTE_CHECK_CONNECT_TIMEOUT = 3;

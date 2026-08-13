@@ -21,10 +21,10 @@ if (IS_LOCAL) {
     // ----------------------------------------------------
 
     // URL the browser uses to open .htm files directly
-    define("RUN_RACES_BASE_URL", "http://localhost/run_races");
+    define("RUN_RACES_BASE_URL", "http://localhost/run_races/");         
 
     // Filesystem path PHP uses to check if a file exists
-    define("RUN_RACES_LOCAL_PATH", "C:/xampp/htdocs/run_races");
+    define("RUN_RACES_LOCAL_PATH", "C:/xampp/htdocs/run_races/");
 
     // Raceday Report .HTM files of local folder path
     define("RACEDAY_REPORT_DIR", "C:/xampp/htdocs/racedayreports/");

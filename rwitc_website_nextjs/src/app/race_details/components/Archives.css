@@ -1,0 +1,252 @@
+/* ==========================================
+   ARCHIVES — CALENDAR VIEW
+========================================== */
+
+.archivesSection {
+    width: 100%;
+    min-height: 100vh;
+    background: #f4f6f8;
+    padding: 40px 20px 80px;
+}
+
+/* ---- GREEN PILL BADGE (matches Handicaps/Declarations/RaceCard style) ---- */
+.archivesBadgeWrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.archivesBadge {
+    display: inline-block;
+    padding: 12px 32px;
+    border-radius: 999px;
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+/* ---- MAIN CARD ---- */
+.archivesCard {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px 30px 34px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.08);
+    border: 1px solid #edf1f4;
+    animation: archivesFadeIn .4s ease both;
+}
+
+@keyframes archivesFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- TOOLBAR ---- */
+.calendarToolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.monthTitle {
+    font-size: 26px;
+    font-weight: 800;
+    color: #9ca3af;
+}
+
+.navControls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.todayBtn {
+    height: 42px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 12px;
+    background: #eef7f0;
+    color: #00843d;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: .25s;
+    text-transform: lowercase;
+}
+
+.todayBtn:hover {
+    background: #d9f0df;
+}
+
+.navBtn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 12px;
+    background: #16a34a;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: .25s;
+    font-size: 15px;
+}
+
+.navBtn:hover {
+    background: #12803b;
+    transform: translateY(-2px);
+}
+
+/* ---- WEEKDAY ROW ---- */
+.weekdayRow {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 6px;
+}
+
+.weekdayCell {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #111827;
+    padding: 10px 0;
+    border-bottom: 1px solid #eef1f4;
+}
+
+/* ---- CALENDAR GRID ---- */
+.calendarGrid {
+    display: flex;
+    flex-direction: column;
+}
+
+.calendarWeek {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.dayCell {
+    min-height: 118px;
+    background: #ffffff;
+    border: 1px solid #eef1f4;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: .25s;
+}
+
+.dayCell:hover {
+    background: #fafbfc;
+}
+
+.dayCellMuted {
+    background: #fbfbfc;
+}
+
+.dayCellMuted .dayNumber {
+    color: #cbd0d5;
+}
+
+.dayCellToday {
+    background: #fff9e6;
+}
+
+.dayNumber {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+    text-align: right;
+}
+
+.dayEvents {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.eventPill {
+    display: block;
+    width: 100%;
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.eventPill:hover {
+    filter: brightness(1.12);
+}
+
+/* ---- LOADING ---- */
+.archivesLoading {
+    text-align: center;
+    padding: 80px 20px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #00843d;
+}
+
+.jumpWrapper {
+    position: relative;
+    display: inline-flex;
+}
+
+.hiddenDateInput {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    width: 42px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.jumpBtn {
+    background: #0f766e;
+}
+
+.jumpBtn:hover {
+    background: #0c5d56;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 992px) {
+    .dayCell { min-height: 96px; }
+}
+
+@media (max-width: 768px) {
+    .archivesCard { padding: 20px 16px 26px; }
+    .archivesBadge { font-size: 16px; padding: 10px 24px; }
+    .monthTitle { font-size: 21px; }
+    .dayCell { min-height: 80px; padding: 6px; }
+    .eventPill { font-size: 10px; padding: 3px 6px; }
+}
+
+@media (max-width: 480px) {
+    .weekdayCell { font-size: 11px; }
+    .dayCell { min-height: 68px; }
+    .dayNumber { font-size: 11px; }
+    .eventPill { font-size: 9px; padding: 3px 4px; }
+    .navBtn { height: 38px; width: 38px; }
+    .todayBtn { height: 38px; width: auto; padding: 0 14px; }
+}

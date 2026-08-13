@@ -1,0 +1,273 @@
+/* ==========================================
+   RACING FIXTURES — CALENDAR VIEW
+========================================== */
+
+.fixturesSection {
+    width: 100%;
+    min-height: 100vh;
+    background: #f4f6f8;
+    padding: 40px 20px 80px;
+}
+
+/* ---- SIMPLE HEADING (no bg, no icon, no subtitle) ---- */
+.fixturesTitle {
+    max-width: 1200px;
+    margin: 0 auto 24px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #00843d;
+}
+
+/* ---- MAIN CARD ---- */
+.fixturesCard {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px 30px 34px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.08);
+    border: 1px solid #edf1f4;
+    animation: fixturesFadeIn .4s ease both;
+}
+
+@keyframes fixturesFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- TOOLBAR ---- */
+.fixturesToolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.fixturesMonthTitle {
+    font-size: 26px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.fixturesNavControls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.fixturesTodayBtn {
+    height: 42px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 12px;
+    background: #eef7f0;
+    color: #00843d;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.fixturesTodayBtn:hover {
+    background: #d9f0df;
+}
+
+.fixturesNavBtn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 12px;
+    background: #16a34a;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: .25s;
+    font-size: 15px;
+}
+
+.fixturesNavBtn:hover {
+    background: #12803b;
+    transform: translateY(-2px);
+}
+
+.fixturesJumpBtn {
+    background: #0f766e;
+}
+
+.fixturesJumpBtn:hover {
+    background: #0c5d56;
+}
+
+/* ---- DATE JUMP INPUT ---- */
+.fixturesJumpWrapper {
+    position: relative;
+    display: inline-flex;
+}
+
+.fixturesHiddenDateInput {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    width: 42px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ---- LEGEND ---- */
+.fixturesLegendRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.fixturesLegendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+    background: #f7f9fb;
+    padding: 6px 12px;
+    border-radius: 999px;
+}
+
+.fixturesLegendDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* ---- WEEKDAY ROW ---- */
+.fixturesWeekdayRow {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 6px;
+}
+
+.fixturesWeekdayCell {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 10px 0;
+}
+
+/* ---- CALENDAR GRID ---- */
+.fixturesGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fixturesWeek {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.fixturesDayCell {
+    min-height: 110px;
+    background: #fafbfc;
+    border-radius: 14px;
+    border: 1px solid #eef1f4;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: .25s;
+}
+
+.fixturesDayCell:hover {
+    box-shadow: 0 8px 22px rgba(0,0,0,.06);
+    border-color: #dfe6ea;
+}
+
+.fixturesDayCellMuted {
+    background: #f4f5f7;
+    opacity: .5;
+}
+
+.fixturesDayCellToday {
+    background: #fff9e6;
+    border: 1px solid #fbe08a;
+}
+
+.fixturesDayNumber {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.fixturesDayCellMuted .fixturesDayNumber {
+    color: #9ca3af;
+}
+
+.fixturesDayEvents {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.fixturesEventPill {
+    display: block;
+    padding: 5px 10px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: .2s;
+}
+
+.fixturesEventPill:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* ---- LOADING ---- */
+.fixturesLoading {
+    text-align: center;
+    padding: 80px 20px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #00843d;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 992px) {
+    .fixturesTitle { font-size: 24px; }
+    .fixturesDayCell { min-height: 90px; }
+}
+
+@media (max-width: 768px) {
+    .fixturesCard { padding: 20px 16px 26px; }
+    .fixturesMonthTitle { font-size: 21px; }
+    .fixturesDayCell { min-height: 76px; padding: 8px; }
+    .fixturesEventPill { font-size: 11px; padding: 4px 8px; }
+    .fixturesTitle { font-size: 21px; margin-bottom: 18px; }
+}
+
+@media (max-width: 480px) {
+    .fixturesWeekdayCell { font-size: 11px; }
+    .fixturesDayCell { min-height: 64px; border-radius: 10px; }
+    .fixturesDayNumber { font-size: 12px; }
+    .fixturesEventPill { font-size: 10px; padding: 3px 6px; border-radius: 6px; }
+    .fixturesNavBtn { height: 38px; width: 38px; }
+    .fixturesTodayBtn { height: 38px; width: auto; padding: 0 14px; }
+}

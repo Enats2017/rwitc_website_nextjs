@@ -392,6 +392,30 @@
     transform: scale(0.98);
 }
 
+
+/* Add this block to the end of Contact.css */
+
+.contactStatusSuccess {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #eafaf0;
+    color: #0b6d2a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.contactStatusError {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: #fdeceb;
+    color: #b3261e;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
 /* RESPONSIVE */
 @container (max-width: 1200px) {
 
