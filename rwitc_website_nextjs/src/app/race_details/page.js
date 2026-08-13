@@ -10,13 +10,17 @@ import RaceResult from "./components/RaceResult";
 import RaceCard from "./components/Race_card";
 import Photos from "./components/Photos";
 import TrackWork from "./components/TrackWork";
-import RatingChange from "./components/RatingChange"; 
+import RatingChange from "./components/RatingChange";
 import RaceDayReport from "./components/RaceDayReport";
 import Sweepstake from "./components/Sweepstake";
 import Dividends from "./components/Dividends";
 import PerformanceProfile from "./components/Performanceprofile";
 import TrainerHorsesList from "./components/TrainerHorsesList";
 import TrainerHorsesResults from "./components/TrainerHorsesResults";
+import HorseRatings from "./components/HorseRatings";
+import MoneyLeaders from "./components/MoneyLeaders";
+import Archives from "./components/Archives";
+import RacingFixtures from "./components/RacingFixtures";
 
 
 function RaceDetailsContent() {
@@ -33,13 +37,13 @@ function RaceDetailsContent() {
     } else if (type === "acceptances") {
         ContentComponent = <Acceptance />;
     } else if (type === "raceResults") {
-    ContentComponent = <RaceResult />;
+        ContentComponent = <RaceResult />;
     } else if (type === "raceCard") {
-    ContentComponent = <RaceCard />;
-    } else if (type === "ratingChange") {                
-        ContentComponent = <RatingChange />;  
+        ContentComponent = <RaceCard />;
+    } else if (type === "ratingChange") {
+        ContentComponent = <RatingChange />;
     } else if (type === "raceDayReport") {
-        ContentComponent = <RaceDayReport />; 
+        ContentComponent = <RaceDayReport />;
     } else if (type === "sweepstakes") {
         ContentComponent = <Sweepstake />;
     } else if (type === "performanceProfile") {
@@ -53,7 +57,15 @@ function RaceDetailsContent() {
     } else if (type === "trackWork") {
         ContentComponent = <TrackWork />;
     } else if (type === "dividends") {
-        ContentComponent = <Dividends/>;
+        ContentComponent = <Dividends />;
+    } else if (type === "horseRatings") {
+        ContentComponent = <HorseRatings />;
+    } else if (type === "moneyLeaders") {
+        ContentComponent = <MoneyLeaders />;
+    } else if (type === "archives") {
+        ContentComponent = <Archives />;
+    } else if (type === "racingFixtures") {
+        ContentComponent = <RacingFixtures />;
     } else {
         ContentComponent = <p>Invalid or missing type parameter.</p>;
     }

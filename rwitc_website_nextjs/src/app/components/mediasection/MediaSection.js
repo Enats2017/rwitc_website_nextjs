@@ -293,7 +293,7 @@ export default function MediaSection() {
                             </tbody>
                         </table>
                         <div className="viewArchives">
-                            <a href="#">View Archives</a>
+                            <Link href="/race_details?type=archives" prefetch={false}>View Archives</Link>
                         </div>
                     </div>
                     {/* POST-RACE */}
@@ -318,11 +318,20 @@ export default function MediaSection() {
 
                                                 {
                                                     item[row.key].available ? (
-                                                        <Link
-                                                            href={`/race_details?type=${row.key}&date=${toDateOnly(item.racedate)}`}
-                                                            className="statusDot active"
-                                                            prefetch={false}
-                                                        />
+                                                        row.key === "videos" ? (
+                                                            <a
+                                                                href={`https://rwitcraces.com/RaceArchives.aspx?d=${new Date(item.racedate).toLocaleDateString('en-GB').replace(/\//g, '')}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="statusDot active"
+                                                            />
+                                                        ) : (
+                                                            <Link
+                                                                href={`/race_details?type=${row.key}&date=${toDateOnly(item.racedate)}`}
+                                                                className="statusDot active"
+                                                                prefetch={false}
+                                                            />
+                                                        )
                                                     ) : (
                                                         <span className="statusDot" />
                                                     )
@@ -337,7 +346,7 @@ export default function MediaSection() {
                         </table>
 
                         <div className="viewArchives">
-                            <a href="#">View Archives</a>
+                            <Link href="/race_details?type=archives" prefetch={false}>View Archives</Link>
                         </div>
                     </div>
                     {/* TRACK WORK */}
@@ -379,7 +388,7 @@ export default function MediaSection() {
                             </tbody>
                         </table>
                         <div className="viewArchives">
-                            <a href="#">View Archives</a>
+                            <Link href="/race_details?type=archives" prefetch={false}>View Archives</Link>
                         </div>
                     </div>
                 </div>

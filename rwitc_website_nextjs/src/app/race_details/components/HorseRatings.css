@@ -1,0 +1,110 @@
+.horseRatingsPage {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 30px 40px 50px;
+    margin-top: 0%;
+    box-sizing: border-box;
+}
+
+.horseRatingsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+}
+
+.horseRatingsDownloadBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #16a34a;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.35);
+}
+
+.horseRatingsDownloadBtn:hover {
+    background-color: #128a3e;
+    transform: translateY(-1px);
+}
+
+.horseRatingsContentWrapper {
+    width: 100%;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    overflow: hidden;
+
+    /* center the iframe content */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.horseRatingsFrame {
+    width: 100%;
+    height: calc(100vh - 230px);
+    min-height: 600px;
+    border: none;
+    display: block;
+    margin: 0 auto;
+
+    /* hide scrollbar but keep scrolling working */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE / old Edge */
+}
+
+.horseRatingsFrame::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Edge */
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .horseRatingsPage {
+        padding: 24px 24px 40px;
+    }
+
+    .horseRatingsFrame {
+        height: calc(100vh - 260px);
+        min-height: 500px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .horseRatingsPage {
+        margin-top: 20%;
+        padding: 16px 12px 30px;
+    }
+
+    .horseRatingsHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .horseRatingsDownloadBtn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .horseRatingsFrame {
+        height: 75vh;
+        min-height: 450px;
+    }
+}

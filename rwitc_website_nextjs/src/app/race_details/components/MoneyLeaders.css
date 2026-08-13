@@ -1,0 +1,136 @@
+.moneyLeadersPage {
+    width: 100%;
+    background: #f7f9fb;
+    min-height: 100vh;
+    padding: 50px 20px 90px;
+}
+
+.moneyLeadersOuter {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.moneyLeadersCard {
+    width: 92%;
+    max-width: 1300px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 28px;
+    padding: 48px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
+    border: 1px solid #eef1f4;
+    animation: fadeUp .6s ease both;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.moneyLeadersTabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.moneyLeadersTabBtn {
+    background: #f1f1f1;
+    color: #374151;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.moneyLeadersTabBtn:hover {
+    background: #dcefe1;
+    color: #16a34a;
+}
+
+.moneyLeadersTabBtn.active {
+    background: #16a34a;
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(22, 163, 74, 0.35);
+    transform: translateY(-1px);
+}
+
+.moneyLeadersContentWrapper {
+    position: relative;
+    width: 100%;
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #eef1f4;
+    min-height: 200px;
+}
+
+.moneyLeadersFrame {
+    width: 100%;
+    border: none;
+    display: block;
+    min-height: 200px;
+}
+
+.moneyLeadersStateBox {
+    text-align: center;
+    padding: 60px 20px;
+    color: #555;
+    font-size: 15px;
+}
+
+.moneyLeadersStateError {
+    color: #b3261e;
+}
+
+.moneyLeadersLoaderOverlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px 20px;
+    color: #555;
+    font-size: 15px;
+}
+
+.moneyLeadersLoader {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid rgba(22, 163, 74, 0.15);
+    border-top-color: #16a34a;
+    animation: moneyLeadersSpin 0.8s linear infinite;
+}
+
+@keyframes moneyLeadersSpin {
+    to { transform: rotate(360deg); }
+}
+
+.moneyLeadersUpdatedAt {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+@media (max-width: 992px) {
+    .moneyLeadersCard { padding: 36px; }
+}
+
+@media (max-width: 768px) {
+    .moneyLeadersPage { padding: 30px 14px 70px; }
+    .moneyLeadersCard { padding: 24px 18px; border-radius: 22px; width: 100%; }
+    .moneyLeadersTabs { gap: 8px; margin-bottom: 20px; }
+    .moneyLeadersTabBtn { flex: 1 1 auto; padding: 10px 14px; font-size: 13px; text-align: center; }
+}
+
+@media (max-width: 480px) {
+    .moneyLeadersCard { padding: 18px 14px; }
+    .moneyLeadersTabBtn { padding: 9px 10px; font-size: 12px; }
+}

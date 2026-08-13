@@ -18,7 +18,8 @@ class dbTool
 		
 		// $this->mysqli = new mysqli('127.0.0.1',$user,$pass,$schema);	
 		$user = "root";
-		$pass = "vcare@2025";
+		// $pass = "vcare@2025";
+		$pass = "";
 		$schema = "rwitc_website";
 		$this->mysqli = new mysqli("localhost", $user, $pass, $schema);
 		
