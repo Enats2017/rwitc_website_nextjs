@@ -312,16 +312,16 @@ export default function TopHeader() {
                         <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" draggable="false" />
                     </div>
                     <div className="clubInfo">
-                        <h1 className="clubNameShort">RWITC</h1>
-                        <p className="clubNameFull">Royal Western India Turf Club Ltd.</p>
+                        <h1 className="clubNameShort">Royal Western India Turf Club Ltd.</h1>
+                        <p className="clubNameFull">RWITC</p>
                     </div>
                 </Link>
 
                 <div className="headerTopActions">
-                    <button className="calendarButton" aria-label="Calendar">
+                    <Link href="/race_details?type=racingFixtures" className="calendarButton" aria-label="Racing Fixtures">
                         <FaCalendarAlt />
                         <span className="calendarButtonText">Racing Fixtures</span>
-                    </button>
+                    </Link>
 
                     <Link href="/race_details?type=photos" className="calendarButton" aria-label="Gallery">
                         <FaImages />

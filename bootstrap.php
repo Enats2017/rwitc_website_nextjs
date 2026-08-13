@@ -12,26 +12,32 @@ define('CURRENT_SEASON', '');
 // $base = '/var/www/html/rwitc_website/';//$_SERVER['DOCUMENT_ROOT'];
 
 
-// $base = 'C:/xampp/htdocs/rwitc-website/';
-$base = '/var/www/html/customers/rwitc-website/';
+$base = 'C:/xampp/htdocs/rwitc-website/';
+// $base = '/var/www/html/customers/rwitc-website/';
 
 
 //$http_base = 'http://localhost:8012/rwitc_website/';//$_SERVER['DOCUMENT_ROOT'];
 //$http_base = 'https://rw1.space2let.com/~rwitc/';//$_SERVER['DOCUMENT_ROOT'];
 
 // $http_base = 'https://rwitc.com/';
-$http_base = 'http://91.99.229.154/rwitc-website/';
+
+$http_base = 'http://localhost/rwitc-website/';
+// $http_base = 'http://91.99.229.154/rwitc-website/';
+
 //define('BASE_HREF',"http://localhost:8012/rwitc_website/"); // rwitcmumbai page ID
 //define('BASE_HREF',"https://rw1.space2let.com/~rwitc/"); // rwitcmumbai page ID
 // define('BASE_HREF',"https://rwitc.com/");
-define('BASE_HREF', "http://91.99.229.154/rwitc-website/");
+
+define('BASE_HREF', "http://localhost/rwitc-website/");
+// define('BASE_HREF', "http://91.99.229.154/rwitc-website/");
+
 //define('DIR_BASE',"C:/xampp/htdocs/rwitc_website/"); // rwitcmumbai page ID
 //define('DIR_BASE',"https://rw1.space2let.com/~rwitc/"); // rwitcmumbai page ID
 // define('DIR_BASE',"/var/www/html/rwitc_website/");
 
 
-// define('DIR_BASE', "C:/xampp/htdocs/rwitc-website/");
-define('DIR_BASE', "/var/www/html/customers/rwitc-website/");
+define('DIR_BASE', "C:/xampp/htdocs/rwitc-website/");
+// define('DIR_BASE', "/var/www/html/customers/rwitc-website/");
 
 define('SWEEPSTAKES_BASE', 'staticpages/sweepstakes');
 

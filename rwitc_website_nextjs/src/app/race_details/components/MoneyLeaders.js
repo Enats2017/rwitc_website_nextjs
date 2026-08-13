@@ -60,15 +60,15 @@ export default function MoneyLeaders() {
                 setError(null);
 
                 const res = await fetch(`/api/money-leaders?type=${activeTab}`, {
-                    cache: "no-store",
+                    cache: "force-cache",
                 });
 
                 if (!res.ok) throw new Error("Failed to load");
 
                 const html = await res.text();
-                const lastModifiedHeader = res.headers.get("X-Updated-At");
-
                 setRawHtml(html);
+
+                const lastModifiedHeader = res.headers.get("X-Updated-At");
 
                 if (lastModifiedHeader) {
                     const formatted = new Date(lastModifiedHeader).toLocaleDateString(

@@ -62,7 +62,7 @@ export default function Footer() {
                         </p>
 
                         <div className="contactBtnRow">
-                            <a href="contact" className="contactUsBtn">Contact Us</a>
+                            <a href="officialcontact" className="contactUsBtn">Contact Us</a>
                             <a href="menubar?type=about" className="contactUsBtn"> About Us </a>
                             <a href="suggestion" className="contactUsBtn">Suggestion</a>
                         </div>

@@ -1,0 +1,78 @@
+<table class='leadersTable table'>
+<tr class='success'><th>Name</th>
+<th>Starts</th>
+<th>Wins</th>
+<th>Second</th>
+<th>Third</th>
+<th>Winnings</th>
+</tr><tr><td style='text-align:left;font-weight:bold;'>BLUE JET</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+
+<td>0</td>
+<td>5,64,000</td>
+</tr><tr><td style='text-align:left;font-weight:bold;'>INVINCIBLE FORCE</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+
+<td>0</td>
+<td>5,64,000</td>
+</tr><tr><td style='text-align:left;font-weight:bold;'>SOVEREIGN KING</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+
+<td>0</td>
+<td>5,15,000</td>
+</tr><tr><td style='text-align:left;font-weight:bold;'>ENCINO</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+
+<td>0</td>
+<td>3,52,500</td>
+</tr><tr><td style='text-align:left;font-weight:bold;'>DEDICATION</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+
+<td>0</td>
+<td>3,40,500</td>
+</tr><tr><td style='text-align:left;font-weight:bold;'>TYRANNUS</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+
+<td>0</td>
+<td>3,40,500</td>
+</tr><tr><td style='text-align:left;font-weight:bold;'>LADY SCARLET</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+
+<td>0</td>
+<td>3,05,500</td>
+</tr><tr><td style='text-align:left;font-weight:bold;'>ELEVATE</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+
+<td>0</td>
+<td>3,00,000</td>
+</tr><tr><td style='text-align:left;font-weight:bold;'>YINSIRUK</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+
+<td>0</td>
+<td>3,00,000</td>
+</tr><tr><td style='text-align:left;font-weight:bold;'>BEAST MODE</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+
+<td>0</td>
+<td>2,93,500</td>
+</tr></table>
