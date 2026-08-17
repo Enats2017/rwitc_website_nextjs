@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import "./NewsRoom.css";
-import { FaTrophy, FaRegNewspaper, FaChevronLeft, FaChevronRight,} from "react-icons/fa";
+import { FaTrophy, FaRegNewspaper, FaChevronLeft, FaChevronRight, } from "react-icons/fa";
 import { UPLOAD_URL } from "../../../services/api";
 import { getNews } from "../../../services/newsService";
 import { getTopStories } from "../../../services/topStoriesService";
@@ -61,20 +61,16 @@ export default function NewsRoom() {
             <Watermark />
 
             <div className="newsContainer">
-
                 <div
                     className="raceCard"
                     id="top-stories"
                     style={raceHeight ? { height: `${raceHeight}px` } : undefined}
                 >
-
                     <div className="raceContent">
-
                         <div className="cardTag">
                             <FaTrophy />
                             <span>Top Stories</span>
                         </div>
-
                         {
                             topStories.length > 0 ? (
                                 <h2 style={{ whiteSpace: "pre-line", lineHeight: "1.5" }}>
@@ -93,25 +89,19 @@ export default function NewsRoom() {
                                 <FaChevronRight />
                             </button>
                         </div>
-
                     </div>
-
                     <div className="raceImageWrap">
                         <img
                             src={`${UPLOAD_URL}/body_img5.jpeg`}
                             alt="Race"
                         />
                     </div>
-
                 </div>
-
                 <div className="newsCard" ref={newsCardRef}>
-
                     <div className="cardTag">
                         <FaRegNewspaper />
                         <span>News Room</span>
                     </div>
-
                     <div className="newsList">
                         {
                             visibleNews.map((item) => (
@@ -134,7 +124,6 @@ export default function NewsRoom() {
                             ))
                         }
                     </div>
-
                     <div className="viewAllWrap">
                         {
                             news.length > 5 && (
@@ -148,13 +137,8 @@ export default function NewsRoom() {
                             )
                         }
                     </div>
-
                 </div>
-
             </div>
-
         </section>
-
     );
-
 }

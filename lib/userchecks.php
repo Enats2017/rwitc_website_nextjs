@@ -53,3 +53,30 @@ function checkLiveAccess($db,$userID){
         return "0"; // subscription expired
     }
 }
+
+// Super Admin check
+function isSuperAdmin() {
+    return (isset($_SESSION['uid']) && $_SESSION['uid'] == 19);
+}
+
+// Permission check
+function hasPermission($permissionKey) {
+
+    // UID 19 ko sab access
+    if (isSuperAdmin()) {
+        return true;
+    }
+
+    // Session me permission check
+    return (isset($_SESSION[$permissionKey]) && $_SESSION[$permissionKey] == 'Y');
+}
+
+// Page access check
+function checkPermission($permissionKey) {
+
+    if (!hasPermission($permissionKey)) {
+
+        echo '<h2 style="color:red;text-align:center;margin-top:50px;">Access Denied</h2>';
+        exit;
+    }
+}

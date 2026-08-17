@@ -988,7 +988,21 @@ TICKER;
 
         $metaOGTitle = 'Royal Western India Turf Club (RWITC)';
 
-        
+        // Super Admin check
+        $isSuperAdmin = (isset($_SESSION['uid']) && $_SESSION['uid'] == 19);
+
+        $userMenu = '';
+
+        if ($isSuperAdmin) {
+            $userMenu = '
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li><a href="user/users.php">Users</a></li>
+                    <li><a href="user/userGroup.php">User Group</a></li>
+                </ul>
+            </li>';
+        }
 
         echo <<<MENU
 
@@ -1235,7 +1249,8 @@ TICKER;
                         </ul>
 
                     </li> 
-
+                    
+                   $userMenu
                     
 
                     <li class="dropdown" style="float: right;">

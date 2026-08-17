@@ -37,12 +37,10 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-        to right,
-        rgba(0, 0, 0, .55) 0%,
-        rgba(0, 0, 0, .32) 45%,
-        rgba(0, 0, 0, .08) 100%
-    );
+    background: linear-gradient(to right,
+            rgba(0, 0, 0, .55) 0%,
+            rgba(0, 0, 0, .32) 45%,
+            rgba(0, 0, 0, .08) 100%);
     z-index: 1;
 }
 
@@ -98,6 +96,7 @@
     .featureGrid {
         grid-template-columns: repeat(2, 1fr);
     }
+
     .featureCard.wide {
         grid-column: span 2;
     }
@@ -107,18 +106,22 @@
     .featureSection {
         padding: 30px 20px;
     }
+
     .featureGrid {
         grid-template-columns: 1fr;
         gap: 16px;
     }
+
     .featureCard,
     .featureCard.wide {
         grid-column: span 1;
         height: 110px;
     }
+
     .overlay h3 {
         font-size: 14px;
     }
+
     .featureIcon {
         width: 40px;
         height: 40px;

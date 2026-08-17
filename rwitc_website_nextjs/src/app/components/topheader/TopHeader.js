@@ -3,31 +3,13 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import "./TopHeader.css";
 import { UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL, STATIC_URL } from "../../../services/api";
-import {
-    FaBars,
-    FaTimes,
-    FaCalendarAlt,
-    FaChevronDown,
-    FaPlay,
-    FaHome,
-    FaUniversity,
-    FaHorseHead,
-    FaTags,
-    FaUsers,
-    FaStar,
-    FaHandshake,
-    FaCloudDownloadAlt,
-    FaImages,
-} from "react-icons/fa";
+import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay, FaHome, FaUniversity, FaHorseHead, FaTags, FaUsers, FaStar, FaHandshake, FaCloudDownloadAlt, FaImages, } from "react-icons/fa";
 
 /* ---------- DESKTOP: nested submenu — CLICK ONLY, vertical ---------- */
 function DesktopDropdownList({ items, level = 0 }) {
     const [openKey, setOpenKey] = useState(null);
     const [selectedLeaf, setSelectedLeaf] = useState(null);
-
-    const handleToggle = (key) => {
-        setOpenKey(openKey === key ? null : key);
-    };
+    const handleToggle = (key) => { setOpenKey(openKey === key ? null : key); };
 
     return (
         <div className={level === 0 ? "navDropdownMenu open" : "navSubMenu open"}>
@@ -69,10 +51,7 @@ function DesktopDropdownList({ items, level = 0 }) {
 /* ---------- MOBILE: recursive accordion (click-only, vertical nested) ---------- */
 function MobileDropdownList({ items, onNavigate }) {
     const [openKeys, setOpenKeys] = useState({});
-
-    const toggle = (key) => {
-        setOpenKeys((prev) => ({ ...prev, [key]: !prev[key] }));
-    };
+    const toggle = (key) => { setOpenKeys((prev) => ({ ...prev, [key]: !prev[key] })); };
 
     return (
         <div className="mobileDropdownInner">
@@ -118,11 +97,7 @@ export default function TopHeader() {
     const [activeNav, setActiveNav] = useState("home");
     const [hoverNav, setHoverNav] = useState(null);
     const closeTimerRef = useRef(null);
-
-    const toggleDropdown = (name) => {
-        setOpenDropdown(openDropdown === name ? null : name);
-    };
-
+    const toggleDropdown = (name) => { setOpenDropdown(openDropdown === name ? null : name); };
     const handleDropdownEnter = (name) => {
         if (closeTimerRef.current) {
             clearTimeout(closeTimerRef.current);
@@ -298,15 +273,12 @@ export default function TopHeader() {
 
     return (
         <header className="header">
-
             {/* ROW 1: LOGO + BACKGROUND STRIP + CALENDAR/LIVE STREAM BUTTONS */}
             <div className="headerTopRow">
-
                 {/* Mobile-only hamburger, sits left of the logo on small screens */}
                 <button className="menuButton" aria-label="Menu" onClick={() => setMenuOpen(true)}>
                     <FaBars />
                 </button>
-
                 <Link href="/" className="brandLink">
                     <div className="logo">
                         <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" draggable="false" />

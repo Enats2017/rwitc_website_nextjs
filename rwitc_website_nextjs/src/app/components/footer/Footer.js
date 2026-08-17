@@ -8,7 +8,6 @@ export default function Footer() {
     const [currentTemp, setCurrentTemp] = useState(null);
     const [currentIcon, setCurrentIcon] = useState("🌦️");
     const [weather, setWeather] = useState([]);
-
     const codeToIcon = (code) => {
         if (code === 0) return "☀️";
         if ([1, 2].includes(code)) return "🌤️";
@@ -41,36 +40,29 @@ export default function Footer() {
     return (
         <footer className="footer">
             <div className="footerTop">
-
                 <div className="footerMain">
-
                     {/* LEFT */}
                     <div className="footerLeft">
                         <div className="footerBrandRow">
                             <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC" className="footerLogo" />
                         </div>
-
                         <div className="socialIcons">
                             <a href="https://www.facebook.com/rwitcmumbai" className="iconFacebook" aria-label="Facebook"> <FaFacebookF /> </a>
                             <a href="https://x.com/rwitcmumbai" className="iconX" aria-label="X"> <FaXTwitter /> </a>
                             <a href="https://www.instagram.com/rwitcmumbai" className="iconInstagram" aria-label="Instagram"> <FaInstagram /> </a>
                             <a href="https://www.youtube.com/@rwitcltd9390" className="iconYoutube" aria-label="YouTube"> <FaYoutube /> </a>
                         </div>
-
                         <p className="footerText">
                             A legacy of excellence in horse racing since 1932. Experience the thrill, heritage and prestige.
                         </p>
-
                         <div className="contactBtnRow">
                             <a href="officialcontact" className="contactUsBtn">Contact Us</a>
                             <a href="menubar?type=about" className="contactUsBtn"> About Us </a>
                             <a href="suggestion" className="contactUsBtn">Suggestion</a>
                         </div>
                     </div>
-
                     {/* MIDDLE - WEATHER INLINE */}
                     <div className="weatherInline">
-
                         <div className="weatherMain">
                             <h3>MUMBAI</h3>
                             <div className="weatherMainRow">
@@ -83,7 +75,6 @@ export default function Footer() {
                             </div>
                             <p className="weatherDesc">Partly Cloudy</p>
                         </div>
-
                         <div className="weatherDays">
                             {weather.map((item, index) => (
                                 <div
@@ -99,13 +90,11 @@ export default function Footer() {
                                 </div>
                             ))}
                         </div>
-
                     </div>
 
                     {/* RIGHT - APP (Android + iOS) */}
                     <div className="footerApp">
                         <p className="getAppText">Get our app</p>
-
                         <div className="appIconsRow">
                             <a href="https://play.google.com/store/apps/details?id=com.nabil_shah.test"
                                 target="_blank"
@@ -115,7 +104,6 @@ export default function Footer() {
                             >
                                 <img src={`${UPLOAD_URL}/android.png`} alt="Get Our App - Android" />
                             </a>
-
                             <a href="#"
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -126,9 +114,7 @@ export default function Footer() {
                             </a>
                         </div>
                     </div>
-
                 </div>
-
             </div>
 
             <div className="footerBottom">

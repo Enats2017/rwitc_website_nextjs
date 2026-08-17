@@ -8,9 +8,9 @@
 
 /* CONTAINER */
 .sponsorsContainer {
-    width: 100%;
-    max-width: 1600px;
-    margin: auto;
+    width: calc(100% - 30px);
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* HEADING */

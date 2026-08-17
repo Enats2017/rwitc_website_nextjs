@@ -34,9 +34,9 @@
             #023115 0%, #043312d4 28%, #0129128c 50%,
             #03160b38 68%, #03160b1f 100%),
         linear-gradient(#020f0859 0%, #020f081a 20% 75%, #020f0866 100%);
-}  
- 
-/* SHELL */       
+}
+
+/* SHELL */
 .suggestionShell {
     position: relative;
     z-index: 2;

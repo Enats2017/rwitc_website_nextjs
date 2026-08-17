@@ -4,8 +4,7 @@ import Contact from "./Contact";
 
 export const metadata = {
     title: "Contact Us | RWITC",
-    description:
-        "Contact the Royal Western India Turf Club for enquiries and racing information.",
+    description: "Contact the Royal Western India Turf Club for enquiries and racing information.",
 };
 
 export default function ContactPage() {

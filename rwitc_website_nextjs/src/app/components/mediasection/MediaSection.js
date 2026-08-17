@@ -13,19 +13,13 @@ import { getMedia, getRaceMedia } from "../../../services/mediaService";
 // Converts any date/datetime value coming from the API ("2026-07-20",
 // "2026-07-20 00:00:00", or an ISO string) into a clean "YYYY-MM-DD"
 // string, so the URL never ends up with a raw space/time part in it.
-function toDateOnly(dateStr) {
-    if (!dateStr) return "";
-    return String(dateStr).split(" ")[0].split("T")[0];
-}
-
+function toDateOnly(dateStr) { if (!dateStr) return ""; return String(dateStr).split(" ")[0].split("T")[0]; }
 export default function MediaSection() {
-
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(true);
     const [isMuted, setIsMuted] = useState(true);
     const adsPrevRef = useRef(null);
     const adsNextRef = useRef(null);
-
     const togglePlay = () => {
         if (!videoRef.current) return;
         if (videoRef.current.paused) {
@@ -50,40 +44,26 @@ export default function MediaSection() {
     };
 
     const [media, setMedia] = useState([]);
-    const [raceMedia, setRaceMedia] = useState({
-        preRace: [],
-        postRace: [],
-        trackWork: []
-    });
+    const [raceMedia, setRaceMedia] = useState({ preRace: [], postRace: [], trackWork: [] });
     useEffect(() => {
-
         async function loadData() {
-
             const mediaData = await getMedia();
             setMedia(mediaData);
-
             const raceData = await getRaceMedia();
             setRaceMedia(raceData);
-
             console.log(raceData);
-
         }
-
         loadData();
-
     }, []);
 
     const video = media.find(item => item.type == 2);
     const images = media.filter(item => item.type == 1);
-
     // video is there or not
     const hasVideo = Boolean(video);
-
-    // ✅ when video is there so max 2 slider or video is not there so max 3 sliders of imgs
+    // when video is there so max 2 slider or video is not there so max 3 sliders of imgs
     const maxSlides = hasVideo ? 2 : 3;
     const slidesPerView = Math.min(images.length, maxSlides) || 1;
     const canLoop = images.length > slidesPerView;
-
     const preRaceDates = raceMedia.preRace.map(item =>
         new Date(item.racedate).toLocaleDateString(
             "en-GB",
@@ -94,27 +74,10 @@ export default function MediaSection() {
         )
     );
     const preRaceRows = [
-
-        {
-            label: "Handicaps",
-            key: "handicaps"
-        },
-
-        {
-            label: "Acceptances",
-            key: "acceptances"
-        },
-
-        {
-            label: "Declarations",
-            key: "declarations"
-        },
-
-        {
-            label: "Race Card",
-            key: "raceCard"
-        }
-
+        { label: "Handicaps", key: "handicaps" },
+        { label: "Acceptances", key: "acceptances" },
+        { label: "Declarations", key: "declarations" },
+        { label: "Race Card", key: "raceCard" }
     ];
     const postRaceDates = raceMedia.postRace.map(item =>
         new Date(item.racedate).toLocaleDateString(
@@ -126,41 +89,15 @@ export default function MediaSection() {
         )
     );
     const postRaceRows = [
-
-        {
-            label: "Race Results",
-            key: "raceResults"
-        },
-
-        {
-            label: "Rating Change",
-            key: "ratingChange"
-        },
-
-        {
-            label: "Raceday Report",
-            key: "raceDayReport"
-        },
-
-        {
-            label: "Photos",
-            key: "photos"
-        },
-
-        {
-            label: "Videos",
-            key: "videos"
-        }
-
+        { label: "Race Results", key: "raceResults" },
+        { label: "Rating Change", key: "ratingChange" },
+        { label: "Raceday Report", key: "raceDayReport" },
+        { label: "Photos", key: "photos" },
+        { label: "Videos", key: "videos" }
     ];
     const groupedTrackWork = [];
-
     for (let i = 0; i < raceMedia.trackWork.length; i += 3) {
-
-        groupedTrackWork.push(
-            raceMedia.trackWork.slice(i, i + 3)
-        );
-
+        groupedTrackWork.push(raceMedia.trackWork.slice(i, i + 3));
     }
     return (
         <section className="mediaSection">
@@ -169,20 +106,8 @@ export default function MediaSection() {
                     {
                         hasVideo && (
                             <div className="videoArea" id="live-video">
-                                <video
-                                    controls
-                                    autoPlay
-                                    muted
-                                    loop
-                                    width="100%"
-                                    height="100%"
-                                >
-
-                                    <source
-                                        src={`${UPLOAD_URL}/${video?.path}`}
-                                        type="video/mp4"
-                                    />
-
+                                <video controls autoPlay muted loop width="100%" height="100%">
+                                    <source src={`${UPLOAD_URL}/${video?.path}`} type="video/mp4" />
                                 </video>
                             </div>
                         )
@@ -377,13 +302,9 @@ export default function MediaSection() {
                                                         )
                                                     }
                                                 </Link>
-
                                             </td>
-
                                         ))}
-
                                     </tr>
-
                                 ))}
                             </tbody>
                         </table>

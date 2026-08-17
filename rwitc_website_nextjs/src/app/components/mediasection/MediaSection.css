@@ -6,9 +6,9 @@
     margin-left: auto;
     margin-right: auto;
     overflow: hidden;
-    padding: 0 40px 70px;
-    margin-top: -174px;
-    background: #ffffff;
+    padding: 0 0px 20px;
+    margin-top: 0px;
+    background: transparent;
     border-radius: 40px 40px 0 0;
     z-index: 4;
 }
@@ -224,45 +224,49 @@
     animation-play-state: paused;
 }
 
-/* INFO BOXES (Pre-Race / Post-Race / Track Work) */
+/* SINGLE OUTER BOX */
 .infoBoxes {
     width: 100%;
     max-width: 1400px;
     margin: 32px auto 0;
     display: flex;
-    gap: 24px;
+    gap: 0;
     align-items: stretch;
+    background: #ffffff;
+    border: 2px solid #0b6d2a;
+    border-radius: 16px;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .infoBox {
     flex: 1;
-    background: rgb(6, 90, 33);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 16px;
-    padding: 20px 22px 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, .25);
+    min-width: 0;
+    background: #ffffff;
+    padding: 14px 16px 12px;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
-    transition: transform .35s ease, box-shadow .35s ease, background .35s ease, border-color .35s ease;
+    box-sizing: border-box;
+}
+
+/* Vertical separator between sections */
+.infoBox:not(:last-child) {
+    border-right: 1px solid rgba(8, 80, 31, .18);
 }
 
 .infoBox:hover {
-    transform: translateY(-8px);
-    background: rgb(4, 118, 40);
-    border-color: rgba(255, 255, 255, .35);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, .35);
+    background: #ffffff;
 }
 
 .infoBoxTitle {
-    color: #ffffff;
-    font-size: 19px;
+    color: #08501f;
+    font-size: 17px;
     font-weight: 800;
     text-align: center;
-    margin: 0 0 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, .25);
+    margin: 0 0 10px;
+    padding-bottom: 8px;
+    border-bottom: none;
 }
 
 /* TABLE */
@@ -272,36 +276,36 @@
 }
 
 .infoTable th {
-    color: #ffffff;
+    color: #08501f;
     font-size: 13px;
     font-weight: 700;
     text-align: center;
     padding: 8px 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, .2);
+    border-bottom: 1px solid rgba(8, 80, 31, .20);
 }
 
 .infoTable td {
     text-align: center;
     padding: 9px 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, .15);
+    border-bottom: 1px solid rgba(8, 80, 31, .12);
 }
 
 .rowLabel {
     text-align: left !important;
-    color: #ffffff;
+    color: #08501f;
     font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
 }
 
 .trackWorkTable td {
-    color: #ffffff;
+    color: #08501f;
     font-size: 13px;
     font-weight: 600;
 }
 
 .trackWorkLink {
-    color: #ffffff;
+    color: #08501f;
     text-decoration: none;
     display: inline-block;
     transition: .3s ease;
@@ -309,7 +313,7 @@
 }
 
 .trackWorkLink:hover {
-    color: #111;
+    color: #0b6d2a;
     transform: scale(1.08);
     text-decoration: underline;
 }
@@ -320,19 +324,19 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, .35);
+    background: rgba(8, 80, 31, .20);
 }
 
 .statusDot.active {
-    background: #ffffff;
-    box-shadow: 0 0 6px rgba(255, 255, 255, .6);
+    background: #0b6d2a;
+    box-shadow: 0 0 6px rgba(11, 109, 42, .35);
     cursor: pointer;
     transition: .3s ease;
 }
 
 .statusDot.active:hover {
-    background: #111;
-    box-shadow: 0 0 10px rgba(0, 0, 0, .6);
+    background: #08501f;
+    box-shadow: 0 0 10px rgba(8, 80, 31, .35);
     transform: scale(1.15);
 }
 
@@ -344,7 +348,7 @@
 }
 
 .viewArchives a {
-    color: #ffffff;
+    color: #08501f;
     font-size: 13px;
     font-weight: 600;
     text-decoration: underline;
@@ -358,13 +362,13 @@
 /* RESPONSIVE */
 @media(max-width:1200px) {
     .mediaSection {
-        padding: 60px 30px;
+        padding: 0px 20px;
     }
 }
 
 @media(max-width:992px) {
     .mediaSection {
-        margin-top: -145px;
+        margin-top: 0px;
         border-radius: 30px 30px 0 0;
     }
 
@@ -394,8 +398,8 @@
 
 @media(max-width:768px) {
     .mediaSection {
-        padding: 40px 16px 50px;
-        margin-top: -119px;
+        padding: 0px 20px 15px;
+        margin-top: 10px;
         border-radius: 24px 24px 0 0;
     }
 
@@ -469,8 +473,8 @@
 
 @media(max-width:480px) {
     .mediaSection {
-        padding: 30px 12px 40px;
-        margin-top: -75px;
+        padding: 0px 15px 20px;
+        margin-top: 10px;
     }
 
     .adsArea {
