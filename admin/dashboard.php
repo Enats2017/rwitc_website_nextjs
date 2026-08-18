@@ -99,9 +99,11 @@ $design->openDiv("leftArea");
     gap: 20px;
     font-family: 'Segoe UI', Arial, sans-serif;
     color: var(--rwitc-text);
-    max-width: 1400px;
+    max-width: 1600px;
+    width: 100%;
     margin: 0 auto;
     padding: 24px 30px;
+    box-sizing: border-box;
 }
 
 
@@ -110,6 +112,7 @@ $design->openDiv("leftArea");
 .sidebar {
     width: 250px;
     flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .profile-card {
@@ -313,9 +316,7 @@ $design->openDiv("leftArea");
 
 .cards-grid {
     display: grid;
-
-    grid-template-columns: repeat(4, 1fr);
-
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 16px;
 }
 
@@ -402,18 +403,39 @@ $design->openDiv("leftArea");
 
 /* ---------- Responsive ---------- */
 
+/* TVs / very large screens */
+@media (min-width: 1920px) {
+
+    .dashboard-wrapper {
+        max-width: 1800px;
+        padding: 40px 60px;
+    }
+
+    .cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 22px;
+    }
+
+    .dashboard-title {
+        font-size: 30px;
+    }
+}
+
+/* Laptops / small desktops */
 @media (max-width: 1200px) {
 
     .cards-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
     }
 
 }
 
+/* Tablets (landscape) */
 @media (max-width: 900px) {
 
     .dashboard-wrapper {
         flex-direction: column;
+        padding: 20px;
     }
 
     .sidebar {
@@ -421,17 +443,65 @@ $design->openDiv("leftArea");
     }
 
     .cards-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
 
 }
 
+/* Tablets (portrait) / large phones */
+@media (max-width: 700px) {
+
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .dashboard-title {
+        font-size: 20px;
+    }
+
+    .profile-card {
+        padding: 16px 14px;
+    }
+}
+
+/* Mobile phones */
 @media (max-width: 560px) {
+
+    .dashboard-wrapper {
+        padding: 14px;
+    }
 
     .cards-grid {
         grid-template-columns: 1fr;
     }
 
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .card-item {
+        padding: 14px 12px;
+    }
+
+    .card-title {
+        font-size: 14px;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+
+    .profile-name {
+        font-size: 16px;
+    }
+
+    .card-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
 }
 
 

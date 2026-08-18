@@ -853,7 +853,7 @@ TICKER;
 
 
 
-                    <a class="navbar-brand" href="https://www.rwitc.com/"><img src="assets/images/logo.png"></a>
+                    <a class="navbar-brand" href="admin/dashboard.php"><img src="assets/images/logo.png"></a>
 
                 </div>
 
@@ -1024,7 +1024,7 @@ TICKER;
 
             <div class="navbar-collapse collapse">
 
-                <ul class="dropdown" style="padding-left: 0px; display: flex; align-items: center; flex-wrap: nowrap; white-space: nowrap;">
+                <ul class="dropdown" style="padding-left: 0px;">
 
                     <li class="dropdown">
 
