@@ -14,10 +14,14 @@ function insertNewSiteuser($uemail, $password,$firstname,$lastname,$phoneno,$rol
     return $this->db->insert(self::sqlInsertNewSiteUser($uemail, $password,$firstname,$lastname,$phoneno, $role));
 }
 
-private static function sqlInsertNewSiteUser($uemail,$password,$firstname,$lastname,$phoneno,$role) {    
-    return "INSERT INTO users(email,password,firstname,lastname,phoneno,role,created) VALUES
-            ('$uemail',PASSWORD('$password'),'$firstname','$lastname','$phoneno','$role',now())
-           ";
+private static function sqlInsertNewSiteUser($uemail, $password, $firstname, $lastname, $phoneno, $role)
+{
+    $hashedPassword = self::mysql41Password($password);
+
+    return "INSERT INTO users
+            (email, password, firstname, lastname, phoneno, role, created)
+            VALUES
+            ('$uemail', '$hashedPassword', '$firstname', '$lastname', '$phoneno', '$role', NOW())";
 }
 
 private static function mysql41Password($password) {
@@ -28,8 +32,14 @@ function checkUser($email,$password) {
     return $this->db->getSingleRowAssoc(self::sqlCheckUser($email, $password));
 }
 
-private static function sqlCheckUser($email,$password) {    
-    return "SELECT * FROM users WHERE email='$email' AND `password`=PASSWORD('$password')";
+private static function sqlCheckUser($email, $password)
+{
+    $hashedPassword = self::mysql41Password($password);
+
+    return "SELECT *
+            FROM users
+            WHERE email='$email'
+            AND `password`='$hashedPassword'";
 }
 
 
@@ -176,6 +186,8 @@ function checkSiteUser($email, $password)
 
 private static function sqlCheckSiteUser($email, $password)
 {
+    $hashedPassword = self::mysql41Password($password);
+
     return "SELECT
                 u.*,
                 ug.name AS user_group_name,
@@ -184,7 +196,7 @@ private static function sqlCheckSiteUser($email, $password)
             LEFT JOIN user_group ug
                 ON u.user_group_id = ug.user_group_id
             WHERE u.email='$email'
-            AND u.password=PASSWORD('$password')
+            AND u.password='$hashedPassword'
             LIMIT 1";
 }
 function updateForgotPassCode($email,$md5Code) {
@@ -213,11 +225,15 @@ function updatePassword($email,$md5Code,$password) {
     return $this->db->update(self::sqlUpdatePassword($email,$md5Code,$password));  
 }
 
-private static function sqlUpdatePassword($email,$md5Code,$password) {
+private static function sqlUpdatePassword($email, $md5Code, $password)
+{
+    $hashedPassword = self::mysql41Password($password);
+
     return "UPDATE users
-            SET password=PASSWORD('$password'), reset_code=''
-            WHERE email='$email' AND reset_code='$md5Code'
-           ";
+            SET password='$hashedPassword',
+                reset_code=''
+            WHERE email='$email'
+            AND reset_code='$md5Code'";
 }
 
 }

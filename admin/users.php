@@ -96,16 +96,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['firstname']) && !isset
                         . "role='" . $db->escape($role) . "', "
                         . "user_group_id=" . ($group_id ?: 'NULL') . ", "
                         . "verified='" . $verified . "'";
-                  if ($password !== '') {
-    $sql .= ", password='"
-        . $db->escape($db->getSingleValue("SELECT PASSWORD('" . $db->escape($password) . "')"))
-        . "'";
-}
+                    if ($password !== '') {
+                        $sql .= ", password='"
+                            . $db->escape($db->getSingleValue("SELECT PASSWORD('" . $db->escape($password) . "')"))
+                            . "'";
+                    }
                     $sql .= " WHERE id = $edit_id";
                     $db->update($sql);
                     header("Location: users.php?msg=updated");
                     exit;
                 } else {
+                    $hashedPassword = '*' . strtoupper(sha1(sha1($password, true)));
+
                     $sql = "INSERT INTO users "
                         . "(firstname, lastname, email, phoneno, role, user_group_id, verified, password, created) VALUES ("
                         . "'" . $db->escape($firstname) . "', "
@@ -115,8 +117,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['firstname']) && !isset
                         . "'" . $db->escape($role) . "', "
                         . ($group_id ?: 'NULL') . ", "
                         . "'" . $verified . "', "
-                        . "PASSWORD('" . $db->escape($password) . "'), "
+                        . "'" . $hashedPassword . "', "
                         . "NOW())";
+
                     $db->insert($sql);
                     // New user always lands on page 1, since the list is
                     // ordered by id DESC — no extra sorting needed here.
@@ -925,304 +928,304 @@ $design->startPage("RWITC | Users");
 $design->writeLogoTickerMenu();
 ?>
 
-    <div class="page-wrap">
+<div class="page-wrap">
 
-        <?php if ($msg == 'added'): ?>
-            <div class="alert alert-success"><i class="fa fa-check-circle"></i> User added successfully.</div>
-        <?php elseif ($msg == 'updated'): ?>
-            <div class="alert alert-success"><i class="fa fa-check-circle"></i> User updated successfully.</div>
-        <?php elseif ($msg == 'deleted'): ?>
-            <div class="alert alert-success"><i class="fa fa-check-circle"></i> User deleted.</div>
-        <?php elseif ($msg == 'bulk_deleted'): ?>
-            <div class="alert alert-success"><i class="fa fa-check-circle"></i> Selected users deleted.</div>
-        <?php elseif ($msg == 'error'): ?>
-            <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> Something went wrong<?php echo isset($_GET['err']) ? ': ' . htmlspecialchars($_GET['err']) : '.'; ?></div>
-        <?php endif; ?>
+    <?php if ($msg == 'added'): ?>
+        <div class="alert alert-success"><i class="fa fa-check-circle"></i> User added successfully.</div>
+    <?php elseif ($msg == 'updated'): ?>
+        <div class="alert alert-success"><i class="fa fa-check-circle"></i> User updated successfully.</div>
+    <?php elseif ($msg == 'deleted'): ?>
+        <div class="alert alert-success"><i class="fa fa-check-circle"></i> User deleted.</div>
+    <?php elseif ($msg == 'bulk_deleted'): ?>
+        <div class="alert alert-success"><i class="fa fa-check-circle"></i> Selected users deleted.</div>
+    <?php elseif ($msg == 'error'): ?>
+        <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> Something went wrong<?php echo isset($_GET['err']) ? ': ' . htmlspecialchars($_GET['err']) : '.'; ?></div>
+    <?php endif; ?>
 
-        <?php if ($form_error): ?>
-            <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo htmlspecialchars($form_error); ?></div>
-        <?php endif; ?>
+    <?php if ($form_error): ?>
+        <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> <?php echo htmlspecialchars($form_error); ?></div>
+    <?php endif; ?>
 
-        <?php if ($action == 'list'): ?>
+    <?php if ($action == 'list'): ?>
 
-            <div class="page-head">
-                <div>
-                    <p class="eyebrow">User Management</p>
-                    <h1>System Users</h1>
-                    <p>Manage who can access the RWITC admin portal and what they can do.</p>
-                </div>
-                <a href="admin/users.php?action=form" class="btn btn-primary"><i class="fa fa-plus"></i> Add User</a>
+        <div class="page-head">
+            <div>
+                <p class="eyebrow">User Management</p>
+                <h1>System Users</h1>
+                <p>Manage who can access the RWITC admin portal and what they can do.</p>
             </div>
+            <a href="admin/users.php?action=form" class="btn btn-primary"><i class="fa fa-plus"></i> Add User</a>
+        </div>
 
-            <div class="stat-strip">
-                <div class="stat">
-                    <div class="num"><?php echo $total_count; ?></div>
-                    <div class="lbl">Total Users</div>
-                </div>
-                <div class="stat active">
-                    <div class="num"><?php echo $active_count; ?></div>
-                    <div class="lbl">Verified</div>
-                </div>
-                <div class="stat inactive">
-                    <div class="num"><?php echo $inactive_count; ?></div>
-                    <div class="lbl">Not Verified</div>
-                </div>
-                <div class="stat">
-                    <div class="num"><?php echo count($user_groups); ?></div>
-                    <div class="lbl">User Groups</div>
-                </div>
+        <div class="stat-strip">
+            <div class="stat">
+                <div class="num"><?php echo $total_count; ?></div>
+                <div class="lbl">Total Users</div>
             </div>
+            <div class="stat active">
+                <div class="num"><?php echo $active_count; ?></div>
+                <div class="lbl">Verified</div>
+            </div>
+            <div class="stat inactive">
+                <div class="num"><?php echo $inactive_count; ?></div>
+                <div class="lbl">Not Verified</div>
+            </div>
+            <div class="stat">
+                <div class="num"><?php echo count($user_groups); ?></div>
+                <div class="lbl">User Groups</div>
+            </div>
+        </div>
 
-            <!-- Search + status filter: plain GET form, separate from the
+        <!-- Search + status filter: plain GET form, separate from the
              bulk-delete form below (forms can't be nested in HTML) -->
-            <form method="get" action="admin/users.php" id="filter-form" class="toolbar">
-                <input type="hidden" name="action" value="list">
-                <div class="search-box">
-                    <i class="fa fa-search"></i>
-                    <input type="text" name="q" id="searchInput" placeholder="Search by name or email..."
-                        value="<?php echo htmlspecialchars($search); ?>" oninput="debouncedSubmit()">
-                </div>
-                <div class="toolbar-actions">
-                    <select name="status_filter" class="status-filter" onchange="document.getElementById('filter-form').submit()">
-                        <option value="" <?php echo $status_filter === ''  ? 'selected' : ''; ?>>All Status</option>
-                        <option value="Y" <?php echo $status_filter === 'Y' ? 'selected' : ''; ?>>Active</option>
-                        <option value="N" <?php echo $status_filter === 'N' ? 'selected' : ''; ?>>Disabled</option>
-                    </select>
-                    <button type="submit" class="btn btn-ghost"><i class="fa fa-search"></i> Search</button>
-                </div>
-            </form>
+        <form method="get" action="admin/users.php" id="filter-form" class="toolbar">
+            <input type="hidden" name="action" value="list">
+            <div class="search-box">
+                <i class="fa fa-search"></i>
+                <input type="text" name="q" id="searchInput" placeholder="Search by name or email..."
+                    value="<?php echo htmlspecialchars($search); ?>" oninput="debouncedSubmit()">
+            </div>
+            <div class="toolbar-actions">
+                <select name="status_filter" class="status-filter" onchange="document.getElementById('filter-form').submit()">
+                    <option value="" <?php echo $status_filter === ''  ? 'selected' : ''; ?>>All Status</option>
+                    <option value="Y" <?php echo $status_filter === 'Y' ? 'selected' : ''; ?>>Active</option>
+                    <option value="N" <?php echo $status_filter === 'N' ? 'selected' : ''; ?>>Disabled</option>
+                </select>
+                <button type="submit" class="btn btn-ghost"><i class="fa fa-search"></i> Search</button>
+            </div>
+        </form>
 
-            <?php if ($filtered_count > 0): ?>
-                <div class="results-note">
-                    Showing <?php echo (($page - 1) * $per_page) + 1; ?>–<?php echo min($page * $per_page, $filtered_count); ?>
-                    of <?php echo $filtered_count; ?> user<?php echo $filtered_count == 1 ? '' : 's'; ?>
-                    <?php if ($search !== '' || $status_filter !== ''): ?>(filtered)<?php endif; ?>
-                </div>
-            <?php endif; ?>
+        <?php if ($filtered_count > 0): ?>
+            <div class="results-note">
+                Showing <?php echo (($page - 1) * $per_page) + 1; ?>–<?php echo min($page * $per_page, $filtered_count); ?>
+                of <?php echo $filtered_count; ?> user<?php echo $filtered_count == 1 ? '' : 's'; ?>
+                <?php if ($search !== '' || $status_filter !== ''): ?>(filtered)<?php endif; ?>
+            </div>
+        <?php endif; ?>
 
-            <form method="post" action="admin/users.php" id="bulk-form">
-                <div class="toolbar-actions" style="justify-content:flex-end;margin-bottom:12px;">
-                    <button type="submit" name="bulk_delete" value="1" class="btn btn-danger-ghost"
-                        onclick="return confirm('Delete all selected users? This cannot be undone.');">
-                        <i class="fa fa-trash-o"></i> Delete Selected
-                    </button>
-                </div>
-
-                <div class="card">
-                    <table id="usersTable">
-                        <thead>
-                            <tr>
-                                <th style="width:1px;"><input type="checkbox" class="checkbox" onclick="document.querySelectorAll('.row-check').forEach(c=>c.checked=this.checked)"></th>
-                                <th>User</th>
-                                <th>Group</th>
-                                <th>Status</th>
-                                <th>Added</th>
-                                <th>Last Login</th>
-                                <th style="text-align:right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($users)): ?>
-                                <tr>
-                                    <td colspan="7">
-                                        <div class="empty">
-                                            <i class="fa fa-user"></i>
-                                            <?php echo ($search !== '' || $status_filter !== '') ? 'No users match your search / filter.' : 'No users yet. Click "Add User" to create one.'; ?>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
-                            <?php foreach ($users as $u): ?>
-                                <tr class="user-row">
-                                    <td data-label=""><input type="checkbox" class="checkbox row-check" name="bulk_ids[]" value="<?php echo (int)$u['id']; ?>"></td>
-                                    <td class="user-td" data-label="User">
-                                        <div class="user-cell">
-                                            <div class="avatar-ring"><?php echo initials($u['firstname'], $u['lastname']); ?></div>
-                                            <div>
-                                                <div class="user-name"><?php echo htmlspecialchars(trim($u['firstname'] . ' ' . $u['lastname'])) ?: '-'; ?></div>
-                                                <div class="user-sub"><?php echo htmlspecialchars($u['email']); ?></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td data-label="Group">
-                                        <?php if (!empty($u['group_name'])): ?>
-                                            <span class="pill-group"><?php echo htmlspecialchars($u['group_name']); ?></span>
-                                        <?php else: ?>
-                                            <span class="pill-none">No group</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td data-label="Status">
-                                        <?php if ($u['verified'] == 'Y'): ?>
-                                            <span class="status enabled"><span class="dot"></span> Active</span>
-                                        <?php else: ?>
-                                            <span class="status disabled"><span class="dot"></span> Disabled</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td data-label="Added"><?php echo fmtDate($u['created']); ?></td>
-                                    <td data-label="Last Login"><?php echo fmtDate($u['last_login']); ?></td>
-                                    <td data-label="">
-                                        <div class="row-actions">
-                                            <a href="admin/users.php?action=form&id=<?php echo (int)$u['id']; ?>" class="icon-btn" title="Edit"><i class="fa fa-pencil"></i></a>
-                                            <a href="admin/users.php?action=delete&id=<?php echo (int)$u['id']; ?>" class="icon-btn danger" title="Delete"
-                                                onclick="return confirm('Delete this user? This cannot be undone.');"><i class="fa fa-trash-o"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </form>
-
-            <?php if ($total_pages > 1): ?>
-                <div class="pagination">
-                    <a href="<?php echo htmlspecialchars(buildPageUrl(max(1, $page - 1), $search, $status_filter)); ?>"
-                        class="page-link <?php echo $page <= 1 ? 'disabled' : ''; ?>">« Prev</a>
-
-                    <?php
-                    // Compact windowed page list: 1 ... (page-1) page (page+1) ... total_pages
-                    // Always show first page, last page, and one page on each side of
-                    // the current page. Anything skipped in between becomes a single
-                    // "..." (non-clickable) separator — this keeps it to one row even
-                    // when there are hundreds of pages.
-                    $window = 1; // how many neighbours to show on each side of current page
-
-                    $pagesToShow = array(1, $total_pages);
-                    for ($p = $page - $window; $p <= $page + $window; $p++) {
-                        if ($p >= 1 && $p <= $total_pages) {
-                            $pagesToShow[] = $p;
-                        }
-                    }
-                    $pagesToShow = array_unique($pagesToShow);
-                    sort($pagesToShow);
-
-                    $prevShown = 0;
-                    foreach ($pagesToShow as $p) {
-                        if ($prevShown && $p - $prevShown > 1) {
-                            echo '<span class="page-link disabled">&hellip;</span>';
-                        }
-                        echo '<a href="' . htmlspecialchars(buildPageUrl($p, $search, $status_filter)) . '" class="page-link ' . ($p == $page ? 'active' : '') . '">' . $p . '</a>';
-                        $prevShown = $p;
-                    }
-                    ?>
-
-                    <a href="<?php echo htmlspecialchars(buildPageUrl(min($total_pages, $page + 1), $search, $status_filter)); ?>"
-                        class="page-link <?php echo $page >= $total_pages ? 'disabled' : ''; ?>">Next »</a>
-                </div>
-            <?php endif; ?>
-
-            <script>
-                // Auto-submit the search box a moment after typing stops, so the
-                // list refreshes (server-side) without needing to press Enter.
-                var searchTimer;
-
-                function debouncedSubmit() {
-                    clearTimeout(searchTimer);
-                    searchTimer = setTimeout(function() {
-                        document.getElementById('filter-form').submit();
-                    }, 500);
-                }
-            </script>
-
-        <?php else: ?>
-
-            <div class="page-head">
-                <div>
-                    <p class="eyebrow"><?php echo $edit_user ? 'Edit User' : 'New User'; ?></p>
-                    <h1><?php echo $edit_user && !empty($edit_user['firstname']) ? htmlspecialchars($edit_user['firstname'] . ' ' . $edit_user['lastname']) : 'Add User'; ?></h1>
-                    <p><?php echo $edit_user ? 'Update account details and permissions.' : 'Create a new account to access the admin portal.'; ?></p>
-                </div>
-                <a href="admin/users.php" class="btn btn-ghost"><i class="fa fa-arrow-left"></i> Back to list</a>
+        <form method="post" action="admin/users.php" id="bulk-form">
+            <div class="toolbar-actions" style="justify-content:flex-end;margin-bottom:12px;">
+                <button type="submit" name="bulk_delete" value="1" class="btn btn-danger-ghost"
+                    onclick="return confirm('Delete all selected users? This cannot be undone.');">
+                    <i class="fa fa-trash-o"></i> Delete Selected
+                </button>
             </div>
 
-            <form method="post" action="admin/users.php?action=form" id="form-user">
-                <?php if ($edit_user && !empty($edit_user['id'])): ?>
-                    <input type="hidden" name="id" value="<?php echo (int)$edit_user['id']; ?>">
-                <?php endif; ?>
-                <div class="form-card">
+            <div class="card">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th style="width:1px;"><input type="checkbox" class="checkbox" onclick="document.querySelectorAll('.row-check').forEach(c=>c.checked=this.checked)"></th>
+                            <th>User</th>
+                            <th>Group</th>
+                            <th>Status</th>
+                            <th>Added</th>
+                            <th>Last Login</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($users)): ?>
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty">
+                                        <i class="fa fa-user"></i>
+                                        <?php echo ($search !== '' || $status_filter !== '') ? 'No users match your search / filter.' : 'No users yet. Click "Add User" to create one.'; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php foreach ($users as $u): ?>
+                            <tr class="user-row">
+                                <td data-label=""><input type="checkbox" class="checkbox row-check" name="bulk_ids[]" value="<?php echo (int)$u['id']; ?>"></td>
+                                <td class="user-td" data-label="User">
+                                    <div class="user-cell">
+                                        <div class="avatar-ring"><?php echo initials($u['firstname'], $u['lastname']); ?></div>
+                                        <div>
+                                            <div class="user-name"><?php echo htmlspecialchars(trim($u['firstname'] . ' ' . $u['lastname'])) ?: '-'; ?></div>
+                                            <div class="user-sub"><?php echo htmlspecialchars($u['email']); ?></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Group">
+                                    <?php if (!empty($u['group_name'])): ?>
+                                        <span class="pill-group"><?php echo htmlspecialchars($u['group_name']); ?></span>
+                                    <?php else: ?>
+                                        <span class="pill-none">No group</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td data-label="Status">
+                                    <?php if ($u['verified'] == 'Y'): ?>
+                                        <span class="status enabled"><span class="dot"></span> Active</span>
+                                    <?php else: ?>
+                                        <span class="status disabled"><span class="dot"></span> Disabled</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td data-label="Added"><?php echo fmtDate($u['created']); ?></td>
+                                <td data-label="Last Login"><?php echo fmtDate($u['last_login']); ?></td>
+                                <td data-label="">
+                                    <div class="row-actions">
+                                        <a href="admin/users.php?action=form&id=<?php echo (int)$u['id']; ?>" class="icon-btn" title="Edit"><i class="fa fa-pencil"></i></a>
+                                        <a href="admin/users.php?action=delete&id=<?php echo (int)$u['id']; ?>" class="icon-btn danger" title="Delete"
+                                            onclick="return confirm('Delete this user? This cannot be undone.');"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </form>
 
-                    <div class="form-section">
-                        <h3 class="section-title">Basic Details</h3>
-                        <p class="section-desc">Name and login identity for this account.</p>
-                        <div class="grid-2">
-                            <div class="field">
-                                <label>First Name <span class="req">*</span></label>
-                                <input type="text" name="firstname" placeholder="e.g. Rohan" value="<?php echo htmlspecialchars($edit_user['firstname'] ?? ''); ?>">
-                            </div>
-                            <div class="field">
-                                <label>Last Name <span class="req">*</span></label>
-                                <input type="text" name="lastname" placeholder="e.g. Sharma" value="<?php echo htmlspecialchars($edit_user['lastname'] ?? ''); ?>">
-                            </div>
-                        </div>
-                        <div class="grid-2">
-                            <div class="field">
-                                <label>Email Address <span class="req">*</span></label>
-                                <input type="text" name="email" placeholder="name@rwitc.com" value="<?php echo htmlspecialchars($edit_user['email'] ?? ''); ?>">
-                            </div>
-                            <div class="field">
-                                <label>Phone Number</label>
-                                <input type="text" name="phoneno" placeholder="e.g. 9876543210" value="<?php echo htmlspecialchars($edit_user['phoneno'] ?? ''); ?>">
-                            </div>
-                        </div>
-                    </div>
+        <?php if ($total_pages > 1): ?>
+            <div class="pagination">
+                <a href="<?php echo htmlspecialchars(buildPageUrl(max(1, $page - 1), $search, $status_filter)); ?>"
+                    class="page-link <?php echo $page <= 1 ? 'disabled' : ''; ?>">« Prev</a>
 
-                    <div class="form-section">
-                        <h3 class="section-title">Access &amp; Permissions</h3>
-                        <p class="section-desc">Controls what this user can see and edit.</p>
-                        <div class="grid-2">
-                            <div class="field">
-                                <label>User Group</label>
-                                <select name="user_group_id">
-                                    <option value="">- No group -</option>
-                                    <?php foreach ($user_groups as $ug): ?>
-                                        <option value="<?php echo $ug['user_group_id']; ?>"
-                                            <?php echo (isset($edit_user['user_group_id']) && $edit_user['user_group_id'] == $ug['user_group_id']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($ug['name']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label>Role (free text)</label>
-                                <input type="text" name="role" placeholder="e.g. editor" value="<?php echo htmlspecialchars($edit_user['role'] ?? ''); ?>">
-                            </div>
+                <?php
+                // Compact windowed page list: 1 ... (page-1) page (page+1) ... total_pages
+                // Always show first page, last page, and one page on each side of
+                // the current page. Anything skipped in between becomes a single
+                // "..." (non-clickable) separator — this keeps it to one row even
+                // when there are hundreds of pages.
+                $window = 1; // how many neighbours to show on each side of current page
+
+                $pagesToShow = array(1, $total_pages);
+                for ($p = $page - $window; $p <= $page + $window; $p++) {
+                    if ($p >= 1 && $p <= $total_pages) {
+                        $pagesToShow[] = $p;
+                    }
+                }
+                $pagesToShow = array_unique($pagesToShow);
+                sort($pagesToShow);
+
+                $prevShown = 0;
+                foreach ($pagesToShow as $p) {
+                    if ($prevShown && $p - $prevShown > 1) {
+                        echo '<span class="page-link disabled">&hellip;</span>';
+                    }
+                    echo '<a href="' . htmlspecialchars(buildPageUrl($p, $search, $status_filter)) . '" class="page-link ' . ($p == $page ? 'active' : '') . '">' . $p . '</a>';
+                    $prevShown = $p;
+                }
+                ?>
+
+                <a href="<?php echo htmlspecialchars(buildPageUrl(min($total_pages, $page + 1), $search, $status_filter)); ?>"
+                    class="page-link <?php echo $page >= $total_pages ? 'disabled' : ''; ?>">Next »</a>
+            </div>
+        <?php endif; ?>
+
+        <script>
+            // Auto-submit the search box a moment after typing stops, so the
+            // list refreshes (server-side) without needing to press Enter.
+            var searchTimer;
+
+            function debouncedSubmit() {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(function() {
+                    document.getElementById('filter-form').submit();
+                }, 500);
+            }
+        </script>
+
+    <?php else: ?>
+
+        <div class="page-head">
+            <div>
+                <p class="eyebrow"><?php echo $edit_user ? 'Edit User' : 'New User'; ?></p>
+                <h1><?php echo $edit_user && !empty($edit_user['firstname']) ? htmlspecialchars($edit_user['firstname'] . ' ' . $edit_user['lastname']) : 'Add User'; ?></h1>
+                <p><?php echo $edit_user ? 'Update account details and permissions.' : 'Create a new account to access the admin portal.'; ?></p>
+            </div>
+            <a href="admin/users.php" class="btn btn-ghost"><i class="fa fa-arrow-left"></i> Back to list</a>
+        </div>
+
+        <form method="post" action="admin/users.php?action=form" id="form-user">
+            <?php if ($edit_user && !empty($edit_user['id'])): ?>
+                <input type="hidden" name="id" value="<?php echo (int)$edit_user['id']; ?>">
+            <?php endif; ?>
+            <div class="form-card">
+
+                <div class="form-section">
+                    <h3 class="section-title">Basic Details</h3>
+                    <p class="section-desc">Name and login identity for this account.</p>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label>First Name <span class="req">*</span></label>
+                            <input type="text" name="firstname" placeholder="e.g. Rohan" value="<?php echo htmlspecialchars($edit_user['firstname'] ?? ''); ?>">
                         </div>
                         <div class="field">
-                            <label>Status</label>
-                            <select name="status">
-                                <option value="Y" <?php echo (isset($edit_user['verified']) && $edit_user['verified'] == 'Y') ? 'selected' : ''; ?>>Active (Verified)</option>
-                                <option value="N" <?php echo (!isset($edit_user['verified']) || $edit_user['verified'] == 'N') ? 'selected' : ''; ?>>Disabled (Not Verified)</option>
-                            </select>
+                            <label>Last Name <span class="req">*</span></label>
+                            <input type="text" name="lastname" placeholder="e.g. Sharma" value="<?php echo htmlspecialchars($edit_user['lastname'] ?? ''); ?>">
                         </div>
                     </div>
-
-                    <div class="form-section">
-                        <h3 class="section-title">Security</h3>
-                        <p class="section-desc"><?php echo $edit_user ? 'Leave blank to keep the current password.' : 'Set a password for this account.'; ?></p>
-                        <div class="grid-2">
-                            <div class="field">
-                                <label>Password <?php if (!$edit_user): ?><span class="req">*</span><?php endif; ?></label>
-                                <input type="password" name="password" placeholder="********" autocomplete="new-password">
-                            </div>
-                            <div class="field">
-                                <label>Confirm Password <?php if (!$edit_user): ?><span class="req">*</span><?php endif; ?></label>
-                                <input type="password" name="confirm" placeholder="********" autocomplete="new-password">
-                            </div>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label>Email Address <span class="req">*</span></label>
+                            <input type="text" name="email" placeholder="name@rwitc.com" value="<?php echo htmlspecialchars($edit_user['email'] ?? ''); ?>">
                         </div>
-                        <div class="hint"><i class="fa fa-info-circle"></i> Minimum 8 characters.</div>
-                    </div>
-
-                    <div class="form-footer">
-                        <a href="admin/users.php" class="btn btn-ghost">Cancel</a>
-                        <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save User</button>
+                        <div class="field">
+                            <label>Phone Number</label>
+                            <input type="text" name="phoneno" placeholder="e.g. 9876543210" value="<?php echo htmlspecialchars($edit_user['phoneno'] ?? ''); ?>">
+                        </div>
                     </div>
                 </div>
-            </form>
 
-        <?php endif; ?>
+                <div class="form-section">
+                    <h3 class="section-title">Access &amp; Permissions</h3>
+                    <p class="section-desc">Controls what this user can see and edit.</p>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label>User Group</label>
+                            <select name="user_group_id">
+                                <option value="">- No group -</option>
+                                <?php foreach ($user_groups as $ug): ?>
+                                    <option value="<?php echo $ug['user_group_id']; ?>"
+                                        <?php echo (isset($edit_user['user_group_id']) && $edit_user['user_group_id'] == $ug['user_group_id']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($ug['name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Role (free text)</label>
+                            <input type="text" name="role" placeholder="e.g. editor" value="<?php echo htmlspecialchars($edit_user['role'] ?? ''); ?>">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Status</label>
+                        <select name="status">
+                            <option value="Y" <?php echo (isset($edit_user['verified']) && $edit_user['verified'] == 'Y') ? 'selected' : ''; ?>>Active (Verified)</option>
+                            <option value="N" <?php echo (!isset($edit_user['verified']) || $edit_user['verified'] == 'N') ? 'selected' : ''; ?>>Disabled (Not Verified)</option>
+                        </select>
+                    </div>
+                </div>
 
-    </div>
-    <?php
+                <div class="form-section">
+                    <h3 class="section-title">Security</h3>
+                    <p class="section-desc"><?php echo $edit_user ? 'Leave blank to keep the current password.' : 'Set a password for this account.'; ?></p>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label>Password <?php if (!$edit_user): ?><span class="req">*</span><?php endif; ?></label>
+                            <input type="password" name="password" placeholder="********" autocomplete="new-password">
+                        </div>
+                        <div class="field">
+                            <label>Confirm Password <?php if (!$edit_user): ?><span class="req">*</span><?php endif; ?></label>
+                            <input type="password" name="confirm" placeholder="********" autocomplete="new-password">
+                        </div>
+                    </div>
+                    <div class="hint"><i class="fa fa-info-circle"></i> Minimum 8 characters.</div>
+                </div>
+
+                <div class="form-footer">
+                    <a href="admin/users.php" class="btn btn-ghost">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save User</button>
+                </div>
+            </div>
+        </form>
+
+    <?php endif; ?>
+
+</div>
+<?php
 $design->endPage();
 $design = NULL;
 ?>
