@@ -1,14 +1,16 @@
 <?php
 
-class Design{
+class Design
+{
 
-    var $jqueryJs,$js,$css,$bodyAttr;
+    var $jqueryJs, $js, $css, $bodyAttr;
 
-    function startPage($pageTitle,$articleData=array()) {
+    function startPage($pageTitle, $articleData = array())
+    {
 
-        $url = 'https://'.$_SERVER['HTTP_HOST'].''.$_SERVER['REQUEST_URI'];
+        $url = 'https://' . $_SERVER['HTTP_HOST'] . '' . $_SERVER['REQUEST_URI'];
 
-        $metaOGUrl = $url;//'https://www.rw1.space2let.com';
+        $metaOGUrl = $url; //'https://www.rw1.space2let.com';
 
         $metaOGTitle = 'Royal Western India Turf Club (RWITC)';
 
@@ -20,27 +22,26 @@ class Design{
 
             //$articleData['title'] = 'Test Title';
 
-            $metaOGUrl = 'https://rw1.space2let.com/~rwitc/viewArticles.php?id='.getParameterNumber('id');
+            $metaOGUrl = 'https://rw1.space2let.com/~rwitc/viewArticles.php?id=' . getParameterNumber('id');
 
             $metaOGTitle = $articleData['title'];
 
             $metaOGDescription = $articleData['title'];
 
             $metaOGImage = 'https://rw1.space2let.com/~rwitc/images/newdesign/rwitcLogo.png';
-
         }
 
-    $main_file = 'assets/css/main.css';
+        $main_file = 'assets/css/main.css';
 
-    //echo $_SERVER['DOCUMENT_ROOT'];exit;
+        //echo $_SERVER['DOCUMENT_ROOT'];exit;
 
-    //$mtime = filemtime($_SERVER['DOCUMENT_ROOT'] .'/rwitc_website/assets/css/main.css');
+        //$mtime = filemtime($_SERVER['DOCUMENT_ROOT'] .'/rwitc_website/assets/css/main.css');
 
-    $mtime = filemtime(DIR_BASE.'assets/css/main.css');
+        $mtime = filemtime(DIR_BASE . 'assets/css/main.css');
 
-    $main_css = $main_file.'?version='.$mtime;
+        $main_css = $main_file . '?version=' . $mtime;
 
-    $base_href = BASE_HREF;
+        $base_href = BASE_HREF;
 
         echo <<< PAGESTART
 
@@ -392,14 +393,14 @@ class Design{
 <body>
 
 PAGESTART;
-
     }
 
 
 
 
 
-    function liveBoxes(){
+    function liveBoxes()
+    {
 
         require_once("dbTools.php");
 
@@ -411,7 +412,7 @@ PAGESTART;
 
         if ($linkbox == 'Y') {
 
-        //if (LINKSBOX) {
+            //if (LINKSBOX) {
 
             echo <<< MEDIA_TIPS
 
@@ -474,14 +475,13 @@ PAGESTART;
 
 
 MEDIA_TIPS;
-
         }
-
     }
 
 
 
-    function liveBox() {
+    function liveBox()
+    {
 
         require_once("dbTools.php");
 
@@ -497,7 +497,7 @@ MEDIA_TIPS;
 
         if ($oddsbox == 'Y') {
 
-        //if (ODDSBOX) {
+            //if (ODDSBOX) {
 
             echo <<< ODDS_CONTENT
 
@@ -582,12 +582,11 @@ MEDIA_TIPS;
                  </script>
 
 ODDS_CONTENT;
-
         }
 
         if ($finalresbox == 'Y') {
 
-        //if (FINALRESBOX) {
+            //if (FINALRESBOX) {
 
             echo <<< FINAL_CONTENT
 
@@ -656,16 +655,11 @@ ODDS_CONTENT;
                  </script>
 
 FINAL_CONTENT;
-
         }
-
-
-
-
-
     }
 
-    function writeLogoTickerMenuHome() {
+    function writeLogoTickerMenuHome()
+    {
 
         require_once('race.class.php');
 
@@ -826,12 +820,12 @@ FINAL_CONTENT;
 TICKER;
 
         self::siteMenu();
-
     }
 
 
 
-    function writeLogoTickerMenu() {
+    function writeLogoTickerMenu()
+    {
 
         require_once('race.class.php');
 
@@ -839,7 +833,7 @@ TICKER;
 
         $raceObj = new Racedata($dbObj);
 
-        $galleryDate = $raceObj->getMaxDate('racedate','gallery');
+        $galleryDate = $raceObj->getMaxDate('racedate', 'gallery');
 
         echo <<<TICKER
 
@@ -978,33 +972,38 @@ TICKER;
 TICKER;
 
         self::siteMenu();
-
     }
 
 
 
-    function siteMenu() {
+    function siteMenu()
+    {
 
-        $url = 'https://'.$_SERVER['HTTP_HOST'].''.$_SERVER['REQUEST_URI'];
+        $url = 'https://' . $_SERVER['HTTP_HOST'] . '' . $_SERVER['REQUEST_URI'];
 
-        $metaOGUrl = $url;//'https://www.rwitc.com';
+        $metaOGUrl = $url; //'https://www.rwitc.com';
 
         $metaOGTitle = 'Royal Western India Turf Club (RWITC)';
 
-        // Super Admin check
-        $isSuperAdmin = (isset($_SESSION['uid']) && $_SESSION['uid'] == 19);
+        // User Group 1 check
+        $isUserGroupOne = (
+            isset($_SESSION['user_group_id']) &&
+            (int)$_SESSION['user_group_id'] === 1
+        );
 
         $userMenu = '';
 
-        if ($isSuperAdmin) {
+        if ($isUserGroupOne) {
             $userMenu = '
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User<span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    <li><a href="admin/users.php">Users</a></li>
-                    <li><a href="admin/userGroup.php">User Group</a></li>
-                </ul>
-            </li>';
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            User<span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+            <li><a href="admin/users.php">Users</a></li>
+            <li><a href="admin/userGroup.php">User Group</a></li>
+        </ul>
+    </li>';
         }
 
         echo <<<MENU
@@ -1279,30 +1278,30 @@ TICKER;
     <!-- /.navbar -->
 
 MENU;
-
     }
 
 
 
-    function openDiv($id="",$class="") {
+    function openDiv($id = "", $class = "")
+    {
 
         echo "<div id='$id' class='$class'>";
-
     }
 
 
 
-    function closeDiv() {
+    function closeDiv()
+    {
 
         echo "</div>";
-
     }
 
 
 
 
 
-    function rightArea() {
+    function rightArea()
+    {
 
         require_once("dbTools.php");
 
@@ -1324,38 +1323,35 @@ MENU;
 
         if ($linkbox == 'Y') {
 
-        //if (LINKSBOX) {
+            //if (LINKSBOX) {
 
             echo <<< MEDIA_TIPS
 
 
 
 MEDIA_TIPS;
-
         }
 
         if ($oddsbox == 'Y') {
 
-        //if (ODDSBOX) {
+            //if (ODDSBOX) {
 
             echo <<< ODDS_CONTENT
 
 
 
 ODDS_CONTENT;
-
         }
 
         if ($finalresbox == 'Y') {
 
-        //if (FINALRESBOX) {
+            //if (FINALRESBOX) {
 
             echo <<< FINAL_CONTENT
 
 
 
 FINAL_CONTENT;
-
         }
 
 
@@ -1364,7 +1360,7 @@ FINAL_CONTENT;
 
         self::rightSponsor();
 
-        ECHO <<< BOXES
+        echo <<< BOXES
 
             <div class="col-lg-12">
 
@@ -1683,7 +1679,6 @@ FINAL_CONTENT;
        </div>
 
 BOXES;
-
     }
 
 
@@ -1704,54 +1699,47 @@ BOXES;
 
         $sponsorofthday = '';
 
-        foreach($sponsoroftheday_datas as $skey => $svalue){
+        foreach ($sponsoroftheday_datas as $skey => $svalue) {
 
-            if($skey == 0){
+            if ($skey == 0) {
 
                 $sponsorofthday .= '<div class="item active">';
 
-                    $link = $svalue['link'];
+                $link = $svalue['link'];
 
-                    if($svalue['link'] != ''){
+                if ($svalue['link'] != '') {
 
-                        $sponsorofthday .= '<a href="'.$link.'">';
+                    $sponsorofthday .= '<a href="' . $link . '">';
 
-                            $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/'.$svalue['source'].'" alt="'.$svalue['title'].'" title="'.$svalue['title'].'" />';
+                    $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
 
-                        $sponsorofthday .= '<a>';
+                    $sponsorofthday .= '<a>';
+                } else {
 
-                    } else {
-
-                        $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/'.$svalue['source'].'" alt="'.$svalue['title'].'" title="'.$svalue['title'].'" />';
-
-                    } 
+                    $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
+                }
 
                 $sponsorofthday .= '</div>';
-
             } else {
 
                 $sponsorofthday .= '<div class="item">';
 
-                    $link = $svalue['link'];
+                $link = $svalue['link'];
 
-                    if($svalue['link'] != ''){
+                if ($svalue['link'] != '') {
 
-                        $sponsorofthday .= '<a href="'.$link.'">';
+                    $sponsorofthday .= '<a href="' . $link . '">';
 
-                            $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/'.$svalue['source'].'" alt="'.$svalue['title'].'" title="'.$svalue['title'].'" />';
+                    $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
 
-                        $sponsorofthday .= '</a>';
+                    $sponsorofthday .= '</a>';
+                } else {
 
-                    } else {
-
-                        $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/'.$svalue['source'].'" alt="'.$svalue['title'].'" title="'.$svalue['title'].'" />';
-
-                    }
+                    $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
+                }
 
                 $sponsorofthday .= '</div>';
-
             }
-
         }
 
         echo <<< RIGHT_FOOTER
@@ -1811,22 +1799,18 @@ BOXES;
             </div>
 
 RIGHT_FOOTER;
-
     }
 
 
 
-    function pageClose(){
-
-        
-
-    }
+    function pageClose() {}
 
 
 
 
 
-    function endPage() {
+    function endPage()
+    {
 
         require_once("dbTools.php");
 
@@ -1842,24 +1826,21 @@ RIGHT_FOOTER;
 
         $sponsors = '';
 
-        foreach($sponsor_datas as $skey => $svalue){
+        foreach ($sponsor_datas as $skey => $svalue) {
 
             $link = $svalue['link'];
 
-            if($svalue['link'] != ''){
+            if ($svalue['link'] != '') {
 
-                $sponsors .= '<a href="'.$link.'">';
+                $sponsors .= '<a href="' . $link . '">';
 
-                    $sponsors .= '<img src="images/sponsors/'.$svalue['source'].'" alt="'.$svalue['title'].'" title="'.$svalue['title'].'"  style="margin-left: 14px; margin-right: 14px;"/>';
+                $sponsors .= '<img src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '"  style="margin-left: 14px; margin-right: 14px;"/>';
 
                 $sponsors .= '<a>';
-
             } else {
 
-                $sponsors .= '<img src="images/sponsors/'.$svalue['source'].'" alt="'.$svalue['title'].'" title="'.$svalue['title'].'" style="margin-left: 14px; margin-right: 14px;" />';
-
+                $sponsors .= '<img src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" style="margin-left: 14px; margin-right: 14px;" />';
             }
-
         }
 
         //echo $sponsors;exit;
@@ -1903,7 +1884,5 @@ RIGHT_FOOTER;
 </html>
 
 FOOTER;
-
     }
-
-}// class end ?>
+} // class end 

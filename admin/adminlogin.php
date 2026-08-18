@@ -22,11 +22,9 @@ $uri = $_SERVER['REQUEST_URI'];
 if (preg_match('/uri=(.+)/is', $uri, $matches)) {
 
     $uri = $matches[1];
-
 } else {
 
     $uri = getParameterString("uri", "dashboard.php");
-
 }
 
 
@@ -224,8 +222,8 @@ if ($q == "login-user") {
 
         $_SESSION['uid'] =
             isset($userDetails['id'])
-                ? $userDetails['id']
-                : 0;
+            ? $userDetails['id']
+            : 0;
 
 
         /*
@@ -238,7 +236,6 @@ if ($q == "login-user") {
 
             $_SESSION['username'] =
                 $userDetails['username'];
-
         } elseif (
             isset($userDetails['firstname']) ||
             isset($userDetails['lastname'])
@@ -249,12 +246,11 @@ if ($q == "login-user") {
                     (isset($userDetails['firstname'])
                         ? $userDetails['firstname']
                         : '') .
-                    ' ' .
-                    (isset($userDetails['lastname'])
-                        ? $userDetails['lastname']
-                        : '')
+                        ' ' .
+                        (isset($userDetails['lastname'])
+                            ? $userDetails['lastname']
+                            : '')
                 );
-
         } else {
 
             $_SESSION['username'] = $username;
@@ -269,8 +265,8 @@ if ($q == "login-user") {
 
         $_SESSION['role'] =
             isset($userDetails['role'])
-                ? $userDetails['role']
-                : 'SITE-USER';
+            ? $userDetails['role']
+            : 'SITE-USER';
 
 
         /*
@@ -283,123 +279,123 @@ if ($q == "login-user") {
 
         $_SESSION['articles'] =
             isset($userDetails['articles'])
-                ? $userDetails['articles']
-                : 'N';
+            ? $userDetails['articles']
+            : 'N';
 
         $_SESSION['race_history'] =
             isset($userDetails['race_history'])
-                ? $userDetails['race_history']
-                : 'N';
+            ? $userDetails['race_history']
+            : 'N';
 
         $_SESSION['send_mailer'] =
             isset($userDetails['send_mailer'])
-                ? $userDetails['send_mailer']
-                : 'N';
+            ? $userDetails['send_mailer']
+            : 'N';
 
         $_SESSION['rating_change'] =
             isset($userDetails['rating_change'])
-                ? $userDetails['rating_change']
-                : 'N';
+            ? $userDetails['rating_change']
+            : 'N';
 
         $_SESSION['gallery'] =
             isset($userDetails['gallery'])
-                ? $userDetails['gallery']
-                : 'N';
+            ? $userDetails['gallery']
+            : 'N';
 
         $_SESSION['video'] =
             isset($userDetails['video'])
-                ? $userDetails['video']
-                : 'N';
+            ? $userDetails['video']
+            : 'N';
 
         $_SESSION['dividends'] =
             isset($userDetails['dividends'])
-                ? $userDetails['dividends']
-                : 'N';
+            ? $userDetails['dividends']
+            : 'N';
 
         $_SESSION['stewards_report'] =
             isset($userDetails['stewards_report'])
-                ? $userDetails['stewards_report']
-                : 'N';
+            ? $userDetails['stewards_report']
+            : 'N';
 
         $_SESSION['race_day_report'] =
             isset($userDetails['race_day_report'])
-                ? $userDetails['race_day_report']
-                : 'N';
+            ? $userDetails['race_day_report']
+            : 'N';
 
         $_SESSION['calendar'] =
             isset($userDetails['calendar'])
-                ? $userDetails['calendar']
-                : 'N';
+            ? $userDetails['calendar']
+            : 'N';
 
         $_SESSION['prakash_gosavi'] =
             isset($userDetails['prakash_gosavi'])
-                ? $userDetails['prakash_gosavi']
-                : 'N';
+            ? $userDetails['prakash_gosavi']
+            : 'N';
 
         $_SESSION['shiven_surendranath'] =
             isset($userDetails['shiven_surendranath'])
-                ? $userDetails['shiven_surendranath']
-                : 'N';
+            ? $userDetails['shiven_surendranath']
+            : 'N';
 
         $_SESSION['polls'] =
             isset($userDetails['polls'])
-                ? $userDetails['polls']
-                : 'N';
+            ? $userDetails['polls']
+            : 'N';
 
         $_SESSION['adminusers'] =
             isset($userDetails['adminusers'])
-                ? $userDetails['adminusers']
-                : 'N';
+            ? $userDetails['adminusers']
+            : 'N';
 
         $_SESSION['workingManager'] =
             isset($userDetails['workingManager'])
-                ? $userDetails['workingManager']
-                : 'N';
+            ? $userDetails['workingManager']
+            : 'N';
 
         $_SESSION['bannerManager'] =
             isset($userDetails['bannerManager'])
-                ? $userDetails['bannerManager']
-                : 'N';
+            ? $userDetails['bannerManager']
+            : 'N';
 
         $_SESSION['tickerManager'] =
             isset($userDetails['tickerManager'])
-                ? $userDetails['tickerManager']
-                : 'N';
+            ? $userDetails['tickerManager']
+            : 'N';
 
         $_SESSION['sponsorManager'] =
             isset($userDetails['sponsorManager'])
-                ? $userDetails['sponsorManager']
-                : 'N';
+            ? $userDetails['sponsorManager']
+            : 'N';
 
         $_SESSION['sponsorofthedayManager'] =
             isset($userDetails['sponsorofthedayManager'])
-                ? $userDetails['sponsorofthedayManager']
-                : 'N';
+            ? $userDetails['sponsorofthedayManager']
+            : 'N';
 
         $_SESSION['horseweightManager'] =
             isset($userDetails['horseweightManager'])
-                ? $userDetails['horseweightManager']
-                : 'N';
+            ? $userDetails['horseweightManager']
+            : 'N';
 
         $_SESSION['racedataManager'] =
             isset($userDetails['racedataManager'])
-                ? $userDetails['racedataManager']
-                : 'N';
+            ? $userDetails['racedataManager']
+            : 'N';
 
         $_SESSION['configManager'] =
             isset($userDetails['configManager'])
-                ? $userDetails['configManager']
-                : 'N';
+            ? $userDetails['configManager']
+            : 'N';
 
         $_SESSION['mailManager'] =
             isset($userDetails['mailManager'])
-                ? $userDetails['mailManager']
-                : 'N';
+            ? $userDetails['mailManager']
+            : 'N';
 
         $_SESSION['homepopup'] =
             isset($userDetails['homepopup'])
-                ? $userDetails['homepopup']
-                : 'N';
+            ? $userDetails['homepopup']
+            : 'N';
 
 
         /*
@@ -408,77 +404,32 @@ if ($q == "login-user") {
         |--------------------------------------------------------------------------
         */
 
+        /*
+        |--------------------------------------------------------------------------
+        | USER GROUP PERMISSIONS
+        |--------------------------------------------------------------------------
+        */
+
         if ($isSiteUser) {
 
-            $_SESSION['user_group_id'] =
-                isset($userDetails['user_group_id'])
-                    ? (int)$userDetails['user_group_id']
-                    : 0;
+            /*
+     * NORMAL SITE USER
+     */
 
-
-            $_SESSION['user_group_name'] =
-                isset($userDetails['user_group_name'])
-                    ? $userDetails['user_group_name']
-                    : '';
-
-
-            $_SESSION['permissions'] = array(
-                'access' => array(),
-                'modify' => array()
+            loadUserPermissions(
+                $db,
+                (int)$userDetails['id']
             );
-
-
-            if (
-                isset($userDetails['user_group_permission']) &&
-                !empty($userDetails['user_group_permission'])
-            ) {
-
-                $permissionData = @unserialize(
-                    $userDetails['user_group_permission']
-                );
-
-
-                if (
-                    is_array($permissionData) &&
-                    isset($permissionData['access']) &&
-                    is_array($permissionData['access'])
-                ) {
-
-                    $_SESSION['permissions']['access'] =
-                        array_values(
-                            $permissionData['access']
-                        );
-                }
-
-
-                if (
-                    is_array($permissionData) &&
-                    isset($permissionData['modify']) &&
-                    is_array($permissionData['modify'])
-                ) {
-
-                    $_SESSION['permissions']['modify'] =
-                        array_values(
-                            $permissionData['modify']
-                        );
-                }
-            }
-
         } else {
 
             /*
-            |--------------------------------------------------------------------------
-            | OLD ADMIN
-            |--------------------------------------------------------------------------
-            */
+     * ADMIN USER
+     *
+     */
 
-            $_SESSION['user_group_id'] = 0;
-
-            $_SESSION['user_group_name'] = '';
-
-            $_SESSION['permissions'] = array(
-                'access' => array(),
-                'modify' => array()
+            loadAdminPermissions(
+                $db,
+                (int)$userDetails['id']
             );
         }
 
@@ -504,15 +455,12 @@ if ($q == "login-user") {
             "<a href='" .
             $safeUri .
             "'>Here</a> in 2 secs";
-
-
     } catch (RWITC_exception $rwitc_err) {
 
         session_destroy();
 
         $msg =
             $rwitc_err->getMessage();
-
     } catch (Exception $err) {
 
         session_destroy();
@@ -550,8 +498,7 @@ $isLogoutMsg =
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+        content="width=device-width, initial-scale=1.0">
 
     <title>
         <?php echo $pageTitle; ?>
@@ -559,16 +506,13 @@ $isLogoutMsg =
 
     <link
         href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-    >
+        rel="stylesheet">
 
     <link
         rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    >
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-
         :root {
             --rw-green-dark: #04160c;
             --rw-green-mid: #0b3d20;
@@ -610,22 +554,16 @@ $isLogoutMsg =
             justify-content: center;
             color: #eef4ee;
             background:
-                radial-gradient(
-                    circle at 15% 15%,
+                radial-gradient(circle at 15% 15%,
                     rgba(199, 228, 106, 0.10),
-                    transparent 45%
-                ),
-                radial-gradient(
-                    circle at 80% 70%,
+                    transparent 45%),
+                radial-gradient(circle at 80% 70%,
                     rgba(21, 146, 60, 0.25),
-                    transparent 55%
-                ),
-                linear-gradient(
-                    160deg,
+                    transparent 55%),
+                linear-gradient(160deg,
                     var(--rw-green-dark) 0%,
                     var(--rw-green-mid) 55%,
-                    var(--rw-green-dark) 100%
-                );
+                    var(--rw-green-dark) 100%);
             overflow: hidden;
         }
 
@@ -678,7 +616,7 @@ $isLogoutMsg =
             color: #ffffff;
         }
 
-        .rwAuthLeft > .rwAuthLeftInner > p {
+        .rwAuthLeft>.rwAuthLeftInner>p {
             margin: 0 0 40px;
             font-size: 15px;
             line-height: 1.6;
@@ -869,7 +807,7 @@ $isLogoutMsg =
             color: var(--rw-ink);
         }
 
-        .rwAuthCard > p.rwSubtext {
+        .rwAuthCard>p.rwSubtext {
             margin: 0 0 28px;
             font-size: 14px;
             color: var(--rw-muted);
@@ -952,11 +890,9 @@ $isLogoutMsg =
             border-radius: 999px;
             cursor: pointer;
             background:
-                linear-gradient(
-                    135deg,
+                linear-gradient(135deg,
                     var(--rw-green-mid) 0%,
-                    var(--rw-green) 100%
-                );
+                    var(--rw-green) 100%);
             color: #ffffff;
             font-family: inherit;
             font-size: 15px;
@@ -987,11 +923,9 @@ $isLogoutMsg =
             border-radius: 999px;
             cursor: pointer;
             background:
-                linear-gradient(
-                    135deg,
+                linear-gradient(135deg,
                     var(--rw-green-mid) 0%,
-                    var(--rw-green) 100%
-                );
+                    var(--rw-green) 100%);
             color: #ffffff;
             font-family: inherit;
             font-size: 15px;
@@ -1100,7 +1034,7 @@ $isLogoutMsg =
                 font-size: 26px;
             }
 
-            .rwAuthLeft > .rwAuthLeftInner > p {
+            .rwAuthLeft>.rwAuthLeftInner>p {
                 font-size: 13.5px;
             }
 
@@ -1218,7 +1152,7 @@ $isLogoutMsg =
                 margin-bottom: 8px;
             }
 
-            .rwAuthLeft > .rwAuthLeftInner > p {
+            .rwAuthLeft>.rwAuthLeftInner>p {
                 margin-bottom: 20px;
             }
 
@@ -1230,371 +1164,341 @@ $isLogoutMsg =
                 margin-bottom: 16px;
             }
         }
-
     </style>
 
 </head>
 
 <body>
 
-<div class="rwAdminAuth">
+    <div class="rwAdminAuth">
 
 
-    <!-- LEFT PANEL -->
+        <!-- LEFT PANEL -->
 
-    <div class="rwAuthLeft">
+        <div class="rwAuthLeft">
 
-        <div class="rwAuthLeftInner">
+            <div class="rwAuthLeftInner">
 
-            <div class="rwBrandBadge">
+                <div class="rwBrandBadge">
 
-                <span class="rwBrandMark">
+                    <span class="rwBrandMark">
 
-                    <i class="fa-solid fa-horse-head"></i>
+                        <i class="fa-solid fa-horse-head"></i>
 
-                </span>
+                    </span>
 
-                <p class="rwBrandEyebrow">
-                    Royal Western India Turf Club
+                    <p class="rwBrandEyebrow">
+                        Royal Western India Turf Club
+                    </p>
+
+                </div>
+
+
+                <h1>
+                    Content Studio
+                </h1>
+
+                <p>
+                    One place to manage everything on the club's website.
                 </p>
 
-            </div>
+
+                <div class="rwQuickLinks">
+
+                    <a
+                        href="../availibilityCalendar.php"
+                        class="rwQuickLinkBtn rwqlColor1">
+                        Grounds available for Schools &amp; Colleges
+                    </a>
+
+                    <a
+                        href="../calendar.php"
+                        class="rwQuickLinkBtn rwqlColor9">
+                        Racing Fixtures
+                    </a>
 
 
-            <h1>
-                Content Studio
-            </h1>
+                    <a
+                        href="https://play.google.com/store/apps/details?id=com.rwitc.mobileweb"
+                        target="_blank"
+                        class="rwQuickLinkBtn rwqlColor2">
+                        RWITC App on Google Play Store
+                    </a>
 
-            <p>
-                One place to manage everything on the club's website.
-            </p>
-
-
-            <div class="rwQuickLinks">
-
-                <a
-                    href="../availibilityCalendar.php"
-                    class="rwQuickLinkBtn rwqlColor1"
-                >
-                    Grounds available for Schools &amp; Colleges
-                </a>
-
-                <a
-                    href="../calendar.php"
-                    class="rwQuickLinkBtn rwqlColor9"
-                >
-                    Racing Fixtures
-                </a>
+                    <a
+                        href="../horseRatings.php"
+                        class="rwQuickLinkBtn rwqlColor10">
+                        Ratings of all Horses
+                    </a>
 
 
-                <a
-                    href="https://play.google.com/store/apps/details?id=com.rwitc.mobileweb"
-                    target="_blank"
-                    class="rwQuickLinkBtn rwqlColor2"
-                >
-                    RWITC App on Google Play Store
-                </a>
+                    <a
+                        href="https://apps.apple.com/us/app/rwitc/id619375717?ls=1"
+                        target="_blank"
+                        class="rwQuickLinkBtn rwqlColor3">
+                        RWITC App on Apple Itunes
+                    </a>
 
-                <a
-                    href="../horseRatings.php"
-                    class="rwQuickLinkBtn rwqlColor10"
-                >
-                    Ratings of all Horses
-                </a>
+                    <a
+                        href="../horsesInTraining.php"
+                        class="rwQuickLinkBtn rwqlColor11">
+                        Horses in Training
+                    </a>
 
 
-                <a
-                    href="https://apps.apple.com/us/app/rwitc/id619375717?ls=1"
-                    target="_blank"
-                    class="rwQuickLinkBtn rwqlColor3"
-                >
-                    RWITC App on Apple Itunes
-                </a>
+                    <a
+                        href="https://appworld.blackberry.com/webstore/content/26326879/"
+                        target="_blank"
+                        class="rwQuickLinkBtn rwqlColor4">
+                        RWITC App on Blackberry Appworld
+                    </a>
 
-                <a
-                    href="../horsesInTraining.php"
-                    class="rwQuickLinkBtn rwqlColor11"
-                >
-                    Horses in Training
-                </a>
+                    <a
+                        href="../dividends.php"
+                        class="rwQuickLinkBtn rwqlColor12">
+                        Tote Dividends
+                    </a>
 
 
-                <a
-                    href="https://appworld.blackberry.com/webstore/content/26326879/"
-                    target="_blank"
-                    class="rwQuickLinkBtn rwqlColor4"
-                >
-                    RWITC App on Blackberry Appworld
-                </a>
+                    <a
+                        href="../app-qr.php"
+                        class="rwQuickLinkBtn rwqlColor5">
+                        QR Code for RWITC App
+                    </a>
 
-                <a
-                    href="../dividends.php"
-                    class="rwQuickLinkBtn rwqlColor12"
-                >
-                    Tote Dividends
-                </a>
+                    <a
+                        href="https://www.indianstudbook.com/"
+                        class="rwQuickLinkBtn rwqlColor13">
+                        Indian Stud Book
+                    </a>
 
 
-                <a
-                    href="../app-qr.php"
-                    class="rwQuickLinkBtn rwqlColor5"
-                >
-                    QR Code for RWITC App
-                </a>
+                    <a
+                        href="../performanceProfile.php"
+                        class="rwQuickLinkBtn rwqlColor6">
+                        Performance Profile of Horses
+                    </a>
 
-                <a
-                    href="https://www.indianstudbook.com/"
-                    class="rwQuickLinkBtn rwqlColor13"
-                >
-                    Indian Stud Book
-                </a>
+                    <a
+                        href="../moneyLeaders.php"
+                        class="rwQuickLinkBtn rwqlColor14">
+                        Money Leaders
+                    </a>
 
 
-                <a
-                    href="../performanceProfile.php"
-                    class="rwQuickLinkBtn rwqlColor6"
-                >
-                    Performance Profile of Horses
-                </a>
+                    <a
+                        href="https://forsale.godaddy.com/forsale/horsein.com"
+                        target="_blank"
+                        class="rwQuickLinkBtn rwqlColor7">
+                        Webportal for Owners/Trainers
+                    </a>
 
-                <a
-                    href="../moneyLeaders.php"
-                    class="rwQuickLinkBtn rwqlColor14"
-                >
-                    Money Leaders
-                </a>
-
-
-                <a
-                    href="https://forsale.godaddy.com/forsale/horsein.com"
-                    target="_blank"
-                    class="rwQuickLinkBtn rwqlColor7"
-                >
-                    Webportal for Owners/Trainers
-                </a>
-
-                <a
-                    href="../download/Prospectus.pdf"
-                    class="rwQuickLinkBtn rwqlColor15"
-                >
-                    Prospectus
-                </a>
+                    <a
+                        href="../download/Prospectus.pdf"
+                        class="rwQuickLinkBtn rwqlColor15">
+                        Prospectus
+                    </a>
 
 
-                <a
-                    href="https://www.rwitcraces.com/RaceArchives.aspx"
-                    class="rwQuickLinkBtn rwqlColor8"
-                >
-                    Video Archives
-                </a>
+                    <a
+                        href="https://www.rwitcraces.com/RaceArchives.aspx"
+                        class="rwQuickLinkBtn rwqlColor8">
+                        Video Archives
+                    </a>
 
-                <a
-                    href="../feedback.php"
-                    class="rwQuickLinkBtn rwqlColor16"
-                >
-                    Feedback
-                </a>
+                    <a
+                        href="../feedback.php"
+                        class="rwQuickLinkBtn rwqlColor16">
+                        Feedback
+                    </a>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
+
+        <!-- RIGHT PANEL -->
+
+        <div class="rwAuthRight">
+
+            <div class="rwAuthCard">
 
 
-    <!-- RIGHT PANEL -->
+                <div class="rwCardBrand">
 
-    <div class="rwAuthRight">
+                    <span class="rwCardBrandMark">
 
-        <div class="rwAuthCard">
+                        <i class="fa-solid fa-horse-head"></i>
 
+                    </span>
 
-            <div class="rwCardBrand">
-
-                <span class="rwCardBrandMark">
-
-                    <i class="fa-solid fa-horse-head"></i>
-
-                </span>
-
-                <span class="rwCardBrandText">
-                    Royal Western<br>
-                    India Turf Club
-                </span>
+                    <span class="rwCardBrandText">
+                        Royal Western<br>
+                        India Turf Club
+                    </span>
 
 
-                <a
-                    href="http://localhost:3000/officialcontact"
-                    target="_blank"
-                    class="rwGetInTouch"
-                >
+                    <a
+                        href="http://localhost:3000/officialcontact"
+                        target="_blank"
+                        class="rwGetInTouch">
 
-                    <img
-                        src="../images/rightlogo.png"
-                        alt="Get in Touch"
-                    />
+                        <img
+                            src="../images/rightlogo.png"
+                            alt="Get in Touch" />
 
-                </a>
+                    </a>
 
-            </div>
+                </div>
 
 
-            <hr class="rwCardDivider">
+                <hr class="rwCardDivider">
 
 
-            <p class="rwEyebrow">
-                Admin Access
-            </p>
+                <p class="rwEyebrow">
+                    Admin Access
+                </p>
 
-            <h2>
-                Welcome back
-            </h2>
+                <h2>
+                    Welcome back
+                </h2>
 
-            <p class="rwSubtext">
-                Sign in with your club admin account.
-            </p>
+                <p class="rwSubtext">
+                    Sign in with your club admin account.
+                </p>
 
 
-            <?php if (!empty($msg)) { ?>
+                <?php if (!empty($msg)) { ?>
 
-                <div
-                    class="rwAlert
+                    <div
+                        class="rwAlert
                     <?php
                     echo $isSuccess
                         ? 'rwAlertSuccess'
                         : (
                             $isLogoutMsg
-                                ? 'rwAlertInfo'
-                                : 'rwAlertError'
+                            ? 'rwAlertInfo'
+                            : 'rwAlertError'
                         );
-                    ?>"
-                >
+                    ?>">
 
-                    <?php echo $msg; ?>
+                        <?php echo $msg; ?>
 
-                </div>
+                    </div>
 
-            <?php } ?>
+                <?php } ?>
 
 
-            <form
-                name="registerFrm"
-                method="post"
-                action="adminlogin.php"
-            >
+                <form
+                    name="registerFrm"
+                    method="post"
+                    action="adminlogin.php">
 
-                <div class="rwField">
+                    <div class="rwField">
 
-                    <label for="rw-username">
-                        Username
-                    </label>
+                        <label for="rw-username">
+                            Username
+                        </label>
+
+                        <input
+                            type="text"
+                            id="rw-username"
+                            name="username"
+                            autocomplete="username"
+                            required>
+
+                    </div>
+
+
+                    <div class="rwField">
+
+                        <label for="rw-password">
+                            Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="rw-password"
+                            name="password"
+                            autocomplete="current-password"
+                            required>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        name="submit"
+                        class="rwSubmitBtn">
+                        Login
+                    </button>
+
+
+                    <button
+                        type="reset"
+                        name="reset"
+                        class="rwResetBtn">
+                        Reset
+                    </button>
+
 
                     <input
-                        type="text"
-                        id="rw-username"
-                        name="username"
-                        autocomplete="username"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="rwField">
-
-                    <label for="rw-password">
-                        Password
-                    </label>
+                        type="hidden"
+                        name="uri"
+                        value="<?php
+                                echo htmlspecialchars(
+                                    $uri,
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                );
+                                ?>">
 
                     <input
-                        type="password"
-                        id="rw-password"
-                        name="password"
-                        autocomplete="current-password"
-                        required
-                    >
+                        type="hidden"
+                        name="q"
+                        value="login-user">
+
+                </form>
+
+
+                <p class="rwFinePrint">
+                    Authorized personnel only. Access is logged.
+                </p>
+
+
+                <div class="rwSocialRow">
+
+                    <a
+                        href="https://www.facebook.com/rwitcmumbai/"
+                        target="_blank"
+                        class="rwSocialIcon">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+
+                    <a
+                        href="https://x.com/rwitcmumbai"
+                        target="_blank"
+                        class="rwSocialIcon">
+                        <i class="fa-brands fa-twitter"></i>
+                    </a>
+
+                    <a
+                        href="https://www.instagram.com/rwitcmumbai/"
+                        target="_blank"
+                        class="rwSocialIcon">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
 
                 </div>
 
-
-                <button
-                    type="submit"
-                    name="submit"
-                    class="rwSubmitBtn"
-                >
-                    Login
-                </button>
-
-
-                <button
-                    type="reset"
-                    name="reset"
-                    class="rwResetBtn"
-                >
-                    Reset
-                </button>
-
-
-                <input
-                    type="hidden"
-                    name="uri"
-                    value="<?php
-                    echo htmlspecialchars(
-                        $uri,
-                        ENT_QUOTES,
-                        'UTF-8'
-                    );
-                    ?>"
-                >
-
-                <input
-                    type="hidden"
-                    name="q"
-                    value="login-user"
-                >
-
-            </form>
-
-
-            <p class="rwFinePrint">
-                Authorized personnel only. Access is logged.
-            </p>
-
-
-            <div class="rwSocialRow">
-
-                <a
-                    href="https://www.facebook.com/rwitcmumbai/"
-                    target="_blank"
-                    class="rwSocialIcon"
-                >
-                    <i class="fa-brands fa-facebook-f"></i>
-                </a>
-
-                <a
-                    href="https://x.com/rwitcmumbai"
-                    target="_blank"
-                    class="rwSocialIcon"
-                >
-                    <i class="fa-brands fa-twitter"></i>
-                </a>
-
-                <a
-                    href="https://www.instagram.com/rwitcmumbai/"
-                    target="_blank"
-                    class="rwSocialIcon"
-                >
-                    <i class="fa-brands fa-instagram"></i>
-                </a>
 
             </div>
-
 
         </div>
 
     </div>
-
-</div>
 
 </body>
 

@@ -36,60 +36,141 @@ function loadUserPermissions($db, $userId)
 
     $_SESSION['user_group_id'] =
         isset($row['user_group_id'])
-            ? (int)$row['user_group_id']
-            : 0;
+        ? (int)$row['user_group_id']
+        : 0;
 
     $_SESSION['user_group_name'] =
         isset($row['group_name'])
-            ? $row['group_name']
-            : '';
+        ? $row['group_name']
+        : '';
 
+    $_SESSION['permissions'] = parseGroupPermissions(
+        isset($row['permission'])
+            ? $row['permission']
+            : ''
+    );
+}
+
+function loadAdminPermissions($db, $userId)
+{
+    $userId = (int)$userId;
+
+    $_SESSION['user_group_id'] = 0;
+    $_SESSION['user_group_name'] = '';
+
+    $_SESSION['permissions'] = array(
+        'access' => array(),
+        'modify' => array()
+    );
+
+    if ($userId <= 0) {
+        return;
+    }
+
+    $sql = "
+        SELECT
+            a.user_group_id,
+            ug.name AS group_name,
+            ug.permission
+        FROM admins a
+        LEFT JOIN user_group ug
+            ON a.user_group_id = ug.user_group_id
+        WHERE a.id = $userId
+        LIMIT 1
+    ";
+
+    $row = $db->getSingleRowAssoc($sql);
+
+    if (!$row) {
+        return;
+    }
+
+    $_SESSION['user_group_id'] =
+        isset($row['user_group_id'])
+        ? (int)$row['user_group_id']
+        : 0;
+
+    $_SESSION['user_group_name'] =
+        isset($row['group_name'])
+        ? $row['group_name']
+        : '';
+
+    /*
+     * Group ID 1 = Super Admin
+     */
+    if ((int)$_SESSION['user_group_id'] === 1) {
+
+        $_SESSION['permissions'] = array(
+            'access' => array('*'),
+            'modify' => array('*')
+        );
+
+        return;
+    }
+
+    $_SESSION['permissions'] = parseGroupPermissions(
+        isset($row['permission'])
+            ? $row['permission']
+            : ''
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| PARSE GROUP PERMISSIONS
+|--------------------------------------------------------------------------
+*/
+
+function parseGroupPermissions($permission)
+{
     $permissionData = array();
 
     if (
-        isset($row['permission']) &&
-        trim($row['permission']) !== ''
+        $permission !== null &&
+        trim($permission) !== ''
     ) {
 
-        $permissionData = @unserialize(
-            $row['permission']
-        );
+        $permissionData = @unserialize($permission);
 
         if (!is_array($permissionData)) {
             $permissionData = array();
         }
     }
 
-    $_SESSION['permissions'] = array(
+    return array(
 
-        'access' =>
-            (
-                isset($permissionData['access']) &&
-                is_array($permissionData['access'])
-            )
-                ? array_values($permissionData['access'])
-                : array(),
+        'access' => (
+            isset($permissionData['access']) &&
+            is_array($permissionData['access'])
+        )
+            ? array_values($permissionData['access'])
+            : array(),
 
-        'modify' =>
-            (
-                isset($permissionData['modify']) &&
-                is_array($permissionData['modify'])
-            )
-                ? array_values($permissionData['modify'])
-                : array()
-
+        'modify' => (
+            isset($permissionData['modify']) &&
+            is_array($permissionData['modify'])
+        )
+            ? array_values($permissionData['modify'])
+            : array()
     );
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| MODULE ACCESS
+|--------------------------------------------------------------------------
+*/
+
 function hasModuleAccess($module)
 {
     /*
-     * Existing super admin.
+     * USER GROUP ID 1 = SUPER ADMIN
      */
     if (
-        isset($_SESSION['uid']) &&
-        (int)$_SESSION['uid'] === 19
+        isset($_SESSION['user_group_id']) &&
+        (int)$_SESSION['user_group_id'] === 1
     ) {
         return true;
     }
@@ -110,14 +191,20 @@ function hasModuleAccess($module)
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| MODULE MODIFY
+|--------------------------------------------------------------------------
+*/
+
 function hasModuleModify($module)
 {
     /*
-     * Existing super admin.
+     * USER GROUP ID 1 = SUPER ADMIN
      */
     if (
-        isset($_SESSION['uid']) &&
-        (int)$_SESSION['uid'] === 19
+        isset($_SESSION['user_group_id']) &&
+        (int)$_SESSION['user_group_id'] === 1
     ) {
         return true;
     }
@@ -138,6 +225,12 @@ function hasModuleModify($module)
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| PAGE ACCESS
+|--------------------------------------------------------------------------
+*/
+
 function requireModuleAccess(
     $module,
     $redirect = 'dashboard.php'
@@ -147,8 +240,8 @@ function requireModuleAccess(
 
         header(
             'Location: ' .
-            $redirect .
-            '?msg=no_access'
+                $redirect .
+                '?msg=no_access'
         );
 
         exit;
