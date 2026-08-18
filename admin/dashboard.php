@@ -1,1033 +1,1531 @@
 <?php
 
-
-
 include_once('../bootstrap.php');
 
-
-
 require_once("../lib/users.class.php");
-
-
-
 require_once("../lib/userchecks.php");
-
-
-
-
-
-
+require_once("../lib/permissions.php");
 
 session_start();
-
-
-
-//$uid = $_COOKIE['uid'];             
-
-
 
 $userObj = new Users($db);
 
 
+/*
+|--------------------------------------------------------------------------
+| LOGIN CHECK
+|--------------------------------------------------------------------------
+*/
 
+if (!isAdminlogin()) {
 
-
-
-
-if (!isAdminlogin()) { // check login    
-
-
-
-  $secmsg = "You do not have access to this page.";
-
-
+    $secmsg = "You do not have access to this page.";
 
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| PAGE TITLE
+|--------------------------------------------------------------------------
+*/
 
 $pageTitle = 'Dashboard';
 
 
-
-// create a template object
-
-
+/*
+|--------------------------------------------------------------------------
+| DESIGN OBJECT
+|--------------------------------------------------------------------------
+*/
 
 $design = new Design();
 
-
-
-
-
-
-
-
-
-
-
 $design->js = '';
-
-
-
 $design->css = '';
-
-
-
 $design->jqueryJs = "";
-
-
 
 $design->startPage("$pageTitle");
 
-
-
 $design->writeLogoTickerMenu();
-
-
 
 $design->openDiv("contentWrapper");
 
-
-
 $design->openDiv("infoWrapper");
-
-
 
 $design->openDiv("leftArea");
 
-
-
 ?>
 
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style type="text/css">
-  table,
-  td {
 
-
-
-    background-color: ;
-
-
-
-    border: 1px solid black;
-
-
-
-  }
-
-
-
-
-
-
-
-  th,
-  td {
-
-
-
-    font-size: 19px;
-
-
-
-    padding: 15px;
-
-
-
-    text-align: left;
-
-
-
-
-
-
-
-  }
-
-
-
-  .light {
-
-
-
-    background-color: #FFF;
-
-
-
-
-
-
-
-  }
-
-
-
-  .dark {
-
-
-
-    background-color: #f2f2f2;
-
-
-
-
-
-
-
-  }
-
-
-
-  .abc {
-
-
-
+/* ===== Admin Dashboard Redesign ===== */
+
+:root {
+    --rwitc-dark-green: #0b3d24;
+    --rwitc-green: #0f5c33;
+    --rwitc-accent-green: #1a7a45;
+    --rwitc-light-green: #e6f4ec;
+    --rwitc-border: #e2e6e4;
+    --rwitc-text: #1f2d27;
+    --rwitc-muted: #7a8c84;
+}
+
+.abc {
     color: black;
+}
+
+.message {
+    background: #fff3cd;
+    border: 1px solid #ffe08a;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 15px;
+}
+
+.submenu {
+    display: none;
+}
 
 
+/* ---------- Layout ---------- */
 
-  }
+.dashboard-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: var(--rwitc-text);
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 30px;
+}
+
+
+/* ---------- Sidebar ---------- */
+
+.sidebar {
+    width: 250px;
+    flex-shrink: 0;
+}
+
+.profile-card {
+    background: linear-gradient(
+        180deg,
+        var(--rwitc-green),
+        var(--rwitc-dark-green)
+    );
+
+    border-radius: 14px;
+    padding: 22px 20px;
+    color: #fff;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 46px;
+    height: 46px;
+
+    background: rgba(255, 255, 255, 0.15);
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.profile-welcome {
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.profile-name {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.profile-status {
+    font-size: 12px;
+    margin-top: 4px;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    opacity: 0.9;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #4ade80;
+
+    display: inline-block;
+}
+
+.quick-access-title {
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    color: var(--rwitc-muted);
+
+    margin: 4px 0 10px 6px;
+}
+
+.quick-access-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.quick-access-list li a {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 11px 14px;
+
+    border-radius: 8px;
+
+    color: var(--rwitc-text);
+
+    text-decoration: none;
+
+    font-size: 15px;
+
+    margin-bottom: 4px;
+}
+
+.quick-access-list li a i {
+    width: 18px;
+    text-align: center;
+    color: var(--rwitc-green);
+}
+
+.quick-access-list li a:hover {
+    background: var(--rwitc-light-green);
+}
+
+.quick-access-list li.active a {
+    background: var(--rwitc-light-green);
+    color: var(--rwitc-green);
+    font-weight: 600;
+
+    border-left: 3px solid var(--rwitc-green);
+}
+
+
+/* ---------- Main content ---------- */
+
+.main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dashboard-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+}
+
+.dashboard-header > div {
+    display: flex;
+    align-items: baseline;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+.dashboard-title {
+    font-size: 24px;
+    font-weight: 700;
+
+    color: var(--rwitc-text);
+
+    margin-top: 15px;
+}
+
+.dashboard-subtitle {
+    font-size: 14px;
+
+    color: var(--rwitc-muted);
+
+    margin: 0;
+}
+
+.logout-btn {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    border: 1px solid var(--rwitc-border);
+
+    color: var(--rwitc-text);
+
+    background: #fff;
+
+    padding: 9px 18px;
+
+    border-radius: 8px;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    font-weight: 500;
+}
+
+.logout-btn:hover {
+    background: var(--rwitc-light-green);
+    color: var(--rwitc-green);
+}
+
+
+/* ---------- Cards grid ---------- */
+
+.cards-grid {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 16px;
+}
+
+.card-item {
+    background: #fff;
+
+    border: 1px solid var(--rwitc-border);
+
+    border-radius: 12px;
+
+    padding: 16px 16px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    text-decoration: none;
+
+    color: var(--rwitc-text);
+
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+    transition:
+        box-shadow .15s ease,
+        transform .15s ease;
+}
+
+.card-item:not(.card-static):hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+
+    transform: translateY(-1px);
+
+    border-color: var(--rwitc-accent-green);
+}
+
+.card-static {
+    cursor: default;
+
+    color: var(--rwitc-muted);
+}
+
+.card-icon {
+    width: 36px;
+    height: 36px;
+
+    border-radius: 9px;
+
+    background: var(--rwitc-green);
+
+    color: #fff;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 15px;
+
+    flex-shrink: 0;
+}
+
+.card-static .card-icon {
+    background: var(--rwitc-muted);
+}
+
+.card-title {
+    font-size: 15px;
+
+    font-weight: 500;
+
+    line-height: 1.3;
+
+    flex: 1;
+}
+
+.card-arrow {
+    color: var(--rwitc-muted);
+
+    font-size: 13px;
+}
+
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1200px) {
+
+    .cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+}
+
+@media (max-width: 900px) {
+
+    .dashboard-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+    }
+
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 560px) {
+
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* Hide scrollbar */
+
+html,
+body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;
+}
+
 </style>
-
 
 
 <?php if (!empty($msg)) { ?>
 
-
-
-  <div class="message">
-
-
-
-    <?php echo $msg; ?>
-
-
-
-  </div>
-
-
+    <div class="message">
+        <?php echo $msg; ?>
+    </div>
 
 <?php } ?>
-
 
 
 <?php if (!empty($secmsg)) { ?>
 
-
-
-  <div class="message">
-
-
-
-    <?php echo $secmsg; ?>
-
-
-
-  </div>
-
-
+    <div class="message">
+        <?php echo $secmsg; ?>
+    </div>
 
 <?php } ?>
-
 
 
 <?php if (empty($secmsg)) { ?>
 
 
+    <div class="submenu">
 
-  <div class="submenu">
+        <div style="float:right;">
 
+            <a
+                style="float:left;"
+                href="admin/dashboard.php"
+            >
+                Dashboard
+            </a>
 
+            <a
+                style="float:left; margin-left:5px;"
+                href="admin/adminlogin.php?q=logout"
+            >
+                Logout
+            </a>
 
-    <div style="float:right;">
-
-
-
-      <a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-
-
-
-      <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
-
-
+        </div>
 
     </div>
 
 
+    <div class="dashboard-wrapper">
 
-  </div>
 
+        <!-- ========================================================= -->
+        <!-- SIDEBAR -->
+        <!-- ========================================================= -->
 
+        <div class="sidebar">
 
-  <br />
 
+            <div class="profile-card">
 
+                <div class="profile-avatar">
 
+                    <i class="fas fa-user"></i>
 
+                </div>
 
 
+                <div>
 
-  <div>
+                    <div class="profile-welcome">
+                        Welcome,
+                    </div>
 
+                    <div class="profile-name">
+                        <?php
+                        echo isset($_SESSION['username'])
+                            ? htmlspecialchars($_SESSION['username'])
+                            : 'ADMIN';
+                        ?>
+                    </div>
 
+                    <div class="profile-status">
 
-    <center>
+                        <span class="status-dot"></span>
 
+                        Online
 
+                    </div>
 
-      <table>
+                </div>
 
+            </div>
 
 
+            <div class="quick-access-title">
+                QUICK ACCESS
+            </div>
 
 
+            <ul class="quick-access-list">
 
+                <li class="active">
 
-        <tr>
+                    <a href="admin/dashboard.php">
 
+                        <i class="fas fa-home"></i>
 
+                        Dashboard
 
-          <td class="dark">
+                    </a>
 
+                </li>
 
 
-            <?php if ($_SESSION['articles'] == "Y") { ?>
+                <li>
 
+                    <a href="#">
 
+                        <i class="fas fa-th-large"></i>
 
-              <a class="abc" ; href="admin/articlesManager.php">Articles Manager</a><br />
+                        All Modules
 
+                    </a>
 
+                </li>
 
-            <?php } ?>
 
+                <li>
 
+                    <a href="#">
 
-          </td>
+                        <i class="fas fa-chart-bar"></i>
 
+                        Reports
 
+                    </a>
 
-          <td class="light" ;>
+                </li>
 
 
+                <li>
 
-            <?php if ($_SESSION['articles'] == "Y") { ?>
+                    <a href="#">
 
+                        <i class="fas fa-history"></i>
 
+                        Activity Log
 
-              <a class="abc" ; href="admin/csrArticlesManager.php">CSR Articles Manager</a><br />
+                    </a>
 
+                </li>
 
 
-            <?php } ?>
+                <li>
 
+                    <a href="#">
 
+                        <i class="fas fa-cog"></i>
 
-          </td>
+                        System Settings
 
+                    </a>
 
+                </li>
 
-          <td class="dark">
 
+                <li>
 
+                    <a href="#">
 
-            <?php if ($_SESSION['race_history'] == "Y") { ?>
+                        <i class="fas fa-question-circle"></i>
 
+                        Help &amp; Support
 
+                    </a>
 
-              <a class="abc" ; href="admin/raceHistoryManager.php">Race History Manager</a><br />
+                </li>
 
+            </ul>
 
 
-            <?php } ?>
+            <a
+                class="logout-btn"
+                href="admin/adminlogin.php?q=logout"
+                style="display:flex; margin-top:16px; justify-content:center;"
+            >
 
+                <i class="fas fa-sign-out-alt"></i>
 
+                &nbsp; Logout
 
-          </td>
+            </a>
 
+        </div>
 
 
-          <td class="light" ;>
+        <!-- ========================================================= -->
+        <!-- MAIN CONTENT -->
+        <!-- ========================================================= -->
 
+        <div class="main-content">
 
 
-            <?php if ($_SESSION['send_mailer'] == "Y") { ?>
+            <div class="dashboard-header">
 
+                <div>
 
+                    <h1 class="dashboard-title">
+                        ADMIN DASHBOARD
+                    </h1>
 
-              <a class="abc" ; href="admin/sendMailers.php">Send Mailers</a><br />
+                    <p class="dashboard-subtitle">
+                        Manage all club activities
+                    </p>
 
+                </div>
 
+            </div>
 
-            <?php } ?>
 
+            <div class="cards-grid">
 
 
-          </td>
+                <!-- ================================================= -->
+                <!-- ARTICLES -->
+                <!-- ================================================= -->
 
+                <?php if (hasModuleAccess('articles')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/articlesManager.php"
+                    >
 
-        </tr>
+                        <span class="card-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Articles Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-        <tr>
+                    </a>
 
+                <?php } ?>
 
 
-          <td class="dark" ;>
+                <!-- CSR ARTICLES -->
 
+                <?php if (hasModuleAccess('articles')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/csrArticlesManager.php"
+                    >
 
-            <?php if ($_SESSION['rating_change'] == "Y") { ?>
+                        <span class="card-icon">
+                            <i class="fas fa-heart"></i>
+                        </span>
 
+                        <span class="card-title">
+                            CSR Articles Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-              <a class="abc" ; href="admin/ratingsChangeManager.php">Ratings Change Manager</a><br />
+                    </a>
 
+                <?php } ?>
 
 
-            <?php } ?>
+                <!-- RACE HISTORY -->
 
+                <?php if (hasModuleAccess('race_history')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/raceHistoryManager.php"
+                    >
 
-          </td>
+                        <span class="card-icon">
+                            <i class="fas fa-horse-head"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Race History Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-          <td class="light" ;>
+                    </a>
 
+                <?php } ?>
 
 
-            <?php if ($_SESSION['gallery'] == "Y") { ?>
+                <!-- SEND MAILERS -->
 
+                <?php if (hasModuleAccess('send_mailer')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/sendMailers.php"
+                    >
 
-              <a class="abc" ; href="admin/galleryManager.php">Gallery Manager</a><br />
+                        <span class="card-icon">
+                            <i class="fas fa-envelope"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Send Mailers
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-            <?php } ?>
+                    </a>
 
+                <?php } ?>
 
 
-          </td>
+                <!-- RATINGS -->
 
+                <?php if (hasModuleAccess('rating_change')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/ratingsChangeManager.php"
+                    >
 
-          <td class="dark" ;>
+                        <span class="card-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Ratings Change Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-            <?php if ($_SESSION['video'] == "Y") { ?>
+                    </a>
 
+                <?php } ?>
 
 
-              <a class="abc" ; href="admin/manageVideos.php">Videos Manager</a><br />
+                <!-- GALLERY -->
 
+                <?php if (hasModuleAccess('gallery')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/galleryManager.php"
+                    >
 
-            <?php } ?>
+                        <span class="card-icon">
+                            <i class="fas fa-images"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Gallery Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-          </td>
+                    </a>
 
+                <?php } ?>
 
 
-          <td class="light" ;>
+                <!-- VIDEO -->
 
+                <?php if (hasModuleAccess('video')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/manageVideos.php"
+                    >
 
-            <?php if ($_SESSION['dividends'] == "Y") { ?>
+                        <span class="card-icon">
+                            <i class="fas fa-video"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Videos Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-              <a class="abc" ; href="admin/dividendsManager.php">Dividends Manager</a><br />
+                    </a>
 
+                <?php } ?>
 
 
-            <?php } ?>
+                <!-- DIVIDENDS -->
 
+                <?php if (hasModuleAccess('dividends')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/dividendsManager.php"
+                    >
 
-          </td>
+                        <span class="card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Dividends Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-        <tr>
+                    </a>
 
+                <?php } ?>
 
 
-        <tr>
+                <!-- STEWARDS REPORT -->
 
+                <?php if (hasModuleAccess('stewards_report')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/stewardsReportManager.php"
+                    >
 
-          <td class="dark" ;>
+                        <span class="card-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Stewards Report Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-            <?php if ($_SESSION['stewards_report'] == "Y") { ?>
+                    </a>
 
+                <?php } ?>
 
 
-              <a class="abc" ; href="admin/stewardsReportManager.php">Stewards Report Manager</a><br />
+                <!-- RACE DAY REPORT -->
 
+                <?php if (hasModuleAccess('race_day_report')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/racedayReportsManager.php"
+                    >
 
-            <?php } ?>
+                        <span class="card-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Race Day Reports Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-          </td>
+                    </a>
 
+                <?php } ?>
 
 
-          <td class="light" ;>
+                <!-- CALENDAR -->
 
+                <?php if (hasModuleAccess('calendar')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/calendarManager.php"
+                    >
 
-            <?php if ($_SESSION['race_day_report'] == "Y") { ?>
+                        <span class="card-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Calendar Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-              <a class="abc" ; href="admin/racedayReportsManager.php">Race Day Reports Manager</a><br />
+                    </a>
 
 
+                    <a
+                        class="card-item"
+                        href="admin/availibilityManager.php"
+                    >
 
-            <?php } ?>
+                        <span class="card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Racecource Availibility Calendar Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-          </td>
+                    </a>
 
+                <?php } ?>
 
 
-          <td class="dark" ;>
+                <!-- PRAKASH GOSAVI -->
 
+                <?php if (hasModuleAccess('prakash_gosavi')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/pgArticlesManager.php"
+                    >
 
-            <?php if ($_SESSION['calendar'] == "Y") { ?>
+                        <span class="card-icon">
+                            <i class="fas fa-pen-nib"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Prakash Gosavi Articles Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-              <a class="abc" ; href="admin/calendarManager.php">Calendar Manager</a><br />
+                    </a>
 
+                <?php } ?>
 
 
-            <?php } ?>
+                <!-- SHIVEN SURENDRANATH -->
 
+                <?php if (hasModuleAccess('shiven_surendranath')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/ssArticlesManager.php"
+                    >
 
-          </td>
+                        <span class="card-icon">
+                            <i class="fas fa-feather-alt"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Shiven Surendranath Articles Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-          <td class="light" ;>
+                    </a>
 
+                <?php } ?>
 
 
-            <?php if ($_SESSION['calendar'] == "Y") { ?>
+                <!-- POLLS -->
 
+                <?php if (hasModuleAccess('polls')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/managePolls.php"
+                    >
 
-              <a class="abc" ; href="admin/availibilityManager.php">Racecource Availibility Calendar
-                Manager</a><br />
+                        <span class="card-icon">
+                            <i class="fas fa-poll"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Manage Polls
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-            <?php } ?>
+                    </a>
 
+                <?php } ?>
 
 
-          </td>
+                <!-- ADMIN USERS -->
 
+                <?php if (hasModuleAccess('adminusers')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/manageAdmin.php"
+                    >
 
-        </tr>
+                        <span class="card-icon">
+                            <i class="fas fa-users-cog"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Manage Admins
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-        <tr>
+                    </a>
 
+                <?php } ?>
 
 
-          <td class="dark" ;>
+                <!-- WORKING MANAGER -->
 
+                <?php if (hasModuleAccess('workingManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/workingManager.php"
+                    >
 
-            <?php if ($_SESSION['prakash_gosavi'] == "Y") { ?>
+                        <span class="card-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Working Group Upload
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-              <a class="abc" ; href="admin/pgArticlesManager.php">Prakash Gosavi Articles Manager</a><br />
+                    </a>
 
+                <?php } ?>
 
 
-            <?php } ?>
+                <!-- BANNER -->
 
+                <?php if (hasModuleAccess('bannerManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/bannerManager.php"
+                    >
 
-          </td>
+                        <span class="card-icon">
+                            <i class="fas fa-image"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Banner Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-          <td class="light" ;>
+                    </a>
 
+                <?php } ?>
 
 
-            <?php if ($_SESSION['shiven_surendranath'] == "Y") { ?>
+                <!-- TICKER -->
 
+                <?php if (hasModuleAccess('tickerManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/tickerManager.php"
+                    >
 
-              <a class="abc" ; href="admin/ssArticlesManager.php">Shiven Surendranath Articles Manager</a><br />
+                        <span class="card-icon">
+                            <i class="fas fa-stream"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Ticker Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-            <?php } ?>
+                    </a>
 
+                <?php } ?>
 
 
-          </td>
+                <!-- SPONSOR -->
 
+                <?php if (hasModuleAccess('sponsorManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/sponsorManager.php"
+                    >
 
-          <td class="dark" ;>
+                        <span class="card-icon">
+                            <i class="fas fa-handshake"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Sponsor Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-            <?php if ($_SESSION['polls'] == "Y") { ?>
+                    </a>
 
+                <?php } ?>
 
 
-              <a class="abc" ; href="admin/managePolls.php">Manage Polls</a><br />
+                <!-- SPONSOR OF THE DAY -->
 
+                <?php if (hasModuleAccess('sponsorofthedayManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/sponsorofthedayManager.php"
+                    >
 
-            <?php } ?>
+                        <span class="card-icon">
+                            <i class="fas fa-star"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Sponsor Of the Day Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-          </td>
+                    </a>
 
+                <?php } ?>
 
 
-          <td class="light" ;>
+                <!-- CONFIG -->
 
+                <?php if (hasModuleAccess('configManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/configManager.php"
+                    >
 
-            <?php if ($_SESSION['adminusers'] == "Y") { ?>
+                        <span class="card-icon">
+                            <i class="fas fa-cogs"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Config Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-              <a class="abc" ; href="admin/manageAdmin.php">Manage Admins</a><br />
+                    </a>
 
+                <?php } ?>
 
 
-            <?php } ?>
+                <!-- HORSE WEIGHT -->
 
+                <?php if (hasModuleAccess('horseweightManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/horseweightManager.php"
+                    >
 
-          </td>
+                        <span class="card-icon">
+                            <i class="fas fa-weight"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Reset Horse Weight Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-        </tr>
+                    </a>
 
+                <?php } ?>
 
 
-        <tr>
+                <!-- RACE DATA -->
 
+                <?php if (hasModuleAccess('racedataManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/racedataManager.php"
+                    >
 
-          <td class="dark" ;>
+                        <span class="card-icon">
+                            <i class="fas fa-database"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Reset Race Data Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-            <?php if (isset($_SESSION['workingManager']) && $_SESSION['workingManager'] == "Y") { ?>
+                    </a>
 
+                <?php } ?>
 
 
-              <a class="abc" ; href="admin/workingManager.php">Working Group Upload</a><br />
+                <!-- MAIL -->
 
+                <?php if (hasModuleAccess('mailManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/mailManager.php"
+                    >
 
-            <?php } ?>
+                        <span class="card-icon">
+                            <i class="fas fa-envelope-open-text"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Draft Mail Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-          </td>
+                    </a>
 
+                <?php } ?>
 
 
-          <td class="light" ;>
+                <!-- HOME POPUP -->
 
+                <?php if (hasModuleAccess('homepopup')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/homepopup.php"
+                    >
 
-            <?php if (isset($_SESSION['bannerManager']) && $_SESSION['bannerManager'] == "Y") { ?>
+                        <span class="card-icon">
+                            <i class="fas fa-window-restore"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Home Popup
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-              <a class="abc" ; href="admin/bannerManager.php">Banner Manager</a><br />
+                    </a>
 
+                <?php } ?>
 
 
-            <?php } ?>
+                <!-- PRE RACE -->
 
+                <?php if (hasModuleAccess('erp_prerace')) { ?>
 
+                    <div class="card-item card-static">
 
-          </td>
+                        <span class="card-icon">
+                            <i class="fas fa-calendar-day"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Race Date
+                        </span>
 
+                    </div>
 
 
+                    <a
+                        class="card-item"
+                        href="admin/erp_prerace.php"
+                    >
 
+                        <span class="card-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Pre Race Date
+                        </span>
 
-          <td class="dark" ;>
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
+                    </a>
 
+                <?php } ?>
 
-            <?php if (isset($_SESSION['tickerManager']) && $_SESSION['tickerManager'] == "Y") { ?>
 
+                <!-- POST RACE -->
 
+                <?php if (hasModuleAccess('erp_postrace')) { ?>
 
-              <a class="abc" ; href="admin/tickerManager.php">Ticker Manager</a><br />
+                    <div class="card-item card-static">
 
+                        <span class="card-icon">
+                            <i class="fas fa-calendar-day"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Race Date
+                        </span>
 
-            <?php } ?>
+                    </div>
 
 
+                    <a
+                        class="card-item"
+                        href="admin/erp_postrace.php"
+                    >
 
-          </td>
+                        <span class="card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Post Race Date
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-          <td class="light" ;>
+                    </a>
 
+                <?php } ?>
 
 
-            <?php if (isset($_SESSION['sponsorManager']) && $_SESSION['sponsorManager'] == "Y") { ?>
+                <!-- TRACKWORK -->
 
+                <?php if (hasModuleAccess('trackworkManager')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/trackworkManager.php"
+                    >
 
-              <a class="abc" ; href="admin/sponsorManager.php">Sponsor Manager</a><br />
+                        <span class="card-icon">
+                            <i class="fas fa-running"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Trackwork Manager
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
-            <?php } ?>
+                    </a>
 
+                <?php } ?>
 
 
-          </td>
+                <!-- SUGGESTION STATIC -->
 
+                <?php if (hasModuleAccess('suggestion_feedback')) { ?>
 
+                    <div class="card-item card-static">
 
-        </tr>
+                        <span class="card-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Suggestion List
+                        </span>
 
+                    </div>
 
-        <tr>
 
+                    <a
+                        class="card-item"
+                        href="admin/suggestion_feedback_list.php"
+                    >
 
+                        <span class="card-icon">
+                            <i class="fas fa-comments"></i>
+                        </span>
 
-          <td class="dark" ;>
+                        <span class="card-title">
+                            Suggestion Feedback
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
+                    </a>
 
-            <?php if (isset($_SESSION['sponsorofthedayManager']) && $_SESSION['sponsorofthedayManager'] == "Y") { ?>
+                <?php } ?>
 
 
+                <!-- YOUTUBE -->
 
-              <a class="abc" ; href="admin/sponsorofthedayManager.php">Sponsor Of the Day Manager</a><br />
+                <?php if (hasModuleAccess('youtube_upload')) { ?>
 
+                    <a
+                        class="card-item"
+                        href="admin/youtube_videos_upload.php"
+                    >
 
+                        <span class="card-icon">
+                            <i class="fab fa-youtube"></i>
+                        </span>
 
-            <?php } ?>
+                        <span class="card-title">
+                            YouTube Upload
+                        </span>
 
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
+                    </a>
 
-          </td>
+                <?php } ?>
 
 
+                <!-- CHAIRMAN -->
 
-          <td class="light" ;>
+                <?php if (hasModuleAccess('chairman_email')) { ?>
 
+                    <div class="card-item card-static">
 
+                        <span class="card-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </span>
 
-            <?php if (isset($_SESSION['configManager']) && $_SESSION['configManager'] == "Y") { ?>
+                        <span class="card-title">
+                            Chairman List
+                        </span>
 
+                    </div>
 
 
-              <a class="abc" ; href="admin/configManager.php">Config Manager</a><br />
+                    <a
+                        class="card-item"
+                        href="admin/email_to_chairman_list.php"
+                    >
 
+                        <span class="card-icon">
+                            <i class="fas fa-envelope"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Chairman Email list
+                        </span>
 
-            <?php } ?>
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
+                    </a>
 
+                <?php } ?>
 
-          </td>
 
+                <!-- IMAGE UPLOAD -->
 
+                <?php if (hasModuleAccess('image_upload')) { ?>
 
-          <td class="dark" ;>
+                    <a
+                        class="card-item"
+                        href="admin/image_upload.php"
+                    >
 
+                        <span class="card-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </span>
 
+                        <span class="card-title">
+                            Image Upload
+                        </span>
 
-            <?php if (isset($_SESSION['horseweightManager']) && $_SESSION['horseweightManager'] == "Y") { ?>
+                        <i class="fas fa-chevron-right card-arrow"></i>
 
+                    </a>
 
+                <?php } ?>
 
-              <a class="abc" ; href="admin/horseweightManager.php">Reset Horse Weight Manager</a><br />
 
+            </div>
 
+        </div>
 
-            <?php } ?>
-
-
-
-          </td>
-
-
-
-          <td class="light" ;>
-
-
-
-            <?php if (isset($_SESSION['racedataManager']) && $_SESSION['racedataManager'] == "Y") { ?>
-
-
-
-              <a class="abc" ; href="admin/racedataManager.php">Reset Race Data Manager</a><br />
-
-
-
-            <?php } ?>
-
-
-
-          </td>
-
-
-
-        </tr>
-
-
-
-        <tr>
-
-
-
-          <td class="dark" ;>
-
-
-
-            <?php if (isset($_SESSION['mailManager']) && $_SESSION['mailManager'] == "Y") { ?>
-
-
-
-              <a class="abc" ; href="admin/mailManager.php">Draft Mail Manager</a><br />
-
-
-
-            <?php } ?>
-
-
-
-          </td>
-
-
-
-          <td class="light" ;>
-
-
-
-            <?php if (isset($_SESSION['homepopup']) && $_SESSION['homepopup'] == "Y") { ?>
-
-
-
-              <a class="abc" ; href="admin/homepopup.php">Home Popup</a><br />
-
-
-
-            <?php } ?>
-
-
-
-          </td>
-
-
-
-          <td class="dark" ;>
-
-            Race Date
-
-          </td>
-
-
-
-          <td class="light" ;>
-
-            <a class="abc" ; href="admin/erp_prerace.php">Pre Race Date</a><br />
-
-          </td>
-
-
-
-        </tr>
-
-        <tr>
-
-
-
-          <td class="dark" ;>
-
-            Race Date
-
-          </td>
-
-
-
-          <td class="light" ;>
-
-            <a class="abc" ; href="admin/erp_postrace.php">Post Race Date</a><br />
-            
-          </td>
-          
-          <td class="dark" ;>
-            
-            <a class="abc" ; href="admin/trackworkManager.php">Trackwork Manager</a><br />
-          </td>
-
-
-
-          <td class="light" ;>
-
-          </td>
-
-
-
-
-
-        </tr>
-
-
-
-        <tr>
-
-
-
-          <td class="dark" ;>
-
-            Suggestion List
-
-          </td>
-
-
-
-          <td class="light" ;>
-
-            <a class="abc" ; href="admin/suggestion_feedback_list.php">Suggestion Feedback</a><br />
-
-          </td>
-
-          <td class="dark" ;>
-            <a class="abc" ; href="admin/youtube_videos_upload.php">YouTube Upload</a><br />
-          </td>
-
-
-
-          <td class="light" ;>
-
-          </td>
-
-
-
-
-
-        </tr>
-
-
-
-        <tr>
-
-
-
-          <td class="dark" ;>
-
-            Chairman List
-
-          </td>
-
-
-
-          <td class="light" ;>
-
-            <a class="abc" ; href="admin/email_to_chairman_list.php">Chairman Email list</a><br />
-
-          </td>
-
-          <td class="dark" ;>
-            <a class="abc" ; href="admin/image_upload.php">Image Upload</a><br />
-          </td>
-
-
-
-          <td class="light" ;>
-
-          </td>
-
-
-
-
-
-        </tr>
-
-
-
-      </table>
-
-
-
-      <center>
-
-
-
-  </div>
-
+    </div>
 
 
 <?php } ?>
 
 
-
 <?php
 
-
+$design->closeDiv();
 
 $design->closeDiv();
 
+$design = NULL;
 
-
-//$design->rightArea();  
-
-
-
-//$design->closeDiv();
-
-
-
-$design->closeDiv();
-
-
-
-//$design->pageClose();
-
-
-
-$design = NULL; // release object
+?>

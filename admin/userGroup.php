@@ -16,20 +16,48 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once __DIR__ . '/../lib/dbTools.php';
+require_once("../bootstrap.php");
+require_once("../lib/dbTools.php");
+
+session_start();
 
 $db = new dbTool();
 
 // ---- Modules jinke access/modify permission set kiye jaate hain ----
 $modules = array(
-    'dashboard'      => 'Dashboard',
-    'user'           => 'Users',
-    'user_group'     => 'User Groups',
-    'race'           => 'Race Management',
-    'horse'          => 'Horse Records',
-    'membership'     => 'Membership',
-    'reports'        => 'Reports',
-    'settings'       => 'Settings',
+    'articles'                => 'Articles Manager',
+    'csr_articles'            => 'CSR Articles Manager',
+    'race_history'            => 'Race History Manager',
+    'send_mailer'              => 'Send Mailers',
+    'rating_change'            => 'Ratings Change Manager',
+    'gallery'                 => 'Gallery Manager',
+    'video'                   => 'Videos Manager',
+    'dividends'               => 'Dividends Manager',
+    'stewards_report'         => 'Stewards Report Manager',
+    'race_day_report'         => 'Race Day Reports Manager',
+    'calendar'                => 'Calendar Manager',
+    'availability_calendar'   => 'Racecourse Availability Calendar Manager',
+    'prakash_gosavi'           => 'Prakash Gosavi Articles Manager',
+    'shiven_surendranath'      => 'Shiven Surendranath Articles Manager',
+    'polls'                   => 'Manage Polls',
+    'adminusers'              => 'Manage Admins',
+    'workingManager'          => 'Working Group Upload',
+    'bannerManager'           => 'Banner Manager',
+    'tickerManager'           => 'Ticker Manager',
+    'sponsorManager'          => 'Sponsor Manager',
+    'sponsorofthedayManager'  => 'Sponsor Of the Day Manager',
+    'horseweightManager'      => 'Reset Horse Weight Manager',
+    'racedataManager'         => 'Reset Race Data Manager',
+    'configManager'           => 'Config Manager',
+    'mailManager'             => 'Draft Mail Manager',
+    'homepopup'               => 'Home Popup',
+    'erp_prerace'             => 'Pre Race Date',
+    'erp_postrace'            => 'Post Race Date',
+    'trackworkManager'        => 'Trackwork Manager',
+    'suggestion_feedback'     => 'Suggestion Feedback',
+    'youtube_upload'          => 'YouTube Upload',
+    'chairman_email'          => 'Chairman Email List',
+    'image_upload'            => 'Image Upload',
 );
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
@@ -147,12 +175,12 @@ function hasModify($group, $key) {
 
 $msg = isset($_GET['msg']) ? $_GET['msg'] : null;
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>User Groups · RWITC Access Control</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<?php
+$pageTitle = "RWITC | User Groups";
+
+$design = new Design();
+
+$design->css = <<<'USERGROUPCSS'
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -311,24 +339,18 @@ tbody tr:hover{background:#fafcfa;}
     .perm-table tbody td{padding:8px 10px;}
 }
 </style>
-</head>
-<body>
+USERGROUPCSS;
 
-<div class="topbar">
-    <div class="topbar-inner">
-        <div class="brand"><span class="mark">R</span> RWITC <small>Access Control</small></div>
-        <div class="topbar-right">
-            <span>Rohan Sharma</span>
-            <div class="avatar">RS</div>
-        </div>
-    </div>
-    <div class="topbar-nav">
-        <a href="users.php">Users</a>
-        <a href="userGroup.php" class="active">User Groups</a>
-    </div>
-</div>
+$design->startPage($pageTitle);
+$design->writeLogoTickerMenu();
+
+$design->openDiv("contentWrapper");
+$design->openDiv("infoWrapper");
+$design->openDiv("leftArea");
+?>
 
 <div class="page-wrap">
+
 
     <?php if ($msg == 'added'): ?>
         <div class="alert alert-success"><i class="fa fa-check-circle"></i> Group added successfully.</div>
@@ -354,7 +376,7 @@ tbody tr:hover{background:#fafcfa;}
                 <h1>User Groups</h1>
                 <p>Define roles and control which modules each role can view or edit.</p>
             </div>
-            <a href="userGroup.php?action=form" class="btn btn-primary"><i class="fa fa-plus"></i> Add User Group</a>
+            <a href="admin/userGroup.php?action=form" class="btn btn-primary"><i class="fa fa-plus"></i> Add User Group</a>
         </div>
 
         <div class="stat-strip">
@@ -417,11 +439,11 @@ tbody tr:hover{background:#fafcfa;}
                         </td>
                         <td data-label="">
                             <div class="row-actions">
-                                <a href="userGroup.php?action=form&user_group_id=<?php echo (int)$g['user_group_id']; ?>" class="icon-btn" title="Edit"><i class="fa fa-pencil"></i></a>
+                                <a href="admin/userGroup.php?action=form&user_group_id=<?php echo (int)$g['user_group_id']; ?>" class="icon-btn" title="Edit"><i class="fa fa-pencil"></i></a>
                                 <?php if ($is_admin_group): ?>
                                     <span class="icon-btn locked" title="System group can't be deleted"><i class="fa fa-trash-o"></i></span>
                                 <?php else: ?>
-                                    <a href="userGroup.php?action=delete&user_group_id=<?php echo (int)$g['user_group_id']; ?>"
+                                    <a href="admin/userGroup.php?action=delete&user_group_id=<?php echo (int)$g['user_group_id']; ?>"
                                        class="icon-btn danger" title="Delete"
                                        onclick="return confirm('Delete this group? This cannot be undone.');">
                                         <i class="fa fa-trash-o"></i>
@@ -461,10 +483,10 @@ tbody tr:hover{background:#fafcfa;}
                 <h1><?php echo $edit_group && !empty($edit_group['name']) ? htmlspecialchars($edit_group['name']) : 'Add User Group'; ?></h1>
                 <p>Set the group name and choose module-level access &amp; edit rights.</p>
             </div>
-            <a href="userGroup.php" class="btn btn-ghost"><i class="fa fa-arrow-left"></i> Back to list</a>
+            <a href="admin/userGroup.php" class="btn btn-ghost"><i class="fa fa-arrow-left"></i> Back to list</a>
         </div>
 
-        <form method="post" action="userGroup.php?action=form" id="form-group">
+        <form method="post" action="admin/userGroup.php?action=form" id="form-group">
         <?php if ($edit_group && !empty($edit_group['user_group_id'])): ?>
             <input type="hidden" name="user_group_id" value="<?php echo (int)$edit_group['user_group_id']; ?>">
         <?php endif; ?>
@@ -516,7 +538,7 @@ tbody tr:hover{background:#fafcfa;}
             </div>
 
             <div class="form-footer">
-                <a href="userGroup.php" class="btn btn-ghost">Cancel</a>
+                <a href="admin/userGroup.php" class="btn btn-ghost">Cancel</a>
                 <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save Group</button>
             </div>
         </div>
@@ -534,5 +556,11 @@ tbody tr:hover{background:#fafcfa;}
     <?php endif; ?>
 
 </div>
-</body>
-</html>
+
+<?php
+$design->closeDiv();
+$design->closeDiv();
+$design->closeDiv();
+$design->endPage();
+$design = NULL;
+?>

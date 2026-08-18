@@ -381,7 +381,8 @@ function convertDecimalToFractionString($decNo) {
 * @returns successful or unsuccessful message
 * 
 */
-function mailer($from,$fromName='',$to,$toName='',$subject,$body,$cc='',$bcc='',$attachmentStub='') {
+// function mailer($from,$fromName='',$to,$toName='',$subject,$body,$cc='',$bcc='',$attachmentStub='') {
+function mailer($from,$fromName='',$to='',$toName='',$subject='',$body='',$cc='',$bcc='',$attachmentStub='') {
     if (empty($fromName)) {
       $fromName = $from;
     }
@@ -482,7 +483,8 @@ function detectDevice() {
         return array($mobile,$device);
 }
 
-function mailer1($from,$fromName='',$to,$toName='',$subject,$body,$cc='',$bcc='',$attachmentStub='') {
+// function mailer1($from,$fromName='',$to,$toName='',$subject,$body,$cc='',$bcc='',$attachmentStub='') {
+function mailer1($from,$fromName='',$to='',$toName='',$subject='',$body='',$cc='',$bcc='',$attachmentStub='') {
     if (empty($fromName)) {
       $fromName = $from;
     }

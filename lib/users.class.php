@@ -167,7 +167,26 @@ private static function sqlCheckAdminUser($username,$password) {
 
     //return "SELECT * FROM admins WHERE id='3' ";
 }
+function checkSiteUser($email, $password)
+{
+    return $this->db->getSingleRowAssoc(
+        self::sqlCheckSiteUser($email, $password)
+    );
+}
 
+private static function sqlCheckSiteUser($email, $password)
+{
+    return "SELECT
+                u.*,
+                ug.name AS user_group_name,
+                ug.permission AS user_group_permission
+            FROM users u
+            LEFT JOIN user_group ug
+                ON u.user_group_id = ug.user_group_id
+            WHERE u.email='$email'
+            AND u.password=PASSWORD('$password')
+            LIMIT 1";
+}
 function updateForgotPassCode($email,$md5Code) {
     return $this->db->update(self::sqlUpdateForgotPassCode($email,$md5Code));  
 }
