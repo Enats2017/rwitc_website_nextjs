@@ -118,7 +118,12 @@ class Design{
 
     <script type="text/javascript" src="js/jquery.vticker-min.js"></script>
 
-    <script type="text/javascript" src="js/jquery.marquee.js"></script>
+       
+
+
+       <script type="text/javascript" src="assets/js/jquery.marquee.js"></script> 
+
+
 
     <script type="text/javascript" src="assets/js/owl.carousel.min.js"></script>
 
@@ -870,13 +875,13 @@ TICKER;
 
                 </div>
 
-                <div class="navbar-header logo" style="margin-left: 10%;">
+                <div class="navbar-header logo" style="margin-left: 2%;">
 
                     <p id="title">
 
-                        <b>ROYAL WESTERN INDIA TURF CLUB, LTD.</b> <br />
+                        <b>ROYAL WESTERN INDIA TURF CLUB, LTD.</b>
 
-                        <b style="font-size: 20px;"></b>
+                        <span class="estd"><span class="flourish">&#10022;</span>ESTD. 1956<span class="flourish">&#10022;</span></span>
 
                     </p>
 
@@ -998,8 +1003,8 @@ TICKER;
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">User<span class="caret"></span></a>
                 <ul class="dropdown-menu">
-                    <li><a href="user/users.php">Users</a></li>
-                    <li><a href="user/userGroup.php">User Group</a></li>
+                    <li><a href="admin/users.php">Users</a></li>
+                    <li><a href="admin/userGroup.php">User Group</a></li>
                 </ul>
             </li>';
         }
@@ -1008,7 +1013,8 @@ TICKER;
 
         <!-- Fixed navbar -->
 
-        <div class="navbar navbar-inverse" style="background: #fc0606;" >
+        
+        <div class="navbar navbar-inverse" style="background: #0b3d24;" >
 
             <div class="navbar-header">
 
@@ -1020,7 +1026,7 @@ TICKER;
 
             <div class="navbar-collapse collapse">
 
-                <ul class="dropdown">
+                <ul class="dropdown" style="padding-left: 0px; display: flex; align-items: center; flex-wrap: nowrap; white-space: nowrap;">
 
                     <li class="dropdown">
 
@@ -1253,16 +1259,15 @@ TICKER;
                    $userMenu
                     
 
-                    <li class="dropdown" style="float: right;">
+                    <li class="dropdown" style="float: right; white-space: nowrap;">
 
-                        <div class="shareSocial" style="float:right;">
+                        <div class="shareSocial" style="display:flex; align-items:center; white-space:nowrap; float:none;">
 
-                            <span style="float:left;display:block;margin-top: 3px;color: #ffffff;"><b>Share On</b></span>
+                            <span style="display:inline-block; margin-right:8px; color:#ffffff; white-space:nowrap;"><b>Share On</b></span>
 
-                            <a style="float:left;display:block;margin-left: 5px;" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u={$metaOGUrl}"><img src="images/newdesign/fb.png" width="20"></a>   
+                            <a style="display:inline-block; margin-left:5px;" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u={$metaOGUrl}"><img src="images/newdesign/fb.png" width="26"></a>   
 
-                            <a style="float:left;display:block;margin-left: 5px;" target="_blank" href="https://twitter.com/intent/tweet?text={$metaOGTitle}&url={$metaOGUrl}"><img src="images/newdesign/twt.png" width="20" /></a>
-
+                            <a style="display:inline-block; margin-left:5px;" target="_blank" href="https://twitter.com/intent/tweet?text={$metaOGTitle}&url={$metaOGUrl}"><img src="images/newdesign/twt.png" width="26"/></a>
                         </div>
 
                     </li>

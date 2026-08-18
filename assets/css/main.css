@@ -71,7 +71,9 @@ marquee { boder: 0; }
  #tickerWrapper #ticker .tickerBlock { width: 100%; }  
 /*Change for derby*/
 #header{
-    background:url(../../assets/images/horses_header.png) 0 0 repeat-x;
+    background:
+      linear-gradient(rgba(11,61,36,0.55), rgba(11,61,36,0.55)),
+      url(../../assets/images/horses_header.png) 0 0 repeat-x;
 	/*background:url(../images/fullbg1.jpg) 0 0 repeat-x;*/
     /*background: url('/assets/images/DERBY_Header_background.jpg') 0 0 no-repeat;*/
 	height:125px;
@@ -369,7 +371,25 @@ display: block;
 
 #loginform{text-align: center; width:auto; margin-top: 20px; }
 #loginform p{font-family: times new roman; font-size: 15px; color: white !important; }
-#title{color: white; margin-top:35px; font-size: 30px; font-family: 'Times New Roman'; margin-left: 15px; width: 100%; text-align: center; }
+#title{color: white; margin-top:20px; font-size: 30px; font-family: 'Times New Roman'; margin-left: 15px; width: 100%; text-align: left; }
+#title .estd {
+  display:flex;
+  align-items:center;
+  font-size:14px;
+  letter-spacing:3px;
+  font-weight:normal;
+  color:rgba(255,255,255,0.85);
+  margin-top:10px;
+}
+#title .estd::before,
+#title .estd::after {
+  content:"";
+  flex:1;
+  height:2px;
+  background:#c9a24b;
+  margin:0 12px;
+}
+#title .estd .flourish { color:#c9a24b; margin:0 6px; font-size:12px; }
 .sponsor{width: 100%; }
 .sponsorLabel {text-align: center; }
 .sponsorLabel img{height: 93px; width: 218px; }
