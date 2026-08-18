@@ -879,9 +879,7 @@ TICKER;
 
                     <p id="title">
 
-                        <b>ROYAL WESTERN INDIA TURF CLUB, LTD.</b>
-
-                        <span class="estd"><span class="flourish">&#10022;</span>ESTD. 1956<span class="flourish">&#10022;</span></span>
+                        <b>ROYAL WESTERN INDIA TURF CLUB, LTD.</b>                        
 
                     </p>
 
