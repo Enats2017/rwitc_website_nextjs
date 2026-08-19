@@ -1785,13 +1785,13 @@ $design->writeLogoTickerMenu();
                                             );
                                             ?>
 
-                                            <?php if ((int)$u['user_group_id'] === 1): ?>
+                                          <?php if ((int)$u['id'] === 1): ?>
 
-                                                <i
-                                                    class="fa fa-star"
-                                                    title="Super Admin"></i>
+    <i
+        class="fa fa-star"
+        title="Super Admin"></i>
 
-                                            <?php endif; ?>
+<?php endif; ?>
 
                                         </span>
 
@@ -2344,14 +2344,6 @@ $design->writeLogoTickerMenu();
                                         echo htmlspecialchars(
                                             $ug['name']
                                         );
-                                        ?>
-
-                                        <?php
-                                        if (
-                                            (int)$ug['user_group_id'] === 1
-                                        ) {
-                                            echo ' (Super Admin)';
-                                        }
                                         ?>
 
                                     </option>

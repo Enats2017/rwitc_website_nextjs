@@ -51,6 +51,13 @@ function loadUserPermissions($db, $userId)
     );
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| LOAD ADMIN PERMISSIONS
+|--------------------------------------------------------------------------
+*/
+
 function loadAdminPermissions($db, $userId)
 {
     $userId = (int)$userId;
@@ -86,19 +93,29 @@ function loadAdminPermissions($db, $userId)
     }
 
     $_SESSION['user_group_id'] =
-        isset($row['user_group_id'])
+        isset($row['user_group_id']) &&
+        $row['user_group_id'] !== null
         ? (int)$row['user_group_id']
         : 0;
 
     $_SESSION['user_group_name'] =
-        isset($row['group_name'])
+        isset($row['group_name']) &&
+        $row['group_name'] !== null
         ? $row['group_name']
         : '';
 
+
     /*
-     * Group ID 1 = Super Admin
+     * ---------------------------------------------------------------
+     * SUPER ADMIN
+     * ---------------------------------------------------------------
+     *
+     * Admin table ID 1 = Super Admin
+     *
+     * user_group_id ka yahan koi role nahi hai.
      */
-    if ((int)$_SESSION['user_group_id'] === 1) {
+
+    if ($userId === 1) {
 
         $_SESSION['permissions'] = array(
             'access' => array('*'),
@@ -107,6 +124,15 @@ function loadAdminPermissions($db, $userId)
 
         return;
     }
+
+
+    /*
+     * ---------------------------------------------------------------
+     * NORMAL ADMIN
+     * ---------------------------------------------------------------
+     *
+     * Normal admin ka access selected user group se aayega.
+     */
 
     $_SESSION['permissions'] = parseGroupPermissions(
         isset($row['permission'])
@@ -166,15 +192,16 @@ function parseGroupPermissions($permission)
 function hasModuleAccess($module)
 {
     /*
-     * USER GROUP ID 1 = SUPER ADMIN
+     * Super Admin = admins.id 1
      */
-    if (
-        isset($_SESSION['user_group_id']) &&
-        (int)$_SESSION['user_group_id'] === 1
-    ) {
+    if (isSuperAdmin()) {
         return true;
     }
 
+
+    /*
+     * Normal admin
+     */
     if (
         !isset($_SESSION['permissions']) ||
         !isset($_SESSION['permissions']['access']) ||
@@ -200,15 +227,16 @@ function hasModuleAccess($module)
 function hasModuleModify($module)
 {
     /*
-     * USER GROUP ID 1 = SUPER ADMIN
+     * Super Admin = admins.id 1
      */
-    if (
-        isset($_SESSION['user_group_id']) &&
-        (int)$_SESSION['user_group_id'] === 1
-    ) {
+    if (isSuperAdmin()) {
         return true;
     }
 
+
+    /*
+     * Normal admin
+     */
     if (
         !isset($_SESSION['permissions']) ||
         !isset($_SESSION['permissions']['modify']) ||

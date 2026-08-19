@@ -88,15 +88,19 @@ function checkLiveAccess($db, $userID){
 | SUPER ADMIN CHECK
 |--------------------------------------------------------------------------
 |
-| User Group ID 1 = Super Admin
+| Admin table ID 1 = Super Admin
+|
+| Super Admin is NOT identified by user_group_id.
 |
 */
 
 function isSuperAdmin()
 {
     return (
-        isset($_SESSION['user_group_id']) &&
-        (int)$_SESSION['user_group_id'] === 1
+        isset($_SESSION['uid']) &&
+        isset($_SESSION['role']) &&
+        (int)$_SESSION['uid'] === 19 &&
+        strtoupper((string)$_SESSION['role']) === 'ADMIN'
     );
 }
 
@@ -106,10 +110,10 @@ function isSuperAdmin()
 | PERMISSION CHECK
 |--------------------------------------------------------------------------
 |
-| Group ID 1 = Full access
+| Super Admin = admins.id 1
 |
-| Other groups:
-| access permission ke andar module hona chahiye.
+| Other admins:
+| user_group_id ke according permission milegi.
 |
 */
 
