@@ -5,8 +5,11 @@ class Design
 
     var $jqueryJs, $js, $css, $bodyAttr;
 
-    function startPage($pageTitle, $articleData = array())
+        function startPage($pageTitle, $articleData = array())
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         $url = 'https://' . $_SERVER['HTTP_HOST'] . '' . $_SERVER['REQUEST_URI'];
 
@@ -220,7 +223,23 @@ class Design
 
     $(function(){
 
-       $(".dropdown-menu > li > a.trigger").on("click",function(e){
+   function rwAjaxNav(url) {
+       $.get(url, function(html) {
+           var newContent = $(html).find('#leftArea').html();
+           if (newContent) {
+               $('#leftArea').html(newContent);
+               window.history.pushState({}, '', url);
+           } else {
+               window.location.href = url; // fallback: normal navigation
+           }
+       }).fail(function() {
+           window.location.href = url; // fallback agar AJAX fail ho
+       });
+       return false;
+   }
+   window.rwAjaxNav = rwAjaxNav;
+
+   $(".dropdown-menu > li > a.trigger").on("click",function(e){
 
         var current=$(this).next();
 
@@ -985,25 +1004,28 @@ TICKER;
 
         $metaOGTitle = 'Royal Western India Turf Club (RWITC)';
 
-        // User Group 1 check
-        $isUserGroupOne = (
-            isset($_SESSION['user_group_id']) &&
-            (int)$_SESSION['user_group_id'] === 1
+        // Super Admin check - Admin ID 19 only
+        $isSuperAdmin = (
+            isset($_SESSION['uid']) &&
+            (int)$_SESSION['uid'] === 19 &&
+            isset($_SESSION['role']) &&
+            strtoupper((string)$_SESSION['role']) === 'ADMIN'
         );
 
         $userMenu = '';
 
-        if ($isUserGroupOne) {
+        if ($isSuperAdmin) {
             $userMenu = '
-    <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-            User<span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-            <li><a href="admin/users.php">Users</a></li>
-            <li><a href="admin/userGroup.php">User Group</a></li>
-        </ul>
-    </li>';
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                User <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href="admin/users.php">Users</a></li>
+                <li><a href="admin/userGroup.php">User Group</a></li>
+            </ul>
+        </li>
+    ';
         }
 
         echo <<<MENU
@@ -1033,13 +1055,13 @@ TICKER;
 
                             <li>
 
-                                <a href="club/aboutus.php"  >About RWITC</a>
+                                <a href="club/aboutus.php" onclick="return rwAjaxNav('club/aboutus.php');">About RWITC</a>
 
                             </li>
 
                             <li>
 
-                                <a href="club/vision-mission.php">Vision &amp; Mission</a>
+                                <a href="club/vision-mission.php" onclick="return rwAjaxNav('club/vision-mission.php');">Vision &amp; Mission</a>
 
                             </li>
 
@@ -1049,17 +1071,17 @@ TICKER;
 
                                 <ul class="dropdown-menu sub-menu">
 
-                                    <li><a href="club/structure.php">Structure</a></li>
+                                    <li><a href="club/structure.php" onclick="return rwAjaxNav('club/structure.php');">Structure</a></li>
 
-                                    <li><a href="club/managingCommittee.php">Managing Committee</a></li>
+                                    <li><a href="club/managingCommittee.php" onclick="return rwAjaxNav('club/managingCommittee.php');">Managing Committee</a></li>
 
-                                    <li><a href="club/stewardsOfclub.php">Stewards of the Club</a></li>
+                                    <li><a href="club/stewardsOfclub.php" onclick="return rwAjaxNav('club/stewardsOfclub.php');">Stewards of the Club</a></li>
 
-                                    <li><a href="club/boardofAppeal.php">Board of Appeal</a></li>
+                                    <li><a href="club/boardofAppeal.php" onclick="return rwAjaxNav('club/boardofAppeal.php');">Board of Appeal</a></li>
 
                                     <!--<li><a href="club/--">Working Group</a></li>   -->
 
-                                    <li><a href="club/working_group.php">Working Group</a></li>
+                                    <li><a href="club/working_group.php" onclick="return rwAjaxNav('club/working_group.php');">Working Group</a></li>
 
                                 </ul>
 
@@ -1071,9 +1093,9 @@ TICKER;
 
                                 <ul class="dropdown-menu sub-menu">
 
-                                    <li><a href="club/timeline.php">Timeline / Major Events</a></li>
+                                    <li><a href="club/timeline.php" onclick="return rwAjaxNav('club/timeline.php');">Timeline / Major Events</a></li>
 
-                                     <li><a href="club/bequeathingLegacy.php">Bequeathing a Colonial Legacy</a></li>
+                                     <li><a href="club/bequeathingLegacy.php" onclick="return rwAjaxNav('club/bequeathingLegacy.php');">Bequeathing a Colonial Legacy</a></li>
 
                                 </ul>
 
@@ -1085,19 +1107,19 @@ TICKER;
 
                                 <ul class="dropdown-menu sub-menu">
 
-                                    <li><a href="club/charity.php">Charity Race Days</a></li>
+                                    <li><a href="club/charity.php" onclick="return rwAjaxNav('club/charity.php');">Charity Race Days</a></li>
 
                                 </ul>
 
                             </li>
 
-                            <li><a href="club/contributing.php">Contributing to the Community</a></li>
+                            <li><a href="club/contributing.php" onclick="return rwAjaxNav('club/contributing.php');">Contributing to the Community</a></li>
 
-                            <li><a href="club/responsible.php">Responsible Gambling</a></li>
+                            <li><a href="club/responsible.php" onclick="return rwAjaxNav('club/responsible.php');">Responsible Gambling</a></li>
 
-                            <li><a href="club/careers.php">Careers</a></li>
+                            <li><a href="club/careers.php" onclick="return rwAjaxNav('club/careers.php');">Careers</a></li>
 
-                            <li><a href="club/contactus.php">Contact Us</a></li>
+                            <li><a href="club/contactus.php" onclick="return rwAjaxNav('club/contactus.php');">Contact Us</a></li>
 
                         </ul>
 
@@ -1111,33 +1133,33 @@ TICKER;
 
                             <li><a href="horseracing/Medication Rules.pdf">Medication Rules 2022</a></li>
 
-                            <li><a href="sweepstakes.php">Sweepstake Entries</a></li>
+                            <li><a href="sweepstakes.php" onclick="return rwAjaxNav('sweepstakes.php');">Sweepstake Entries</a></li>
 
-                            <li><a href="horseracing/beginnersGuide.php">Beginners Guide</a></li>
+                            <li><a href="horseracing/beginnersGuide.php" onclick="return rwAjaxNav('horseracing/beginnersGuide.php');">Beginners Guide</a></li>
 
                             <li><a href="horseracing/rulesOfRacing.pdf">Rules of Racing</a></li>
 
                             <li><a href="horseracing/racingCalendar.pdf">Racing Calendar</a></li>							                            <li><a href="horseracing/Memorandum & Articles of Association 2021.pdf">Memorandum & Articles of Association</a></li>							
 
-                            <li><a href="stewardsReport.php">Notice From Stewards</a></li>
+                            <li><a href="stewardsReport.php" onclick="return rwAjaxNav('stewardsReport.php');">Notice From Stewards</a></li>
 
-                            <li><a href="horseracing/readyreckoner.php">Ready Reckoner</a></li>
+                            <li><a href="horseracing/readyreckoner.php" onclick="return rwAjaxNav('horseracing/readyreckoner.php');">Ready Reckoner</a></li>
 
-                            <li><a href="trainerStatistics.php">Trainer's Statistics</a></li>
+                            <li><a href="trainerStatistics.php" onclick="return rwAjaxNav('trainerStatistics.php');">Trainer's Statistics</a></li>
 
-                            <li><a href="jockeyStatistics.php">Jockey's Statistics</a></li>
+                            <li><a href="jockeyStatistics.php" onclick="return rwAjaxNav('jockeyStatistics.php');">Jockey's Statistics</a></li>
 
-                            <li><a href="horseracing/jockey_weights.php">Jockey's Riding Weight</a></li>
+                            <li><a href="horseracing/jockey_weights.php" onclick="return rwAjaxNav('horseracing/jockey_weights.php');">Jockey's Riding Weight</a></li>
 
-                            <li><a href="horseracing/horsebodyWeight.php">Body Weight of Horses</a></li>
+                            <li><a href="horseracing/horsebodyWeight.php" onclick="return rwAjaxNav('horseracing/horsebodyWeight.php');">Body Weight of Horses</a></li>
 
-                            <li><a href="horseracing/record_timings.php">Record Timings</a></li>
+                            <li><a href="horseracing/record_timings.php" onclick="return rwAjaxNav('horseracing/record_timings.php');">Record Timings</a></li>
 
                             <li><a href="horseracing/standard_timings.pdf">Standard Timings</a></li>
 
                             <!--<li><a href="raceHistory.php">History of Graded Races</a></li>-->
 
-                            <li><a href="horseracing/saddleCloth.php">Saddle Cloth Numbers</a></li>
+                            <li><a href="horseracing/saddleCloth.php" onclick="return rwAjaxNav('horseracing/saddleCloth.php');">Saddle Cloth Numbers</a></li>
 
                             <!-- <li><a href="horseracing/incomefromHeads.php">Income from Various Heads</a></li>-->
 
@@ -1157,17 +1179,17 @@ TICKER;
 
                         <ul class="dropdown-menu">
 
-                            <li><a href="bettingentertainment/overview.php">Overview</a></li>
+                            <li><a href="bettingentertainment/overview.php" onclick="return rwAjaxNav('bettingentertainment/overview.php');">Overview</a></li>
 
-                            <li><a href="bettingentertainment/beginnersGuide.php">Beginners Guide</a></li>
+                            <li><a href="bettingentertainment/beginnersGuide.php" onclick="return rwAjaxNav('bettingentertainment/beginnersGuide.php');">Beginners Guide</a></li>
 
-                            <li><a href="bettingentertainment/waggeringTerms.php">Wagering Terms</a></li>
+                            <li><a href="bettingentertainment/waggeringTerms.php" onclick="return rwAjaxNav('bettingentertainment/waggeringTerms.php');">Wagering Terms</a></li>
 
-                            <li><a href="bettingentertainment/bettingPools.php">Betting Pools</a></li>
+                            <li><a href="bettingentertainment/bettingPools.php" onclick="return rwAjaxNav('bettingentertainment/bettingPools.php');">Betting Pools</a></li>
 
-                            <li><a href="bettingentertainment/bettingChannels.php">Betting Channels</a></li>
+                            <li><a href="bettingentertainment/bettingChannels.php" onclick="return rwAjaxNav('bettingentertainment/bettingChannels.php');">Betting Channels</a></li>
 
-                            <li><a href="bettingentertainment/deductionNorms.php">Deduction Norms</a></li>
+                            <li><a href="bettingentertainment/deductionNorms.php" onclick="return rwAjaxNav('bettingentertainment/deductionNorms.php');">Deduction Norms</a></li>
 
                            <!-- <li><a href="bettingentertainment/offcourseBettingCentres.php">Off-Course Betting Centres</a></li>-->
 
@@ -1181,17 +1203,17 @@ TICKER;
 
                         <ul class="dropdown-menu">
 
-                            <li><a href="membership/overview.php">Overview</a></li>
+                            <li><a href="membership/overview.php" onclick="return rwAjaxNav('membership/overview.php');">Overview</a></li>
 
-                            <li><a href="membership/privileges.php">Membership Privileges</a></li>
+                            <li><a href="membership/privileges.php" onclick="return rwAjaxNav('membership/privileges.php');">Membership Privileges</a></li>
 
                             <!--<li><a href="membership/olives.php">Olive</a></li>-->
 
-                            <li><a href="membership/categories.php">Categories</a></li>
+                            <li><a href="membership/categories.php" onclick="return rwAjaxNav('membership/categories.php');">Categories</a></li>
 
                             <!--<li><a href="membership/rulesAndRegulations.php">Rules &amp; Regulations</a></li>-->
 
-                            <li><a href="membership/lawnFacilities.php">Lawn &amp; Facilities Booking Forms</a></li>
+                            <li><a href="membership/lawnFacilities.php" onclick="return rwAjaxNav('membership/lawnFacilities.php');">Lawn &amp; Facilities Booking Forms</a></li>
 
                         </ul>
 
@@ -1203,15 +1225,15 @@ TICKER;
 
                         <ul class="dropdown-menu">
 
-                            <li><a href="comeracing/overview.php">Overview</a></li>
+                            <li><a href="comeracing/overview.php" onclick="return rwAjaxNav('comeracing/overview.php');">Overview</a></li>
 
-                            <li><a href="comeracing/mumbairacecourse.php">Mumbai Race Course</a></li>
+                            <li><a href="comeracing/mumbairacecourse.php" onclick="return rwAjaxNav('comeracing/mumbairacecourse.php');">Mumbai Race Course</a></li>
 
-                            <li><a href="comeracing/puneracecourse.php">Pune Race Course</a></li>
+                            <li><a href="comeracing/puneracecourse.php" onclick="return rwAjaxNav('comeracing/puneracecourse.php');">Pune Race Course</a></li>
 
-                            <li><a href="comeracing/howToGetThere.php">How to get there</a></li>
+                            <li><a href="comeracing/howToGetThere.php" onclick="return rwAjaxNav('comeracing/howToGetThere.php');">How to get there</a></li>
 
-                            <li><a href="comeracing/services.php">Race Course Services &amp; Others</a></li>      
+                            <li><a href="comeracing/services.php" onclick="return rwAjaxNav('comeracing/services.php');">Race Course Services &amp; Others</a></li>
 
                         </ul>
 
@@ -1223,13 +1245,13 @@ TICKER;
 
                         <ul class="dropdown-menu">
 
-                            <li><a href="sponsorships/overview.php">Overview</a></li>
+                            <li><a href="sponsorships/overview.php" onclick="return rwAjaxNav('sponsorships/overview.php');">Overview</a></li>
 
-                            <li><a href="sponsorships/privileges.php">Sponsor's Privileges</a></li>
+                            <li><a href="sponsorships/privileges.php" onclick="return rwAjaxNav('sponsorships/privileges.php');">Sponsor's Privileges</a></li>
 
-                            <li><a href="sponsorships/opportunities.php">Advertising &amp; Sponsorship Opportunities</a></li>
+                            <li><a href="sponsorships/opportunities.php" onclick="return rwAjaxNav('sponsorships/opportunities.php');">Advertising &amp; Sponsorship Opportunities</a></li>
 
-                            <li><a href="sponsorships/contactus.php">Contact Us</a></li>
+                            <li><a href="sponsorships/contactus.php" onclick="return rwAjaxNav('sponsorships/contactus.php');">Contact Us</a></li>
 
                             <!--<li><a href="sponsorships/sponsors.php">Our Sponsors</a></li>-->
 
@@ -1243,7 +1265,7 @@ TICKER;
 
                         <ul class="dropdown-menu">
 
-                            <li><a href="downloads/forms.php">Forms</a></li>
+                            <li><a href="downloads/forms.php" onclick="return rwAjaxNav('downloads/forms.php');">Forms</a></li>
 
                             <li><a href="downloads/CHART.pdf">Chart</a></li>
 
@@ -1252,8 +1274,7 @@ TICKER;
                         </ul>
 
                     </li> 
-                    
-                   $userMenu
+                    {$userMenu}
                     
 
                     <li class="dropdown" style="float: right; white-space: nowrap;">
@@ -1280,6 +1301,166 @@ TICKER;
 MENU;
     }
 
+
+
+    function writeLeftPanel()
+    {
+        $sessionUser = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'ADMIN';
+
+        echo <<< LEFTPANEL
+
+        <style type="text/css">
+        #rightArea.col-lg-3 {
+    flex: 0 0 300px;
+    max-width: 300px;
+    width: 300px;
+    box-sizing: border-box;
+    float: none;
+    padding: 24px 20px 24px 30px;
+    background: #ffffff;
+    color: #2b332f;
+}
+        #rightArea .profile-card {
+            background: linear-gradient(180deg, #0f5c33, #0b3d24);
+            border-radius: 14px;
+            padding: 22px 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        #rightArea .profile-avatar {
+            width: 46px; height: 46px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        #rightArea .profile-welcome { font-size: 13px; opacity: 0.85; }
+        #rightArea .profile-name { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+        #rightArea .profile-status { font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 6px; opacity: 0.9; }
+        #rightArea .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; display: inline-block; }
+        #rightArea .quick-access-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #7a8c84; margin: 4px 0 10px 6px; }
+        #rightArea .quick-access-list { list-style: none; margin: 0; padding: 0; }
+        #rightArea .quick-access-list li a { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 8px; color: #2b332f; text-decoration: none; font-size: 15px; margin-bottom: 4px; }
+        #rightArea .quick-access-list li a i { width: 18px; text-align: center; color: #0f5c33; }
+        #rightArea .quick-access-list li a:hover { background: #e6f4ec; }
+        #rightArea .quick-access-list li.active a { background: #e6f4ec; color: #0f5c33; font-weight: 600; border-left: 3px solid #0f5c33; }
+        #rightArea .logout-btn { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #e2e6e4; color: #2b332f; background: #fff; padding: 9px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; margin-top: 16px; }
+        #rightArea .logout-btn:hover { background: #e6f4ec; color: #0f5c33; }
+        </style>
+
+                <div id="rightArea" class="col-lg-3">
+
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div class="profile-welcome">Welcome,</div>
+                    <div class="profile-name">{$sessionUser}</div>
+                    <div class="profile-status">
+                        <span class="status-dot"></span>
+                        Online
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-access-title">QUICK ACCESS</div>
+
+            <ul class="quick-access-list">
+                <li class="active" id="navDashboard">
+                    <a href="admin/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
+                </li>
+                <li id="navAllModules">
+                    <a href="#"><i class="fas fa-th-large"></i> All Modules</a>
+                </li>
+                <li><a href="#"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                <li><a href="#"><i class="fas fa-history"></i> Activity Log</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> System Settings</a></li>
+                <li><a href="#"><i class="fas fa-question-circle"></i> Help &amp; Support</a></li>
+            </ul>
+
+            <a class="logout-btn" href="admin/adminlogin.php?q=logout">
+                <i class="fas fa-sign-out-alt"></i> &nbsp; Logout
+            </a>
+
+        </div>
+
+LEFTPANEL;
+    }
+
+
+    function writeContentPageStyles($pageClass = 'about-eyebrow')
+    {
+        echo <<< STYLES
+
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style type="text/css">
+:root {
+    --rw-green-dark: #04160c; --rw-green-mid: #0b3d20; --rw-green: #0b6d2a;
+    --rw-green-bright: #15923c; --rw-lime: #c7e46a; --rw-cream: #f5f4ee;
+    --rw-ink: #17251c; --rw-muted: #667066; --rw-line: #e2e1d8;
+    --rwitc-dark-green: #0b3d24; --rwitc-green: #0f5c33; --rwitc-accent-green: #1a7a45;
+    --rwitc-light-green: #e6f4ec; --rwitc-border: #e2e6e4; --rwitc-text: #2b332f; --rwitc-muted: #7a8c84;
+}
+#infoWrapper.col-lg-12 { display: flex; flex-direction: row-reverse; align-items: stretch; max-width: 1500px; margin: 30px auto; border-radius: 22px; overflow: hidden; box-shadow: 0 10px 40px rgba(11,61,36,0.14); font-family: 'Inter','Segoe UI',Arial,sans-serif; float: none; }
+#leftArea.col-lg-9 { flex: 1 1 auto; min-width: 0; background: var(--rw-cream); padding: 46px 40px 46px 24px; box-sizing: border-box; float: none; width: auto; }
+.about-eyebrow { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--rw-green); background: var(--rwitc-light-green); padding: 5px 14px; border-radius: 20px; margin-bottom: 16px; text-transform: uppercase; }
+#leftArea.col-lg-9 h2 { font-family: 'Source Serif 4',serif; font-weight: 600; font-size: 34px; color: var(--rw-ink); margin: 0 0 6px 0; letter-spacing: 0.2px; }
+.about-subtitle { font-size: 14px; color: var(--rw-muted); margin: 0 0 22px 0; }
+.about-divider { height: 1px; width: 100%; background: var(--rw-line); margin: 0 0 28px 0; border: none; }
+#leftArea.col-lg-9 p { font-family: 'Inter','Segoe UI',Arial,sans-serif !important; font-size: 15px !important; line-height: 1.85 !important; color: var(--rwitc-text) !important; margin: 0 0 20px 0 !important; text-align: justify; }
+#leftArea.col-lg-9 p b { color: var(--rw-ink); }
+#leftArea.col-lg-9 ul { margin: 0 0 20px 0; padding-left: 22px; }
+#leftArea.col-lg-9 ul li { margin-bottom: 14px; font-family: 'Inter','Segoe UI',Arial,sans-serif !important; font-size: 15px !important; line-height: 1.85 !important; color: var(--rwitc-text) !important; }
+#leftArea.col-lg-9 ul li p { margin: 0 !important; font-family: 'Inter','Segoe UI',Arial,sans-serif !important; font-size: 15px !important; line-height: 1.85 !important; color: var(--rwitc-text) !important; text-align: justify; }
+#leftArea.col-lg-9 ul li::marker { color: var(--rw-green); font-weight: 700; }
+#leftArea.col-lg-9 table { width: 100%; border-collapse: collapse; margin: 0 0 24px 0; font-family: 'Inter','Segoe UI',Arial,sans-serif; font-size: 14.5px; color: var(--rwitc-text); background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(11,61,36,0.06); }
+#leftArea.col-lg-9 table th { background: var(--rw-green-mid); color: #fff; font-weight: 700; text-align: left; padding: 12px 16px; font-size: 13px; letter-spacing: 0.3px; }
+#leftArea.col-lg-9 table td { padding: 12px 16px; border-bottom: 1px solid var(--rw-line); line-height: 1.6; }
+#leftArea.col-lg-9 table tr:last-child td { border-bottom: none; }
+#leftArea.col-lg-9 table tr:nth-child(even) td { background: var(--rwitc-light-green); }
+#leftArea.col-lg-9 table tr:hover td { background: #eef4ec; }
+@media (max-width: 1100px) { #leftArea.col-lg-9 { padding: 36px 34px; } #leftArea.col-lg-9 h2 { font-size: 28px; } }
+@media (max-width: 900px) { #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; border-radius: 16px; } #leftArea.col-lg-9 { flex: 1 1 100%; max-width: 100%; padding: 28px 24px; } }
+@media (max-width: 600px) { #leftArea.col-lg-9 table { display: block; overflow-x: auto; white-space: nowrap; font-size: 13px; } #leftArea.col-lg-9 { padding: 22px 18px; } #leftArea.col-lg-9 h2 { font-size: 23px; } #leftArea.col-lg-9 p, #leftArea.col-lg-9 ul li, #leftArea.col-lg-9 ul li p { font-size: 14.5px !important; line-height: 1.75 !important; } }
+#sponsorBlockWrapper { max-width: 1500px; margin: 10px auto 30px; float: none; }
+#sponsorsTitle { color: var(--rwitc-dark-green) !important; font-family: 'Source Serif 4',serif; font-weight: 700; letter-spacing: 1px; }
+#sponsorBlock { border: 1px solid var(--rwitc-border) !important; border-radius: 14px !important; background: #fff !important; box-shadow: 0 4px 14px rgba(11,61,36,0.06); }
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+</style>
+
+STYLES;
+    }
+
+    function writeQuickAccessPanel()
+    {
+        ob_start();
+        $this->rightArea();
+        $rightAreaHtml = ob_get_clean();
+
+        $badgeHtml = '
+    <div class="rwBrandBadge">
+        <span class="rwBrandMark"><i class="fa-solid fa-horse-head"></i></span>
+        <p class="rwBrandEyebrow">Royal Western India Turf Club</p>
+    </div>
+    <h1 class="rwPanelHeading">Quick Access</h1>
+    <p class="rwPanelSub">Explore key services and resources across the club, right from this page.</p>
+  ';
+
+        $rightAreaHtml = str_replace(
+            '<div id="rightArea" class="col-lg-3">',
+            '<div id="rightArea" class="col-lg-3">' . $badgeHtml,
+            $rightAreaHtml
+        );
+
+        echo $rightAreaHtml;
+    }
 
 
     function openDiv($id = "", $class = "")

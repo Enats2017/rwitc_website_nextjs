@@ -1,22 +1,31 @@
 <?php 
 include_once('../bootstrap.php');
-$pageTitle ='Vision-Mission';        
-$design = new Design();
-$design->startPage("$pageTitle");
-$design->writeLogoTickerMenu();
-$design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper","col-lg-12");
-$design->openDiv("leftArea",'col-lg-9');
-?>
-<h2>The RWITC Vision & Mission Statement</h2>        
+
+  $pageTitle ='Vision-Mission';        
+  $design = new Design();
+   
+  $design->startPage("$pageTitle");
+  $design->writeLogoTickerMenu();
+  $design->openDiv("contentWrapper");
+  $design->openDiv("infoWrapper","col-lg-12");
+  $design->openDiv("leftArea",'col-lg-9');
+  
+  $design->writeContentPageStyles();
+  ?>
+
+<span class="about-eyebrow">The Club</span>
+<h2>The RWITC Vision & Mission Statement</h2>
+<p class="about-subtitle">Our commitment to excellence in horse racing and the community we serve</p>
+<hr class="about-divider" />
+
                          <p align="justify">
-                            RWITC is renowned as the premier racing club in India offering facilities matching the best in the world. It is also the home of the Indian Classics introduced first in 1943 and modelled on the British originals – Classics that are truly national in character.
+                            RWITC is renowned as the premier racing club in India offering facilities matching the best in the world. It is also the home of the Indian Classics introduced first in 1943 and modelled on the British originals â€” Classics that are truly national in character.
                          </p> 
-                         <br \>
+
                          <p align="justify">
-                            <b>The following in brief is the Club’s vision and mission statement:</b>
+                            <b>The following in brief is the Club's vision and mission statement:</b>
                          </p> 
-                         <br \>
+
                          <ul>
                             <li>
                                 <p align="justify">To ensure quality in its race programmes, racing surfaces, racing environment and conduct as behoves one of Asia's most famous race courses and home to the five Indian Classics.</p>
@@ -52,10 +61,12 @@ $design->openDiv("leftArea",'col-lg-9');
                                 </p>
                             </li>
                          </ul>
-<?php                   
+
+<?php
   $design->closeDiv();
-  $design->rightArea();  
+  $design->writeLeftPanel();
+
   $design->closeDiv();
   $design->closeDiv();
-  $design->endPage();
+    $design->endPage();
 $design = NULL; // release object
