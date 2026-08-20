@@ -115,7 +115,7 @@ function loadAdminPermissions($db, $userId)
      * user_group_id ka yahan koi role nahi hai.
      */
 
-    if ($userId === 1) {
+    if ($userId === 19) {
 
         $_SESSION['permissions'] = array(
             'access' => array('*'),
