@@ -5,7 +5,7 @@ class Design
 
     var $jqueryJs, $js, $css, $bodyAttr;
 
-        function startPage($pageTitle, $articleData = array())
+    function startPage($pageTitle, $articleData = array())
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -1274,21 +1274,8 @@ TICKER;
                         </ul>
 
                     </li> 
-                    {$userMenu}
                     
-
-                    <li class="dropdown" style="float: right; white-space: nowrap;">
-
-                        <div class="shareSocial" style="display:flex; align-items:center; white-space:nowrap; float:none;">
-
-                            <span style="display:inline-block; margin-right:8px; color:#ffffff; white-space:nowrap;"><b>Share On</b></span>
-
-                            <a style="display:inline-block; margin-left:5px;" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u={$metaOGUrl}"><img src="images/newdesign/fb.png" width="26"></a>   
-
-                            <a style="display:inline-block; margin-left:5px;" target="_blank" href="https://twitter.com/intent/tweet?text={$metaOGTitle}&url={$metaOGUrl}"><img src="images/newdesign/twt.png" width="26"/></a>
-                        </div>
-
-                    </li>
+                    {$userMenu}
 
                 </ul>
 
@@ -1306,6 +1293,8 @@ MENU;
     function writeLeftPanel()
     {
         $sessionUser = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'ADMIN';
+        $shareUrl = 'https://' . $_SERVER['HTTP_HOST'] . '' . $_SERVER['REQUEST_URI'];
+        $shareTitle = 'Royal Western India Turf Club (RWITC)';
 
         echo <<< LEFTPANEL
 
@@ -1349,6 +1338,10 @@ MENU;
         #rightArea .quick-access-list li.active a { background: #e6f4ec; color: #0f5c33; font-weight: 600; border-left: 3px solid #0f5c33; }
         #rightArea .logout-btn { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #e2e6e4; color: #2b332f; background: #fff; padding: 9px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; margin-top: 16px; }
         #rightArea .logout-btn:hover { background: #e6f4ec; color: #0f5c33; }
+        .share-wrapper:hover #shareDropdown,
+        #shareDropdown.show { display: flex !important; }
+        #shareDropdown { padding-bottom: 18px !important; margin-bottom: -10px !important; }
+        #shareDropdown a { margin-bottom: 8px; }
         </style>
 
                 <div id="rightArea" class="col-lg-3">
@@ -1381,6 +1374,16 @@ MENU;
                 <li><a href="#"><i class="fas fa-cog"></i> System Settings</a></li>
                 <li><a href="#"><i class="fas fa-question-circle"></i> Help &amp; Support</a></li>
             </ul>
+
+                        <div class="share-wrapper" onmouseleave="document.getElementById('shareDropdown').classList.remove('show');" style="position: relative; margin-bottom: 12px;">
+                <a href="#" class="logout-btn" onclick="document.getElementById('shareDropdown').classList.toggle('show'); return false;">
+                    <i class="fas fa-share-alt"></i> &nbsp; Share On
+                </a>
+                <div id="shareDropdown" style="display:none; position:absolute; bottom:100%; left:0; background:#fff; border:1px solid #e2e6e4; border-radius:8px; padding:10px 10px 18px 10px; gap:10px; box-shadow:0 4px 14px rgba(0,0,0,0.12); z-index:10;">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={$shareUrl}" target="_blank"><img src="images/newdesign/fb.png" width="26"></a>
+                    <a href="https://twitter.com/intent/tweet?text={$shareTitle}&url={$shareUrl}" target="_blank"><img src="images/newdesign/twt.png" width="26"></a>
+                </div>
+            </div>
 
             <a class="logout-btn" href="admin/adminlogin.php?q=logout">
                 <i class="fas fa-sign-out-alt"></i> &nbsp; Logout
