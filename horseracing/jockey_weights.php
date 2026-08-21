@@ -8,11 +8,12 @@ $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
 $design->openDiv("infoWrapper","col-lg-12");
 $design->openDiv("leftArea",'col-lg-9');
+$design->writeContentPageStyles();
 
 include_once('../rwitc_upload/static/RIDINGWEIGHT.HTM');
 
 $design->closeDiv();
-$design->rightArea();
+$design->writeLeftPanel();
 $design->closeDiv();
 $design->closeDiv();
 $design->endPage();

@@ -1133,21 +1133,22 @@ TICKER;
 
                             <li><a href="horseracing/Medication Rules.pdf">Medication Rules 2022</a></li>
 
-                            <li><a href="sweepstakes.php" onclick="return rwAjaxNav('sweepstakes.php');">Sweepstake Entries</a></li>
+                            <li><a href="horseracing/sweepstakes.php" onclick="return rwAjaxNav('horseracing/sweepstakes.php');">Sweepstake Entries</a></li>
 
                             <li><a href="horseracing/beginnersGuide.php" onclick="return rwAjaxNav('horseracing/beginnersGuide.php');">Beginners Guide</a></li>
 
                             <li><a href="horseracing/rulesOfRacing.pdf">Rules of Racing</a></li>
 
-                            <li><a href="horseracing/racingCalendar.pdf">Racing Calendar</a></li>							                            <li><a href="horseracing/Memorandum & Articles of Association 2021.pdf">Memorandum & Articles of Association</a></li>							
+                            <li><a href="horseracing/racingCalendar.pdf">Racing Calendar</a></li>
+                            <li><a href="horseracing/Memorandum & Articles of Association 2021.pdf">Memorandum & Articles of Association</a></li>							
 
-                            <li><a href="stewardsReport.php" onclick="return rwAjaxNav('stewardsReport.php');">Notice From Stewards</a></li>
+                            <li><a href="horseracing/stewardsReport.php" onclick="return rwAjaxNav('horseracing/stewardsReport.php');">Notice From Stewards</a></li>
 
                             <li><a href="horseracing/readyreckoner.php" onclick="return rwAjaxNav('horseracing/readyreckoner.php');">Ready Reckoner</a></li>
 
-                            <li><a href="trainerStatistics.php" onclick="return rwAjaxNav('trainerStatistics.php');">Trainer's Statistics</a></li>
+                            <li><a href="horseracing/trainerStatistics.php" onclick="return rwAjaxNav('horseracing/trainerStatistics.php');">Trainer's Statistics</a></li>
 
-                            <li><a href="jockeyStatistics.php" onclick="return rwAjaxNav('jockeyStatistics.php');">Jockey's Statistics</a></li>
+                            <li><a href="horseracing/jockeyStatistics.php" onclick="return rwAjaxNav('horseracing/jockeyStatistics.php');">Jockey's Statistics</a></li>
 
                             <li><a href="horseracing/jockey_weights.php" onclick="return rwAjaxNav('horseracing/jockey_weights.php');">Jockey's Riding Weight</a></li>
 

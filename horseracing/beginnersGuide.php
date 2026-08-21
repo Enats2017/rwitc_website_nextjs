@@ -11,6 +11,7 @@ include_once('../bootstrap.php');
   $design->openDiv("contentWrapper");
   $design->openDiv("infoWrapper","col-lg-12");
   $design->openDiv("leftArea",'col-lg-9');
+  $design->writeContentPageStyles();
   ?>       
 
   <table border="1" cellpadding="3" cellspacing="3" style="border-collapse: collapse" width="700" id="table11" bordercolorlight="#808000" bordercolordark="#808000" >
@@ -189,7 +190,7 @@ include_once('../bootstrap.php');
   
 <?php                   
   $design->closeDiv();
-  $design->rightArea();
+  $design->writeLeftPanel();
   $design->closeDiv();
   $design->closeDiv();
     $design->endPage();

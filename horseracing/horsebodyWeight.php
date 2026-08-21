@@ -23,6 +23,7 @@ include_once('../lib/race.class.php');
   $design->openDiv("contentWrapper");
   $design->openDiv("infoWrapper","col-lg-12");
   $design->openDiv("leftArea",'col-lg-9');
+  $design->writeContentPageStyles();
     //print_r($horseBodyWeight);
   ?>
 <br /><br />
@@ -79,8 +80,8 @@ include_once('../lib/race.class.php');
     </table>
 <?php                   
   $design->closeDiv();
-  $design->rightArea();
+  $design->writeLeftPanel();
   $design->closeDiv();
   $design->closeDiv();
-    $design->endPage();
+    $design->endPage();   
 $design = NULL; // release object
