@@ -8,6 +8,17 @@ require_once("../lib/dbTools.php");
 
 session_start();
 
+// Only Super Admin (Admin ID 19) can access this page
+if (
+    !isset($_SESSION['uid']) ||
+    (int)$_SESSION['uid'] !== 19 ||
+    !isset($_SESSION['role']) ||
+    strtoupper((string)$_SESSION['role']) !== 'ADMIN'
+) {
+    header("Location: ../admin/adminlogin.php");
+    exit;
+}
+
 $db = new dbTool();
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
@@ -1539,12 +1550,12 @@ $design->writeLogoTickerMenu();
                 </select>
 
 
-                <button
+                <!-- <button
                     type="submit"
                     class="btn btn-ghost">
                     <i class="fa fa-search"></i>
                     Search
-                </button>
+                </button> -->
 
             </div>
 
@@ -1785,13 +1796,13 @@ $design->writeLogoTickerMenu();
                                             );
                                             ?>
 
-                                          <?php if ((int)$u['id'] === 1): ?>
+                                            <?php if ((int)$u['id'] === 1): ?>
 
-    <i
-        class="fa fa-star"
-        title="Super Admin"></i>
+                                                <i
+                                                    class="fa fa-star"
+                                                    title="Super Admin"></i>
 
-<?php endif; ?>
+                                            <?php endif; ?>
 
                                         </span>
 

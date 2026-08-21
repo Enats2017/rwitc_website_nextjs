@@ -1,18 +1,5 @@
 <?php
-/* =====================================================================
-   userGroup.php — FINAL, DB-wired version (dummy data hataya, ab dbTool
-   se real fetch/insert/update/delete ho raha hai).
 
-   Schema assumed:
-     user_group  (user_group_id INT PK AUTO_INCREMENT, name VARCHAR, permission TEXT)
-
-   "permission" column mein serialize() karke PHP array store hota hai:
-     array('access' => array('dashboard','race',...), 'modify' => array('race',...))
-
-   IMPORTANT: Change the require_once path below to match where your
-   dbTool class file actually lives (I've assumed "dbTool.php" in the
-   same folder — adjust if yours is e.g. "inc/dbTool.php").
-   ===================================================================== */
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -21,9 +8,20 @@ require_once("../lib/dbTools.php");
 
 session_start();
 
+// Only Super Admin (Admin ID 19) can access this page
+if (
+    !isset($_SESSION['uid']) ||
+    (int)$_SESSION['uid'] !== 19 ||
+    !isset($_SESSION['role']) ||
+    strtoupper((string)$_SESSION['role']) !== 'ADMIN'
+) {
+    header("Location: ../adminlogin.php");
+    exit;
+}
+
 $db = new dbTool();
 
-// ---- Modules jinke access/modify permission set kiye jaate hain ----
+// Modules access/modify permission set
 $modules = array(
     'articles'                => 'Articles Manager',
     'csr_articles'            => 'CSR Articles Manager',
@@ -62,9 +60,6 @@ $modules = array(
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 
-/* ---------------------------------------------------------------------
-   DELETE
-   --------------------------------------------------------------------- */
 if ($action == 'delete' && isset($_GET['user_group_id'])) {
     $gid = (int)$_GET['user_group_id'];
     try {
@@ -83,9 +78,7 @@ if ($action == 'delete' && isset($_GET['user_group_id'])) {
     }
 }
 
-/* ---------------------------------------------------------------------
-   SAVE (INSERT / UPDATE) — form POSTs here with action=form
-   --------------------------------------------------------------------- */
+// SAVE (INSERT / UPDATE) — form POSTs here with action=form
 $form_error = null;
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
     $name   = trim($_POST['name']);
@@ -105,16 +98,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
                 $gid = (int)$_POST['user_group_id'];
                 $db->update(
                     "UPDATE user_group SET name='" . $db->escape($name) . "', "
-                    . "permission='" . $db->escape($permission_serialized) . "' "
-                    . "WHERE user_group_id = $gid"
+                        . "permission='" . $db->escape($permission_serialized) . "' "
+                        . "WHERE user_group_id = $gid"
                 );
                 header("Location: userGroup.php?msg=updated");
                 exit;
             } else {
                 $db->insert(
                     "INSERT INTO user_group (name, permission) VALUES ("
-                    . "'" . $db->escape($name) . "', "
-                    . "'" . $db->escape($permission_serialized) . "')"
+                        . "'" . $db->escape($name) . "', "
+                        . "'" . $db->escape($permission_serialized) . "')"
                 );
                 header("Location: userGroup.php?msg=added");
                 exit;
@@ -125,9 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
     }
 }
 
-/* ---------------------------------------------------------------------
-   FETCH — list view
-   --------------------------------------------------------------------- */
+// FETCH — list view
 $user_groups = array();
 if ($action == 'list') {
     $rows = $db->getMultiDimensionalArray("SELECT * FROM user_group ORDER BY user_group_id ASC");
@@ -139,9 +130,7 @@ if ($action == 'list') {
     }
 }
 
-/* ---------------------------------------------------------------------
-   FETCH — single group for edit form
-   --------------------------------------------------------------------- */
+// FETCH — single group for edit form
 $edit_group = null;
 if ($action == 'form' && $_SERVER['REQUEST_METHOD'] !== 'POST' && isset($_GET['user_group_id'])) {
     $row = $db->getSingleRowAssoc("SELECT * FROM user_group WHERE user_group_id = " . (int)$_GET['user_group_id']);
@@ -166,10 +155,12 @@ if ($form_error && $_SERVER['REQUEST_METHOD'] == 'POST') {
 
 $total_groups = count($user_groups);
 
-function hasAccess($group, $key) {
+function hasAccess($group, $key)
+{
     return $group && isset($group['permission']['access']) && in_array($key, $group['permission']['access']);
 }
-function hasModify($group, $key) {
+function hasModify($group, $key)
+{
     return $group && isset($group['permission']['modify']) && in_array($key, $group['permission']['modify']);
 }
 
@@ -408,9 +399,11 @@ $design->openDiv("leftArea");
                 </thead>
                 <tbody>
                     <?php if (empty($user_groups)): ?>
-                    <tr><td colspan="3">
-                        <div class="empty"><i class="fa fa-shield"></i>No user groups yet. Click "Add User Group" to create one.</div>
-                    </td></tr>
+                        <tr>
+                            <td colspan="3">
+                                <div class="empty"><i class="fa fa-shield"></i>No user groups yet. Click "Add User Group" to create one.</div>
+                            </td>
+                        </tr>
                     <?php endif; ?>
                     <?php foreach ($user_groups as $g):
                         $access_ct = count($g['permission']['access']);
@@ -418,40 +411,42 @@ $design->openDiv("leftArea");
                         $pct = $mod_ct ? round(($access_ct / $mod_ct) * 100) : 0;
                         $is_admin_group = ($g['name'] === 'Administrator');
                     ?>
-                    <tr class="group-row" data-search="<?php echo strtolower(htmlspecialchars($g['name'])); ?>">
-                        <td class="group-td" data-label="Group">
-                            <div class="group-cell">
-                                <div class="group-icon"><i class="fa fa-shield"></i></div>
-                                <div>
-                                    <div class="group-name">
-                                        <?php echo htmlspecialchars($g['name']); ?>
-                                        <?php if ($is_admin_group): ?><span class="badge-system"><i class="fa fa-lock"></i> System</span><?php endif; ?>
+                        <tr class="group-row" data-search="<?php echo strtolower(htmlspecialchars($g['name'])); ?>">
+                            <td class="group-td" data-label="Group">
+                                <div class="group-cell">
+                                    <div class="group-icon"><i class="fa fa-shield"></i></div>
+                                    <div>
+                                        <div class="group-name">
+                                            <?php echo htmlspecialchars($g['name']); ?>
+                                            <?php if ($is_admin_group): ?><span class="badge-system"><i class="fa fa-lock"></i> System</span><?php endif; ?>
+                                        </div>
+                                        <div class="group-sub">Group ID #<?php echo (int)$g['user_group_id']; ?></div>
                                     </div>
-                                    <div class="group-sub">Group ID #<?php echo (int)$g['user_group_id']; ?></div>
                                 </div>
-                            </div>
-                        </td>
-                        <td data-label="Access">
-                            <div class="perm-bar-wrap">
-                                <div class="perm-bar"><div class="perm-bar-fill" style="width:<?php echo $pct; ?>%;"></div></div>
-                                <div class="perm-bar-txt"><?php echo $access_ct; ?>/<?php echo $mod_ct; ?></div>
-                            </div>
-                        </td>
-                        <td data-label="">
-                            <div class="row-actions">
-                                <a href="admin/userGroup.php?action=form&user_group_id=<?php echo (int)$g['user_group_id']; ?>" class="icon-btn" title="Edit"><i class="fa fa-pencil"></i></a>
-                                <?php if ($is_admin_group): ?>
-                                    <span class="icon-btn locked" title="System group can't be deleted"><i class="fa fa-trash-o"></i></span>
-                                <?php else: ?>
-                                    <a href="admin/userGroup.php?action=delete&user_group_id=<?php echo (int)$g['user_group_id']; ?>"
-                                       class="icon-btn danger" title="Delete"
-                                       onclick="return confirm('Delete this group? This cannot be undone.');">
-                                        <i class="fa fa-trash-o"></i>
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                            <td data-label="Access">
+                                <div class="perm-bar-wrap">
+                                    <div class="perm-bar">
+                                        <div class="perm-bar-fill" style="width:<?php echo $pct; ?>%;"></div>
+                                    </div>
+                                    <div class="perm-bar-txt"><?php echo $access_ct; ?>/<?php echo $mod_ct; ?></div>
+                                </div>
+                            </td>
+                            <td data-label="">
+                                <div class="row-actions">
+                                    <a href="admin/userGroup.php?action=form&user_group_id=<?php echo (int)$g['user_group_id']; ?>" class="icon-btn" title="Edit"><i class="fa fa-pencil"></i></a>
+                                    <?php if ($is_admin_group): ?>
+                                        <span class="icon-btn locked" title="System group can't be deleted"><i class="fa fa-trash-o"></i></span>
+                                    <?php else: ?>
+                                        <a href="admin/userGroup.php?action=delete&user_group_id=<?php echo (int)$g['user_group_id']; ?>"
+                                            class="icon-btn danger" title="Delete"
+                                            onclick="return confirm('Delete this group? This cannot be undone.');">
+                                            <i class="fa fa-trash-o"></i>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
@@ -462,17 +457,17 @@ $design->openDiv("leftArea");
         </div>
 
         <script>
-        function filterGroups(){
-            var q = document.getElementById('searchInput').value.toLowerCase();
-            var rows = document.querySelectorAll('.group-row');
-            var visible = 0;
-            rows.forEach(function(r){
-                var match = r.getAttribute('data-search').indexOf(q) !== -1;
-                r.style.display = match ? '' : 'none';
-                if (match) visible++;
-            });
-            document.getElementById('emptyState').style.display = (visible === 0 && rows.length > 0) ? 'block' : 'none';
-        }
+            function filterGroups() {
+                var q = document.getElementById('searchInput').value.toLowerCase();
+                var rows = document.querySelectorAll('.group-row');
+                var visible = 0;
+                rows.forEach(function(r) {
+                    var match = r.getAttribute('data-search').indexOf(q) !== -1;
+                    r.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                document.getElementById('emptyState').style.display = (visible === 0 && rows.length > 0) ? 'block' : 'none';
+            }
         </script>
 
     <?php else: ?>
@@ -487,70 +482,75 @@ $design->openDiv("leftArea");
         </div>
 
         <form method="post" action="admin/userGroup.php?action=form" id="form-group">
-        <?php if ($edit_group && !empty($edit_group['user_group_id'])): ?>
-            <input type="hidden" name="user_group_id" value="<?php echo (int)$edit_group['user_group_id']; ?>">
-        <?php endif; ?>
-        <div class="form-card">
+            <?php if ($edit_group && !empty($edit_group['user_group_id'])): ?>
+                <input type="hidden" name="user_group_id" value="<?php echo (int)$edit_group['user_group_id']; ?>">
+            <?php endif; ?>
+            <div class="form-card">
 
-            <div class="form-section">
-                <h3 class="section-title">Group Name</h3>
-                <p class="section-desc">A short, recognisable name for this role.</p>
-                <div class="field">
-                    <label>Group Name <span class="req">*</span></label>
-                    <input type="text" name="name" placeholder="e.g. Manager" value="<?php echo htmlspecialchars($edit_group['name'] ?? ''); ?>">
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h3 class="section-title">Module Permissions</h3>
-                <p class="section-desc">Access lets a user view the module. Modify lets them add, edit or delete records within it.</p>
-
-                <div class="perm-toolbar">
-                    <button type="button" onclick="toggleAll('access', true)">Select all Access</button>
-                    <button type="button" onclick="toggleAll('modify', true)">Select all Modify</button>
-                    <button type="button" onclick="clearAll()">Clear all</button>
+                <div class="form-section">
+                    <h3 class="section-title">Group Name</h3>
+                    <p class="section-desc">A short, recognisable name for this role.</p>
+                    <div class="field">
+                        <label>Group Name <span class="req">*</span></label>
+                        <input type="text" name="name" placeholder="e.g. Manager" value="<?php echo htmlspecialchars($edit_group['name'] ?? ''); ?>">
+                    </div>
                 </div>
 
-                <table class="perm-table">
-                    <thead>
-                        <tr>
-                            <th>Module</th>
-                            <th class="center">Access</th>
-                            <th class="center">Modify</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($modules as $key => $label): ?>
-                        <tr>
-                            <td class="module-name"><?php echo htmlspecialchars($label); ?></td>
-                            <td class="center">
-                                <input type="checkbox" class="perm-check perm-access" name="access[]" value="<?php echo $key; ?>"
-                                    <?php echo hasAccess($edit_group, $key) ? 'checked' : ''; ?>>
-                            </td>
-                            <td class="center">
-                                <input type="checkbox" class="perm-check perm-modify" name="modify[]" value="<?php echo $key; ?>"
-                                    <?php echo hasModify($edit_group, $key) ? 'checked' : ''; ?>>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                <div class="form-section">
+                    <h3 class="section-title">Module Permissions</h3>
+                    <p class="section-desc">Access lets a user view the module. Modify lets them add, edit or delete records within it.</p>
 
-            <div class="form-footer">
-                <a href="admin/userGroup.php" class="btn btn-ghost">Cancel</a>
-                <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save Group</button>
+                    <div class="perm-toolbar">
+                        <button type="button" onclick="toggleAll('access', true)">Select all Access</button>
+                        <button type="button" onclick="toggleAll('modify', true)">Select all Modify</button>
+                        <button type="button" onclick="clearAll()">Clear all</button>
+                    </div>
+
+                    <table class="perm-table">
+                        <thead>
+                            <tr>
+                                <th>Module</th>
+                                <th class="center">Access</th>
+                                <th class="center">Modify</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($modules as $key => $label): ?>
+                                <tr>
+                                    <td class="module-name"><?php echo htmlspecialchars($label); ?></td>
+                                    <td class="center">
+                                        <input type="checkbox" class="perm-check perm-access" name="access[]" value="<?php echo $key; ?>"
+                                            <?php echo hasAccess($edit_group, $key) ? 'checked' : ''; ?>>
+                                    </td>
+                                    <td class="center">
+                                        <input type="checkbox" class="perm-check perm-modify" name="modify[]" value="<?php echo $key; ?>"
+                                            <?php echo hasModify($edit_group, $key) ? 'checked' : ''; ?>>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-footer">
+                    <a href="admin/userGroup.php" class="btn btn-ghost">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save Group</button>
+                </div>
             </div>
-        </div>
         </form>
 
         <script>
-        function toggleAll(type, state){
-            document.querySelectorAll('.perm-' + type).forEach(function(c){ c.checked = state; });
-        }
-        function clearAll(){
-            document.querySelectorAll('.perm-check').forEach(function(c){ c.checked = false; });
-        }
+            function toggleAll(type, state) {
+                document.querySelectorAll('.perm-' + type).forEach(function(c) {
+                    c.checked = state;
+                });
+            }
+
+            function clearAll() {
+                document.querySelectorAll('.perm-check').forEach(function(c) {
+                    c.checked = false;
+                });
+            }
         </script>
 
     <?php endif; ?>
