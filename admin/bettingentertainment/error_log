@@ -1,0 +1,106 @@
+[15-Jan-2021 17:19:02 Asia/Kolkata] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[15-Jan-2021 17:19:02 Asia/Kolkata] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/lib/design-white.class.php(403): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/overview.php(10): Design->writeLogoTickerMenu()
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[24-Jan-2021 07:37:47 UTC] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[24-Jan-2021 07:37:47 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/beginnersGuide.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[07-Mar-2021 14:11:50 Asia/Kolkata] PHP Warning:  mysqli::__construct(): (08004/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[07-Mar-2021 14:11:50 Asia/Kolkata] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/lib/design-white.class.php(403): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/bettingPools.php(7): Design->writeLogoTickerMenu()
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[07-Mar-2021 08:42:04 UTC] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[07-Mar-2021 08:42:04 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/offcourseBettingCentres.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[07-Mar-2021 14:12:06 Asia/Kolkata] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[07-Mar-2021 14:12:06 Asia/Kolkata] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/lib/design-white.class.php(403): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/bettingChannels.php(7): Design->writeLogoTickerMenu()
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[07-Mar-2021 14:12:19 Asia/Kolkata] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[07-Mar-2021 14:12:19 Asia/Kolkata] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/lib/design-white.class.php(403): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/bettingChannels.php(7): Design->writeLogoTickerMenu()
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[07-Mar-2021 08:44:46 UTC] PHP Warning:  mysqli::__construct(): (08004/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[07-Mar-2021 08:44:46 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/overview.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[07-Mar-2021 08:45:17 UTC] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[07-Mar-2021 08:45:17 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/bettingChannels.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[07-Mar-2021 11:20:48 UTC] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[07-Mar-2021 11:20:48 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/deductionNorms.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[07-Mar-2021 12:03:26 UTC] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[07-Mar-2021 12:03:26 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/beginnersGuide.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[07-Mar-2021 12:11:46 UTC] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[07-Mar-2021 12:11:46 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/deductionNorms.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[21-Mar-2021 11:13:53 UTC] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[21-Mar-2021 11:13:53 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/overview.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[21-Mar-2021 16:43:57 Asia/Kolkata] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[21-Mar-2021 16:43:57 Asia/Kolkata] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/lib/design-white.class.php(827): dbTool->__construct()
+#1 /home/karan/public_html/lib/design-white.class.php(660): Design->rightSponsor()
+#2 /home/karan/public_html/bettingentertainment/overview.php(46): Design->rightArea()
+#3 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[21-Mar-2021 11:14:18 UTC] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[21-Mar-2021 11:14:18 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/bettingChannels.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
+[04-Apr-2021 10:40:33 UTC] PHP Warning:  mysqli::__construct(): (HY000/1040): Too many connections in /home/karan/public_html/lib/dbTools.php on line 19
+[04-Apr-2021 10:40:33 UTC] PHP Fatal error:  Uncaught Exception: 63 in /home/karan/public_html/lib/dbTools.php:22
+Stack trace:
+#0 /home/karan/public_html/bootstrap.php(15): dbTool->__construct()
+#1 /home/karan/public_html/bettingentertainment/bettingPools.php(2): include_once('/home/karan/pub...')
+#2 {main}
+  thrown in /home/karan/public_html/lib/dbTools.php on line 22
