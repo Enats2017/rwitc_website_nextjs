@@ -1303,6 +1303,39 @@ $isSuperAdmin = (
     isset($_SESSION['role']) &&
     strtoupper((string)$_SESSION['role']) === 'ADMIN'
 );
+
+$usersMenuHtml = '';
+if ($isSuperAdmin) {
+    $usersMenuHtml = '
+    <li class="sidebar-user-dropdown" id="navUsers">
+
+        <a href="#" onclick="toggleSidebarUsers(event);">
+            <i class="fas fa-users"></i>
+            Users
+            <i class="fas fa-chevron-down sidebar-user-arrow"></i>
+        </a>
+
+        <ul id="sidebarUsersMenu" class="sidebar-submenu">
+
+            <li>
+                <a href="admin/users.php">
+                    <i class="fas fa-user"></i>
+                    Users
+                </a>
+            </li>
+
+            <li>
+                <a href="admin/userGroup.php">
+                    <i class="fas fa-user-group"></i>
+                    User Group
+                </a>
+            </li>
+
+        </ul>
+
+    </li>';
+}
+
         echo <<< LEFTPANEL
 
         <style type="text/css">
@@ -1438,35 +1471,7 @@ function toggleSidebarUsers(event) {
                 <li class="active" id="navDashboard">
                     <a href="admin/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
-                <?php if ($isSuperAdmin) { ?>
-    <li class="sidebar-user-dropdown" id="navUsers">
-
-        <a href="#" onclick="toggleSidebarUsers(event);">
-            <i class="fas fa-users"></i>
-            Users
-            <i class="fas fa-chevron-down sidebar-user-arrow"></i>
-        </a>
-
-        <ul id="sidebarUsersMenu" class="sidebar-submenu">
-
-            <li>
-                <a href="admin/users.php">
-                    <i class="fas fa-user"></i>
-                    Users
-                </a>
-            </li>
-
-            <li>
-                <a href="admin/userGroup.php">
-                    <i class="fas fa-user-group"></i>
-                    User Group
-                </a>
-            </li>
-
-        </ul>
-
-    </li>
-<?php } ?>
+                {$usersMenuHtml}
                 <li id="navAllModules">
                     <a href="#"><i class="fas fa-th-large"></i> All Modules</a>
                 </li>
@@ -2170,4 +2175,4 @@ RIGHT_FOOTER;
 
 FOOTER;
     }
-} // class end 
+} // class end
