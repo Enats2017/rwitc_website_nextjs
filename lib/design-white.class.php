@@ -1033,7 +1033,7 @@ TICKER;
         <!-- Fixed navbar -->
 
         
-        <div class="navbar navbar-inverse" style="background: #0b3d24;" >
+        <div class="navbar navbar-inverse" style="display: none !important;" >
 
             <div class="navbar-header">
 
@@ -1296,7 +1296,13 @@ MENU;
         $sessionUser = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'ADMIN';
         $shareUrl = 'https://' . $_SERVER['HTTP_HOST'] . '' . $_SERVER['REQUEST_URI'];
         $shareTitle = 'Royal Western India Turf Club (RWITC)';
-
+// Super Admin check - same logic as top User menu
+$isSuperAdmin = (
+    isset($_SESSION['uid']) &&
+    (int)$_SESSION['uid'] === 19 &&
+    isset($_SESSION['role']) &&
+    strtoupper((string)$_SESSION['role']) === 'ADMIN'
+);
         echo <<< LEFTPANEL
 
         <style type="text/css">
@@ -1343,8 +1349,73 @@ MENU;
         #shareDropdown.show { display: flex !important; }
         #shareDropdown { padding-bottom: 18px !important; margin-bottom: -10px !important; }
         #shareDropdown a { margin-bottom: 8px; }
-        </style>
+        #rightArea .sidebar-user-dropdown {
+    position: relative;
+}
 
+#rightArea .sidebar-user-dropdown > a {
+    cursor: pointer;
+}
+
+#rightArea .sidebar-user-arrow {
+    margin-left: auto;
+    font-size: 11px;
+    transition: transform 0.2s ease;
+}
+
+#rightArea .sidebar-user-dropdown.open .sidebar-user-arrow {
+    transform: rotate(180deg);
+}
+
+#rightArea .sidebar-submenu {
+    display: none;
+    list-style: none;
+    margin: 0 0 6px 0;
+    padding: 0 0 0 28px;
+}
+
+#rightArea .sidebar-user-dropdown.open .sidebar-submenu {
+    display: block;
+}
+
+#rightArea .sidebar-submenu li {
+    margin: 0;
+}
+
+#rightArea .sidebar-submenu li a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 7px;
+    color: #2b332f;
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+#rightArea .sidebar-submenu li a i {
+    width: 16px;
+    text-align: center;
+    color: #0f5c33;
+}
+
+#rightArea .sidebar-submenu li a:hover {
+    background: #e6f4ec;
+    color: #0f5c33;
+}
+        </style>
+<script>
+function toggleSidebarUsers(event) {
+    event.preventDefault();
+
+    const dropdown = document.getElementById('navUsers');
+
+    if (dropdown) {
+        dropdown.classList.toggle('open');
+    }
+}
+</script>
                 <div id="rightArea" class="col-lg-3">
 
             <div class="profile-card">
@@ -1367,6 +1438,35 @@ MENU;
                 <li class="active" id="navDashboard">
                     <a href="admin/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
+                <?php if ($isSuperAdmin) { ?>
+    <li class="sidebar-user-dropdown" id="navUsers">
+
+        <a href="#" onclick="toggleSidebarUsers(event);">
+            <i class="fas fa-users"></i>
+            Users
+            <i class="fas fa-chevron-down sidebar-user-arrow"></i>
+        </a>
+
+        <ul id="sidebarUsersMenu" class="sidebar-submenu">
+
+            <li>
+                <a href="admin/users.php">
+                    <i class="fas fa-user"></i>
+                    Users
+                </a>
+            </li>
+
+            <li>
+                <a href="admin/userGroup.php">
+                    <i class="fas fa-user-group"></i>
+                    User Group
+                </a>
+            </li>
+
+        </ul>
+
+    </li>
+<?php } ?>
                 <li id="navAllModules">
                     <a href="#"><i class="fas fa-th-large"></i> All Modules</a>
                 </li>

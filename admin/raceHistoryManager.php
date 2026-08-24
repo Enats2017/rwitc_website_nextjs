@@ -128,6 +128,48 @@
   $design->openDiv("infoWrapper");
   $design->openDiv("leftArea");
 ?>
+
+<style type="text/css">
+#leftArea { max-width: 1500px; margin: 30px auto; padding: 0 30px; box-sizing: border-box; float: none; width: auto; display: block; }
+.message { background: #fff3cd; border: 1px solid #ffe08a; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; }
+
+.races-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.add-race-btn { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #1a7a45; color: #0f5c33; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
+.add-race-btn:hover { background: #e6f4ec; }
+.header-links { display: flex; align-items: center; gap: 16px; }
+.header-links a { color: #0f5c33; text-decoration: none; font-weight: 600; font-size: 14px; }
+.header-links a:hover { text-decoration: underline; }
+
+.race-form-wrap { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+.race-form-wrap .contentTable { width: 100%; }
+.race-form-wrap .contentTable th { text-align: left; padding: 10px 8px; color: #2b332f; vertical-align: top; }
+.race-form-wrap .contentTable td { padding: 10px 8px; }
+.race-form-wrap input[type="text"] { border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px; }
+.race-form-wrap input[type="submit"], .race-form-wrap input[type="reset"] { background: #0f5c33; color: #fff; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 8px; }
+.race-form-wrap input[type="reset"] { background: #fff; color: #2b332f; border: 1px solid #e2e6e4; }
+
+.races-table-wrap { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.03); margin-bottom: 24px; }
+table.races-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+table.races-table th { background: #0b3d24; color: #fff; text-align: left; padding: 14px 20px; font-weight: 600; font-size: 13.5px; letter-spacing: 0.3px; }
+table.races-table th.action-col { text-align: right; width: 140px; }
+table.races-table td { padding: 14px 20px; border-bottom: 1px solid #eef0ee; color: #2b332f; }
+table.races-table tr:last-child td { border-bottom: none; }
+table.races-table tr:nth-child(even) td { background: #f7faf8; }
+table.races-table tr:hover td { background: #e6f4ec; }
+table.races-table td.action-col { text-align: right; white-space: nowrap; }
+table.races-table td.action-col a { font-size: 13.5px; text-decoration: none; font-weight: 500; margin-left: 14px; }
+table.races-table td.action-col a.edit-link { color: #0f5c33; }
+table.races-table td.action-col a.delete-link { color: #c0392b; }
+.races-empty { padding: 30px 20px; text-align: center; color: #7a8c84; font-size: 14.5px; }
+
+@media (max-width: 700px) {
+    #leftArea { padding: 0 16px; }
+    .races-header { flex-direction: column; align-items: flex-start; }
+    table.races-table th, table.races-table td { padding: 10px 12px; font-size: 13.5px; }
+    table.races-table td.action-col a { margin-left: 10px; }
+}
+</style>
+
     <?php if (!empty($msg)) {?>
         <div class="message">
             <?php echo $msg; ?>
@@ -139,16 +181,16 @@
         </div>
     <?php } ?>    
     <?php if ($_SESSION['race_history'] == "Y") { ?>
-        <div class="submenu">
-          <a href="admin/raceHistoryManager.php?q=new-race">Add New Race</a>
-           <div style="float:right;">
-                    <a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-                    <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
-                  </div>
+        <div class="races-header">
+          <a class="add-race-btn" href="admin/raceHistoryManager.php?q=new-race"><i class="fas fa-plus"></i> Add New Race</a>
+          <div class="header-links">
+                <a href="admin/dashboard.php">Dashboard</a>
+                <a href="admin/adminlogin.php?q=logout">Logout</a>
+           </div>
         </div>
-          <br />
           
           <?php if ($q=="new-race" || $q=="edit-race") { ?>              
+           <div class="race-form-wrap">
            <form name="articleForm" method="post" action="admin/raceHistoryManager.php">
             <table class="contentTable">
                 <col width="20%"><col width="80%">
@@ -174,6 +216,7 @@
                 </tr>
             </table>
             </form>
+           </div>
 			<script>
               CKEDITOR.replace('message', {
                 skin: 'moono',
@@ -194,26 +237,30 @@
 		</script>
            
           <?php } ?>
-            <br />
-            <hr />
-            <br />
-          <br />
-          <table class="contentTable">
+
+          <div class="races-table-wrap">
+          <table class="races-table">
             <tr>
                 <th>Title</th>                
-                <th>Action</th>                    
+                <th class="action-col">Action</th>                    
             </tr>
-            <?php foreach ($allRaces as $raceInfo) { ?>
+            <?php if (count($allRaces) > 0) { ?>
+                <?php foreach ($allRaces as $raceInfo) { ?>
+                    <tr>
+                        <td><?php echo $raceInfo['title']; ?></td>                    
+                        <td class="action-col">
+                            <a class="edit-link" href="admin/raceHistoryManager.php?id=<?php echo $raceInfo['id'];?>&q=edit-race"><i class="fas fa-edit"></i> Edit</a>
+                            <a class="delete-link" href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $raceInfo['id']; ?>);"><i class="fas fa-trash-alt"></i> Delete</a>
+                        </td>
+                    </tr>
+                <?php } ?>
+            <?php } else { ?>
                 <tr>
-                    <td><?php echo $raceInfo['title']; ?></td>                    
-                    <td>
-                        <a href="admin/raceHistoryManager.php?id=<?php echo $raceInfo['id'];?>&q=edit-race">Edit</a>
-                        <a href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $raceInfo['id']; ?>);" >Delete</a>
-                    </td>
+                    <td colspan="2" class="races-empty">No races added yet.</td>
                 </tr>
             <?php } ?>
           </table>
-          <br />     
+          </div>
     <?php }  ?>
 <?php                   
   $design->closeDiv();
