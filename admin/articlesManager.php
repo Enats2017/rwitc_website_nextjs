@@ -345,7 +345,9 @@ $design->openDiv("leftArea",'col-lg-9');
     color: #fff;
     font-weight: 700;
 }
+
 /* the "..." separator li should look like plain text, no box */
+
 .pagination-wrap ul.pagination li.dots {
     border: none;
     background: transparent;
@@ -367,6 +369,10 @@ $design->openDiv("leftArea",'col-lg-9');
     color: #b7c0bb;
     background: #f5f4ee;
 }
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 
 /* ================= Responsive ================= */
 @media (max-width: 1100px) {
@@ -393,7 +399,9 @@ $design->openDiv("leftArea",'col-lg-9');
     .article-form-wrap .contentTable td {
         display: block;
         width: 100% !important;
+
     }
+
     .article-form-wrap .contentTable th { padding-bottom: 2px; }
     .article-form-wrap .contentTable td { padding-top: 0; padding-bottom: 14px; }
     .article-form-wrap .contentTable col { width: auto !important; }
@@ -402,7 +410,9 @@ $design->openDiv("leftArea",'col-lg-9');
     .article-actions { justify-content: space-between; }
     .article-actions a { font-size: 13px; }
     .pagination-wrap ul.pagination li { min-width: 34px; height: 34px; padding: 0 10px; font-size: 13px; }
+
 }
+
 @media (max-width: 380px) {
     .articles-grid { gap: 10px; }
     .article-card { padding: 12px; }

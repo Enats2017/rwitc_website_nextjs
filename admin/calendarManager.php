@@ -190,20 +190,55 @@ $design->js="
 $design->css ="
 	<link rel='stylesheet' type='text/css' href='css/fullcalendar.css' />
 	<link type='text/css' href='css/jquery.ui.all.css' rel='stylesheet' />
+	<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'>
   	<style type='text/css'>
+  		#infoWrapper.col-lg-12 {
+			display: flex;
+			flex-direction: row-reverse;
+			align-items: flex-start;
+			max-width: 1500px;
+			margin: 30px auto;
+			float: none;
+		}
+		#leftArea.col-lg-9 {
+			flex: 1 1 auto;
+			min-width: 0;
+			max-width: none;
+			margin: 0;
+			padding: 0 30px;
+			box-sizing: border-box;
+			float: none;
+			width: auto;
+			display: block;
+		}
+		.message { background: #fff3cd; border: 1px solid #ffe08a; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; }
+
+		.calendar-header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 20px; }
+		.header-links { display: flex; align-items: center; gap: 16px; }
+		.header-links a { color: #0f5c33; text-decoration: none; font-weight: 600; font-size: 14px; }
+		.header-links a:hover { text-decoration: underline; }
+
+		.calendar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+		.calendar-card h2 { color: #2b332f; font-size: 22px; margin: 0 0 4px 0; }
+		.calendar-card a.control { color: #0f5c33 !important; font-weight: 600; text-decoration: none; }
+		.calendar-card a.control:hover { text-decoration: underline; }
+		.calendar-card select { border: 1px solid #e2e6e4; border-radius: 6px; padding: 6px 10px; color: #0f5c33 !important; font-size: 14px; }
+		.calendar-card input[type='submit'] { background: #0f5c33; color: #fff; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+		.calendar-card input[type='submit']:hover { background: #0c4a29; }
+
   		/* calendar */
-		table.calendar		{ border-left:1px solid #fc0606; }
+table.calendar		{ border-left:1px solid #e2e6e4; border-collapse: collapse; width: 100%; min-width: 900px; margin-top: 16px; display: block; overflow-x: auto; max-width: 100%; }
 		tr.calendar-row	{  }
 		td.calendar-day	{ min-height:80px; font-size:11px; position:relative; } * html div.calendar-day { height:80px; }
-		td.calendar-day:hover	{ background:#fc0606; }
-		td.calendar-day-np	{ background:#eee; min-height:80px; } * html div.calendar-day-np { height:80px; }
-		td.calendar-day-head { background:#fc0606; font-weight:bold; text-align:center; width:120px; padding:5px; border-bottom:1px solid #999; border-top:1px solid #999; border-right:1px solid #999; }
-		div.day-number		{ background:#fc0606; padding:5px; color:#fff; font-weight:bold; float:right; margin:-5px -5px 0 0; width:20px; text-align:center; }
+		td.calendar-day:hover	{ background:#e6f4ec; }
+		td.calendar-day-np	{ background:#f5f4ee; min-height:80px; } * html div.calendar-day-np { height:80px; }
+		td.calendar-day-head { background:#0f5c33; color:#fff; font-weight:bold; text-align:center; width:120px; padding:8px; border-bottom:1px solid #0f5c33; border-top:1px solid #0f5c33; border-right:1px solid #0c4a29; }
+		div.day-number		{ background:#0f5c33; padding:5px; color:#fff; font-weight:bold; float:right; margin:-5px -5px 0 0; width:20px; text-align:center; }
 		/* shared */
-		td.calendar-day, td.calendar-day-np { width:170px; padding:5px; border-bottom:1px solid #fc0606; border-right:1px solid #999; }
+		td.calendar-day, td.calendar-day-np { width:170px; padding:5px; border-bottom:1px solid #0f5c33; border-right:1px solid #e2e6e4; }
 
 		div.day-number	 { 
-			background:#fc0606; 
+			background:#0f5c33; 
 			position:absolute; 
 			z-index:2; 
 			top:-5px; 
@@ -213,19 +248,20 @@ $design->css ="
 			font-weight:bold; 
 			width:20px; 
 			text-align:center; 
+			border-radius: 4px;
 		}
 
 
 		.selected1{
-			color : red;
+			color : #c0392b;
 		}
 
 
 		td.calendar-day, td.calendar-day-np { 
 			width:170px; 
 			padding:5px 25px 110px 5px; 
-			border-bottom:1px solid #999; 
-			border-right:1px solid #999; 
+			border-bottom:1px solid #e2e6e4; 
+			border-right:1px solid #e2e6e4; 
 		}
 
 		.cpadd {
@@ -233,6 +269,16 @@ $design->css ="
 			padding-top: 11px;
 			padding-bottom: 15px;
 		}
+
+		/* table.calendar already handles its own horizontal scroll above, no separate media rule needed */
+
+		@media (max-width: 700px) {
+			#leftArea.col-lg-9 { padding: 0 16px; }
+			.calendar-card { padding: 16px; }
+		}
+
+			html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 	</style>    
 ";
 $design->jqueryJs = "
@@ -255,8 +301,8 @@ $design->jqueryJs = "
 $design->startPage("$pageTitle");  
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper");
-$design->openDiv("leftArea");
+$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("leftArea",'col-lg-9');
 //echo $msg;
 ?>  
 <?php 
@@ -271,24 +317,25 @@ $design->openDiv("leftArea");
 		</div>
 	<?php } ?>    
 	<?php if ($_SESSION['calendar'] == "Y") { ?>
-		<div class="submenu">  
-			<div style="float:right;">
-				<a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-				<a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
+		<div class="calendar-header">
+			<div class="header-links">
+				<!-- <a href="admin/dashboard.php">Dashboard</a>
+				<a href="admin/adminlogin.php?q=logout">Logout</a> -->
 			</div>
 		</div>
-		<br />   
 		<?php //if ($q=="new-calendar" || $q=="edit-calendar") { ?>              
 			<form name="calendarForm" method="post" action="admin/calendarManager.php">
-				<?php echo $html; ?>
+				<div class="calendar-card">
+					<?php echo $html; ?>
+				</div>
 				<!-- <div id='calendar'></div> -->
 			</form>
 		<?php //} ?>
 	<?php } ?>            
 <?php                   
 	$design->closeDiv();
-  	//$design->rightArea();  
- 	//$design->closeDiv();
+  	$design->writeLeftPanel();
+  	$design->closeDiv();
   	$design->closeDiv();
 	$design->pageClose();
 	$design = NULL; // release object

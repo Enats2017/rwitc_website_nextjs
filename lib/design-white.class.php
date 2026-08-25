@@ -1473,8 +1473,8 @@ function toggleSidebarUsers(event) {
                 </li>
                 {$usersMenuHtml}
                 <li id="navAllModules">
-                    <a href="#"><i class="fas fa-th-large"></i> All Modules</a>
-                </li>
+    <a href="admin/allModules.php"><i class="fas fa-th-large"></i> All Modules</a>
+</li>
                 <li><a href="#"><i class="fas fa-chart-bar"></i> Reports</a></li>
                 <li><a href="#"><i class="fas fa-history"></i> Activity Log</a></li>
                 <li><a href="#"><i class="fas fa-cog"></i> System Settings</a></li>
