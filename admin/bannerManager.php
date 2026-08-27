@@ -336,6 +336,8 @@ $design->js='
 
 <script type="text/javascript" src="lib/ckeditor/ckeditor.js"></script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 <script type="text/javascript">
 
     function confirmDelete(bannerID) {
@@ -370,11 +372,108 @@ $design->writeLogoTickerMenu();
 
 $design->openDiv("contentWrapper");
 
-$design->openDiv("infoWrapper");
+$design->openDiv("infoWrapper","col-lg-12");
 
-$design->openDiv("leftArea");
+$design->openDiv("leftArea","col-lg-9");
 
 ?>
+
+<style type="text/css">
+/* ===== layout: leftArea + sidebar, same pattern as the other managers ===== */
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+#infoWrapper.col-lg-12 #rightArea.col-lg-3 { padding-top: 0 !important; }
+
+.message {
+    position: relative;
+    background: #e6f4ec;
+    border: 1px solid #b7ddc5;
+    color: #0f5c33;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14.5px;
+    font-weight: 500;
+}
+
+.banner-header { margin-bottom: 20px; }
+.banner-header h2 { margin: 0; font-size: 22px; color: #2b332f; font-weight: 700; }
+.banner-header p { margin: 4px 0 0; font-size: 13.5px; color: #7a8c84; }
+
+.section-title { font-size: 16px; font-weight: 700; color: #0f5c33; margin: 28px 0 14px; display: flex; align-items: center; gap: 8px; }
+
+/* ===== upload form — normal inline screen card ===== */
+.banner-upload-wrap {
+    background: #fff;
+    border: 1px solid #e2e6e4;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.banner-upload-table { width: 100%; border-collapse: collapse; }
+.banner-upload-table th { text-align: left; padding: 10px 8px; color: #2b332f; vertical-align: top; width: 20%; font-weight: 600; font-size: 13.5px; }
+.banner-upload-table td { padding: 10px 8px; }
+.banner-upload-table input[type="file"] {
+    border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px;
+    width: 100%; max-width: 100%; box-sizing: border-box; background: #f7faf8;
+}
+.banner-upload-table input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 8px; }
+.banner-upload-table input[type="submit"]:hover { background: #0b3d24; }
+.banner-upload-table input[type="reset"] { background: #fff; color: #2b332f; border: 1px solid #e2e6e4; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.banner-upload-table input[type="reset"]:hover { background: #f5f4ee; }
+
+/* ===== banner editor card grid ===== */
+.banner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin-bottom: 20px; }
+.banner-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+.banner-card .thumb-wrap { width: 100%; aspect-ratio: 1 / 1; background: #f5f4ee; overflow: hidden; }
+.banner-card .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.banner-card .banner-card-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.banner-card label { font-size: 12px; font-weight: 700; color: #7a8c84; text-transform: uppercase; letter-spacing: .3px; margin-bottom: -4px; }
+.banner-card input[type="text"] {
+    width: 100%; box-sizing: border-box; border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 13.5px;
+}
+.banner-card .banner-card-actions { display: flex; justify-content: flex-end; border-top: 1px solid #eef0ee; padding-top: 10px; margin-top: auto; }
+.banner-card .banner-card-actions a { font-size: 13px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px; cursor: pointer; color: #c0392b; }
+.banner-empty { grid-column: 1 / -1; text-align: center; padding: 30px 20px; color: #7a8c84; font-size: 14.5px; background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; }
+.banner-save-bar { display: flex; justify-content: flex-end; }
+.banner-save-bar input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.banner-save-bar input[type="submit"]:hover { background: #0b3d24; }
+
+/* ===== responsive ===== */
+@media (max-width: 900px) {
+    #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }
+    #leftArea.col-lg-9 { flex: 1 1 100%; max-width: 100%; padding: 28px 24px; }
+}
+@media (max-width: 700px) {
+    #leftArea.col-lg-9 { padding: 0 16px; }
+    .banner-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+}
+@media (max-width: 520px) {
+    .banner-upload-table, .banner-upload-table tbody, .banner-upload-table tr, .banner-upload-table th, .banner-upload-table td {
+        display: block; width: 100% !important;
+    }
+    .banner-upload-table th { padding-bottom: 2px; }
+    .banner-upload-table td { padding-top: 0; padding-bottom: 14px; }
+    .banner-grid { grid-template-columns: 1fr; }
+}
+</style>
 
 	<?php if (!empty($json['success'])) {?>
 
@@ -396,8 +495,11 @@ $design->openDiv("leftArea");
 
 	<?php } ?>    
 
-	
-
+	<!-- <div class="banner-header">
+		<h2>Banner Manager</h2>
+		<p>Upload homepage banner images and manage their title, link and sort order.</p>
+	</div> -->
+	<!--
 	<div class="submenu">
 
 	  	<a href="admin/bannerManager.php">Banner Manager</a>
@@ -411,12 +513,12 @@ $design->openDiv("leftArea");
 	   	</div>
 
 	</div>
+	-->
 
-	<br />
-
+	<div class="banner-upload-wrap">
 	<form enctype="multipart/form-data" name="bannerimageForm" method="post" action="admin/bannerManager.php">
 
-	  	<table class="contentTable">
+	  	<table class="banner-upload-table">
 
 		  	<col width="20%"><col width="80%">
 
@@ -451,80 +553,54 @@ $design->openDiv("leftArea");
 	  	</table>
 
 	</form>
+	</div>
+
+	<div class="section-title"><i class="fas fa-images"></i> Banner Images</div>
 
 	<form enctype="multipart/form-data" name="bannerForm" method="post" action="admin/bannerManager.php">
 
-	  	<table class="contentTable" style="width: 80%;">
+	  	<div class="banner-grid">
 
-		  	<tr>
-
-			  	<th style="width: 20%;">Image Title</th>
-
-			  	<th style="width: 20%;">Link Href</th>
-
-			  	<th style="width: 25%;">Image</th>
-
-			  	<th style="width: 20%;">Sort Order</th>
-
-			  	<th style="width: 15%;">Action</th>
-
-			</tr>
-
+			<?php if (count($banner_datas) > 0) { ?>
 			<?php foreach($banner_datas as $bkey => $bvalue){ ?>
 
-			  	<tr>
+			  	<div class="banner-card">
+			  		<div class="thumb-wrap">
+			  			<img src="<?php echo HTTP_BANNER_UPLOAD.'/'.$bvalue['source']; ?>" alt="" />
+			  		</div>
+			  		<div class="banner-card-body">
+			  			<label>Image Title</label>
+						<input type="text" name="banner_datas[<?php echo $bkey ?>][title]" value="<?php echo $bvalue['title']; ?>" />
 
-					<td>
+			  			<label>Link Href</label>
+						<input type="text" name="banner_datas[<?php echo $bkey ?>][link]" value="<?php echo $bvalue['link']; ?>" />
 
-						<input style="width: 90%;" type="text" name="banner_datas[<?php echo $bkey ?>][title]" value="<?php echo $bvalue['title']; ?>" />
-
-				  	</td>
-
-				  	<td>
-
-						<input style="width: 90%;" type="text" name="banner_datas[<?php echo $bkey ?>][link]" value="<?php echo $bvalue['link']; ?>" />
-
-				  	</td>
-
-				  	<td>
-
-				  		<img src="<?php echo HTTP_BANNER_UPLOAD.'/'.$bvalue['source']; ?>" style="width: 100px;height: 100px;" />
+			  			<label>Sort Order</label>
+						<input type="text" name="banner_datas[<?php echo $bkey ?>][sort_order]" value="<?php echo $bvalue['sort_order']; ?>" />
 
 						<input type="hidden" name="banner_datas[<?php echo $bkey ?>][source]" value="<?php echo $bvalue['source']; ?>" />
 
 						<input type="hidden" name="banner_datas[<?php echo $bkey ?>][id]" value="<?php echo $bvalue['id']; ?>" />
 
-				  	</td>
-
-				  	<td>
-
-						<input style="width: 90%;" type="text" name="banner_datas[<?php echo $bkey ?>][sort_order]" value="<?php echo $bvalue['sort_order']; ?>" />
-
-				  	</td>
-
-				  	<td>
-
-						<a style="cursor:pointer;" onclick="javascript: confirmDelete(<?php echo $bvalue['id'];?>);">Delete</a>
-
-				  	</td>
-
-			  	</tr>
+						<div class="banner-card-actions">
+							<a onclick="javascript: confirmDelete(<?php echo $bvalue['id'];?>);"><i class="fas fa-trash-alt"></i> Delete</a>
+						</div>
+			  		</div>
+			  	</div>
 
 			<?php } ?>
+			<?php } else { ?>
+				<div class="banner-empty">No banner images uploaded yet.</div>
+			<?php } ?>
 
-			<tr>
+	  	</div>
 
-			  	<td colspan="5">
-
-				  	<input type="submit" name="submit" value="submit" />
-
-				  	<input type="hidden" name="q" value="save-data" />
-
-				</td>
-
-		  	</tr>
-
-	  	</table>
+		<?php if (count($banner_datas) > 0) { ?>
+		<div class="banner-save-bar">
+			<input type="submit" name="submit" value="Save Changes" />
+			<input type="hidden" name="q" value="save-data" />
+		</div>
+		<?php } ?>
 
 	</form>
 
@@ -532,9 +608,11 @@ $design->openDiv("leftArea");
 
   $design->closeDiv();
 
-  //$design->rightArea();  
+  $design->writeLeftPanel();
 
-  //$design->closeDiv();
+  $design->closeDiv();
+
+  $design->closeDiv();
 
   $design->endPage();
 

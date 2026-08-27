@@ -26,14 +26,14 @@ $userObj = new Users($db);
  $articles = new Articles($db);
 if (isAdminlogin()) {
     if ($_SESSION['workingManager'] == "Y") { // check login
-        if (get_magic_quotes_gpc()) {
-            function stripslashes_deep($value) {
-                $value = is_array($value) ?   array_map('stripslashes_deep', $value) : stripslashes($value);
-                return $value;
-            }
-            $_POST = array_map('stripslashes_deep', $_POST);
-            $_REQUEST = array_map('stripslashes_deep', $_REQUEST);
-        }
+        // if (get_magic_quotes_gpc()) {
+        //     function stripslashes_deep($value) {
+        //         $value = is_array($value) ?   array_map('stripslashes_deep', $value) : stripslashes($value);
+        //         return $value;
+        //     }
+        //     $_POST = array_map('stripslashes_deep', $_POST);
+        //     $_REQUEST = array_map('stripslashes_deep', $_REQUEST);
+        // }
         
           $json = array();
           $json['success'] = '';
@@ -102,6 +102,7 @@ $design = new Design();
 
 $design->js='
 <script type="text/javascript" src="lib/ckeditor/ckeditor.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 ';
 $design->css ='
 <style type="text/css">
@@ -112,9 +113,96 @@ $design->jqueryJs = "";
 $design->startPage("$pageTitle");  
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper");
-$design->openDiv("leftArea");
+$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("leftArea","col-lg-9");
 ?>
+
+<style type="text/css">
+/* ===== layout: leftArea + sidebar, same pattern as the other managers ===== */
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+#infoWrapper.col-lg-12 #rightArea.col-lg-3 { padding-top: 0 !important; }
+
+.message {
+    position: relative;
+    background: #e6f4ec;
+    border: 1px solid #b7ddc5;
+    color: #0f5c33;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14.5px;
+    font-weight: 500;
+}
+
+.working-header { margin-bottom: 20px; }
+.working-header h2 { margin: 0; font-size: 22px; color: #2b332f; font-weight: 700; }
+.working-header p { margin: 4px 0 0; font-size: 13.5px; color: #7a8c84; }
+
+/* ===== upload form — normal inline screen card ===== */
+.working-form-wrap {
+    background: #fff;
+    border: 1px solid #e2e6e4;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.working-form-table { width: 100%; border-collapse: collapse; }
+.working-form-table th { text-align: left; padding: 10px 8px; color: #2b332f; vertical-align: top; width: 20%; font-weight: 600; font-size: 13.5px; }
+.working-form-table td { padding: 10px 8px; }
+.working-form-table input[type="file"] {
+    border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px;
+    width: 100%; max-width: 100%; box-sizing: border-box; background: #f7faf8;
+}
+.working-form-table input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 8px; }
+.working-form-table input[type="submit"]:hover { background: #0b3d24; }
+.working-form-table input[type="reset"] { background: #fff; color: #2b332f; border: 1px solid #e2e6e4; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 8px; }
+.working-form-table input[type="reset"]:hover { background: #f5f4ee; }
+.working-form-table a.button {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #1a7a45; color: #0f5c33 !important;
+    padding: 9px 16px !important; border-radius: 6px; text-decoration: none !important;
+    font-size: 14px; font-weight: 600;
+}
+.working-form-table a.button:hover { background: #e6f4ec; }
+
+/* ===== responsive ===== */
+@media (max-width: 900px) {
+    #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }
+    #leftArea.col-lg-9 { flex: 1 1 100%; max-width: 100%; padding: 28px 24px; }
+}
+@media (max-width: 700px) {
+    #leftArea.col-lg-9 { padding: 0 16px; }
+}
+@media (max-width: 520px) {
+    .working-form-table, .working-form-table tbody, .working-form-table tr, .working-form-table th, .working-form-table td {
+        display: block; width: 100% !important;
+    }
+    .working-form-table th { padding-bottom: 2px; }
+    .working-form-table td { padding-top: 0; padding-bottom: 14px; }
+    .working-form-table input[type="submit"],
+    .working-form-table input[type="reset"],
+    .working-form-table a.button { margin-bottom: 8px; }
+}
+</style>
+
     <?php if (!empty($json['success'])) {?>
         <div class="message">
             <?php echo $json['success']; ?>
@@ -126,6 +214,11 @@ $design->openDiv("leftArea");
         </div>
     <?php } ?>    
     
+    <!-- <div class="working-header">
+        <h2>Working Group Manager</h2>
+        <p>Upload the Working Group HTML file used on the club website.</p>
+    </div> -->
+    <!--
     <div class="submenu">
       <a href="admin/workingManager.php">Working Group Manager</a>
       <div style="float:right;">
@@ -133,9 +226,10 @@ $design->openDiv("leftArea");
             <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
        </div>
     </div>
-    <br />
+    -->
+    <div class="working-form-wrap">
     <form enctype="multipart/form-data" name="articleForm" method="post" action="admin/workingManager.php">
-      <table class="contentTable">
+      <table class="working-form-table">
           <col width="20%"><col width="80%">
           <tr>
               <th>File Upload</th>
@@ -146,16 +240,18 @@ $design->openDiv("leftArea");
           <tr>
               <td colspan="2">
                   <input type="submit" name="submit" value="Upload" />
-                  <a target="_blank" style="padding:3px 6px;-webkit-appearance: button;-moz-appearance: button;appearance: button;text-decoration: none;color: initial;" class="button" href="<?php echo $download_file; ?>">Download File</a>
+                  <a target="_blank" class="button" href="<?php echo $download_file; ?>">Download File</a>
                   <input type="reset" name="reset" value="Clear" onclick="location.href='admin/workingManager.php'" />
               </td>
           </tr>
       </table>
     </form>
+    </div>
 <?php                   
   $design->closeDiv();
-  //$design->rightArea();  
-  //$design->closeDiv();
+  $design->writeLeftPanel();
+  $design->closeDiv();
+  $design->closeDiv();
   $design->endPage();
   //$design->pageClose();    
 $design = NULL; // release object
