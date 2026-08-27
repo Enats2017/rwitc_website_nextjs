@@ -131,6 +131,7 @@ $design->js='
 ';
 $design->css ='
 <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 ';
 $design->jqueryJs = "
     jQuery.browser = {};
@@ -152,9 +153,75 @@ $design->jqueryJs = "
 $design->startPage("$pageTitle");  
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper");
-$design->openDiv("leftArea");
+$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("leftArea",'col-lg-9');
 ?>
+
+<style type="text/css">
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+.message { background: #fff3cd; border: 1px solid #ffe08a; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; }
+
+.articles-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.add-article-btn { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #1a7a45; color: #0f5c33; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
+.add-article-btn:hover { background: #e6f4ec; }
+.header-links { display: flex; align-items: center; gap: 16px; }
+.header-links a { color: #0f5c33; text-decoration: none; font-weight: 600; font-size: 14px; }
+.header-links a:hover { text-decoration: underline; }
+
+.articles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px; }
+.article-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+.article-card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.article-icon { width: 38px; height: 38px; border-radius: 50%; background: #e6f4ec; color: #0f5c33; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.article-info { flex: 1; min-width: 0; }
+.article-title { font-size: 15px; font-weight: 600; color: #2b332f; line-height: 1.4; margin-bottom: 6px; }
+.article-date { font-size: 12.5px; color: #7a8c84; display: flex; align-items: center; gap: 6px; }
+.article-tags { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.article-tags .tag { font-size: 12.5px; color: #2b332f; background: #f5f4ee; border: 1px solid #e2e6e4; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center; gap: 6px; }
+.article-tags .tag b { padding: 1px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; background: #0f5c33; color: #fff; }
+.article-actions { display: flex; justify-content: flex-end; gap: 16px; border-top: 1px solid #eef0ee; padding-top: 12px; margin-top: auto; }
+.article-actions a { font-size: 13.5px; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+.article-actions a:nth-child(1) { color: #0f5c33; }
+.article-actions a:nth-child(2) { color: #c0392b; }
+
+.article-form-wrap { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+.article-form-wrap .contentTable { width: 100%; }
+.article-form-wrap .contentTable th { text-align: left; padding: 10px 8px; color: #2b332f; }
+.article-form-wrap .contentTable td { padding: 10px 8px; }
+.article-form-wrap input[type="text"], .article-form-wrap select {
+  border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px; color: #2b332f; font-family: inherit;
+}
+.article-form-wrap input[type="submit"], .article-form-wrap input[type="reset"] { background: #0f5c33; color: #fff; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 8px; }
+.article-form-wrap input[type="reset"] { background: #fff; color: #2b332f; border: 1px solid #e2e6e4; }
+
+.pagination-wrap { margin: 18px 0 24px; }
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+@media (max-width: 700px) {
+    .articles-grid { grid-template-columns: 1fr; }
+    #leftArea.col-lg-9 { padding: 0 16px; }
+    .articles-header { flex-direction: column; align-items: flex-start; }
+}
+</style>
+
     <?php if (!empty($msg)) {?>
         <div class="message">
             <?php echo $msg; ?>
@@ -166,16 +233,16 @@ $design->openDiv("leftArea");
         </div>
     <?php } ?>    
     <?php if ($_SESSION['prakash_gosavi'] == "Y") { ?>
-        <div class="submenu">
-          <a href="admin/pgArticlesManager.php?q=new-article">Add New Article</a>
-          <div style="float:right;">
-                <a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-                <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
+        <div class="articles-header">
+          <a class="add-article-btn" href="admin/pgArticlesManager.php?q=new-article"><i class="fas fa-plus"></i> Add New Article</a>
+          <div class="header-links">
+                <!-- <a href="admin/dashboard.php">Dashboard</a>
+                <a href="admin/adminlogin.php?q=logout">Logout</a> -->
            </div>
         </div>
-          <br />
           
           <?php if ($q=="new-article" || $q=="edit-article") { ?>              
+           <div class="article-form-wrap">
            <form name="articleForm" method="post" action="admin/pgArticlesManager.php">
             <table class="contentTable">
                 <col width="20%"><col width="80%">
@@ -221,6 +288,7 @@ $design->openDiv("leftArea");
                 </tr>
             </table>
             </form>
+            </div>
 			<script>
               CKEDITOR.replace('message', {
                 skin: 'moono',
@@ -242,38 +310,35 @@ $design->openDiv("leftArea");
            
            
           <?php } ?>
-            <br />
-            <hr />
-            <br />
-          <?php $paging->writePagination(); ?>
-          <br />
-          <table class="contentTable">
-            <tr>
-                <th>Title</th>
-                <th>Created</th>
-                <th>Article Type</th>
-                <th>Action</th>                    
-            </tr>
+
+          <div class="articles-grid">
             <?php foreach ($allArticles as $articleInfo) { ?>
-                <tr>
-                    <td><?php echo $articleInfo['title']; ?></td>
-                    <td><?php echo date("d-M-Y",$articleInfo['created']); ?></td>
-                    <td><?php echo $articleInfo['article_type']; ?></td>
-                    <td>
-                        <a href="admin/pgArticlesManager.php?id=<?php echo $articleInfo['id'];?>&q=edit-article">Edit</a>
-                        <a href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $articleInfo['id']; ?>);" >Delete</a>
-                    </td>
-                </tr>
+                <div class="article-card">
+                    <div class="article-card-top">
+                        <span class="article-icon"><i class="fas fa-file-alt"></i></span>
+                        <div class="article-info">
+                            <div class="article-title"><?php echo $articleInfo['title']; ?></div>
+                            <div class="article-date"><i class="far fa-calendar-alt"></i> <?php echo date("d-M-Y",$articleInfo['created']); ?></div>
+                        </div>
+                    </div>
+                    <div class="article-tags">
+                        <span class="tag">Type <b><?php echo $articleInfo['article_type']; ?></b></span>
+                    </div>
+                    <div class="article-actions">
+                        <a href="admin/pgArticlesManager.php?id=<?php echo $articleInfo['id'];?>&q=edit-article"><i class="fas fa-edit"></i> Edit</a>
+                        <a href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $articleInfo['id']; ?>);" ><i class="fas fa-trash-alt"></i> Delete</a>
+                    </div>
+                </div>
             <?php } ?>
-          </table>
-          <br />              
-         <?php $paging->writePagination(); ?>
-         <br />
+          </div>
+
+          <div class="pagination-wrap"><?php $paging->writePagination(); ?></div>
     <?php } ?>
 <?php                   
   $design->closeDiv();
-  //$design->rightArea();  
-  //$design->closeDiv();
+  $design->writeLeftPanel();
+  $design->closeDiv();
+  $design->closeDiv();
   $design->endPage();
   $design->pageClose();    
 $design = NULL; // release object
