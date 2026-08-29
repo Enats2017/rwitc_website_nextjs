@@ -177,6 +177,7 @@ $pageTitle ='Image Upload';
 $design = new Design();  
 $design->js='
 <script type="text/javascript" src="lib/ckeditor/ckeditor.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script type="text/javascript">
     function confirmDelete(bannerID) {
         if (confirm ("Are you sure ?")){
@@ -192,9 +193,87 @@ $design->jqueryJs = "";
 $design->startPage("$pageTitle");  
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper");
-$design->openDiv("leftArea");
+$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("leftArea","col-lg-9");
 ?>
+
+<style type="text/css">
+/* ===== layout: leftArea + sidebar, same pattern as the other managers ===== */
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+#infoWrapper.col-lg-12 #rightArea.col-lg-3 { padding-top: 0 !important; }
+
+.message {
+    position: relative;
+    background: #e6f4ec;
+    border: 1px solid #b7ddc5;
+    color: #0f5c33;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14.5px;
+    font-weight: 500;
+}
+
+.iu-title { font-size: 18px; font-weight: 700; color: #2b332f; margin: 0 0 18px; }
+
+.iu-form-wrap {
+    background: #fff;
+    border: 1px solid #e2e6e4;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.iu-form-table { width: 100%; border-collapse: collapse; }
+.iu-form-table th { text-align: left; padding: 10px 8px; color: #2b332f; vertical-align: top; width: 20%; font-weight: 600; font-size: 13.5px; }
+.iu-form-table td { padding: 10px 8px; }
+.iu-form-table input[type="text"],
+.iu-form-table input[type="date"],
+.iu-form-table input[type="file"],
+.iu-form-table select {
+    border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px;
+    width: 100%; max-width: 100%; box-sizing: border-box;
+}
+.iu-form-table input[type="text"] { margin-bottom: 8px; }
+.iu-form-table input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 8px; }
+.iu-form-table input[type="submit"]:hover { background: #0b3d24; }
+.iu-form-table input[type="reset"] { background: #fff; color: #2b332f; border: 1px solid #e2e6e4; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.iu-form-table input[type="reset"]:hover { background: #f5f4ee; }
+
+/* ===== responsive ===== */
+@media (max-width: 900px) {
+    #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }
+    #leftArea.col-lg-9 { flex: 1 1 100%; max-width: 100%; padding: 28px 24px; }
+}
+@media (max-width: 700px) {
+    #leftArea.col-lg-9 { padding: 0 16px; }
+}
+@media (max-width: 520px) {
+    .iu-form-table, .iu-form-table tbody, .iu-form-table tr, .iu-form-table th, .iu-form-table td {
+        display: block; width: 100% !important;
+    }
+    .iu-form-table th { padding-bottom: 2px; }
+    .iu-form-table td { padding-top: 0; padding-bottom: 14px; }
+}
+</style>
+
     <?php if (!empty($json['success'])) {?>
         <div class="message">
             <?php echo $json['success']; ?>
@@ -206,6 +285,7 @@ $design->openDiv("leftArea");
         </div>
     <?php } ?>    
 
+    <!--
     <div class="submenu">
         <a href="admin/bannerManager.php">Banner Manager</a>
         <div style="float:right;">
@@ -213,13 +293,15 @@ $design->openDiv("leftArea");
             <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
         </div>
     </div>
-    <br />
+    -->
+    <div class="iu-title"><i class="fas fa-cloud-arrow-up"></i> Image Upload</div>
    <?php
 // ... (existing code)
 
 ?>
+<div class="iu-form-wrap">
 <form enctype="multipart/form-data" name="bannerimageForm" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>" onsubmit="return validateForm()">
-    <table class="contentTable">
+    <table class="iu-form-table">
         <col width="20%">
         <col width="80%">
         <tr>
@@ -279,6 +361,7 @@ $design->openDiv("leftArea");
         </tr>
     </table>
 </form>
+</div>
 
 <script>
 function validateForm() {
@@ -320,10 +403,11 @@ window.onload = function() {
 
 
 
-<?php                   
+<?php     
+  $design->writeLeftPanel();              
   $design->closeDiv();
-  //$design->rightArea();  
-  //$design->closeDiv();
+  $design->closeDiv();
+  $design->closeDiv();
   $design->endPage();
   //$design->pageClose();    
 $design = NULL; // release object
