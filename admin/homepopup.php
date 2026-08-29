@@ -94,25 +94,108 @@ $design->css ='
   #title { color: #000000; font-size: 14px; margin: 10px; margin: auto; text-align: left; display:block; }
 </style>
 ';
+$design->js='
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+';
 $pageTitle ='Home Popup';
 $design->jqueryJs = ""; 
 $design->startPage("$pageTitle");  
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper");
-$design->openDiv("leftArea");
+$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("leftArea","col-lg-9");
 ?>
 
+<style type="text/css">
+/* ===== layout: leftArea + sidebar, same pattern as the other managers ===== */
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+#infoWrapper.col-lg-12 #rightArea.col-lg-3 { padding-top: 0 !important; }
+
+.message {
+    position: relative;
+    background: #e6f4ec;
+    border: 1px solid #b7ddc5;
+    color: #0f5c33;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14.5px;
+    font-weight: 500;
+}
+
+.hp-title { font-size: 18px; font-weight: 700; color: #2b332f; margin: 0 0 18px; }
+
+.hp-form-wrap {
+    background: #fff;
+    border: 1px solid #e2e6e4;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.hp-form-table { width: 100%; border-collapse: collapse; }
+.hp-form-table th { text-align: left; padding: 10px 8px; color: #2b332f; vertical-align: top; width: 20%; font-weight: 600; font-size: 13.5px; }
+.hp-form-table td { padding: 10px 8px; }
+.hp-form-table input[type="text"],
+.hp-form-table input[type="file"] {
+    border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px;
+    width: 100%; max-width: 100%; box-sizing: border-box;
+}
+.hp-form-table input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 8px; }
+.hp-form-table input[type="submit"]:hover { background: #0b3d24; }
+
+.hp-radio-group { display: flex; align-items: center; gap: 22px; }
+.hp-radio-group label { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: #2b332f; cursor: pointer; }
+.hp-radio-group input[type="radio"] { accent-color: #0f5c33; width: 16px; height: 16px; }
+
+/* ===== responsive ===== */
+@media (max-width: 900px) {
+    #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }
+    #leftArea.col-lg-9 { flex: 1 1 100%; max-width: 100%; padding: 28px 24px; }
+}
+@media (max-width: 700px) {
+    #leftArea.col-lg-9 { padding: 0 16px; }
+}
+@media (max-width: 520px) {
+    .hp-form-table, .hp-form-table tbody, .hp-form-table tr, .hp-form-table th, .hp-form-table td {
+        display: block; width: 100% !important;
+    }
+    .hp-form-table th { padding-bottom: 2px; }
+    .hp-form-table td { padding-top: 0; padding-bottom: 14px; }
+    .hp-radio-group { flex-wrap: wrap; gap: 14px; }
+}
+</style>
+
 <?php if (empty($msg) && empty($secmsg)) { ?>
+<!--
 <div style="float:right;">
     <a style="float:left;" href="admin/dashboard.php">Dashboard</a>
     <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
 </div>
+-->
+<div class="hp-title">Home Page Popup</div>
+
+<div class="hp-form-wrap">
 <form enctype="multipart/form-data" name="imageForm" method="post" action="admin/homepopup.php">
-	<table class="contentTable">
-		<tr>
-			<th class="thwhite" colspan="2"><h2>Home Page Popup</h2></th>
-		</tr>
+	<table class="hp-form-table">
 		<!-- <col width="20%"><col width="80%"> -->
 		<tr>
 		  <th>File Upload</th>
@@ -125,8 +208,11 @@ $design->openDiv("leftArea");
 		</tr>
 	</table>
 </form>
+</div>
+
+<div class="hp-form-wrap">
 <form enctype="multipart/form-data" name="homepopupForm" method="post" action="admin/homepopup.php">
-	<table class="contentTable">
+	<table class="hp-form-table">
 	
 		<tr>
 			<th>Feed</th>
@@ -139,9 +225,10 @@ $design->openDiv("leftArea");
 		<tr>
 			<th>Select Status</th>
 			<td class="alignLeft">
-				<input type="radio" name="statustype" value='0' checked="checked" />Inactive &nbsp;
-				<input type="radio" name="statustype" value='1' />Active &nbsp;
-			  
+				<div class="hp-radio-group">
+				<label><input type="radio" name="statustype" value='0' checked="checked" /> Inactive</label>
+				<label><input type="radio" name="statustype" value='1' /> Active</label>
+				</div>
 			</td>
 		</tr>
 		<tr>
@@ -152,11 +239,13 @@ $design->openDiv("leftArea");
 		</tr>
 	</table>
 </form>
+</div>
 <?php }?>
 <?php                   
 $design->closeDiv();
-  //$design->rightArea();  
-  //$design->closeDiv();
+  $design->writeLeftPanel();
+  $design->closeDiv();
+  $design->closeDiv();
 $design->endPage();
   //$design->pageClose();    
 $design = NULL; // release object
