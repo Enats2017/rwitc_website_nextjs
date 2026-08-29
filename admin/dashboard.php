@@ -77,9 +77,20 @@ $design->writeContentPageStyles();
 @media (min-width: 1920px) { .cards-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; } .dashboard-title { font-size: 30px; } }
 @media (max-width: 1200px) { .cards-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); } }
 @media (max-width: 900px) { .cards-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
-@media (max-width: 700px) { .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } .dashboard-title { font-size: 20px; } }
-@media (max-width: 560px) { .cards-grid { grid-template-columns: 1fr; } .dashboard-header { flex-direction: column; align-items: flex-start; } .card-item { padding: 14px 12px; } .card-title { font-size: 14px; } }
-@media (max-width: 360px) { .card-icon { width: 32px; height: 32px; font-size: 13px; } }
+@media (max-width: 700px) { .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } .dashboard-title { font-size: 20px; } }
+@media (max-width: 560px) {
+    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .dashboard-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 4px; }
+    .dashboard-subtitle { font-size: 13px; }
+    .card-item { padding: 11px 10px; gap: 8px; border-radius: 10px; }
+    .card-icon { width: 32px; height: 32px; font-size: 13px; border-radius: 8px; }
+    .card-title { font-size: 12.5px; line-height: 1.25; font-weight: 500; }
+    .card-arrow { font-size: 11px; }
+}
+@media (max-width: 360px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .card-icon { width: 30px; height: 30px; font-size: 12px; }
+}
 html, body { scrollbar-width: none; -ms-overflow-style: none; }
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 

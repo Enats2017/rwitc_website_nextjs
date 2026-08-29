@@ -1340,15 +1340,15 @@ if ($isSuperAdmin) {
 
         <style type="text/css">
         #rightArea.col-lg-3 {
-    flex: 0 0 300px;
-    max-width: 300px;
-    width: 300px;
-    box-sizing: border-box;
-    float: none;
-    padding: 24px 20px 24px 30px;
-    background: #ffffff;
-    color: #2b332f;
-}
+            flex: 0 0 300px;
+            max-width: 300px;
+            width: 300px;
+            box-sizing: border-box;
+            float: none;
+            padding: 24px 20px 24px 30px;
+            background: #ffffff;
+            color: #2b332f;
+        }
         #rightArea .profile-card {
             background: linear-gradient(180deg, #0f5c33, #0b3d24);
             border-radius: 14px;
@@ -1382,61 +1382,29 @@ if ($isSuperAdmin) {
         #shareDropdown.show { display: flex !important; }
         #shareDropdown { padding-bottom: 18px !important; margin-bottom: -10px !important; }
         #shareDropdown a { margin-bottom: 8px; }
-        #rightArea .sidebar-user-dropdown {
-    position: relative;
-}
+        #rightArea .sidebar-user-dropdown { position: relative; }
+        #rightArea .sidebar-user-dropdown > a { cursor: pointer; }
+        #rightArea .sidebar-user-arrow { margin-left: auto; font-size: 11px; transition: transform 0.2s ease; }
+        #rightArea .sidebar-user-dropdown.open .sidebar-user-arrow { transform: rotate(180deg); }
+        #rightArea .sidebar-submenu { display: none; list-style: none; margin: 0 0 6px 0; padding: 0 0 0 28px; }
+        #rightArea .sidebar-user-dropdown.open .sidebar-submenu { display: block; }
+        #rightArea .sidebar-submenu li { margin: 0; }
+        #rightArea .sidebar-submenu li a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; color: #2b332f; text-decoration: none; font-size: 14px; margin-bottom: 2px; }
+        #rightArea .sidebar-submenu li a i { width: 16px; text-align: center; color: #0f5c33; }
+        #rightArea .sidebar-submenu li a:hover { background: #e6f4ec; color: #0f5c33; }
 
-#rightArea .sidebar-user-dropdown > a {
-    cursor: pointer;
-}
-
-#rightArea .sidebar-user-arrow {
-    margin-left: auto;
-    font-size: 11px;
-    transition: transform 0.2s ease;
-}
-
-#rightArea .sidebar-user-dropdown.open .sidebar-user-arrow {
-    transform: rotate(180deg);
-}
-
-#rightArea .sidebar-submenu {
-    display: none;
-    list-style: none;
-    margin: 0 0 6px 0;
-    padding: 0 0 0 28px;
-}
-
-#rightArea .sidebar-user-dropdown.open .sidebar-submenu {
-    display: block;
-}
-
-#rightArea .sidebar-submenu li {
-    margin: 0;
-}
-
-#rightArea .sidebar-submenu li a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 12px;
-    border-radius: 7px;
-    color: #2b332f;
-    text-decoration: none;
-    font-size: 14px;
-    margin-bottom: 2px;
-}
-
-#rightArea .sidebar-submenu li a i {
-    width: 16px;
-    text-align: center;
-    color: #0f5c33;
-}
-
-#rightArea .sidebar-submenu li a:hover {
-    background: #e6f4ec;
-    color: #0f5c33;
-}
+        @media (max-width: 900px) {
+            #rightArea.col-lg-3 { flex: 1 1 100% !important; max-width: 100% !important; width: 100% !important; padding: 16px 14px !important; border-bottom: 1px solid var(--rwitc-border, #e2e6e4); }
+            #rightArea .profile-card { padding: 14px 16px; margin-bottom: 12px; border-radius: 12px; }
+            #rightArea .quick-access-list { display: flex; flex-wrap: wrap; gap: 6px; }
+            #rightArea .quick-access-list li { flex: 1 1 calc(50% - 6px); min-width: 130px; }
+            #rightArea .quick-access-list li a { padding: 8px 10px; font-size: 13px; margin-bottom: 0; background: #f4f7f5; border-radius: 8px; }
+            #rightArea .logout-btn { margin-top: 10px; padding: 8px 14px; font-size: 13px; }
+        }
+        @media (max-width: 480px) {
+            #rightArea .quick-access-list li { flex: 1 1 calc(50% - 4px); min-width: 0; }
+            #rightArea .quick-access-list li a { font-size: 12px; padding: 7px 8px; gap: 6px; }
+        }
         </style>
 <script>
 function toggleSidebarUsers(event) {
@@ -1535,11 +1503,25 @@ LEFTPANEL;
 #leftArea.col-lg-9 table tr:nth-child(even) td { background: var(--rwitc-light-green); }
 #leftArea.col-lg-9 table tr:hover td { background: #eef4ec; }
 @media (max-width: 1100px) { #leftArea.col-lg-9 { padding: 36px 34px; } #leftArea.col-lg-9 h2 { font-size: 28px; } }
-@media (max-width: 900px) { #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; border-radius: 16px; } #leftArea.col-lg-9 { flex: 1 1 100%; max-width: 100%; padding: 28px 24px; } }
-@media (max-width: 600px) { #leftArea.col-lg-9 table { display: block; overflow-x: auto; white-space: nowrap; font-size: 13px; } #leftArea.col-lg-9 { padding: 22px 18px; } #leftArea.col-lg-9 h2 { font-size: 23px; } #leftArea.col-lg-9 p, #leftArea.col-lg-9 ul li, #leftArea.col-lg-9 ul li p { font-size: 14.5px !important; line-height: 1.75 !important; } }
+@media (max-width: 900px) {
+    #infoWrapper.col-lg-12 { flex-direction: column-reverse !important; margin: 10px 8px !important; border-radius: 16px !important; }
+    #leftArea.col-lg-9 { flex: 1 1 100% !important; max-width: 100% !important; padding: 20px 16px !important; width: 100% !important; }
+}
+@media (max-width: 600px) {
+    #infoWrapper.col-lg-12 { margin: 8px 4px !important; border-radius: 12px !important; }
+    #leftArea.col-lg-9 table { display: block; overflow-x: auto; white-space: nowrap; font-size: 13px; }
+    #leftArea.col-lg-9 { padding: 16px 12px !important; }
+    #leftArea.col-lg-9 h2 { font-size: 23px !important; }
+    #leftArea.col-lg-9 p, #leftArea.col-lg-9 ul li, #leftArea.col-lg-9 ul li p { font-size: 14.5px !important; line-height: 1.75 !important; }
+}
 #sponsorBlockWrapper { max-width: 1500px; margin: 10px auto 30px; float: none; }
 #sponsorsTitle { color: var(--rwitc-dark-green) !important; font-family: 'Source Serif 4',serif; font-weight: 700; letter-spacing: 1px; }
 #sponsorBlock { border: 1px solid var(--rwitc-border) !important; border-radius: 14px !important; background: #fff !important; box-shadow: 0 4px 14px rgba(11,61,36,0.06); }
+@media (max-width: 768px) {
+    #sponsorBlockWrapper { margin: 10px 8px 20px !important; }
+    #sponsorBlock { height: 90px !important; padding: 8px 0 !important; }
+    #sponsorBlock img { height: 60px !important; width: auto !important; }
+}
 html, body { scrollbar-width: none; -ms-overflow-style: none; }
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 </style>
