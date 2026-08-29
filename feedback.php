@@ -405,8 +405,8 @@ $design->openDiv("leftArea",'col-lg-9');
                 </label>
                 <div class="rw-captcha-container">
                     <div class="rw-captcha-img-box">
-                        <img src="lib/captcha.php" id="captchaImg" alt="Captcha Code" />
-                        <button type="button" class="rw-btn-refresh" onclick="document.getElementById('captchaImg').src='lib/captcha.php?'+Math.random();">
+                        <img src="captcha.php" id="captchaImg" alt="Captcha Code" />
+                        <button type="button" class="rw-btn-refresh" onclick="document.getElementById('captchaImg').src='captcha.php?'+Math.random();">
                             <i class="fas fa-sync-alt"></i> Refresh Captcha
                         </button>
                     </div>
