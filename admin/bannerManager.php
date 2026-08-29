@@ -364,7 +364,20 @@ $design->css ='
 
 ';
 
-$design->jqueryJs = ""; 
+$design->jqueryJs = "
+    $('#bannerSearchInput').on('keyup', function() {
+        var term = $(this).val().toLowerCase().trim();
+        var visibleCount = 0;
+        $('.banner-card').each(function() {
+            var titleVal = $(this).find('input[name*=\"[title]\"]').val() || '';
+            var sortVal = $(this).find('input[name*=\"[sort_order]\"]').val() || '';
+            var match = titleVal.toLowerCase().indexOf(term) !== -1 || sortVal.toLowerCase().indexOf(term) !== -1;
+            $(this).toggle(match);
+            if (match) { visibleCount++; }
+        });
+        $('#bannerNoResults').toggle(term.length > 0 && visibleCount === 0);
+    });
+"; 
 
 $design->startPage("$pageTitle");  
 
@@ -419,6 +432,33 @@ $design->openDiv("leftArea","col-lg-9");
 
 .section-title { font-size: 16px; font-weight: 700; color: #0f5c33; margin: 28px 0 14px; display: flex; align-items: center; gap: 8px; }
 
+/* ===== search bar ===== */
+.banner-search-wrap {
+    position: relative;
+    margin-bottom: 16px;
+}
+.banner-search-wrap i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7a8c84;
+    font-size: 13.5px;
+}
+.banner-search-wrap input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 14px 11px 38px;
+    border: 1px solid #e2e6e4;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+}
+.banner-search-wrap input[type="text"]:focus {
+    outline: none;
+    border-color: #1a7a45;
+    box-shadow: 0 0 0 3px rgba(26,122,69,0.12);
+}
 /* ===== upload form — normal inline screen card ===== */
 .banner-upload-wrap {
     background: #fff;
@@ -556,9 +596,12 @@ $design->openDiv("leftArea","col-lg-9");
 	</div>
 
 	<div class="section-title"><i class="fas fa-images"></i> Banner Images</div>
-
+	<div class="banner-search-wrap">
+		<i class="fas fa-magnifying-glass"></i>
+		<input type="text" id="bannerSearchInput" placeholder="Search by name or sort order..." />
+	</div>
 	<form enctype="multipart/form-data" name="bannerForm" method="post" action="admin/bannerManager.php">
-
+	  	<div id="bannerNoResults" class="banner-empty" style="display:none;">No banners match your search.</div>
 	  	<div class="banner-grid">
 
 			<?php if (count($banner_datas) > 0) { ?>

@@ -54,6 +54,7 @@ $design = new Design();
 
 $design->js='
 <script type="text/javascript" src="lib/ckeditor/ckeditor.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 ';
 $design->css ='
 <style type="text/css">
@@ -64,9 +65,72 @@ $design->jqueryJs = "";
 $design->startPage("$pageTitle");  
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper");
-$design->openDiv("leftArea");
+$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("leftArea","col-lg-9");
 ?>
+
+<style type="text/css">
+/* ===== layout: leftArea + sidebar, same pattern as the other managers ===== */
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+#infoWrapper.col-lg-12 #rightArea.col-lg-3 { padding-top: 0 !important; }
+
+.message {
+    position: relative;
+    background: #e6f4ec;
+    border: 1px solid #b7ddc5;
+    color: #0f5c33;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14.5px;
+    font-weight: 500;
+}
+
+.hw-title { font-size: 18px; font-weight: 700; color: #2b332f; margin-bottom: 16px; }
+
+.hw-form-wrap {
+    background: #fff;
+    border: 1px solid #e2e6e4;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.hw-form-wrap input[type="submit"] {
+    background: #0f5c33; color: #fff; border: none;
+    padding: 10px 22px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 600;
+}
+.hw-form-wrap input[type="submit"]:hover { background: #0b3d24; }
+
+/* ===== responsive ===== */
+@media (max-width: 900px) {
+    #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }
+    #leftArea.col-lg-9 { flex: 1 1 100%; max-width: 100%; padding: 28px 24px; }
+}
+@media (max-width: 700px) {
+    #leftArea.col-lg-9 { padding: 0 16px; }
+    .hw-form-wrap input[type="submit"] { width: 100%; }
+}
+</style>
+
 	<?php if (!empty($json['success'])) {?>
 		<div class="message">
 			<?php echo $json['success']; ?>
@@ -77,7 +141,9 @@ $design->openDiv("leftArea");
 			<?php echo $json['error']; ?>
 		</div>
 	<?php } ?>    
-	
+
+	<div class="hw-title"><i class="fas fa-weight-scale"></i> Reset Horse Body Weight Manager</div>
+	<!--
 	<div class="submenu">
 	  	<a href="admin/horseweightManager.php">Reset Horse Body Weight Manager</a>
 	  	<div style="float:right;">
@@ -85,22 +151,19 @@ $design->openDiv("leftArea");
 			<a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
 	   	</div>
 	</div>
-	<br />
+	-->
+
+	<div class="hw-form-wrap">
 	<form enctype="multipart/form-data" name="horseweightimageForm" method="post" action="admin/horseweightManager.php">
-	  	<table class="contentTable">
-		  	<col width="20%"><col width="80%">
-		  	<tr>
-			  	<td colspan="2">
-				  	<input type="submit" name="Reset Horse Body Weight" value="Reset Horse Body Weight" />
-				  	<input type="hidden" name="q" value="save-data" />
-			  	</td>
-		  	</tr>
-	  	</table>
+	  	<input type="submit" name="Reset Horse Body Weight" value="Reset Horse Body Weight" />
+	  	<input type="hidden" name="q" value="save-data" />
 	</form>
+	</div>
 <?php                   
   $design->closeDiv();
-  //$design->rightArea();  
-  //$design->closeDiv();
+  $design->writeLeftPanel();
+  $design->closeDiv();
+  $design->closeDiv();
   $design->endPage();
   //$design->pageClose();    
 $design = NULL; // release object
