@@ -175,6 +175,9 @@ $design->css = <<<'USERGROUPCSS'
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" type="text/css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 :root{
     --green-900:#0d3b28;
@@ -207,6 +210,10 @@ body{
 a{text-decoration:none;color:inherit;}
 button{font-family:inherit;cursor:pointer;}
 
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 .topbar{background:var(--green-900);color:#fff;padding:0 28px;}
 .topbar-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:58px;}
 .brand{display:flex;align-items:center;gap:10px;font-family:'Newsreader',serif;font-size:19px;font-weight:600;letter-spacing:0.2px;}
@@ -221,6 +228,8 @@ button{font-family:inherit;cursor:pointer;}
 .subnav{background:#123f2c;}
 
 .page-wrap{max-width:1180px;margin:0 auto;padding:32px 28px 60px;}
+#infoWrapper.col-lg-12{display:flex;flex-direction:row-reverse;align-items:flex-start;max-width:1500px;margin:30px auto;float:none;}
+#leftArea.col-lg-9{flex:1 1 auto;min-width:0;max-width:none;margin:0;padding:0 30px;box-sizing:border-box;float:none;width:auto;display:block;}
 .eyebrow{font-size:11.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-500);margin:0 0 6px;}
 .page-head{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:22px;padding-bottom:20px;border-bottom:1px solid var(--line);}
 .page-head h1{font-family:'Newsreader',serif;font-weight:600;font-size:30px;margin:0;color:var(--green-900);}
@@ -336,8 +345,8 @@ $design->startPage($pageTitle);
 $design->writeLogoTickerMenu();
 
 $design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper");
-$design->openDiv("leftArea");
+$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("leftArea",'col-lg-9');
 ?>
 
 <div class="page-wrap">
@@ -559,6 +568,7 @@ $design->openDiv("leftArea");
 
 <?php
 $design->closeDiv();
+$design->writeLeftPanel();
 $design->closeDiv();
 $design->closeDiv();
 $design->endPage();

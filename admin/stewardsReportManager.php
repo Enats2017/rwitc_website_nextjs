@@ -125,6 +125,9 @@ $design->openDiv("leftArea", "col-lg-9");
         width: auto;
         display: block;
     }
+    
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
     #infoWrapper.col-lg-12 #rightArea.col-lg-3 {
         padding-top: 0 !important;

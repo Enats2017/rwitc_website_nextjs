@@ -51,9 +51,7 @@
 }
 .message { background: #fff3cd; border: 1px solid #ffe08a; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; }
 
-.modules-header { margin-bottom: 20px; }
-.modules-header h2 { margin: 0 0 6px 0; font-size: 22px; color: #2b332f; }
-.modules-header p { margin: 0; font-size: 14px; color: #7a8c84; }
+.modules-sponsor-top { display: flex; justify-content: center; margin-bottom: 24px; }
 
 .rwQuickLinks {
     display: grid;
@@ -118,9 +116,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
         </div>
     <?php } else { ?>
 
-        <div class="modules-header">
-            <h2>All Modules</h2>
-            <p>One place to manage everything on the club's website.</p>
+                <div class="modules-sponsor-top">
+            <?php $design->rightSponsor(); ?>
         </div>
 
         <div class="rwQuickLinks">

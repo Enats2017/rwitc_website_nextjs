@@ -20,9 +20,9 @@ $horseseq = getParameterNumber('horseseq',0);
 
 $q = getParameterString('q','',$db);
 
+$horseDetails = array();
 
-
-$pageTitle ="RWITC | ".CURRENT_SEASON ." - Performance Profile of Horses";     
+$pageTitle ="RWITC | ".CURRENT_SEASON ." - Performance Profile of Horses";    
 
   $design = new Design();
 
@@ -35,6 +35,86 @@ $pageTitle ="RWITC | ".CURRENT_SEASON ." - Performance Profile of Horses";
   $design->css = "
 
   <link type='text/css' href='/css/autoSuggest.css' rel='stylesheet' />    
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'>
+  <style type='text/css'>
+  #infoWrapper.col-lg-12 {
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: flex-start;
+      max-width: 1500px;
+      margin: 30px auto;
+      float: none;
+  }
+  #leftArea.col-lg-9 {
+      flex: 1 1 auto;
+      min-width: 0;
+      max-width: none;
+      margin: 0;
+      padding: 0 30px;
+      box-sizing: border-box;
+      float: none;
+      width: auto;
+      display: block;
+  }
+
+  .pp-title {
+      font-size: 24px;
+      color: #2b332f;
+      margin: 0 0 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+  }
+  .pp-title i {
+      color: #0f5c33;
+  }
+
+  .pp-search-card {
+      background: #fff;
+      border: 1px solid #e2e6e4;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .pp-search-card .contentTable { width: 100%; }
+  .pp-search-card input[type='text'] {
+      border: 1px solid #e2e6e4;
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 14px;
+      color: #2b332f;
+      width: 100%;
+      box-sizing: border-box;
+  }
+  .pp-search-card input[type='text']:focus { outline: none; border-color: #1a7a45; }
+  .pp-search-card input[type='submit'] {
+      background: #0f5c33;
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+  }
+  .pp-search-card input[type='submit']:hover { background: #0c4a29; }
+
+  .pp-results-card {
+      background: #fff;
+      border: 1px solid #e2e6e4;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      overflow-x: auto;
+  }
+
+  @media (max-width: 700px) {
+      #leftArea.col-lg-9 { padding: 0 16px; }
+      .pp-search-card, .pp-results-card { padding: 14px; }
+  }
+  </style>
 
   ";
 
@@ -118,9 +198,10 @@ $pageTitle ="RWITC | ".CURRENT_SEASON ." - Performance Profile of Horses";
 
 ?>
 
-    <h2>Performance Profile @ RWITC</h2>
+    <h1 class="pp-title"><i class="fas fa-horse-head"></i> Performance Profile @ RWITC</h1>
 
-<form name='horseSearch' method="POST" action="/performanceProfile.php?q=get-profile">
+<div class="pp-search-card">
+<form name='horseSearch' method="POST" action="performanceProfile.php?q=get-profile">
 
 <table class="contentTable">
 
@@ -145,8 +226,7 @@ $pageTitle ="RWITC | ".CURRENT_SEASON ." - Performance Profile of Horses";
 </table>
 
 </form>
-
-<br />
+</div>
 
 <?php /*if ($searchString !== "") { ?>
 
@@ -202,8 +282,7 @@ $pageTitle ="RWITC | ".CURRENT_SEASON ." - Performance Profile of Horses";
 
 <?php } */?>
 
-<br />
-
+<div class="pp-results-card">
 <?php if ($horseseq && count($horseDetails)>0){?>
 
     <table class="contentTable">
@@ -513,6 +592,7 @@ $pageTitle ="RWITC | ".CURRENT_SEASON ." - Performance Profile of Horses";
       $raceDetails = $raceObj->getHorseDetailsByDateAndRaceNo($racedate,$raceno);      
 
 
+
       if (count($raceDetails)==0) {
 
         $raceDetails = $raceObj->getOldHorseDetailsByDateAndRaceNo($racedate,$raceno);
@@ -670,7 +750,7 @@ TABLE;
 
             echo "<td>
 
-                <a href='/performanceProfile.php?q=get-profile&as_values=".urlencode($raceResult['HORSENM'])."&horseseq={$raceResult['HORSESEQ']}'>{$raceResult['HORSENM']}</a><br />
+                <a href='performanceProfile.php?q=get-profile&as_values=".urlencode($raceResult['HORSENM'])."&horseseq={$raceResult['HORSESEQ']}'>{$raceResult['HORSENM']}</a><br />
 
                 <span style='font-size:10px;'>({$raceResult['SIRE']}-{$raceResult['DAM']})</span>
 
@@ -811,18 +891,16 @@ TABLE;
         echo "</table>";
 
 } ?>
+</div>
 
 <?php                    
 
 $design->closeDiv();
 
-  $design->rightArea();  
-
-  $design->closeDiv();
+  $design->writeLeftPanel();
 
   $design->closeDiv();
 
     $design->endPage();
 
 $design = NULL; // release object
-

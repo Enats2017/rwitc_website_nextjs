@@ -347,6 +347,10 @@ table.admin-table td.action-col a.delete-link { color: #c0392b; }
 .permission-item input[type="checkbox"] { width: 16px; height: 16px; flex-shrink: 0; accent-color: #0f5c33; }
 .permission-item:has(input:checked) { background: #e6f4ec; border-color: #1a7a45; }
 
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 /* ===== responsive ===== */
 @media (max-width: 900px) {
     #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }

@@ -152,6 +152,10 @@
   .avail-list-row .avail-actions a:nth-child(2) { color: #c0392b; }
   .avail-list-empty { padding: 20px; text-align: center; color: #7a8c84; font-size: 14px; }
 
+  
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
   @media (max-width: 700px) {
     #leftArea.col-lg-9 { padding: 0 16px; }
     .avail-header { flex-direction: column; align-items: flex-start; }

@@ -185,6 +185,9 @@ $design->openDiv("leftArea", "col-lg-9");
 		color: #7a8c84;
 	}
 
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 	/* ===== config form — normal inline screen card ===== */
 	.config-form-wrap {
 		background: #fff;

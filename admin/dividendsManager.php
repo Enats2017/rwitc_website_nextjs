@@ -227,6 +227,10 @@ table.dividends-table td.action-col a { font-size: 13.5px; text-decoration: none
 .dividends-empty { padding: 30px 20px; text-align: center; color: #7a8c84; font-size: 14.5px; }
 .rw-pagination-wrap { margin: 16px 0 0 !important; }
 
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 /* ===== responsive ===== */
 @media (max-width: 900px) {
     #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }

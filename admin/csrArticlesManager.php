@@ -255,6 +255,9 @@ $design->openDiv("leftArea",'col-lg-9');
     background: #f5f4ee;
 }
 
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 @media (max-width: 700px) { .articles-grid { grid-template-columns: 1fr; } #leftArea { padding: 0 16px; } .articles-header { flex-direction: column; align-items: flex-start; } }
 </style>
 
@@ -338,8 +341,6 @@ $design->openDiv("leftArea",'col-lg-9');
 		</script>
            
           <?php } ?>
-
-          <div class="pagination-wrap"><?php $paging->writePagination(); ?></div>
 
           <div class="articles-grid">
             <?php foreach ($allArticles as $articleInfo) { ?>

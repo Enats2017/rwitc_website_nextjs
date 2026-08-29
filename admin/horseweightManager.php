@@ -104,6 +104,9 @@ $design->openDiv("leftArea","col-lg-9");
     font-weight: 500;
 }
 
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 .hw-title { font-size: 18px; font-weight: 700; color: #2b332f; margin-bottom: 16px; }
 
 .hw-form-wrap {

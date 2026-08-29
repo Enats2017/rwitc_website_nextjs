@@ -299,6 +299,9 @@ $design->openDiv("leftArea","col-lg-9");
     font-size: 14.5px;
 }
 
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 /* ================= Modal (Add / Edit Race) ================= */
 .rw-modal-overlay {
     position: fixed;

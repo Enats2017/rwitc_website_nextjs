@@ -349,6 +349,10 @@
 .gallery-browse-all[open] summary i { transform: rotate(90deg); }
 .gallery-browse-all-panel { max-height: 360px; overflow-y: auto; padding-top: 8px; }
 
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 /* ===== dates grid ===== */
 .dates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 .date-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 8px; }

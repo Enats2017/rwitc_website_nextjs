@@ -826,6 +826,8 @@ $msg =
 $design = new Design();
 
 $design->css = '
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" type="text/css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 
 :root{
@@ -880,6 +882,19 @@ button{
     max-width:1180px;
     margin:0 auto;
     padding:32px 28px 60px;
+}
+.rw-page-flex{
+    display:flex;
+    flex-direction:row-reverse;
+    align-items:flex-start;
+    max-width:1500px;
+    margin:0 auto;
+}
+.rw-page-flex .page-wrap{
+    flex:1 1 auto;
+    min-width:0;
+    max-width:none;
+    margin:0;
 }
 
 .eyebrow{
@@ -1237,6 +1252,10 @@ tbody td{
     gap:18px;
 }
 
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 .field{
     margin-bottom:16px;
 }
@@ -1330,6 +1349,7 @@ $design->writeLogoTickerMenu();
 
 ?>
 
+<div class="rw-page-flex">
 <div class="page-wrap">
 
     <?php if ($msg == 'added'): ?>
@@ -2541,6 +2561,8 @@ $design->writeLogoTickerMenu();
 
     <?php endif; ?>
 
+</div>
+<?php $design->writeLeftPanel(); ?>
 </div>
 
 

@@ -239,6 +239,9 @@ $design->openDiv("leftArea","col-lg-9");
     box-shadow: 0 0 0 3px rgba(26,122,69,0.12);
 }
 
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 /* ===== upload form — normal inline screen card ===== */
 .sponsor-upload-wrap {
     background: #fff;

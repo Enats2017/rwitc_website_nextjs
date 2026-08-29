@@ -99,6 +99,10 @@ $userObj = new Users($db);
 .mailer-form-wrap input[type="submit"]:hover { background: #0c4a29; }
 .mailer-form-wrap input[type="reset"]:hover { background: #f5f4ee; }
 
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 @media (max-width: 700px) {
   #leftArea { padding: 0 16px; }
   .mailer-header { flex-direction: column; align-items: flex-start; }

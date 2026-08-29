@@ -195,6 +195,9 @@ $design->openDiv("leftArea","col-lg-9");
     font-weight: 500;
 }
 
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 .sponsor-header { margin-bottom: 20px; }
 .sponsor-header h2 { margin: 0; font-size: 22px; color: #2b332f; font-weight: 700; }
 .sponsor-header p { margin: 4px 0 0; font-size: 13.5px; color: #7a8c84; }

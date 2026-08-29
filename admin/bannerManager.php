@@ -496,6 +496,9 @@ $design->openDiv("leftArea","col-lg-9");
 .banner-save-bar input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
 .banner-save-bar input[type="submit"]:hover { background: #0b3d24; }
 
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 /* ===== responsive ===== */
 @media (max-width: 900px) {
     #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }

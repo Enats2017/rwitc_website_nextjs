@@ -124,6 +124,10 @@ require_once("../lib/userchecks.php");
 
 .section-title { font-size: 16px; font-weight: 700; color: #0f5c33; margin: 28px 0 14px; display: flex; align-items: center; gap: 8px; }
 
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
 /* ===== Add Video form — normal inline screen card ===== */
 .video-form-wrap {
     background: #fff;
