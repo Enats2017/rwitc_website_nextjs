@@ -177,7 +177,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                 Webportal for Owners/Trainers
             </a>
 
-            <a href="rwitc_website/download/Prospectus.pdf" class="rwQuickLinkBtn rwqlColor15">
+            <a href="download/Prospectus.pdf" class="rwQuickLinkBtn rwqlColor15">
     Prospectus
 </a>    
 

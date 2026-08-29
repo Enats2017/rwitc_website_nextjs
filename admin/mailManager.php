@@ -20,14 +20,14 @@ $pageno = getParameterNumber('pageno',1);
 $articles = new Articles($db);
 if (isAdminlogin()) {
 	if ($_SESSION['mailManager'] == "Y") { // check login
-		if (get_magic_quotes_gpc()) {
+		//if (get_magic_quotes_gpc()) {
 			function stripslashes_deep($value) {
 				$value = is_array($value) ?   array_map('stripslashes_deep', $value) : stripslashes($value);
 				return $value;
 			}
 			$_POST = array_map('stripslashes_deep', $_POST);
 			$_REQUEST = array_map('stripslashes_deep', $_REQUEST);
-		}
+		//}
 	  
 		// all actions POST form submissions go here
 		if (isset($_REQUEST['submit'])) {
@@ -145,7 +145,7 @@ $pageTitle ='Mail Manager';
 $design = new Design();  
 
 $design->js='
-<script type="text/javascript" src="lib/ckeditor/ckeditor.js"></script>
+<script type="text/javascript" src="https://cdn.ckeditor.com/4.8.0/full-all/ckeditor.js"></script>
 <script type="text/javascript">
 	function confirmDelete(mailID) {
 		if (confirm ("Are you sure ?")){
@@ -156,98 +156,76 @@ $design->js='
 ';
 $design->css ='
 <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style type="text/css">
-  #title { color: #000000; font-size: 14px; margin: 10px; margin: auto; text-align: left; display:block; }
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+.message { background: #fff3cd; border: 1px solid #ffe08a; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; }
+
+.mail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.mail-header .mail-title { color:#2b332f; font-weight:700; font-size:20px; display:flex; align-items:center; gap:10px; }
+.header-links { display: flex; align-items: center; gap: 16px; }
+.header-links a { color: #0f5c33; text-decoration: none; font-weight: 600; font-size: 14px; }
+.header-links a:hover { text-decoration: underline; }
+
+.mail-form-wrap { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); max-width: 700px; }
+.mail-form-wrap .form-row { margin-bottom: 20px; }
+.mail-form-wrap label.form-label { display: block; font-size: 14px; font-weight: 600; color: #2b332f; margin-bottom: 8px; }
+.mail-form-wrap input[type="text"], .mail-form-wrap textarea {
+  width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit;
+}
+.mail-form-wrap input[type="text"]:focus, .mail-form-wrap textarea:focus { outline: none; border-color: #1a7a45; }
+.mail-form-wrap input[type="text"][readonly] { background: #f5f4ee; color: #7a8c84; }
+.mail-form-wrap textarea { resize: vertical; min-height: 140px; }
+.mail-form-wrap input[type="file"] {
+  width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 9px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; background: #f9faf9;
+}
+.mail-form-wrap .form-actions { display: flex; gap: 10px; padding-top: 6px; }
+.mail-form-wrap input[type="submit"], .mail-form-wrap input[type="reset"] { background: #0f5c33; color: #fff; border: none; padding: 10px 22px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.mail-form-wrap input[type="reset"] { background: #fff; color: #2b332f; border: 1px solid #e2e6e4; }
+.mail-form-wrap input[type="submit"]:hover { background: #0c4a29; }
+.mail-form-wrap input[type="reset"]:hover { background: #f5f4ee; }
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+
+@media (max-width: 700px) {
+  #leftArea.col-lg-9 { padding: 0 16px; }
+  .mail-header { flex-direction: column; align-items: flex-start; }
+  .mail-form-wrap { padding: 18px; }
+}      
+.cke_button_icon,
+.cke_editor_message img,
+.cke_reset_all img {
+	filter: none !important;
+	-webkit-filter: none !important;
+}
 </style>
-<style type="text/css">
-  .navi {
-  width: 500px;
-  margin: 5px;
-  padding:2px 5px;
-  border:1px solid #eee;
-  }
-
-  .show {
-  color: blue;
-  margin: 5px 0;
-  padding: 3px 5px;
-  cursor: pointer;
-  font: 15px/19px Arial,Helvetica,sans-serif;
-  }
-  .show a {
-  text-decoration: none;
-  }
-  .show:hover {
-  text-decoration: underline;
-  }
-
-
-  ul.setPaginate li.setPage{
-  padding:15px 10px;
-  font-size:14px;
-  }
-
-  ul.setPaginate{
-  margin:0px;
-  padding:0px;
-  height:100%;
-  overflow:hidden;
-  font:12px "Tahoma";
-  list-style-type:none; 
-  }  
-
-  ul.setPaginate li.dot{padding: 3px 0;}
-
-  ul.setPaginate li{
-  float:left;
-  margin:0px;
-  padding:0px;
-  margin-left:5px;
-  }
-
-
-
-  ul.setPaginate li a
-  {
-  background: none repeat scroll 0 0 #ffffff;
-  border: 1px solid #cccccc;
-  color: #999999;
-  display: inline-block;
-  font: 15px/25px Arial,Helvetica,sans-serif;
-  margin: 5px 3px 0 0;
-  padding: 0 5px;
-  text-align: center;
-  text-decoration: none;
-  } 
-
-  ul.setPaginate li a:hover,
-  ul.setPaginate li a.current_page
-  {
-  background: none repeat scroll 0 0 #0d92e1;
-  border: 1px solid #000000;
-  color: #ffffff;
-  text-decoration: none;
-  }
-
-  ul.setPaginate li a{
-  color:black;
-  display:block;
-  text-decoration:none;
-  padding:5px 8px;
-  text-decoration: none;
-  }
-
-
-
-
-  </style>
-';
+';   
 $design->jqueryJs = ""; 
 $design->startPage("$pageTitle");  
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper");
-$design->openDiv("leftArea");
+$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("leftArea",'col-lg-9');
 ?>
 	<?php if (!empty($msg)) {?>
 		<div class="message">
@@ -260,65 +238,49 @@ $design->openDiv("leftArea");
 		</div>
 	<?php } ?>    
 	<?php if ($_SESSION['mailManager'] == "Y") { ?>
-		<div class="submenu">
-		  	<a href="admin/mailManager.php?q=new-mail">Draft New Mail</a>
-		  	<div style="float:right;">
-				<a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-				<a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
+		<div class="mail-header">
+		  	<span class="mail-title"><i class="fas fa-envelope"></i> Draft New Mail</span>
+		  	<div class="header-links">
+				<!-- <a href="admin/dashboard.php">Dashboard</a>
+				<a href="admin/adminlogin.php?q=logout">Logout</a> -->
 		   	</div>
 		</div>
-		<br />
+		<div class="mail-form-wrap">
 		<form enctype="multipart/form-data" name="mailForm" method="post" action="admin/mailManager.php">
-			<table class="contentTable">
-				<col width="20%"><col width="80%">
-				<tr>
-			  		<th>From Email</th>
-			  		<td>
-						<input readonly="readonly" style="width: 100%;" type="text" name="from_email" value="<?php echo $mailDetails['from_email']; ?>" />
-			  		</td>
-				</tr>
-				<tr>
-			  		<th>From Name</th>
-			  		<td>
-						<input style="width: 100%;" type="text" name="from_name" value="<?php echo $mailDetails['from_name']; ?>" />
-			  		</td>
-				</tr>
-				<tr>
-			  		<th>To Email</th>
-			  		<td>
-						<input style="width: 100%;" type="text" name="to_email" value="<?php echo $mailDetails['to_email']; ?>" />
-			  		</td>
-				</tr>
-				<tr style="display: none;">
-			  		<th>To Name</th>
-			  		<td>
-						<input style="width: 100%;" type="text" name="to_name" value="<?php echo $mailDetails['to_name']; ?>" />
-			  		</td>
-				</tr>
-				<tr>
-			  		<th>Subject</th>
-			  		<td>
-						<input style="width: 100%;" type="text" name="subject" value="<?php echo $mailDetails['subject']; ?>" />
-			  		</td>
-				</tr>
-				<tr>
-					<th>Message</th>
-					<td class="alignLeft"><textarea name="message" id="message" rows="5" cols="50"><?php echo $mailDetails['body'] ?></textarea></td>
-				</tr>
-				<tr>
-				  	<th>Upload Attachment</th>
-				  	<td class="alignLeft">
-						<input type="file" name="file[]" value="file" multiple />
-				  	</td>
-			  	</tr>
-				<tr>
-					<td colspan="2">
+				<div class="form-row">
+			  		<label class="form-label" for="from_email">From Email</label>
+						<input readonly="readonly" type="text" name="from_email" id="from_email" value="<?php echo $mailDetails['from_email']; ?>" />
+				</div>
+				<div class="form-row">
+			  		<label class="form-label" for="from_name">From Name</label>
+						<input type="text" name="from_name" id="from_name" value="<?php echo $mailDetails['from_name']; ?>" />
+				</div>
+				<div class="form-row">
+			  		<label class="form-label" for="to_email">To Email</label>
+						<input type="text" name="to_email" id="to_email" value="<?php echo $mailDetails['to_email']; ?>" />
+				</div>
+				<div class="form-row" style="display: none;">
+			  		<label class="form-label" for="to_name">To Name</label>
+						<input type="text" name="to_name" id="to_name" value="<?php echo $mailDetails['to_name']; ?>" />
+				</div>
+				<div class="form-row">
+			  		<label class="form-label" for="subject">Subject</label>
+						<input type="text" name="subject" id="subject" value="<?php echo $mailDetails['subject']; ?>" />
+				</div>
+				<div class="form-row">
+					<label class="form-label" for="message">Message</label>
+					<textarea name="message" id="message" rows="5" cols="50"><?php echo $mailDetails['body'] ?></textarea>
+				</div>
+				<div class="form-row">
+				  	<label class="form-label" for="file">Upload Attachment</label>
+						<input type="file" name="file[]" id="file" value="file" multiple />
+			  	</div>
+				<div class="form-actions">
 						<input type="submit" name="submit" value="Send" />
 						<input type="reset" name="reset" value="Clear" onclick="location.href='admin/mailManager.php'" />
-					</td>
-				</tr>
-			</table>
+				</div>
 		</form>
+		</div>
 	   	<script type="text/javascript">
 		//<![CDATA[
 		CKEDITOR.replace( 'message',
@@ -334,8 +296,8 @@ $design->openDiv("leftArea");
 	<?php } ?>
 <?php                   
 $design->closeDiv();
-//$design->rightArea();  
-//$design->closeDiv();
+$design->writeLeftPanel();
+$design->closeDiv();
 $design->endPage();
 $design->pageClose();    
 $design = NULL; // release object
