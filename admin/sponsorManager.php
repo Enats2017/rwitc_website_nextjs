@@ -135,6 +135,7 @@ $design = new Design();
 
 $design->js='
 <script type="text/javascript" src="lib/ckeditor/ckeditor.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script type="text/javascript">
     function confirmDelete(sponsorID) {
         if (confirm ("Are you sure ?")){
@@ -148,13 +149,152 @@ $design->css ='
   #title { color: #000000; font-size: 14px; margin: 10px; margin: auto; text-align: left; display:block; }
 </style>
 ';
-$design->jqueryJs = ""; 
+$design->jqueryJs = "
+    $('#sponsorSearchInput').on('keyup', function() {
+        var term = $(this).val().toLowerCase().trim();
+        var visibleCount = 0;
+        $('.sponsor-card').each(function() {
+            var titleVal = $(this).find('input[name*=\"[title]\"]').val() || '';
+            var sortVal = $(this).find('input[name*=\"[sort_order]\"]').val() || '';
+            var match = titleVal.toLowerCase().indexOf(term) !== -1 || sortVal.toLowerCase().indexOf(term) !== -1;
+            $(this).toggle(match);
+            if (match) { visibleCount++; }
+        });
+        $('#sponsorNoResults').toggle(term.length > 0 && visibleCount === 0);
+    });
+"; 
 $design->startPage("$pageTitle");  
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper");
-$design->openDiv("leftArea");
+$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("leftArea","col-lg-9");
 ?>
+
+<style type="text/css">
+/* ===== layout: leftArea + sidebar, same pattern as the other managers ===== */
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+#infoWrapper.col-lg-12 #rightArea.col-lg-3 { padding-top: 0 !important; }
+
+.message {
+    position: relative;
+    background: #e6f4ec;
+    border: 1px solid #b7ddc5;
+    color: #0f5c33;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14.5px;
+    font-weight: 500;
+}
+
+.sponsor-header { margin-bottom: 20px; }
+.sponsor-header h2 { margin: 0; font-size: 22px; color: #2b332f; font-weight: 700; }
+.sponsor-header p { margin: 4px 0 0; font-size: 13.5px; color: #7a8c84; }
+
+.section-title { font-size: 16px; font-weight: 700; color: #0f5c33; margin: 28px 0 14px; display: flex; align-items: center; gap: 8px; }
+
+/* ===== search bar ===== */
+.sponsor-search-wrap {
+    position: relative;
+    margin-bottom: 16px;
+}
+.sponsor-search-wrap i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7a8c84;
+    font-size: 13.5px;
+}
+.sponsor-search-wrap input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 14px 11px 38px;
+    border: 1px solid #e2e6e4;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+}
+.sponsor-search-wrap input[type="text"]:focus {
+    outline: none;
+    border-color: #1a7a45;
+    box-shadow: 0 0 0 3px rgba(26,122,69,0.12);
+}
+
+/* ===== upload form — normal inline screen card ===== */
+.sponsor-upload-wrap {
+    background: #fff;
+    border: 1px solid #e2e6e4;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+.sponsor-upload-table { width: 100%; border-collapse: collapse; }
+.sponsor-upload-table th { text-align: left; padding: 10px 8px; color: #2b332f; vertical-align: top; width: 20%; font-weight: 600; font-size: 13.5px; }
+.sponsor-upload-table td { padding: 10px 8px; }
+.sponsor-upload-table input[type="file"] {
+    border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px;
+    width: 100%; max-width: 100%; box-sizing: border-box; background: #f7faf8;
+}
+.sponsor-upload-table input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 8px; }
+.sponsor-upload-table input[type="submit"]:hover { background: #0b3d24; }
+.sponsor-upload-table input[type="reset"] { background: #fff; color: #2b332f; border: 1px solid #e2e6e4; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.sponsor-upload-table input[type="reset"]:hover { background: #f5f4ee; }
+
+/* ===== sponsor editor card grid ===== */
+.sponsor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin-bottom: 20px; }
+.sponsor-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+.sponsor-card .thumb-wrap { width: 100%; aspect-ratio: 1 / 1; background: #f5f4ee; overflow: hidden; }
+.sponsor-card .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sponsor-card .sponsor-card-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.sponsor-card label { font-size: 12px; font-weight: 700; color: #7a8c84; text-transform: uppercase; letter-spacing: .3px; margin-bottom: -4px; }
+.sponsor-card input[type="text"] {
+    width: 100%; box-sizing: border-box; border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 13.5px;
+}
+.sponsor-card .sponsor-card-actions { display: flex; justify-content: flex-end; border-top: 1px solid #eef0ee; padding-top: 10px; margin-top: auto; }
+.sponsor-card .sponsor-card-actions a { font-size: 13px; text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 6px; cursor: pointer; color: #c0392b; }
+.sponsor-empty { grid-column: 1 / -1; text-align: center; padding: 30px 20px; color: #7a8c84; font-size: 14.5px; background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; }
+.sponsor-save-bar { display: flex; justify-content: flex-end; }
+.sponsor-save-bar input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.sponsor-save-bar input[type="submit"]:hover { background: #0b3d24; }
+
+/* ===== responsive ===== */
+@media (max-width: 900px) {
+    #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }
+    #leftArea.col-lg-9 { flex: 1 1 100%; max-width: 100%; padding: 28px 24px; }
+}
+@media (max-width: 700px) {
+    #leftArea.col-lg-9 { padding: 0 16px; }
+    .sponsor-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+}
+@media (max-width: 520px) {
+    .sponsor-upload-table, .sponsor-upload-table tbody, .sponsor-upload-table tr, .sponsor-upload-table th, .sponsor-upload-table td {
+        display: block; width: 100% !important;
+    }
+    .sponsor-upload-table th { padding-bottom: 2px; }
+    .sponsor-upload-table td { padding-top: 0; padding-bottom: 14px; }
+    .sponsor-grid { grid-template-columns: 1fr; }
+}
+</style>
+
 	<?php if (!empty($json['success'])) {?>
 		<div class="message">
 			<?php echo $json['success']; ?>
@@ -165,7 +305,12 @@ $design->openDiv("leftArea");
 			<?php echo $json['error']; ?>
 		</div>
 	<?php } ?>    
-	
+
+	<div class="sponsor-header">
+		<h2>Sponsor Manager</h2>
+		<p>Upload sponsor logos and manage their title, link and sort order.</p>
+	</div>
+	<!--
 	<div class="submenu">
 	  	<a href="admin/sponsorManager.php">Sponsor Manager</a>
 	  	<div style="float:right;">
@@ -173,9 +318,11 @@ $design->openDiv("leftArea");
 			<a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
 	   	</div>
 	</div>
-	<br />
+	-->
+
+	<div class="sponsor-upload-wrap">
 	<form enctype="multipart/form-data" name="sponsorimageForm" method="post" action="admin/sponsorManager.php">
-	  	<table class="contentTable">
+	  	<table class="sponsor-upload-table">
 		  	<col width="20%"><col width="80%">
 		  	<tr>
 			  	<th>File Upload</th>
@@ -193,48 +340,66 @@ $design->openDiv("leftArea");
 		  	</tr>
 	  	</table>
 	</form>
+	</div>
+
+	<div class="section-title"><i class="fas fa-handshake"></i> Sponsor Images</div>
+
+	<div class="sponsor-search-wrap">
+		<i class="fas fa-magnifying-glass"></i>
+		<input type="text" id="sponsorSearchInput" placeholder="Search by name or sort order..." />
+	</div>
+
 	<form enctype="multipart/form-data" name="sponsorForm" method="post" action="admin/sponsorManager.php">
-	  	<table class="contentTable" style="width: 80%;">
-		  	<tr>
-			  	<th style="width: 20%;">Image Title</th>
-			  	<th style="width: 20%;">Link Href</th>
-			  	<th style="width: 25%;">Image</th>
-			  	<th style="width: 20%;">Sort Order</th>
-			  	<th style="width: 15%;">Action</th>
-			</tr>
+	  	<div id="sponsorNoResults" class="sponsor-empty" style="display:none;">No sponsors match your search.</div>
+	  	<div class="sponsor-grid">
+
+			<?php if (count($sponsor_datas) > 0) { ?>
 			<?php foreach($sponsor_datas as $bkey => $bvalue){ ?>
-			  	<tr>
-					<td>
-						<input style="width: 90%;" type="text" name="sponsor_datas[<?php echo $bkey ?>][title]" value="<?php echo $bvalue['title']; ?>" />
-				  	</td>
-				  	<td>
-						<input style="width: 90%;" type="text" name="sponsor_datas[<?php echo $bkey ?>][link]" value="<?php echo $bvalue['link']; ?>" />
-				  	</td>
-				  	<td>
-				  		<img src="<?php echo HTTP_SPONSOR_UPLOAD.'/'.$bvalue['source']; ?>" style="width: 100px;height: 100px;" />
+
+			  	<div class="sponsor-card">
+			  		<div class="thumb-wrap">
+			  			<img src="<?php echo HTTP_SPONSOR_UPLOAD.'/'.$bvalue['source']; ?>" alt="" />
+			  		</div>
+			  		<div class="sponsor-card-body">
+			  			<label>Image Title</label>
+						<input type="text" name="sponsor_datas[<?php echo $bkey ?>][title]" value="<?php echo $bvalue['title']; ?>" />
+
+			  			<label>Link Href</label>
+						<input type="text" name="sponsor_datas[<?php echo $bkey ?>][link]" value="<?php echo $bvalue['link']; ?>" />
+
+			  			<label>Sort Order</label>
+						<input type="text" name="sponsor_datas[<?php echo $bkey ?>][sort_order]" value="<?php echo $bvalue['sort_order']; ?>" />
+
 						<input type="hidden" name="sponsor_datas[<?php echo $bkey ?>][source]" value="<?php echo $bvalue['source']; ?>" />
+
 						<input type="hidden" name="sponsor_datas[<?php echo $bkey ?>][id]" value="<?php echo $bvalue['id']; ?>" />
-				  	</td>
-				  	<td>
-						<input style="width: 90%;" type="text" name="sponsor_datas[<?php echo $bkey ?>][sort_order]" value="<?php echo $bvalue['sort_order']; ?>" />
-				  	</td>
-				  	<td>
-						<a style="cursor:pointer;" onclick="javascript: confirmDelete(<?php echo $bvalue['id'];?>);">Delete</a>
-				  	</td>
-			  	</tr>
+
+						<div class="sponsor-card-actions">
+							<a onclick="javascript: confirmDelete(<?php echo $bvalue['id'];?>);"><i class="fas fa-trash-alt"></i> Delete</a>
+						</div>
+			  		</div>
+			  	</div>
+
 			<?php } ?>
-			<tr>
-			  	<td colspan="5">
-				  	<input type="submit" name="submit" value="submit" />
-				  	<input type="hidden" name="q" value="save-data" />
-				</td>
-		  	</tr>
-	  	</table>
+			<?php } else { ?>
+				<div class="sponsor-empty">No sponsor images uploaded yet.</div>
+			<?php } ?>
+
+	  	</div>
+
+		<?php if (count($sponsor_datas) > 0) { ?>
+		<div class="sponsor-save-bar">
+			<input type="submit" name="submit" value="Save Changes" />
+			<input type="hidden" name="q" value="save-data" />
+		</div>
+		<?php } ?>
+
 	</form>
 <?php                   
   $design->closeDiv();
-  //$design->rightArea();  
-  //$design->closeDiv();
+  $design->writeLeftPanel();
+  $design->closeDiv();
+  $design->closeDiv();
   $design->endPage();
   //$design->pageClose();    
 $design = NULL; // release object
