@@ -1394,7 +1394,7 @@ $isLogoutMsg =
                 <form
                     name="registerFrm"
                     method="post"
-                    action="adminlogin.php">
+                    action="index.php">
 
                     <div class="rwField">
 
