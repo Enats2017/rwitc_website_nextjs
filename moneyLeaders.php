@@ -9,118 +9,131 @@ $design = new Design();
 $design->css = "
 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'>
 <style type='text/css'>
+
+#infoWrapper.col-lg-12 {
+    display: flex;                 
+    flex-direction: row-reverse;       
+    align-items: flex-start;       
+    max-width: 1500px;      
+    margin: 30px auto;     
+    float: none;         
+}
+
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+
 .ml-card {
-    background: #ffffff;
+    background: #fff;
     border: 1px solid #e2e6e4;
-    border-radius: 16px;
-    padding: 28px;
-    box-shadow: 0 6px 24px rgba(11, 61, 36, 0.05);
-    margin-bottom: 30px;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    position: relative;
 }
 
 .ml-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding-bottom: 20px;
-    margin-bottom: 24px;
-    border-bottom: 1px solid #eef1ef;
-}
-
-.ml-header-icon {
-    width: 48px;
-    height: 48px;
-    background: #e6f4ec;
-    color: #0f5c33;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
+    margin: 0 0 20px 0;
+    padding: 0;
+    border: 0;
 }
 
 .ml-header-title h2 {
     margin: 0;
-    font-size: 22px;
-    font-weight: 700;
-    color: #1c2520;
+    font-size: 24px;
+    font-weight: 400;
+    color: #2b332f;
     font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ml-header-title h2 i {
+    color: #0f5c33;
+    font-size: 24px;
 }
 
 .ml-header-title p {
-    margin: 3px 0 0 0;
+    margin: 4px 0 0 36px;
     font-size: 13.5px;
     color: #687970;
 }
 
-/* Tab Navigation */
 .ml-nav-tabs {
     display: flex;
-    gap: 10px;
-    border-bottom: 2px solid #eef1ef;
-    margin-bottom: 24px;
-    padding-bottom: 2px;
+    gap: 8px;
+    border-bottom: 1px solid #e2e6e4;
+    margin: 0 0 20px 0;
+    padding: 0 0 8px 0;
     flex-wrap: wrap;
     list-style: none;
-    padding-left: 0;
+}
+
+.ml-nav-tabs li {
+    margin: 0;
+    padding: 0;
 }
 
 .ml-tab-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 11px 20px;
-    background: #f4f7f5;
+    gap: 7px;
+    padding: 9px 16px;
+    background: #f6f8f7;
     color: #4a5c53;
     border: 1px solid #e2e6e4;
-    border-radius: 10px;
-    font-size: 14.5px;
+    border-radius: 6px;
+    font-size: 13.5px;
     font-weight: 600;
     text-decoration: none !important;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
-
-.ml-tab-btn:hover {
-    background: #e6f4ec;
-    color: #0f5c33;
+ 
+.ml-tab-btn:hover {              
+    background: #e6f4ec; 
+    color: #0f5c33;           
     border-color: #b7ddc5;
 }
 
 .ml-nav-tabs li.active .ml-tab-btn {
     background: #0f5c33;
-    color: #ffffff;
+    color: #fff;
     border-color: #0f5c33;
-    box-shadow: 0 4px 12px rgba(15, 92, 51, 0.2);
 }
 
-/* Responsive Table Wrapper */
 .table-responsive-wrap {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: 10px;
     border: 1px solid #e2e6e4;
 }
 
 .ml-table {
     width: 100%;
     border-collapse: collapse;
-    background: #ffffff;
+    background: #fff;
     white-space: nowrap;
 }
 
 .ml-table th {
-    background: #f6f9f7;
-    color: #2b332f;
-    font-size: 13.5px;
-    font-weight: 700;
-    padding: 13px 16px;
+    background: #e0e0de;
+    color: #000;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 12px;
     text-align: center;
-    border-bottom: 2px solid #e2e6e4;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    border: 1px solid #d5d5d3;
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .ml-table th.align-left {
@@ -128,11 +141,11 @@ $design->css = "
 }
 
 .ml-table td {
-    padding: 12px 16px;
-    font-size: 14px;
+    padding: 10px 12px;
+    font-size: 13.5px;
     color: #2b332f;
     text-align: center;
-    border-bottom: 1px solid #eef1ef;
+    border-bottom: 1px dotted #000;
     vertical-align: middle;
 }
 
@@ -142,22 +155,21 @@ $design->css = "
 }
 
 .ml-table tbody tr:hover {
-    background: #f9fbf9;
+    background: #f7faf8;
 }
 
 .ml-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-/* Rank Badges */
 .rank-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
 }
 
@@ -195,7 +207,7 @@ $design->css = "
 }
 
 .ml-footer-note {
-    padding: 12px 16px;
+    padding: 10px 14px;
     background: #f8faf9;
     border-top: 1px solid #eef1ef;
     font-size: 13px;
@@ -203,20 +215,38 @@ $design->css = "
     font-weight: 500;
 }
 
-@media (max-width: 768px) {
+html, body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    #leftArea.col-lg-9 {
+        padding: 0 16px;
+    }
+
     .ml-card {
-        padding: 18px 14px;
+        padding: 16px;
     }
-    .ml-tab-btn {
-        padding: 9px 14px;
-        font-size: 13.5px;
-        flex: 1 1 calc(50% - 10px);
-        justify-content: center;
-    }
+
     .ml-nav-tabs {
         gap: 6px;
     }
+
+    .ml-tab-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .ml-header-title p {
+        margin-left: 0;
+    }
 }
+
 </style>
 ";
 
@@ -309,8 +339,8 @@ function renderLeaderTable($dataArr) {
 <div class="ml-card">
     <div class="ml-header">
         <div class="ml-header-title">
-            <h2 style="font-size: 24px; font-weight: 700; color: #1c2520; margin: 0;">Money Leaders</h2>
-            <p style="margin: 4px 0 0 0; font-size: 13.5px; color: #687970;">Current standings & earnings across Owners, Jockeys, Horses, and Trainers.</p>
+            <h2><i class="fas fa-trophy"></i> Money Leaders</h2>
+            <p>Current standings &amp; earnings across Owners, Jockeys, Horses, and Trainers.</p>
         </div>
     </div>
 
@@ -339,7 +369,7 @@ function renderLeaderTable($dataArr) {
 
 <?php
 $design->closeDiv();
-$design->rightArea();
+$design->writeLeftPanel();
 $design->closeDiv();
 $design->closeDiv();
 $design->endPage();

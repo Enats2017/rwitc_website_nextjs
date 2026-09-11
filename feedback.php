@@ -41,42 +41,64 @@ $design = new Design();
 $design->css = '
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style type="text/css">
+
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+
 .rw-feedback-card {
-    background: #ffffff;
+    background: #fff;
     border: 1px solid #e2e6e4;
-    border-radius: 16px;
-    padding: 32px;
-    box-shadow: 0 8px 30px rgba(11, 61, 36, 0.06);
-    margin-bottom: 30px;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
 .rw-feedback-header {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding-bottom: 20px;
-    margin-bottom: 26px;
-    border-bottom: 1px solid #eef1ef;
+    gap: 12px;
+    padding: 0;
+    margin: 0 0 20px 0;
+    border: 0;
 }
 
 .rw-feedback-icon {
-    width: 48px;
-    height: 48px;
-    background: #e6f4ec;
+    width: auto;
+    height: auto;
+    background: transparent;
     color: #0f5c33;
-    border-radius: 12px;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    font-size: 24px;
     flex-shrink: 0;
 }
 
 .rw-feedback-title-wrap h2 {
     margin: 0;
-    font-size: 22px;
-    font-weight: 700;
-    color: #1c2520;
+    font-size: 24px;
+    font-weight: 400;
+    color: #2b332f;
     font-family: inherit;
 }
 
@@ -89,14 +111,14 @@ $design->css = '
 .rw-form-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    margin-bottom: 24px;
+    gap: 18px 20px;
+    margin-bottom: 20px;
 }
 
 .rw-form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 7px;
 }
 
 .rw-form-group.full-width {
@@ -109,7 +131,7 @@ $design->css = '
     color: #2b332f;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
 }
 
 .rw-form-label i {
@@ -125,46 +147,44 @@ $design->css = '
 
 .rw-input-icon {
     position: absolute;
-    left: 14px;
+    left: 13px;
     color: #8c9e94;
-    font-size: 15px;
+    font-size: 14px;
     pointer-events: none;
 }
 
 .rw-form-control {
     width: 100%;
-    padding: 12px 14px 12px 40px;
+    padding: 10px 12px 10px 38px;
     border: 1px solid #d4ded8;
-    border-radius: 10px;
-    font-size: 14.5px;
+    border-radius: 8px;
+    font-size: 14px;
     font-family: inherit;
-    color: #1c2520;
-    background: #fcfdfe;
+    color: #2b332f;
+    background: #fff;
     box-sizing: border-box;
-    transition: all 0.2s ease;
 }
 
 textarea.rw-form-control {
-    padding: 12px 14px;
-    min-height: 130px;
+    padding: 11px 12px;
+    min-height: 120px;
     resize: vertical;
 }
 
 .rw-form-control:focus {
     outline: none;
     border-color: #0f5c33;
-    box-shadow: 0 0 0 3.5px rgba(15, 92, 51, 0.12);
-    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(15,92,51,0.10);
 }
 
 .rw-captcha-container {
     background: #f6f9f7;
-    border: 1px solid #dcdedc;
-    border-radius: 12px;
-    padding: 16px;
+    border: 1px solid #e2e6e4;
+    border-radius: 8px;
+    padding: 12px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     flex-wrap: wrap;
 }
 
@@ -175,92 +195,84 @@ textarea.rw-form-control {
 }
 
 .rw-captcha-img-box img {
-    height: 42px;
-    border-radius: 8px;
+    height: 40px;
+    border-radius: 6px;
     border: 1px solid #c8d4cd;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
 .rw-btn-refresh {
     background: #e6f4ec;
     color: #0f5c33;
     border: 1px solid #b7ddc5;
-    padding: 8px 14px;
-    border-radius: 8px;
+    padding: 7px 11px;
+    border-radius: 6px;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: all 0.2s ease;
 }
 
 .rw-btn-refresh:hover {
-    background: #1a7a45;
-    color: #ffffff;
-    border-color: #1a7a45;
+    background: #0f5c33;
+    color: #fff;
+    border-color: #0f5c33;
 }
 
 .rw-form-actions {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding-top: 10px;
+    gap: 10px;
+    padding-top: 4px;
 }
 
 .rw-btn-submit {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     background: #0f5c33;
-    color: #ffffff;
+    color: #fff;
     border: none;
-    padding: 13px 28px;
-    border-radius: 10px;
-    font-size: 15px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(15, 92, 51, 0.25);
-    transition: all 0.2s ease;
 }
 
 .rw-btn-submit:hover {
-    background: #1a7a45;
-    transform: translateY(-1.5px);
-    box-shadow: 0 6px 18px rgba(26, 122, 69, 0.3);
+    background: #0c4a29;
 }
 
 .rw-btn-reset {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: #ffffff;
+    gap: 7px;
+    background: #fff;
     color: #687970;
     border: 1px solid #d4ded8;
-    padding: 13px 22px;
-    border-radius: 10px;
-    font-size: 15px;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .rw-btn-reset:hover {
     background: #f5f7f6;
-    color: #1c2520;
-    border-color: #b0c2b7;
+    color: #2b332f;
 }
 
 .rw-msg-box {
-    padding: 14px 18px;
-    border-radius: 10px;
-    margin-bottom: 24px;
-    font-size: 14.5px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .rw-msg-box.success {
@@ -275,29 +287,50 @@ textarea.rw-form-control {
     color: #b3261e;
 }
 
-@media (max-width: 768px) {
+html, body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    #leftArea.col-lg-9 {
+        padding: 0 16px;
+    }
+
+    .rw-feedback-card {
+        padding: 16px;
+    }
+
     .rw-form-grid {
         grid-template-columns: 1fr;
         gap: 16px;
     }
+
     .rw-form-group.full-width {
         grid-column: span 1;
     }
-    .rw-feedback-card {
-        padding: 22px 18px;
-    }
+
     .rw-captcha-container {
         flex-direction: column;
         align-items: stretch;
     }
-    .rw-btn-submit, .rw-btn-reset {
+
+    .rw-form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .rw-btn-submit,
+    .rw-btn-reset {
         width: 100%;
         justify-content: center;
     }
-    .rw-form-actions {
-        flex-direction: column;
-    }
 }
+
 </style>';
 
 $design->startPage("$pageTitle");
@@ -361,7 +394,7 @@ $design->openDiv("leftArea",'col-lg-9');
             <i class="fas fa-comments"></i>
         </div>
         <div class="rw-feedback-title-wrap">
-            <h2>Send Us Your Feedback</h2>
+            <h2>Feedback</h2>
             <p>We value your thoughts and suggestions to help us improve the RWITC experience.</p>
         </div>
     </div>
@@ -431,7 +464,7 @@ $design->openDiv("leftArea",'col-lg-9');
 
 <?php                   
   $design->closeDiv();
-  $design->rightArea();
+  $design->writeLeftPanel();
   $design->closeDiv();
   $design->closeDiv();
   $design->endPage();

@@ -230,7 +230,7 @@ $design->openDiv("leftArea");
 
 
 
-<form name="registerFrm" method="post" action="admin/adminlogin.php">
+<form name="registerFrm" method="post" action="index.php">
 
 <table class="contentTable">
 

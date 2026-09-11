@@ -43,7 +43,8 @@ export async function getPhotoGallery(date) {
             images: (images || []).map((item) => ({
                 id: item.id,
                 caption: item.caption,
-                url: buildImageUrl(item.image_url),
+                // url: buildImageUrl(item.image_url),
+                url: item.image_url && item.image_url.startsWith('http') ? item.image_url : buildImageUrl(item.image_url),
             })),
         };
 

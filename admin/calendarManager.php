@@ -109,7 +109,7 @@ if (isAdminlogin()) {
 			$next_year = $year;
 		}
 
-		$nmonth = 'admin/calendarManager.php?month='.$next_month.'&year='.$next_year;
+		$nmonth = 'turf-console/calendarManager.php?month='.$next_month.'&year='.$next_year;
 		/* "next month" control */
 		$next_month_link = '<a style = "color : green" href="'.$nmonth.'" class="control">Next Month &gt;&gt;</a>';
 
@@ -120,13 +120,13 @@ if (isAdminlogin()) {
 			$prev_month = $month - 1;
 			$prev_year = $year;
 		}
-		$pmonth = 'admin/calendarManager.php?month='.$prev_month.'&year='.$prev_year;
+		$pmonth = 'turf-console/calendarManager.php?month='.$prev_month.'&year='.$prev_year;
 		/* "previous month" control */
 		$previous_month_link = '<a style = "color : green" href="'.$pmonth.'" class="control">&lt;&lt; 	Previous Month</a>';
 
 		//$hiddenf = '<input type="hidden" name = "txtmonth" id = "txtmonth" value = "'.$month.'"><input type="hidden" name = "txtyear" id = "txtyear" value = "'.$year.'">';
 
-		//$action = 'admin/calendarManager.php';
+		//$action = 'turf-console/calendarManager.php';
 		/* bringing the controls together */
 		//$controls = '<form method="post" action = "'.$action.'">'.$select_month_control.$select_year_control.$hiddenf.'&nbsp;<input type="submit" name="submit" value="Go" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$previous_month_link.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$next_month_link.' </form>';
 		$controls = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$previous_month_link.'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$next_month_link.' <input type="submit" name="submit" value="Save" />';
@@ -324,7 +324,7 @@ $design->openDiv("leftArea",'col-lg-9');
 			</div>
 		</div>
 		<?php //if ($q=="new-calendar" || $q=="edit-calendar") { ?>              
-			<form name="calendarForm" method="post" action="admin/calendarManager.php">
+			<form name="calendarForm" method="post" action="turf-console/calendarManager.php">
 				<div class="calendar-card">
 					<?php echo $html; ?>
 				</div>

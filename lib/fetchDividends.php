@@ -53,7 +53,8 @@ foreach ($dividendsList as $dividend){
                        "className" => "{$centresList[$dividend['centreid']]}",
                        "title" => "{$centresList[$dividend['centreid']]}",
                        "start" => "{$dividend['div_date']}",
-                       "url"   => DIVIDENDS_BASE."/".$dividend['filename']
+                    //    "url"   => DIVIDENDS_BASE."/".$dividend['filename']
+					"url"   => (strpos($dividend['filename'], 'http') === 0) ? $dividend['filename'] : DIVIDENDS_BASE."/".$dividend['filename']
                       );
 }
 //print_r($jsonArray);

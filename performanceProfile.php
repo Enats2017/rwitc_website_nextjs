@@ -27,14 +27,12 @@ $pageTitle ="RWITC | ".CURRENT_SEASON ." - Performance Profile of Horses";
   $design = new Design();
 
    $design->js='
-
-    <script type="text/javascript" src="/js/jquery.autoSuggest.js"></script>
-
+    <script type="text/javascript" src="assets/js/jquery.autoSuggest.js"></script>
   ';
 
   $design->css = "
 
-  <link type='text/css' href='/css/autoSuggest.css' rel='stylesheet' />    
+ <link type='text/css' href='assets/css/autoSuggest.css' rel='stylesheet' />   
   <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'>
   <style type='text/css'>
   #infoWrapper.col-lg-12 {
@@ -120,7 +118,7 @@ $pageTitle ="RWITC | ".CURRENT_SEASON ." - Performance Profile of Horses";
 
   $design->jqueryJs = "
 
-    $(\"#horsename\").autoSuggest('/fetchHorses.php', {
+    $(\"#horsename\").autoSuggest('fetchHorses.php', {
 
                             selectionLimit: 1,
 

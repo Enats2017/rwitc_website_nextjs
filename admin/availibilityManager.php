@@ -89,7 +89,7 @@
     <script type="text/javascript">
         function confirmDelete(calendarID) {
             if (confirm ("Are you sure ?")){
-                location.href="admin/availibilityManager.php?q=delete-calendar&id="+calendarID;
+                location.href="turf-console/availibilityManager.php?q=delete-calendar&id="+calendarID;
             }
         }
     </script>
@@ -199,16 +199,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     <?php } ?>    
     <?php if ($_SESSION['calendar'] == "Y") { ?>
         <div class="avail-header">
-              <a class="add-avail-btn" href="admin/availibilityManager.php?q=new-calendar"><i class="fas fa-plus"></i> Add New Calendar Entry</a>
+              <a class="add-avail-btn" href="turf-console/availibilityManager.php?q=new-calendar"><i class="fas fa-plus"></i> Add New Calendar Entry</a>
               <div class="header-links">
-                <!-- <a href="admin/dashboard.php">Dashboard</a>
-                <a href="admin/adminlogin.php?q=logout">Logout</a> -->
+                <!-- <a href="turf-console/dashboard.php">Dashboard</a>
+                <a href="turf-console/adminlogin.php?q=logout">Logout</a> -->
            </div>
         </div>
               
               <?php if ($q=="new-calendar" || $q=="edit-calendar") { ?>              
               <div class="avail-form-wrap">
-              <form name="calendarForm" method="post" action="admin/availibilityManager.php">
+              <form name="calendarForm" method="post" action="turf-console/availibilityManager.php">
                 <div class="form-row">
                     <label class="form-label" for="calendar_date">Date</label>
                     <?php 
@@ -245,7 +245,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                     <div class="avail-list-row">
                         <div class="avail-date"><i class="far fa-calendar-alt"></i> <?php echo date("d-m-y",strtotime($calendarInfo['racedate'])); ?></div>
                         <div class="avail-actions">
-                          <a href="admin/availibilityManager.php?id=<?php echo $calendarInfo['id'];?>&q=edit-calendar"><i class="fas fa-edit"></i> Edit</a>
+                          <a href="turf-console/availibilityManager.php?id=<?php echo $calendarInfo['id'];?>&q=edit-calendar"><i class="fas fa-edit"></i> Edit</a>
                             <a href="#" onclick="javascript: confirmDelete(<?php echo $calendarInfo['id'];?>);"><i class="fas fa-trash-alt"></i> Delete</a>
                         </div>
                     </div>

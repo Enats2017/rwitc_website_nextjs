@@ -371,7 +371,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 	-->
 
 <div class="config-form-wrap">
-	<form enctype="multipart/form-data" name="configimageForm" method="post" action="admin/configManager.php">
+	<form enctype="multipart/form-data" name="configimageForm" method="post" action="turf-console/configManager.php">
 
 		<div class="config-row">
 			<span class="config-row-label"><i class="fas fa-toggle-on"></i> ODDSBOX</span>
@@ -459,7 +459,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 		<div class="config-form-actions">
 			<input type="submit" name="submit" value="Save Changes" />
 			<input type="hidden" name="q" value="save-data" />
-			<input type="reset" name="reset" value="Clear" onclick="location.href='admin/configManager.php'" />
+			<input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/configManager.php'" />
 		</div>
 
 	</form>

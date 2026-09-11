@@ -88,8 +88,8 @@
           <?php  }  ?>
   </table> 
   <br />
-   <a href="admin/contest_winner.php">List Contests</a> &nbsp;&nbsp;
-   <a href="admin/contest_winner.php?q=pick-winner&amp;date=<?php echo $date; ?>&amp;raceno=<?php echo $raceno; ?>">Pick Winner</a> 
+   <a href="turf-console/contest_winner.php">List Contests</a> &nbsp;&nbsp;
+   <a href="turf-console/contest_winner.php?q=pick-winner&amp;date=<?php echo $date; ?>&amp;raceno=<?php echo $raceno; ?>">Pick Winner</a> 
   <?php } ?>    
   <?php if ($q == "list-contests") { ?>
   <table class="contentTable">
@@ -103,8 +103,8 @@
                     <td><?php echo $contestDetails['racedate']; ?></td>
                     <td><?php echo $contestDetails['raceno']; ?></td>
                     <td class="alignLeft">
-                        <a href="admin/contest_winner.php?q=view-voters&amp;date=<?php echo $contestDetails['racedate']; ?>&amp;raceno=<?php echo $contestDetails['raceno']; ?>">View Voters</a>&nbsp;&nbsp;
-                        <a href="admin/contest_winner.php?q=pick-winner&amp;date=<?php echo $contestDetails['racedate']; ?>&amp;raceno=<?php echo $contestDetails['raceno']; ?>">Pick Winner</a>
+                        <a href="turf-console/contest_winner.php?q=view-voters&amp;date=<?php echo $contestDetails['racedate']; ?>&amp;raceno=<?php echo $contestDetails['raceno']; ?>">View Voters</a>&nbsp;&nbsp;
+                        <a href="turf-console/contest_winner.php?q=pick-winner&amp;date=<?php echo $contestDetails['racedate']; ?>&amp;raceno=<?php echo $contestDetails['raceno']; ?>">Pick Winner</a>
                     </td>
                 </tr>
           <?php  }  ?>

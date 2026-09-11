@@ -125,7 +125,7 @@ try {
     }
 
     $filename   = $reportDetails["filename"];
-    $filePath   = RACEDAY_REPORT_DIR . $filename;
+    $filePath   = RACEDAY_REPORT_DIR . "/" . $filename; 
     $publicUrl  = RACEDAY_REPORT_PUBLIC_BASE . $filename;
 
     // ---- Report content ----
@@ -135,22 +135,29 @@ try {
     // just reading raw bytes with file_get_contents.
 
     $reportHtml = null;
-    $fileExists = is_file($filePath);
+    $fileExists = false;
 
-    if ($fileExists) {
-    ob_start();
-    include $filePath;
-    $reportHtml = ob_get_clean();
+    if (strpos($filename, 'http') === 0) {
+        // New S3-hosted report
+        $reportHtml = @file_get_contents($filename);
+        $fileExists = ($reportHtml !== false);
+        $publicUrl  = $filename;
+    } else {
+        // Old local report
+        $fileExists = is_file($filePath);
+        if ($fileExists) {
+            ob_start();
+            include $filePath;
+            $reportHtml = ob_get_clean();
+        } else {
+            $security->logLine(
+            "RACEDAY_REPORT_API_WARNING | Missing file on disk: " . $filePath
+            );
+        }
+    }
 
-    // Fix: convert legacy Windows-1252/ISO-8859-1 encoded HTML to valid UTF-8
-    // so json_encode() doesn't silently fail on invalid byte sequences.
     if ($reportHtml !== null && !mb_check_encoding($reportHtml, 'UTF-8')) {
         $reportHtml = mb_convert_encoding($reportHtml, 'UTF-8', 'Windows-1252');
-    }
-} else {
-        $security->logLine(
-            "RACEDAY_REPORT_API_WARNING | Missing file on disk: " . $filePath
-        );
     }
 
     // ---- Day label ----
@@ -176,13 +183,12 @@ try {
         $cacheKey,
         $response
     );
-
 } catch (Throwable $error) {
 
     // Log actual database error
     $security->logLine(
         "RACEDAY_REPORT_API_ERROR | "
-        . $error->getMessage()
+            . $error->getMessage()
     );
 
     // Do not expose database error publicly
@@ -190,7 +196,6 @@ try {
         "Internal server error",
         500
     );
-
 } finally {
 
     // Close database connection

@@ -100,7 +100,7 @@
     <script type="text/javascript">
         function confirmDelete(calendarID) {
             if (confirm ("Are you sure ?")){
-                location.href="admin/calendarManager.php?q=delete-calendar&id="+calendarID;
+                location.href="turf-console/calendarManager.php?q=delete-calendar&id="+calendarID;
             }
         }
     </script>
@@ -226,16 +226,16 @@
     <?php } ?>    
     <?php if ($_SESSION['calendar'] == "Y") { ?>
         <div class="submenu">  
-              <a href="admin/calendarManager.php?q=new-calendar">Add New Calendar Entry</a>
+              <a href="turf-console/calendarManager.php?q=new-calendar">Add New Calendar Entry</a>
               <div style="float:right;">
-                <a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-                <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
+                <a style="float:left;" href="turf-console/dashboard.php">Dashboard</a>
+                <a style="float:left; margin-left: 5px;" href="turf-console/adminlogin.php?q=logout">Logout</a>
            </div>
         </div>
               <br />   
               
               <?php if ($q=="new-calendar" || $q=="edit-calendar") { ?>              
-              <form name="calendarForm" method="post" action="admin/calendarManager.php">
+              <form name="calendarForm" method="post" action="turf-console/calendarManager.php">
                 <table class="contentTable">
                     <col width="20%"><col width="80%">
                     <tr>
@@ -295,7 +295,7 @@
                         <td><?php echo date("d-m-y",strtotime($calendarInfo['racedate'])); ?></td>
                         <td><?php echo $centresList[$calendarInfo['centreid']]; ?></td>
                         <td>
-                          <a href="admin/calendarManager.php?id=<?php echo $calendarInfo['id'];?>&q=edit-calendar">Edit</a>
+                          <a href="turf-console/calendarManager.php?id=<?php echo $calendarInfo['id'];?>&q=edit-calendar">Edit</a>
                             <a style="cursor:pointer;" onclick="javascript: confirmDelete(<?php echo $calendarInfo['id'];?>);">Delete</a>
                         </td>
                     </tr>

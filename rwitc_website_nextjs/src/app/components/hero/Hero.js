@@ -56,7 +56,9 @@ export default function Hero() {
               <SwiperSlide key={item.id}>
                 <div className="heroSlide">
                   <img
-                    src={`${UPLOAD_URL}/${item.source}`}
+                    // src={`${UPLOAD_URL}/${item.source}`}
+                        src={item.source.startsWith('http') ? item.source : `${UPLOAD_URL}/${item.source}`}
+
                     alt={item.title}
                   />
                 </div>

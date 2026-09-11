@@ -116,7 +116,8 @@ try {
             "className" => $row["centre"],
             "title"     => $row["centre"],
             "start"     => $row["div_date"],
-            "url"       => $baseUrl . $row["filename"]
+            // "url"       => $baseUrl . $row["filename"]
+            "url"       => (strpos($row["filename"], 'http') === 0) ? $row["filename"] : $baseUrl . $row["filename"]
         ];
     }
 

@@ -7,14 +7,14 @@ Class Image {
     
     
     function insertImage($date,$caption,$filename,$sponsorID) {
-        $this->db->insert(self::sqlInsertImage($date,$caption,$filename,$sponsorID));
-    }
-    
-    private static function sqlInsertImage($date,$caption,$filename,$sponsorID) {
-        return "INSERT INTO gallery(racedate,caption,filename,sponsor_id) VALUES
-               ('$date','$caption','$filename',$sponsorID);
-               ";
-    }
+    $this->db->insert(self::sqlInsertImage($date,$caption,$filename,$sponsorID));
+}
+
+private static function sqlInsertImage($date,$caption,$filename,$sponsorID) {
+    return "INSERT INTO gallery(racedate,caption,sponsor_id,filename) VALUES
+           ('$date','$caption',$sponsorID,'$filename');
+           ";
+}
 
      function updateImage($caption,$image_id) {
         $this->db->update(self::sqlupdateImage($caption,$image_id));

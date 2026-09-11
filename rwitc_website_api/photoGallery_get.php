@@ -175,9 +175,18 @@ try {
         while ($row = $result->fetch_assoc()) {
 
             // Build the public image URL the same way photoGallery.php does
-            $row["image_url"] = "../rwitc_upload/gallery/"
-                . date("d-M-Y", strtotime($row["racedate"]))
-                . "/" . $row["filename"];
+            // $row["image_url"] = "../rwitc_upload/gallery/"
+            //     . date("d-M-Y", strtotime($row["racedate"]))
+            //     . "/" . $row["filename"];
+
+            if (strpos($row["filename"], "http") === 0) {
+                $row["image_url"] = $row["filename"];
+            } else {
+                $row["image_url"] = "../rwitc_upload/gallery/"
+                    . date("d-M-Y", strtotime($row["racedate"]))
+                    . "/" . $row["filename"];
+            }
+
 
             $images[] = $row;
         }
@@ -196,13 +205,12 @@ try {
         $cacheKey,
         $response
     );
-
 } catch (Throwable $error) {
 
     // Save actual error in log file
     $security->logLine(
         "PHOTO_GALLERY_API_ERROR | " .
-        $error->getMessage()
+            $error->getMessage()
     );
 
     // Return safe error response
@@ -210,7 +218,6 @@ try {
         "Internal server error",
         500
     );
-
 } finally {
 
     // Close database connection

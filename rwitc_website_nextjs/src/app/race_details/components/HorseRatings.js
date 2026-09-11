@@ -16,32 +16,26 @@ export default function HorseRatings() {
                 iframeRef.current?.contentWindow?.document;
 
             if (!iframeDoc) return;
-
-            const style = iframeDoc.createElement("style");
-            style.innerHTML = `
-                html, body {
-                    display: flex;
-                    justify-content: center;
-                    margin: 0;
-                    padding: 0;
-                    scrollbar-width: none;
-                    -ms-overflow-style: none;
-                }
-                html::-webkit-scrollbar,
-                body::-webkit-scrollbar {
-                    display: none;
-                    width: 0;
-                    height: 0;
-                }
-                body {
-                    flex-direction: column;
-                    align-items: center;
-                }
-                table {
-                    margin: 0 auto;
-                }
-            `;
-            iframeDoc.head.appendChild(style);
+    
+const style = iframeDoc.createElement("style");
+style.innerHTML = `
+    html, body {
+        margin: 0;
+        padding: 0;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
+    table {
+        margin: 0 auto;
+    }
+`;
+iframeDoc.head.appendChild(style);
         } catch (err) {
             // cross-origin case: can't inject, silently ignore
             console.warn("Could not style iframe content:", err);

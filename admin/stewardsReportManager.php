@@ -4,6 +4,12 @@ require_once('../lib/stewards.class.php');
 require_once("../lib/users.class.php");
 require_once("../lib/userchecks.php");
 
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../rwitc_website_api/config/config.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+
 $q = getParameterString('q', '', $db);
 session_start();
 if (isset($_COOKIE['uid'])) {
@@ -29,8 +35,40 @@ if (isAdminlogin()) {
                     if (!$_FILES['reportFile']['error']) { // error =0  
                         $filename = $_FILES['reportFile']['name'];
                         $filename = basename($filename, ".HTM") . "_$date.HTM";
-                        if (move_uploaded_file($_FILES['reportFile']['tmp_name'], $base . STEWARDS_REPORT_BASE . "/" . $filename)) {
-                            $id = $srObj->insertStewardsReport($date, $title, $filename);
+
+                        // if (move_uploaded_file($_FILES['reportFile']['tmp_name'], $base . STEWARDS_REPORT_BASE . "/" . $filename)) {
+                        //     $id = $srObj->insertStewardsReport($date, $title, $filename);
+                        // }
+
+                        // Upload to S3
+
+                        $s3_url = '';
+                        try {
+                            $s3Client = new S3Client([
+                                'version'     => 'latest',
+                                'region'      => AWS_REGION,
+                                'credentials' => [
+                                    'key'    => AWS_ACCESS_KEY_ID,
+                                    'secret' => AWS_SECRET_ACCESS_KEY,
+                                ],
+                            ]);
+
+                            $result = $s3Client->putObject([
+                                'Bucket'      => AWS_BUCKET,
+                                'Key'         => 'uploads/StewardsReport/' . $filename,
+                                'SourceFile'  => $_FILES['reportFile']['tmp_name'],
+                                // 'ACL'         => 'public-read',
+                                'ContentType' => 'text/html',
+                            ]);
+
+                            $s3_url = $result['ObjectURL'];
+                        } catch (AwsException $e) {
+                            $s3_url = '';
+                        }
+
+                        if ($s3_url != '') {
+                            $id = $srObj->insertStewardsReport($date, $title, $s3_url);
+                            $msg = 'Report Uploaded Successfully!';
                         }
                     }
                 } catch (Exception $err) {
@@ -43,8 +81,11 @@ if (isAdminlogin()) {
             $reportID = getParameterNumber('id', 0);
             $reportDetails = $srObj->getStewardsReportById($reportID);
             try {
-                unlink($base . STEWARDS_REPORT_BASE . "/" . $reportDetails['filename']);
+                // unlink($base . STEWARDS_REPORT_BASE . "/" . $reportDetails['filename']);
                 $srObj->deleteStewardsReportByID($reportID);
+                $_SESSION['report_msg'] = 'Report Deleted Successfully!';
+                header("Location: stewardsReportManager.php");
+                exit;
             } catch (Exception $err) {
                 $msg = $err->getMessage();
             }
@@ -69,7 +110,7 @@ $design->js = '
     <script type="text/javascript">
         function confirmDelete(reportID) {
             if (confirm ("Are you sure ?")){
-                location.href="admin/stewardsReportManager.php?q=delete-report&id="+reportID;
+                location.href="turf-console/stewardsReportManager.php?q=delete-report&id="+reportID;
             }
             return false;
         }
@@ -125,9 +166,17 @@ $design->openDiv("leftArea", "col-lg-9");
         width: auto;
         display: block;
     }
-    
-html, body { scrollbar-width: none; -ms-overflow-style: none; }
-html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+    html,
+    body {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+    }
 
     #infoWrapper.col-lg-12 #rightArea.col-lg-3 {
         padding-top: 0 !important;
@@ -381,11 +430,24 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     }
 </style>
 
+<?php 
+if (isset($_SESSION['report_msg'])) {
+    $msg = $_SESSION['report_msg'];
+    unset($_SESSION['report_msg']);
+}
+?>
 <?php if (!empty($msg)) { ?>
-    <div class="message">
+    <div class="message" id="successMsg">
         <?php echo $msg; ?>
     </div>
+     <script>
+        setTimeout(function() {
+            var el = document.getElementById('successMsg');
+            if (el) el.style.display = 'none';
+        }, 2500);
+    </script>
 <?php } ?>
+
 <?php if (!empty($secmsg)) { ?>
     <div class="message">
         <?php echo $secmsg; ?>
@@ -394,11 +456,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 <?php if ($_SESSION['stewards_report'] == "Y") { ?>
 
     <div class="reports-header">
-        <a class="add-report-btn" href="admin/stewardsReportManager.php?q=new-report"><i class="fas fa-plus"></i> Add New Report</a>
+        <a class="add-report-btn" href="turf-console/stewardsReportManager.php?q=new-report"><i class="fas fa-plus"></i> Add New Report</a>
         <!--
                 <div style="float:right;">
-                    <a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-                    <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
+                    <a style="float:left;" href="turf-console/dashboard.php">Dashboard</a>
+                    <a style="float:left; margin-left: 5px;" href="turf-console/adminlogin.php?q=logout">Logout</a>
                 </div>
                 -->
     </div>
@@ -406,7 +468,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     <?php if ($q == "new-report") { ?>
         <div class="report-form-wrap">
             <h3>Add New Report</h3>
-            <form name="dividendForm" method="post" action="admin/stewardsReportManager.php" enctype="multipart/form-data">
+            <form name="dividendForm" method="post" action="turf-console/stewardsReportManager.php" enctype="multipart/form-data">
                 <table class="report-form-table">
                     <col width="20%">
                     <col width="80%">

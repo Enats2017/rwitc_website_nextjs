@@ -142,7 +142,8 @@ export default function MediaSection() {
                                             <SwiperSlide key={item.id}>
                                                 <div className="adsImgWrap">
                                                     <img
-                                                        src={`${UPLOAD_URL}/${item.path}`}
+                                                        // src={item.path}
+                                                        src={item.path.startsWith('http') ? item.path : `${UPLOAD_URL}/${item.path}`}
                                                         alt={item.path}
                                                         className="adsImgMain"
                                                     />
@@ -150,6 +151,7 @@ export default function MediaSection() {
                                             </SwiperSlide>
                                         ))
                                     }
+                                    
                                 </Swiper>
 
                                 {

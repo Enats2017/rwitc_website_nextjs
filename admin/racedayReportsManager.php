@@ -1,86 +1,128 @@
 <?php
-  define("REPORTS_PER_PAGE",20);
-  include_once('../bootstrap.php');
-  require_once('../lib/racedayreports.class.php');
-  include_once('../lib/pagination.class.php');
-  require_once("../lib/users.class.php");
-  require_once("../lib/userchecks.php");
-  require_once("../lib/function_race_report.php");
+define("REPORTS_PER_PAGE", 20);
+include_once('../bootstrap.php');
+require_once('../lib/racedayreports.class.php');
+include_once('../lib/pagination.class.php');
+require_once("../lib/users.class.php");
+require_once("../lib/userchecks.php");
+require_once("../lib/function_race_report.php");
 
-  $q = getParameterString('q','',$db);
-  session_start();                    
-  if(isset($_COOKIE['uid'])){                    
-    $uid = $_COOKIE['uid'];    
-  } else {
-    $uid = 0;
-  }             
-  $userObj = new Users($db);  
-  
-  if (isAdminlogin()) {
-    if ($_SESSION['race_day_report'] == "Y") { // check
-      $pageno = getParameterNumber('page',1);
-      $rrObj = new RaceReport($db);
-      
-      
-      // all actions POST form submissions go here
-      if (isset($_REQUEST['submit'])) {      
-          $date = getParameterString('date','',$db);
-          // save new dividend     
-          if ($q == "add-report") {
-              try {
-                  if (!$_FILES['reportFile']['error'])  { // error =0  
-                    $filename = $_FILES['reportFile']['name'];  
-                    $filename = basename($filename,".HTM")."_$date.HTM"; 
-                    if (move_uploaded_file($_FILES['reportFile']['tmp_name'],$base.RACEREPORTS_BASE."/".$filename)) {
-                        $id = $rrObj->insertRaceReport($date,$filename); 
-                    }
-                  }
-             } catch (Exception $err) {
-                 $msg = $err->getMessage();
-             }
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../rwitc_website_api/config/config.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+
+$q = getParameterString('q', '', $db);
+session_start();
+if (isset($_COOKIE['uid'])) {
+  $uid = $_COOKIE['uid'];
+} else {
+  $uid = 0;
+}
+$userObj = new Users($db);
+
+if (isAdminlogin()) {
+  if ($_SESSION['race_day_report'] == "Y") { // check
+    $pageno = getParameterNumber('page', 1);
+    $rrObj = new RaceReport($db);
+
+
+    // all actions POST form submissions go here
+    if (isset($_REQUEST['submit'])) {
+      $date = getParameterString('date', '', $db);
+      // save new dividend     
+      if ($q == "add-report") {
+        try {
+          if (!$_FILES['reportFile']['error']) { // error =0  
+            $filename = $_FILES['reportFile']['name'];
+            $filename = basename($filename, ".HTM") . "_$date.HTM";
+            // if (move_uploaded_file($_FILES['reportFile']['tmp_name'],$base.RACEREPORTS_BASE."/".$filename)) {
+            //     $id = $rrObj->insertRaceReport($date,$filename); 
+
+
+            $s3_url = '';
+            try {
+              $s3Client = new S3Client([
+                'version'     => 'latest',
+                'region'      => AWS_REGION,
+                'credentials' => [
+                  'key'    => AWS_ACCESS_KEY_ID,
+                  'secret' => AWS_SECRET_ACCESS_KEY,
+                ],
+              ]);
+
+              $result = $s3Client->putObject([
+                'Bucket'      => AWS_BUCKET,
+                'Key'         => 'uploads/RacedayReports/' . $filename,
+                'SourceFile'  => $_FILES['reportFile']['tmp_name'],
+                // 'ACL'         => 'public-read',
+                'ContentType' => 'text/html',
+              ]);
+
+              $s3_url = $result['ObjectURL'];
+            } catch (AwsException $e) {
+              $s3_url = '';
+            }
+
+            if ($s3_url != '') {
+              $id = $rrObj->insertRaceReport($date, $s3_url);
+              $_SESSION['report_msg'] = 'Race Day Report Uploaded Successfully!';
+              header("Location: racedayReportsManager.php");
+              exit;
+
+
+            }
           }
+        } catch (Exception $err) {
+          $msg = $err->getMessage();
+        }
       }
-      
-      if ($q=="delete-report") {
-           $reportID=getParameterNumber('id',0);                
-           $reportDetails = $rrObj->getRaceReportById($reportID); 
-           try {
-               unlink($base.RACEREPORTS_BASE."/".$reportDetails['filename']);   
-               $rrObj->deleteRaceReportByID($reportID);
-           } catch (Exception $err) {
-               $msg = $err->getMessage();        
-           }
-      }
-        // fetch all articles
-      
-      //$totalRecords = $rrObj->getAllRaceReportsCount();  
-      // create a pagination object
-      //$paging = new Pagination($pageno,REPORTS_PER_PAGE,$totalRecords);  
-      $allReports = $rrObj->getRaceRecordsPageWise($pageno,REPORTS_PER_PAGE);
-    } else {
-        $msg = "You do not have access to this page.";
-      }  
-    } else {
-        $secmsg = "Please login to access this page";
     }
-  
-  $pageTitle ='Race Day Reports Manager';        
-  // create a template object
-  $design = new Design();
-  
-  
-  $design->js='
+
+    if ($q == "delete-report") {
+      $reportID = getParameterNumber('id', 0);
+      $reportDetails = $rrObj->getRaceReportById($reportID);
+      try {
+        // unlink($base . RACEREPORTS_BASE . "/" . $reportDetails['filename']);
+        $rrObj->deleteRaceReportByID($reportID);
+        $_SESSION['report_msg'] = 'Race Day Report Deleted Successfully!';
+         header("Location: racedayReportsManager.php");
+         exit;
+      } catch (Exception $err) {
+        $msg = $err->getMessage();
+      }
+    }
+    // fetch all articles
+
+    //$totalRecords = $rrObj->getAllRaceReportsCount();  
+    // create a pagination object
+    //$paging = new Pagination($pageno,REPORTS_PER_PAGE,$totalRecords);  
+    $allReports = $rrObj->getRaceRecordsPageWise($pageno, REPORTS_PER_PAGE);
+  } else {
+    $msg = "You do not have access to this page.";
+  }
+} else {
+  $secmsg = "Please login to access this page";
+}
+
+$pageTitle = 'Race Day Reports Manager';
+// create a template object
+$design = new Design();
+
+
+$design->js = '
   <script type="text/javascript" src="js/jquery.ui.core.min.js"></script>    
     <script type="text/javascript" src="js/jquery.ui.datepicker.min.js"></script>
     <script type="text/javascript">
         function confirmDelete(reportID) {
             if (confirm ("Are you sure ?")){
-                location.href="admin/racedayReportsManager.php?q=delete-report&id="+reportID;
+                location.href="turf-console/racedayReportsManager.php?q=delete-report&id="+reportID;
             }
         }
     </script>
   ';
-  $design->css ='
+$design->css = '
   <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" /> 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style type="text/css">
@@ -230,7 +272,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
   </style>   
   ';
-  $design->jqueryJs = "
+$design->jqueryJs = "
     jQuery.browser = {};
     (function () {
         jQuery.browser.msie = false;
@@ -246,86 +288,104 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
             buttonImageOnly: true,
             dateFormat : 'yy-mm-dd'
         });
-  "; 
-  $design->startPage("$pageTitle");
-  
-  $design->writeLogoTickerMenu();
-  $design->openDiv("contentWrapper");
-  $design->openDiv("infoWrapper","col-lg-12");
-  $design->openDiv("leftArea",'col-lg-9');
-  
-  ?>    
-  <?php if (!empty($msg)) {?>
-        <div class="message">
-            <?php echo $msg; ?>
-        </div>
-    <?php } ?>
-    <?php if (!empty($secmsg)) {?>
-        <div class="message">
-            <?php echo $secmsg; ?>
-        </div>
-    <?php } ?>    
-    <?php if ($_SESSION['race_day_report'] == "Y") { ?>
-              <div class="reports-header">
-                <a class="add-report-btn" href="admin/racedayReportsManager.php?q=new-report"><i class="fas fa-plus"></i> Add New Report</a>
-                 <div class="header-links">
-                    <!-- <a href="admin/dashboard.php">Dashboard</a>
-                    <a href="admin/adminlogin.php?q=logout">Logout</a> -->
-                  </div>
-              </div>
-              
-              <?php if ($q=="new-report") { ?>              
-              <div class="report-form-wrap">
-              <form name="dividendForm" method="post" action="admin/racedayReportsManager.php" enctype="multipart/form-data">
-                <div class="form-row">
-                    <label class="form-label" for="report_date">Date</label>
-                    <?php 
-                      $date = '';
-                        if ($q=="edit-report") {
-                           // echo $reportDetails['dividend_date'];    
-                            $date = date("Y-m-d",strtotime($reportDetails['racedate']));
-                        }
-                    ?>
-                    <input type="text" name="date" id='report_date' value="<?php echo $date; ?>" />
-                </div>
-                <div class="form-row">
-                    <label class="form-label" for="reportFile">Upload File</label>
-                    <input type="file" name="reportFile" id="reportFile" />
-                </div>
-                <div class="form-actions">
-                    <input type="submit" name="submit" value="Save" />
-                    <input type="reset" name="reset" value="Clear" />
-                    <input type="hidden" name="q" value="add-report" />
-                </div>
-              </form>
-              </div>
-                <?php } ?>
+  ";
+$design->startPage("$pageTitle");
 
-              <div class="report-note"><i class="fas fa-circle-info"></i> To edit a Race Day Report entry, please delete the old one and Re-add</div>
+$design->writeLogoTickerMenu();
+$design->openDiv("contentWrapper");
+$design->openDiv("infoWrapper", "col-lg-12");
+$design->openDiv("leftArea", 'col-lg-9');
 
-              <div class="pagination-block"><?php echo displayPaginationBelow(REPORTS_PER_PAGE,$pageno, $db); ?></div>
-              <?php //$paging->writePagination(); ?>
+?>
 
-              <div class="reports-list">
-                <?php if (empty($allReports)) { ?>
-                    <div class="reports-list-empty">No race day report entries found.</div>
-                <?php } ?>
-                <?php foreach ($allReports as $report) { ?>
-                    <div class="reports-list-row">
-                        <div class="report-date"><i class="far fa-calendar-alt"></i> <?php echo date("d-m-y",strtotime($report['racedate'])); ?></div>
-                        <a class="report-delete" onclick="javascript: confirmDelete(<?php echo $report['id'];?>);"><i class="fas fa-trash-alt"></i> Delete</a>
-                    </div>
-                <?php } ?>
-              </div>
+<?php 
+if (isset($_SESSION['report_msg'])) {
+    $msg = $_SESSION['report_msg'];
+    unset($_SESSION['report_msg']);
+}
+?>
 
-              <div class="pagination-block"><?php echo displayPaginationBelow(REPORTS_PER_PAGE,$pageno, $db); ?></div>
-              <?php //$paging->writePagination(); ?>
+<?php if (!empty($msg)) { ?>
+  <div class="message" id="successMsg">
+    <?php echo $msg; ?>
+  </div>
+
+  <script>
+        setTimeout(function() {
+            var el = document.getElementById('successMsg');
+            if (el) el.style.display = 'none';
+        }, 2500);
+    </script>
+
 <?php } ?>
-              
-             <?php                   
-  $design->closeDiv();
-  $design->writeLeftPanel();
-  $design->closeDiv();
-  $design->closeDiv();
-    $design->pageClose();
+<?php if (!empty($secmsg)) { ?>
+  <div class="message">
+    <?php echo $secmsg; ?>
+  </div>
+<?php } ?>
+<?php if ($_SESSION['race_day_report'] == "Y") { ?>
+  <div class="reports-header">
+    <a class="add-report-btn" href="turf-console/racedayReportsManager.php?q=new-report"><i class="fas fa-plus"></i> Add New Report</a>
+    <div class="header-links">
+      <!-- <a href="turf-console/dashboard.php">Dashboard</a>
+                    <a href="turf-console/adminlogin.php?q=logout">Logout</a> -->
+    </div>
+  </div>
+
+  <?php if ($q == "new-report") { ?>
+    <div class="report-form-wrap">
+      <form name="dividendForm" method="post" action="turf-console/racedayReportsManager.php" enctype="multipart/form-data">
+        <div class="form-row">
+          <label class="form-label" for="report_date">Date</label>
+          <?php
+          $date = '';
+          if ($q == "edit-report") {
+            // echo $reportDetails['dividend_date'];    
+            $date = date("Y-m-d", strtotime($reportDetails['racedate']));
+          }
+          ?>
+          <input type="text" name="date" id='report_date' value="<?php echo $date; ?>" />
+        </div>
+        <div class="form-row">
+          <label class="form-label" for="reportFile">Upload File</label>
+          <input type="file" name="reportFile" id="reportFile" />
+        </div>
+        <div class="form-actions">
+          <input type="submit" name="submit" value="Save" />
+          <input type="reset" name="reset" value="Clear" />
+          <input type="hidden" name="q" value="add-report" />
+        </div>
+      </form>
+    </div>
+  <?php } ?>
+
+  <div class="report-note"><i class="fas fa-circle-info"></i> To edit a Race Day Report entry, please delete the old one and Re-add</div>
+
+  <div class="pagination-block"><?php echo displayPaginationBelow(REPORTS_PER_PAGE, $pageno, $db); ?></div>
+  <?php //$paging->writePagination(); 
+  ?>
+
+  <div class="reports-list">
+    <?php if (empty($allReports)) { ?>
+      <div class="reports-list-empty">No race day report entries found.</div>
+    <?php } ?>
+    <?php foreach ($allReports as $report) { ?>
+      <div class="reports-list-row">
+        <div class="report-date"><i class="far fa-calendar-alt"></i> <?php echo date("d-m-y", strtotime($report['racedate'])); ?></div>
+        <a class="report-delete" onclick="javascript: confirmDelete(<?php echo $report['id']; ?>);"><i class="fas fa-trash-alt"></i> Delete</a>
+      </div>
+    <?php } ?>
+  </div>
+
+  <div class="pagination-block"><?php echo displayPaginationBelow(REPORTS_PER_PAGE, $pageno, $db); ?></div>
+  <?php //$paging->writePagination(); 
+  ?>
+<?php } ?>
+
+<?php
+$design->closeDiv();
+$design->writeLeftPanel();
+$design->closeDiv();
+$design->closeDiv();
+$design->pageClose();
 $design = NULL; // release object

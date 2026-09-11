@@ -40,7 +40,8 @@ class Design
 
         //$mtime = filemtime($_SERVER['DOCUMENT_ROOT'] .'/rwitc_website/assets/css/main.css');
 
-        $mtime = filemtime(DIR_BASE . 'assets/css/main.css');
+        // $mtime = filemtime(DIR_BASE . 'assets/css/main.css');
+        $mtime = filemtime(SITE_ROOT . 'assets/css/main.css');
 
         $main_css = $main_file . '?version=' . $mtime;
 
@@ -866,7 +867,7 @@ TICKER;
 
 
 
-                    <a class="navbar-brand" href="admin/dashboard.php"><img src="assets/images/logo.png"></a>
+                    <a class="navbar-brand" href="turf-console/dashboard.php"><img src="assets/images/logo.png"></a>
 
                 </div>
 
@@ -909,7 +910,7 @@ TICKER;
                     
 
                     <div class="rightlogo">
-
+ 
                         <a href="club/contactus.php"><img src="assets/images/rightlogo.png"></a>
 
                     </div>
@@ -1021,8 +1022,8 @@ TICKER;
                 User <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
-                <li><a href="admin/users.php">Users</a></li>
-                <li><a href="admin/userGroup.php">User Group</a></li>
+                <li><a href="turf-console/users.php">Users</a></li>
+                <li><a href="turf-console/userGroup.php">User Group</a></li>
             </ul>
         </li>
     ';
@@ -1294,19 +1295,20 @@ MENU;
     function writeLeftPanel()
     {
         $sessionUser = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'ADMIN';
+        $currentPage = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
         $shareUrl = 'https://' . $_SERVER['HTTP_HOST'] . '' . $_SERVER['REQUEST_URI'];
         $shareTitle = 'Royal Western India Turf Club (RWITC)';
-// Super Admin check - same logic as top User menu
-$isSuperAdmin = (
-    isset($_SESSION['uid']) &&
-    (int)$_SESSION['uid'] === 19 &&
-    isset($_SESSION['role']) &&
-    strtoupper((string)$_SESSION['role']) === 'ADMIN'
-);
+        // Super Admin check - same logic as top User menu
+        $isSuperAdmin = (
+            isset($_SESSION['uid']) &&
+            (int)$_SESSION['uid'] === 19 &&
+            isset($_SESSION['role']) &&
+            strtoupper((string)$_SESSION['role']) === 'ADMIN'
+        );
 
-$usersMenuHtml = '';
-if ($isSuperAdmin) {
-    $usersMenuHtml = '
+        $usersMenuHtml = '';
+        if ($isSuperAdmin) {
+            $usersMenuHtml = '
     <li class="sidebar-user-dropdown" id="navUsers">
 
         <a href="#" onclick="toggleSidebarUsers(event);">
@@ -1318,14 +1320,14 @@ if ($isSuperAdmin) {
         <ul id="sidebarUsersMenu" class="sidebar-submenu">
 
             <li>
-                <a href="admin/users.php">
+                <a href="turf-console/users.php">
                     <i class="fas fa-user"></i>
                     Users
                 </a>
             </li>
 
             <li>
-                <a href="admin/userGroup.php">
+                <a href="turf-console/userGroup.php">
                     <i class="fas fa-user-group"></i>
                     User Group
                 </a>
@@ -1334,7 +1336,7 @@ if ($isSuperAdmin) {
         </ul>
 
     </li>';
-}
+        }
 
         echo <<< LEFTPANEL
 
@@ -1437,16 +1439,16 @@ function toggleSidebarUsers(event) {
 
             <ul class="quick-access-list">
                 <li class="active" id="navDashboard">
-                    <a href="admin/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="turf-console/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
                 {$usersMenuHtml}
                 <li id="navAllModules">
-    <a href="admin/allModules.php"><i class="fas fa-th-large"></i> All Modules</a>
+    <a href="turf-console/allModules.php"><i class="fas fa-th-large"></i> All Modules</a>
 </li>
-                <li><a href="#"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li><a href="#"><i class="fas fa-history"></i> Activity Log</a></li>
-                <li><a href="#"><i class="fas fa-cog"></i> System Settings</a></li>
-                <li><a href="#"><i class="fas fa-question-circle"></i> Help &amp; Support</a></li>
+<li><a href="turf-console/raceManagement.php"><i class="fas fa-horse-head"></i> Race Management</a></li>
+<li><a href="turf-console/socialManagement.php"><i class="fas fa-share-nodes"></i> Social Management</a></li>
+<li><a href="turf-console/reportsManagement.php"><i class="fas fa-chart-bar"></i> Reports Management</a></li>
+<li><a href="turf-console/articlesMailsManagement.php"><i class="fas fa-newspaper"></i> Articles &amp; Mails Management</a></li>
             </ul>
 
                         <div class="share-wrapper" onmouseleave="document.getElementById('shareDropdown').classList.remove('show');" style="position: relative; margin-bottom: 12px;">
@@ -1459,7 +1461,7 @@ function toggleSidebarUsers(event) {
                 </div>
             </div>
 
-            <a class="logout-btn" href="admin/adminlogin.php?q=logout">
+            <a class="logout-btn" href="turf-console/index.php?q=logout">
                 <i class="fas fa-sign-out-alt"></i> &nbsp; Logout
             </a>
 
