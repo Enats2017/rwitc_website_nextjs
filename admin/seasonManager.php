@@ -62,7 +62,7 @@
     <script type="text/javascript">
         function confirmDelete(seasonID) {
             if (confirm ("Are you sure ?")){
-                location.href="admin/seasonManager.php?q=delete-season&id="+seasonID;
+                location.href="turf-console/seasonManager.php?q=delete-season&id="+seasonID;
             }
         }
     </script>
@@ -89,7 +89,7 @@ if ($q == "add-season" || $q == "edit-season") {
       }
 ?>
     
-    <form method="post" action="admin/seasonManager.php?<?php echo $frmAction; ?>">
+    <form method="post" action="turf-console/seasonManager.php?<?php echo $frmAction; ?>">
     <table class="contentTable">
         <tr>
             <th>Season Name</th>
@@ -134,7 +134,7 @@ if ($q == "add-season" || $q == "edit-season") {
 }
 ?>
 
-<a href="admin/seasonManager.php?q=add-season">Add New Season</a>
+<a href="turf-console/seasonManager.php?q=add-season">Add New Season</a>
 <table class="contentTable">
     <tr>
         <th>Season Name</th>
@@ -152,9 +152,9 @@ if ($q == "add-season" || $q == "edit-season") {
             <td><?php echo $seasonDet['end_date']; ?></td>
             <td><?php echo $seasonDet['active']; ?></td>
             <td class="alignLeft">
-                <a href="admin/seasonManager.php?q=edit-season&id=<?php echo $seasonDet['id']; ?>">Edit</a> &nbsp;
+                <a href="turf-console/seasonManager.php?q=edit-season&id=<?php echo $seasonDet['id']; ?>">Edit</a> &nbsp;
                 <a href="#" onclick="javascript:confirmDelete(<?php echo $seasonDet['id']; ?>);">Delete</a> &nbsp;
-                <a href="admin/seasonManager.php?q=set-active&id=<?php echo $seasonDet['id']; ?>">Set As Active</a> &nbsp;
+                <a href="turf-console/seasonManager.php?q=set-active&id=<?php echo $seasonDet['id']; ?>">Set As Active</a> &nbsp;
             </td>
             
         </tr>

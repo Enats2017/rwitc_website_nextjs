@@ -59,7 +59,7 @@
   </table>
   <?php } ?>
   <br />
-  <a href="admin/derby_winner.php?q=pick-winner&amp;winner_no=<?php echo $winnerNoToPick;?>">Pick Winner</a> 
+  <a href="turf-console/derby_winner.php?q=pick-winner&amp;winner_no=<?php echo $winnerNoToPick;?>">Pick Winner</a> 
   <br />      
   <table class="contentTable">
          <tr>

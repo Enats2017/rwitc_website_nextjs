@@ -9,7 +9,7 @@
 
    function displayPaginationBelow($per_page,$page, $db){
         //include_once('../bootstrap.php');
-        $page_url="admin/tickerManager.php?";
+        $page_url="turf-console/tickerManager.php?";
         $query = "SELECT COUNT(*) as totalCount FROM tickers where 1=1";
         $rec = $db->getMultiDimensionalArray($query);
         $total = $rec[0]['totalCount'];

@@ -35,7 +35,7 @@ $design->js='
 <script type="text/javascript">
     function confirmDelete(articleID) {
         if (confirm ("Are you sure ?")){
-            location.href="admin/articlesManager.php?q=delete-article&id="+articleID;
+            location.href="turf-console/articlesManager.php?q=delete-article&id="+articleID;
         }
     }
     

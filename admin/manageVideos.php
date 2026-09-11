@@ -48,7 +48,7 @@ require_once("../lib/userchecks.php");
     <script type="text/javascript">
         function confirmDelete(reportID) {
             if (confirm ("Are you sure ?")){
-                location.href="admin/racedayReportsManager.php?q=delete-report&id="+reportID;
+                location.href="turf-console/racedayReportsManager.php?q=delete-report&id="+reportID;
             }
         }
     </script>
@@ -211,7 +211,7 @@ table.videos-table tr:hover td { background: #e6f4ec; }
     </div>
 
     <div class="video-form-wrap">
-        <form method="post" action="admin/manageVideos.php">
+        <form method="post" action="turf-console/manageVideos.php">
             <div class="video-form-grid">
                 <div class="video-form-field">
                     <label for="racedate">Race Date</label>

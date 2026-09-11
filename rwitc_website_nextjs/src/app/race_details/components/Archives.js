@@ -18,6 +18,7 @@ const CLASS_COLORS = {
     raceresults: "#8b1e1e",
     "rating-change": "#8b1e1e",
     "raceday-report": "#8b1e1e",
+    racecard: "racecard",
 };
 
 // Maps the API's className + PHP-style url (e.g. "erp_handcaps.php?date=..."

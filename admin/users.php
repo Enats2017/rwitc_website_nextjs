@@ -15,7 +15,7 @@ if (
     !isset($_SESSION['role']) ||
     strtoupper((string)$_SESSION['role']) !== 'ADMIN'
 ) {
-    header("Location: ../admin/adminlogin.php");
+    header("Location: ../index.php");
     exit;
 }
 
@@ -50,12 +50,12 @@ if ($action == 'delete' && isset($_GET['id'])) {
              WHERE id = $id"
         );
 
-        header("Location: admin/users.php?msg=deleted");
+        header("Location: turf-console/users.php?msg=deleted");
         exit;
     } catch (Exception $e) {
 
         header(
-            "Location: admin/users.php?msg=error&err=" .
+            "Location: turf-console/users.php?msg=error&err=" .
                 urlencode($e->getMessage())
         );
 
@@ -89,12 +89,12 @@ if (
                     ")"
             );
 
-            header("Location: admin/users.php?msg=bulk_deleted");
+            header("Location: turf-console/users.php?msg=bulk_deleted");
             exit;
         } catch (Exception $e) {
 
             header(
-                "Location: admin/users.php?msg=error&err=" .
+                "Location: turf-console/users.php?msg=error&err=" .
                     urlencode($e->getMessage())
             );
 
@@ -103,7 +103,7 @@ if (
     } else {
 
         header(
-            "Location: admin/users.php?msg=error&err=" .
+            "Location: turf-console/users.php?msg=error&err=" .
                 urlencode("No admins selected.")
         );
 
@@ -438,7 +438,7 @@ if (
 
 
                         header(
-                            "Location: admin/users.php?msg=added"
+                            "Location: turf-console/users.php?msg=added"
                         );
 
                         exit;
@@ -808,7 +808,7 @@ function buildPageUrl(
 
 
     return
-        'admin/users.php?' .
+        'turf-console/users.php?' .
         http_build_query($params);
 }
 
@@ -1432,7 +1432,7 @@ $design->writeLogoTickerMenu();
 
 
             <a
-                href="admin/users.php?action=form"
+                href="turf-console/users.php?action=form"
                 class="btn btn-primary">
                 <i class="fa fa-plus"></i>
                 Add Admin
@@ -1507,7 +1507,7 @@ $design->writeLogoTickerMenu();
 
         <form
             method="get"
-            action="admin/users.php"
+            action="turf-console/users.php"
             class="toolbar"
             id="filter-form">
 
@@ -1614,7 +1614,7 @@ $design->writeLogoTickerMenu();
 
         <form
             method="post"
-            action="admin/users.php"
+            action="turf-console/users.php"
             id="bulk-form">
 
             <div
@@ -1899,7 +1899,7 @@ $design->writeLogoTickerMenu();
                                     <div class="row-actions">
 
                                         <a
-                                            href="admin/users.php?action=form&id=<?php echo (int)$u['id']; ?>"
+                                            href="turf-console/users.php?action=form&id=<?php echo (int)$u['id']; ?>"
                                             class="icon-btn"
                                             title="Edit">
                                             <i class="fa fa-pencil"></i>
@@ -1907,7 +1907,7 @@ $design->writeLogoTickerMenu();
 
 
                                         <a
-                                            href="admin/users.php?action=delete&id=<?php echo (int)$u['id']; ?>"
+                                            href="turf-console/users.php?action=delete&id=<?php echo (int)$u['id']; ?>"
                                             class="icon-btn"
                                             title="Delete"
                                             onclick="return confirm('Delete this admin? This cannot be undone.');">
@@ -2127,7 +2127,7 @@ $design->writeLogoTickerMenu();
 
 
             <a
-                href="admin/users.php"
+                href="turf-console/users.php"
                 class="btn btn-ghost">
 
                 <i class="fa fa-arrow-left"></i>
@@ -2141,7 +2141,7 @@ $design->writeLogoTickerMenu();
 
         <form
             method="post"
-            action="admin/users.php?action=form"
+            action="turf-console/users.php?action=form"
             id="form-user">
 
 
@@ -2535,7 +2535,7 @@ $design->writeLogoTickerMenu();
                 <div class="form-footer">
 
                     <a
-                        href="admin/users.php"
+                        href="turf-console/users.php"
                         class="btn btn-ghost">
                         Cancel
                     </a>

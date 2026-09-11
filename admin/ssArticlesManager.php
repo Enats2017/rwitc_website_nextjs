@@ -113,7 +113,7 @@ $design->js='
 <script type="text/javascript">
     function confirmDelete(articleID) {
         if (confirm ("Are you sure ?")){
-            location.href="admin/ssArticlesManager.php?q=delete-article&id="+articleID;
+            location.href="turf-console/ssArticlesManager.php?q=delete-article&id="+articleID;
         }
     }
 </script>
@@ -223,16 +223,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     <?php } ?>    
     <?php if ($_SESSION['shiven_surendranath'] == "Y") { ?>
         <div class="articles-header">
-          <a class="add-article-btn" href="admin/ssArticlesManager.php?q=new-article"><i class="fas fa-plus"></i> Add New Article</a>
+          <a class="add-article-btn" href="turf-console/ssArticlesManager.php?q=new-article"><i class="fas fa-plus"></i> Add New Article</a>
           <div class="header-links">
-                <!-- <a href="admin/dashboard.php">Dashboard</a>
-                <a href="admin/adminlogin.php?q=logout">Logout</a> -->
+                <!-- <a href="dashboard.php">Dashboard</a>
+                <a href="adminlogin.php?q=logout">Logout</a> -->
            </div>
         </div>
           
           <?php if ($q=="new-article" || $q=="edit-article") { ?>              
            <div class="article-form-wrap">
-           <form name="articleForm" method="post" action="admin/ssArticlesManager.php">
+           <form name="articleForm" method="post" action="turf-console/ssArticlesManager.php">
             <table class="contentTable">
                 <col width="20%"><col width="80%">
                 <tr>
@@ -266,7 +266,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                 <tr>
                     <td colspan="2">
                         <input type="submit" name="submit" value="Save" />
-                        <input type="reset" name="reset" value="Clear" onclick="location.href='admin/ssArticlesManager.php'" />
+                        <input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/ssArticlesManager.php'" />
                         <?php if ($q=="new-article") { ?>
                             <input type="hidden" name="q" value="add-article" />
                         <?php } elseif ($q == "edit-article") { ?>
@@ -313,7 +313,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                         <span class="tag">Type <b><?php echo $articleInfo['article_type']; ?></b></span>
                     </div>
                     <div class="article-actions">
-                        <a href="admin/ssArticlesManager.php?id=<?php echo $articleInfo['id'];?>&q=edit-article"><i class="fas fa-edit"></i> Edit</a>
+                        <a href="turf-console/ssArticlesManager.php?id=<?php echo $articleInfo['id'];?>&q=edit-article"><i class="fas fa-edit"></i> Edit</a>
                         <a href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $articleInfo['id']; ?>);" ><i class="fas fa-trash-alt"></i> Delete</a>
                     </div>
                 </div>

@@ -194,7 +194,7 @@ $design->openDiv("leftArea","col-lg-9");
 <div class="hp-title">Home Page Popup</div>
 
 <div class="hp-form-wrap">
-<form enctype="multipart/form-data" name="imageForm" method="post" action="admin/homepopup.php">
+<form enctype="multipart/form-data" name="imageForm" method="post" action="turf-console/homepopup.php">
 	<table class="hp-form-table">
 		<!-- <col width="20%"><col width="80%"> -->
 		<tr>
@@ -211,7 +211,7 @@ $design->openDiv("leftArea","col-lg-9");
 </div>
 
 <div class="hp-form-wrap">
-<form enctype="multipart/form-data" name="homepopupForm" method="post" action="admin/homepopup.php">
+<form enctype="multipart/form-data" name="homepopupForm" method="post" action="turf-console/homepopup.php">
 	<table class="hp-form-table">
 	
 		<tr>

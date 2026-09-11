@@ -71,7 +71,7 @@ $design->js='
 <script type="text/javascript">
     function confirmDelete(calendarID) {
         if (confirm ("Are you sure ?")){
-            location.href="admin/availibilityManager.php?q=delete-calendar&id="+calendarID;
+            location.href="turf-console/availibilityManager.php?q=delete-calendar&id="+calendarID;
         }
     }
 </script>
@@ -210,12 +210,12 @@ $design->openDiv("leftArea",'col-lg-9');
 	<div class="racedata-header">
 	  	<h2><i class="fas fa-database"></i> Reset Race Data Manager</h2>
 	  	<div class="header-links">
-			<!-- <a href="admin/dashboard.php">Dashboard</a>
-			<a href="admin/adminlogin.php?q=logout">Logout</a> -->
+			<!-- <a href="dashboard.php">Dashboard</a>
+			<a href="adminlogin.php?q=logout">Logout</a> -->
 	   	</div>
 	</div>
 	<div class="racedata-form-wrap">
-	<form enctype="multipart/form-data" name="racedataimageForm" method="post" action="admin/racedataManager.php">
+	<form enctype="multipart/form-data" name="racedataimageForm" method="post" action="turf-console/racedataManager.php">
 		<div class="form-row">
                 <label class="form-label" for="race_date">Race Date</label>
                 	<input type="text" name="race_date" value="" id="race_date" />

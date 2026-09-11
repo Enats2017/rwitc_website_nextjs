@@ -73,7 +73,7 @@
     <script type="text/javascript">
         function confirmDelete(sponsorID) {        
             if (confirm ("Are you sure ?")){
-                location.href="admin/sponsorManager.php?q=delete-sponsor&id="+sponsorID;
+                location.href="turf-console/sponsorManager.php?q=delete-sponsor&id="+sponsorID;
             }
         }
     </script>
@@ -97,14 +97,14 @@
   $design->openDiv("leftArea");
     echo $msg; 
   ?>    
-   <a href="admin/sponsorManager.php?q=new-sponsor">Add New Sponsor</a>
+   <a href="turf-console/sponsorManager.php?q=new-sponsor">Add New Sponsor</a>
    
    <?php if ($q == "new-sponsor" || $q== "edit-sponsor") {?> 
    <?php if ($q == "new-sponsor") { ?>  
-        <form method="post" action="admin/sponsorManager.php?q=add-sponsor" enctype="multipart/form-data">
+        <form method="post" action="turf-console/sponsorManager.php?q=add-sponsor" enctype="multipart/form-data">
    <?php } ?>
     <?php if ($q == "edit-sponsor") { ?>        
-        <form method="post" action="admin/sponsorManager.php?q=update-sponsor&id=<?php echo $sponsorDetails['id']; ?>" enctype="multipart/form-data">
+        <form method="post" action="turf-console/sponsorManager.php?q=update-sponsor&id=<?php echo $sponsorDetails['id']; ?>" enctype="multipart/form-data">
     <?php } ?>
            <table class="contentTable">
                 <tr>
@@ -143,7 +143,7 @@
                     <td><?php echo $sponsor['racedate'] ?></td>
                     <td><?php echo $sponsor['sponsor_name'] ?></td>
                     <td>
-                        <a href="admin/sponsorManager.php?q=edit-sponsor&id=<?php echo $sponsor['id'] ?>">Edit</a>
+                        <a href="turf-console/sponsorManager.php?q=edit-sponsor&id=<?php echo $sponsor['id'] ?>">Edit</a>
                         <a href="#" onclick="javascript:confirmDelete(<?php echo $sponsor['id'] ?>)">Delete</a>
                     </td>
                 </tr>

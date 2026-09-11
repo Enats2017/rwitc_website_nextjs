@@ -9,7 +9,7 @@
 
    function displayPaginationBelow($per_page,$page, $db){
         //include_once('../bootstrap.php');
-        $page_url="admin/racedayReportsManager.php?";
+        $page_url="turf-console/racedayReportsManager.php?";
         $query = "SELECT COUNT(*) as totalCount FROM raceday_report where 1=1";
         $rec = $db->getMultiDimensionalArray($query);
         $total = $rec[0]['totalCount'];

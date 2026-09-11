@@ -157,7 +157,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 	-->
 
 	<div class="hw-form-wrap">
-	<form enctype="multipart/form-data" name="horseweightimageForm" method="post" action="admin/horseweightManager.php">
+	<form enctype="multipart/form-data" name="horseweightimageForm" method="post" action="turf-console/horseweightManager.php">
 	  	<input type="submit" name="Reset Horse Body Weight" value="Reset Horse Body Weight" />
 	  	<input type="hidden" name="q" value="save-data" />
 	</form>

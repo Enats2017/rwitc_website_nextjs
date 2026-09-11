@@ -124,13 +124,13 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
             <div class="mailer-header">
                 <h2><i class="fas fa-envelope"></i> Send Mailer to registered users</h2>
                 <div class="header-links">
-                    <!-- <a href="admin/dashboard.php">Dashboard</a>
-                    <a href="admin/adminlogin.php?q=logout">Logout</a> -->
+                    <!-- <a href="dashboard.php">Dashboard</a>
+                    <a href="adminlogin.php?q=logout">Logout</a> -->
                 </div>
             </div>
 
 <div class="mailer-form-wrap">
-<form method="post" action="admin/sendMailers.php?q=send-mail">
+<form method="post" action="turf-console/sendMailers.php?q=send-mail">
     <div class="form-row">
         <label class="form-label">Select User Type</label>
         <div class="radio-group">

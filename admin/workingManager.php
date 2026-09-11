@@ -8,7 +8,7 @@ require_once("../lib/users.class.php");
 require_once("../lib/userchecks.php");
 /*require_once("../lib/facebook/facebook.php");
 */  
-$baseurl = "http://www.rwitc.com/admin/postArticlesToFB.php";
+$baseurl = "http://www.rwitc.com/postArticlesToFB.php";
   
 $q = getParameterString('q','',$db);
 session_start();                    
@@ -89,7 +89,7 @@ if (isAdminlogin()) {
               }
               //update new working 
           }
-          $download_file = "admin/custom_download.php";
+          $download_file = "turf-console/custom_download.php";
       } else {
         $msg = "You do not have access to this page.";
       }  
@@ -224,15 +224,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     </div> -->
     <!--
     <div class="submenu">
-      <a href="admin/workingManager.php">Working Group Manager</a>
+      <a href="workingManager.php">Working Group Manager</a>
       <div style="float:right;">
-            <a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-            <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
+            <a style="float:left;" href="dashboard.php">Dashboard</a>
+            <a style="float:left; margin-left: 5px;" href="adminlogin.php?q=logout">Logout</a>
        </div>
     </div>
     -->
     <div class="working-form-wrap">
-    <form enctype="multipart/form-data" name="articleForm" method="post" action="admin/workingManager.php">
+    <form enctype="multipart/form-data" name="articleForm" method="post" action="turf-console/workingManager.php">
       <table class="working-form-table">
           <col width="20%"><col width="80%">
           <tr>
@@ -245,7 +245,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
               <td colspan="2">
                   <input type="submit" name="submit" value="Upload" />
                   <a target="_blank" class="button" href="<?php echo $download_file; ?>">Download File</a>
-                  <input type="reset" name="reset" value="Clear" onclick="location.href='admin/workingManager.php'" />
+                  <input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/workingManager.php'" />
               </td>
           </tr>
       </table>

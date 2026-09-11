@@ -11,8 +11,10 @@
   $pageno = getParameterNumber('pageno',1);
 
 //   $user = "rwitc_erp";
-  $user = 'root';
+//   $user = 'app_user';
+    $user = 'root';
     // $pass = "S4Y@3tAZ@GvLJ1";
+    // $pass = 'ho{HslC)jWaky${L';
     $pass = '';
     $schema = 'rwitc_website';
     $conn = mysqli_connect('localhost',$user,$pass,$schema);
@@ -211,9 +213,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
       <td><?php echo $res3['date'];  ?></td>
       <td><?php echo $res3['text'];  ?></td>
       <!-- <td><button onclick="delete_feedback(<?php echo $res3['id'];  ?>)">Delete</button></td> -->
-      <td><a href="email_to_chairman_list.php?type=delete&id=<?php echo $res3['id'];  ?>"><button class="feedback-action-btn delete"><i class="fas fa-trash-alt"></i> Delete</button></a></td>
+      <td><a href="turf-console/email_to_chairman_list.php?type=delete&id=<?php echo $res3['id'];  ?>"><button class="feedback-action-btn delete"><i class="fas fa-trash-alt"></i> Delete</button></a></td>
    
-      <td><a href="email_to_chairman_form.php?type1=edit&id=<?php echo $res3['id'];?>"><button class="feedback-action-btn edit"><i class="fas fa-edit"></i> Edit</button></a></td>
+      <td><a href="turf-console/email_to_chairman_form.php?type1=edit&id=<?php echo $res3['id'];?>"><button class="feedback-action-btn edit"><i class="fas fa-edit"></i> Edit</button></a></td>
     </tr>
    <?php }} ?>
   </tbody>
@@ -248,7 +250,7 @@ $design = NULL; // release object
 <script type="text/javascript"><!--
 $('#button-filter').on('click', function() {
    // var url = 'index.php?route=catalog/product&token=<?php //  echo $token; ?>';
-   var url = 'admin/suggestion_feedback_list.php?type=autocomplete';
+   var url = 'turf-console/suggestion_feedback_list.php?type=autocomplete';
 
     var filter_name = $('input[name=\'filter_name\']').val();
     if (filter_name) {
@@ -272,7 +274,7 @@ $('#button-filter').on('click', function() {
 $('input[name=\'filter_name\']').autocomplete({
     'source': function(request, response) {
         $.ajax({
-            url: 'admin/feedback_query.php?type=filter_name&method=feedback&filter_name=' + (request.term),
+            url: 'turf-console/feedback_query.php?type=filter_name&method=feedback&filter_name=' + (request.term),
             dataType: 'json',
             success: function(json) {
                 response($.map(json, function(item) {
@@ -294,7 +296,7 @@ $('input[name=\'filter_name\']').autocomplete({
 $('input[name=\'filter_email\']').autocomplete({
     'source': function(request, response) {
         $.ajax({
-             url: 'admin/feedback_query.php?type=filter_email&method=feedback&filter_email=' + (request.term),
+             url: 'turf-console/feedback_query.php?type=filter_email&method=feedback&filter_email=' + (request.term),
             dataType: 'json',
             success: function(json) {
                 response($.map(json, function(item) {

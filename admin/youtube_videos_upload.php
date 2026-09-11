@@ -189,7 +189,7 @@ $design->js = '
 <script type="text/javascript">
     function confirmDelete(bannerID) {
         if (confirm ("Are you sure ?")){
-            location.href="admin/bannerManager.php?q=delete-banner&id="+bannerID;
+            location.href="turf-console/bannerManager.php?q=delete-banner&id="+bannerID;
         }
     }
 </script>';
@@ -292,10 +292,10 @@ $design->openDiv("leftArea","col-lg-9");
 
 <!--
 <div class="submenu">
-    <a href="admin/bannerManager.php">Banner Manager</a>
+    <a href="bannerManager.php">Banner Manager</a>
     <div style="float:right;">
-        <a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-        <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
+        <a style="float:left;" href="dashboard.php">Dashboard</a>
+        <a style="float:left; margin-left: 5px;" href="adminlogin.php?q=logout">Logout</a>
     </div>
 </div>
 -->
@@ -360,7 +360,7 @@ $design->openDiv("leftArea","col-lg-9");
                 <input type="submit" name="submit" value="Upload" />
                 <input type="hidden" name="q" value="youtube-upload" />
                 <input type="reset" name="reset" value="Clear"
-                    onclick="location.href='admin/youtube_videos_upload.php'" />
+                    onclick="location.href='turf-console/youtube_videos_upload.php'" />
             </td>
         </tr>
     </table>

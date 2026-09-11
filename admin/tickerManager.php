@@ -232,7 +232,7 @@ $design->js='
 
         if (confirm ("Are you sure ?")){
 
-            location.href="admin/tickerManager.php?q=delete-ticker&id="+tickerID;
+            location.href="turf-console/tickerManager.php?q=delete-ticker&id="+tickerID;
 
         }
 
@@ -469,13 +469,13 @@ $design->openDiv("leftArea",'col-lg-9');
 
         <div class="ticker-header">
 
-          <a class="add-ticker-btn" href="admin/tickerManager.php?q=new-ticker"><i class="fas fa-plus"></i> Add New Ticker</a>
+          <a class="add-ticker-btn" href="turf-console/tickerManager.php?q=new-ticker"><i class="fas fa-plus"></i> Add New Ticker</a>
 
           <div class="header-links">
 
-                <!-- <a href="admin/dashboard.php">Dashboard</a>
+                <!-- <a href="dashboard.php">Dashboard</a>
 
-                <a href="admin/adminlogin.php?q=logout">Logout</a> -->
+                <a href="adminlogin.php?q=logout">Logout</a> -->
 
            </div>
 
@@ -487,7 +487,7 @@ $design->openDiv("leftArea",'col-lg-9');
 
            <div class="ticker-form-wrap">
 
-           <form name="tickerForm" method="post" action="admin/tickerManager.php">
+           <form name="tickerForm" method="post" action="turf-console/tickerManager.php">
 
                 <div class="form-row">
 
@@ -529,7 +529,7 @@ $design->openDiv("leftArea",'col-lg-9');
 
                         <input type="submit" name="submit" value="Save" />
 
-                        <input type="reset" name="reset" value="Clear" onclick="location.href='admin/tickerManager.php'" />
+                        <input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/tickerManager.php'" />
 
                         <?php if ($q=="new-ticker") { ?>
 
@@ -601,7 +601,7 @@ $design->openDiv("leftArea",'col-lg-9');
 
                     <div class="ticker-actions">
 
-                        <a href="admin/tickerManager.php?id=<?php echo $tickerInfo['id'];?>&q=edit-ticker"><i class="fas fa-edit"></i> Edit</a>
+                        <a href="turf-console/tickerManager.php?id=<?php echo $tickerInfo['id'];?>&q=edit-ticker"><i class="fas fa-edit"></i> Edit</a>
 
                         <a href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $tickerInfo['id']; ?>);" ><i class="fas fa-trash-alt"></i> Delete</a>
 

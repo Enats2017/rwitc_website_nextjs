@@ -115,7 +115,7 @@
     <script type="text/javascript">
         function confirmDelete(raceID) {
             if (confirm ("Are you sure ?")){
-                location.href="admin/raceHistoryManager.php?q=delete-race&id="+raceID;
+                location.href="turf-console/raceHistoryManager.php?q=delete-race&id="+raceID;
             }
         }
     </script>
@@ -465,13 +465,13 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 <?php if ($_SESSION['race_history'] == "Y") { ?>
 
     <div class="races-header">
-        <a class="add-race-btn" href="admin/raceHistoryManager.php?q=new-race">
+        <a class="add-race-btn" href="turf-console/raceHistoryManager.php?q=new-race">
             <i class="fas fa-plus"></i> Add New Race
         </a>
 
         <div class="header-links">
-            <!-- <a href="admin/dashboard.php">Dashboard</a>
-            <a href="admin/adminlogin.php?q=logout">Logout</a> -->
+            <!-- <a href="dashboard.php">Dashboard</a>
+            <a href="adminlogin.php?q=logout">Logout</a> -->
         </div>
     </div>
 
@@ -481,11 +481,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
             <div class="rw-modal-box">
                 <div class="rw-modal-header">
                     <h3><?php echo ($q=="new-race") ? "Add New Race" : "Edit Race"; ?></h3>
-                    <a href="admin/raceHistoryManager.php" class="rw-modal-close" aria-label="Close">&times;</a>
+                    <a href="turf-console/raceHistoryManager.php" class="rw-modal-close" aria-label="Close">&times;</a>
                 </div>
                 <div class="rw-modal-body">
                     <div class="race-form-wrap">
-                        <form name="articleForm" method="post" action="admin/raceHistoryManager.php">
+                        <form name="articleForm" method="post" action="turf-console/raceHistoryManager.php">
                             <table class="contentTable">
                                 <col width="20%"><col width="80%">
 
@@ -516,7 +516,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                                             type="reset"
                                             name="reset"
                                             value="Clear"
-                                            onclick="location.href='admin/raceHistoryManager.php'"
+                                            onclick="location.href='turf-console/raceHistoryManager.php'"
                                         />
 
                                         <?php if ($q=="new-race") { ?>
@@ -590,14 +590,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
             document.body.style.overflow = 'hidden';
             document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') {
-                    window.location.href = 'admin/raceHistoryManager.php';
+                    window.location.href = 'turf-console/raceHistoryManager.php';
                 }
             });
             var rwOverlayEl = document.getElementById('rwRaceModal');
             if (rwOverlayEl) {
                 rwOverlayEl.addEventListener('click', function (e) {
                     if (e.target === rwOverlayEl) {
-                        window.location.href = 'admin/raceHistoryManager.php';
+                        window.location.href = 'turf-console/raceHistoryManager.php';
                     }
                 });
             }
@@ -625,7 +625,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <div class="race-actions">
                         <a
-                            href="admin/raceHistoryManager.php?id=<?php echo $raceInfo['id']; ?>&q=edit-race"
+                            href="turf-console/raceHistoryManager.php?id=<?php echo $raceInfo['id']; ?>&q=edit-race"
                         >
                             <i class="fas fa-edit"></i> Edit
                         </a>

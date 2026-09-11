@@ -151,46 +151,171 @@ if ($date > "2022-09-25") {
         exit;
     }
 
-    $htmlFile = RUN_RACES_LOCAL_PATH . "/Handicaps_" . $date . ".html";
-
-    if (!file_exists($htmlFile)) {
-        $security->respondError(
-            "No handicaps data found for this date",
-            404
-        );
-
-        if (isset($conn)) {
-            $conn->close();
-        }
-
-        if (is_resource($handle)) {
-            fclose($handle);
-        }
-
-        exit;
-    }
-
     try {
 
-        $htmlContent = file_get_contents($htmlFile);
+        /*
+         * ======================================================
+         * FIRST: OLD LOCAL FILE
+         * ======================================================
+         */
 
-        if ($htmlContent === false) {
-            throw new Exception("Unable to read archive file: " . $htmlFile);
+        $htmlFile = RUN_RACES_LOCAL_PATH . "/Handicaps_" . $date . ".html";
+
+        $htmlContent = false;
+        $source = "";
+
+        if (file_exists($htmlFile)) {
+
+            $source = "LOCAL_RUN_RACES";
+
+            $htmlContent = file_get_contents($htmlFile);
+
+            if ($htmlContent === false) {
+                throw new Exception(
+                    "Unable to read local handicaps file: " . $htmlFile
+                );
+            }
         }
 
-        // Same download-link derivation as the DB branch below.
+
+        /*
+         * ======================================================
+         * SECOND: NEW S3 FILE
+         *
+         * Local file not found -> DB -> S3
+         * ======================================================
+         */
+
+        if ($htmlContent === false) {
+            $source = "DB_S3";
+
+            $stmt = $conn->prepare("
+                SELECT file_url
+                FROM run_race_details
+                WHERE `date` = ?
+                AND `type` = 'handicaps'
+                AND `race_type` = 'pre_race'
+                LIMIT 1
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param("s", $date);
+
+            if (!$stmt->execute()) {
+                throw new Exception($conn->error);
+            }
+
+            $result = $stmt->get_result();
+
+            if (!$result || $result->num_rows == 0) {
+
+                $stmt->close();
+
+                $security->respondError(
+                    "No handicaps data found for this date",
+                    404
+                );
+
+                exit;
+            }
+
+            $row = $result->fetch_assoc();
+            $s3Url = $row["file_url"];
+
+            $stmt->close();
+
+            /*
+             * Read the actual HTML from S3.
+             * The S3 URL is used internally only.
+             */
+            $htmlContent = @file_get_contents($s3Url);
+
+            if ($htmlContent === false) {
+                throw new Exception(
+                    "Unable to read handicaps file from S3"
+                );
+            }
+        }
+
+
+        /*
+         * ======================================================
+         * DOWNLOAD LINK
+         *
+         * Always expose the old website URL.
+         * Never expose the S3 URL to frontend.
+         * ======================================================
+         */
+
         $htmFile = RUN_RACES_LOCAL_PATH . "/Handicaps_" . $date . ".htm";
-        $downloadAvailable = file_exists($htmFile);
+
+        $downloadAvailable = false;
+
+        /*
+         * Old .htm file exists locally
+         */
+        if (file_exists($htmFile)) {
+
+            $downloadAvailable = true;
+        } else {
+
+            /*
+             * New file:
+             * Check DB record exists.
+             */
+            $stmt = $conn->prepare("
+                SELECT id
+                FROM run_race_details
+                WHERE `date` = ?
+                AND `type` = 'handicaps'
+                AND `race_type` = 'pre_race'
+                LIMIT 1
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param("s", $date);
+
+            if (!$stmt->execute()) {
+                throw new Exception($conn->error);
+            }
+
+            $result = $stmt->get_result();
+
+            if ($result && $result->num_rows > 0) {
+                $downloadAvailable = true;
+            }
+
+            $stmt->close();
+        }
+
+        /*
+         * IMPORTANT:
+         * Frontend always receives the old URL format.
+         */
         $downloadFile = $downloadAvailable
             ? RUN_RACES_BASE_URL . "/Handicaps_" . $date . ".htm"
             : null;
 
+
+        /*
+         * ======================================================
+         * RESPONSE
+         * ======================================================
+         */
+
         $response = [
-            "date"               => $date,
-            "mode"               => "html",
-            "html"               => $htmlContent,
-            "download_file"      => $downloadFile,
-            "download_available" => $downloadAvailable
+            "date"                => $date,
+            "mode"                => "html",
+            "source"              => $source,
+            "html"                => $htmlContent,
+            "download_file"       => $downloadFile,
+            "download_available"  => $downloadAvailable
         ];
 
         $security->respondAndCache($cacheKey, $response);
@@ -200,7 +325,10 @@ if ($date > "2022-09-25") {
             "HANDICAPS_HTML_READ_ERROR | " . $error->getMessage()
         );
 
-        $security->respondError("Internal server error", 500);
+        $security->respondError(
+            "Internal server error",
+            500
+        );
     } finally {
 
         if (isset($conn)) {
@@ -398,23 +526,23 @@ ORDER BY w.`SORDER` ASC
         ? RUN_RACES_BASE_URL . "/Handicaps_" . $date . ".htm"
         : null;
     $dayNarrative = null;
-$formattedDate = null;
+    $formattedDate = null;
 
-if (isset($prospectData[0])) {
-    $dayNarrative = $prospectData[0]["DAYNARR"];
-    $formattedDate = date("l jS F Y", $prospectData[0]["DATE"]);
-}
+    if (isset($prospectData[0])) {
+        $dayNarrative = $prospectData[0]["DAYNARR"];
+        $formattedDate = date("l jS F Y", $prospectData[0]["DATE"]);
+    }
 
-$response = [
-    "date"               => $date,
-    "mode"               => "json",
-    "download_file"      => $downloadFile,
-    "download_available" => $downloadAvailable,
-    "day_narrative"      => $dayNarrative,
-    "formatted_date"     => $formattedDate,
-    "race_count"         => count($races),
-    "races"              => $races
-];
+    $response = [
+        "date"               => $date,
+        "mode"               => "json",
+        "download_file"      => $downloadFile,
+        "download_available" => $downloadAvailable,
+        "day_narrative"      => $dayNarrative,
+        "formatted_date"     => $formattedDate,
+        "race_count"         => count($races),
+        "races"              => $races
+    ];
 
     // Return successful response and save it in cache
     $security->respondAndCache($cacheKey, $response);

@@ -42,16 +42,20 @@ if (IS_LOCAL) {
     // ----------------------------------------------------
     // LIVE (PRODUCTION) SETTINGS
     // ----------------------------------------------------
-    // TODO: confirm the exact production URL + server path
-    // before going live, then update these two lines only.
 
-    define("RUN_RACES_BASE_URL", "http://91.99.229.154/rwitc-website/run_races");
+    define("RUN_RACES_BASE_URL", "https://test.rwitc.com/rwitc-website/run_races");
 
     define("RUN_RACES_LOCAL_PATH", realpath(__DIR__ . "/../../run_races"));
 
+    // Raceday Report .HTM files - server filesystem path
+    define("RACEDAY_REPORT_DIR", realpath(__DIR__ . "/../../../racedayreports"));
+
+    // Raceday Report .HTM files - public URL (for download link / remote check)
+    define("RACEDAY_REPORT_PUBLIC_BASE", "https://test.rwitc.com/rwitc-website/staticpages/racedayreports/");
+
     // Sweepstake .htm files public URL (production)
-    define("STATIC_SWEEPSTAKE_URL", "http://91.99.229.154/rwitc-website/staticpages/sweepstakes/");
+    define("STATIC_SWEEPSTAKE_URL", "https://test.rwitc.com/rwitc-website/staticpages/sweepstakes/");
 
     // Dividends .htm files public URL (production)
-    define("STATIC_DIVIDENDS_URL", "http://91.99.229.154/rwitc-website/staticpages/dividends/");
+    define("STATIC_DIVIDENDS_URL", "https://test.rwitc.com/rwitc-website/staticpages/dividends/");
 }

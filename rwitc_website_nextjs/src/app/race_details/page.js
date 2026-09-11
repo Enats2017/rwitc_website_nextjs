@@ -21,6 +21,7 @@ import HorseRatings from "./components/HorseRatings";
 import MoneyLeaders from "./components/MoneyLeaders";
 import Archives from "./components/Archives";
 import RacingFixtures from "./components/RacingFixtures";
+import FoalRecords from "./components/FoalRecords";
 
 
 function RaceDetailsContent() {
@@ -46,6 +47,8 @@ function RaceDetailsContent() {
         ContentComponent = <RaceDayReport />;
     } else if (type === "sweepstakes") {
         ContentComponent = <Sweepstake />;
+    } else if (type === "foalRecords") {
+        ContentComponent = <FoalRecords />;
     } else if (type === "performanceProfile") {
         ContentComponent = <PerformanceProfile />;
     } else if (type === "trainerHorses") {

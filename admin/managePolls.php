@@ -99,7 +99,7 @@ $design->js='
   <script type="text/javascript">
     function confirmDelete(pollID) {
       if (confirm ("Are you sure ?")){
-        location.href="admin/managePolls.php?q=delete-poll&id="+pollID;
+        location.href="turf-console/managePolls.php?q=delete-poll&id="+pollID;
       }
     }
   </script>
@@ -228,7 +228,7 @@ $pollDetails = $poll->getALLPolls()
 <?php } ?>    
 <?php if ($_SESSION['polls'] == "Y") { ?>
   <div class="polls-header">
-    <a class="add-poll-btn" href="admin/managePolls.php?q=new-poll"><i class="fas fa-plus"></i> Add New Polls</a>
+    <a class="add-poll-btn" href="turf-console/managePolls.php?q=new-poll"><i class="fas fa-plus"></i> Add New Polls</a>
     <div class="header-links">
       <!-- <a href="admin/dashboard.php">Dashboard</a>
       <a href="admin/adminlogin.php?q=logout">Logout</a> -->
@@ -236,7 +236,7 @@ $pollDetails = $poll->getALLPolls()
   </div>
   <?php if ($q == "edit-poll") { ?>
     <div class="poll-form-wrap">
-    <form method="post" action="admin/managePolls.php">
+    <form method="post" action="turf-console/managePolls.php">
       <h3 class="poll-note"><i class="fas fa-circle-info"></i> Activating a poll will deactivate all other active polls</h3>
       <div class="form-title">Edit Poll</div>
       <div class="form-row">
@@ -278,7 +278,7 @@ $pollDetails = $poll->getALLPolls()
   <?php } ?>
   <?php if ($q=="new-poll") { ?> 
     <div class="poll-form-wrap">
-    <form method="post" action="admin/managePolls.php">
+    <form method="post" action="turf-console/managePolls.php">
       <div class="form-title">Add New Poll</div>
       <div class="form-row">
         <label class="form-label" for="polldate">Poll Date</label>
@@ -336,9 +336,9 @@ $pollDetails = $poll->getALLPolls()
           </div>
         </div>
         <div class="poll-actions">
-          <a href="admin/managePolls.php?q=edit-poll&id=<?php echo $pollDet['id']; ?>"><i class="fas fa-edit"></i> Edit</a>
+          <a href="turf-console/managePolls.php?q=edit-poll&id=<?php echo $pollDet['id']; ?>"><i class="fas fa-edit"></i> Edit</a>
           <a href="#" onclick="confirmDelete('<?php echo $pollDet['id']; ?>')"><i class="fas fa-trash-alt"></i> Delete</a>
-          <a href="admin/managePolls.php?q=view-votes&id=<?php echo $pollDet['id']; ?>"><i class="fas fa-chart-simple"></i> View Votes</a>
+          <a href="turf-console/managePolls.php?q=view-votes&id=<?php echo $pollDet['id']; ?>"><i class="fas fa-chart-simple"></i> View Votes</a>
         </div>
       </div>
     <?php } ?>

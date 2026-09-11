@@ -149,7 +149,7 @@ $design->js='
 <script type="text/javascript">
 	function confirmDelete(mailID) {
 		if (confirm ("Are you sure ?")){
-			location.href="admin/mailManager.php?q=delete-mail&id="+mailID;
+			location.href="turf-console/mailManager.php?q=delete-mail&id="+mailID;
 		}
 	}
 </script>
@@ -246,7 +246,7 @@ $design->openDiv("leftArea",'col-lg-9');
 		   	</div>
 		</div>
 		<div class="mail-form-wrap">
-		<form enctype="multipart/form-data" name="mailForm" method="post" action="admin/mailManager.php">
+		<form enctype="multipart/form-data" name="mailForm" method="post" action="turf-console/mailManager.php">
 				<div class="form-row">
 			  		<label class="form-label" for="from_email">From Email</label>
 						<input readonly="readonly" type="text" name="from_email" id="from_email" value="<?php echo $mailDetails['from_email']; ?>" />
@@ -277,7 +277,7 @@ $design->openDiv("leftArea",'col-lg-9');
 			  	</div>
 				<div class="form-actions">
 						<input type="submit" name="submit" value="Send" />
-						<input type="reset" name="reset" value="Clear" onclick="location.href='admin/mailManager.php'" />
+						<input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/mailManager.php'" />
 				</div>
 		</form>
 		</div>

@@ -224,6 +224,56 @@ try {
     }
     $preRaceStmt->close();
 
+    // --------------------------------------------------
+    // IMPORTANT: Migrated archive dates
+    //
+    // A migrated archive can exist even when the date is not present
+    // in prospect/erp_pre_race. Add those dates to the calendar.
+    //
+    // Trackwork is completely separate and is not changed.
+    // --------------------------------------------------
+
+    $migratedDatesStmt = $conn->prepare(
+        "SELECT DISTINCT `date`
+         FROM run_race_details
+         WHERE `date` >= ?
+           AND `date` <= ?
+           AND `race_type` = 'pre_race'
+           AND `type` IN (
+               'handicaps',
+               'acceptances',
+               'declarations',
+               'racecard',
+               'race_result',
+               'race_results',
+               'rating_change'
+           )
+           AND file_url IS NOT NULL
+           AND file_url <> ''"
+    );
+
+    if ($migratedDatesStmt === false) {
+        throw new Exception($conn->error);
+    }
+
+    $migratedDatesStmt->bind_param("ss", $start, $end);
+    $migratedDatesStmt->execute();
+
+    $migratedDatesResult = $migratedDatesStmt->get_result();
+
+    while ($row = $migratedDatesResult->fetch_assoc()) {
+
+        $migratedDate = $row['date'];
+
+        if (!isset($raceDates[$migratedDate])) {
+            $raceDates[$migratedDate] = [
+                'DATE' => $migratedDate
+            ];
+        }
+    }
+
+    $migratedDatesStmt->close();
+
     // ---- Split the merged race dates into the two cutoff buckets ----
     // (same $cutoffDate comparison as before, just done once up front so
     // the bulk queries below know which dates belong in which bucket)
@@ -340,122 +390,177 @@ try {
     }
 
     // --------------------------------------------------
-    // POST-CUTOFF: bulk-load raceday_report filenames for the whole
-    // batch in ONE query, instead of one query per date.
+    // POST-CUTOFF: LOCAL run_races + DB/S3 fallback
+    //
+    // Priority:
+    //   1. Local physical run_races file (.html OR .htm)
+    //   2. run_race_details.file_url (S3)
+    //
+    // This is a UNION, not an either/or date source:
+    // local files and DB/S3 records both make an archive available.
+    //
+    // Trackwork is intentionally untouched.
     // --------------------------------------------------
 
-    $reportFilenames = [];
+    $postCutoffFileDates = [
+        'handicaps'     => [],
+        'acceptances'   => [],
+        'declarations'  => [],
+        'racecard'      => [],
+        'race_results'  => [],
+        'rating_change' => []
+    ];
 
-    if (!empty($postCutoffDates)) {
+    /*
+     * LOCAL FILES
+     *
+     * Check the actual filesystem, not the public URL.
+     * Both .html and .htm are supported.
+     */
+    foreach ($postCutoffDates as $date) {
 
-        $placeholdersPost = implode(',', array_fill(0, count($postCutoffDates), '?'));
-        $typesPost        = str_repeat('s', count($postCutoffDates));
+        $localFiles = [
+            'handicaps' => [
+                "Handicaps_{$date}.html",
+                "Handicaps_{$date}.htm"
+            ],
 
-        $reportFilenameStmt = $conn->prepare(
-            "SELECT RACEDATE, filename FROM raceday_report WHERE RACEDATE IN ({$placeholdersPost})"
-        );
-        if ($reportFilenameStmt === false) {
-            throw new Exception($conn->error);
-        }
-        $reportFilenameStmt->bind_param($typesPost, ...$postCutoffDates);
-        $reportFilenameStmt->execute();
-        $reportFilenameResult = $reportFilenameStmt->get_result();
-        while ($row = $reportFilenameResult->fetch_assoc()) {
-            // Same semantics as the original: only keep it if a non-empty
-            // filename was found, and only the first match per date.
-            if (!empty($row['filename']) && !isset($reportFilenames[$row['RACEDATE']])) {
-                $reportFilenames[$row['RACEDATE']] = $row['filename'];
+            'acceptances' => [
+                "Acceptance_{$date}.html",
+                "Acceptance_{$date}.htm"
+            ],
+
+            'declarations' => [
+                "Declarations_{$date}.html",
+                "Declarations_{$date}.htm"
+            ],
+
+            'racecard' => [
+                "Race_Card_{$date}.html",
+                "Race_Card_{$date}.htm",
+                "Race_Card_Report_{$date}.htm"
+            ],
+
+            'race_results' => [
+                "Race_results_{$date}.html",
+                "Race_results_{$date}.htm"
+            ],
+
+            'rating_change' => [
+                "Rating_change_{$date}.html",
+                "Rating_change_{$date}.htm"
+            ]
+        ];
+
+        foreach ($localFiles as $type => $filenames) {
+
+            foreach ($filenames as $filename) {
+
+                $fullPath =
+                    rtrim(RUN_RACES_LOCAL_PATH, DIRECTORY_SEPARATOR)
+                    . DIRECTORY_SEPARATOR
+                    . $filename;
+
+                if (is_file($fullPath)) {
+                    $postCutoffFileDates[$type][$date] = true;
+                    break;
+                }
             }
         }
-        $reportFilenameStmt->close();
+    }
+
+    /*
+     * DB/S3 FALLBACK
+     */
+    if (!empty($postCutoffDates)) {
+
+        $placeholdersPost = implode(
+            ',',
+            array_fill(0, count($postCutoffDates), '?')
+        );
+
+        $migratedStmt = $conn->prepare("
+            SELECT `date`, `type`, file_url
+            FROM run_race_details
+            WHERE `date` IN ({$placeholdersPost})
+              AND `race_type` = 'pre_race'
+              AND `type` IN (
+                  'handicaps',
+                  'acceptances',
+                  'declarations',
+                  'racecard',
+                  'race_result',
+                  'race_results',
+                  'rating_change'
+              )
+              AND file_url IS NOT NULL
+              AND file_url <> ''
+        ");
+
+        if ($migratedStmt === false) {
+            throw new Exception($conn->error);
+        }
+
+        $typesPost = str_repeat('s', count($postCutoffDates));
+
+        $migratedStmt->bind_param(
+            $typesPost,
+            ...$postCutoffDates
+        );
+
+        $migratedStmt->execute();
+
+        $migratedResult = $migratedStmt->get_result();
+
+        while ($row = $migratedResult->fetch_assoc()) {
+
+            $date = $row['date'];
+            $type = $row['type'];
+
+            if ($type === 'race_result' || $type === 'race_results') {
+
+                $postCutoffFileDates['race_results'][$date] = true;
+
+            } elseif (isset($postCutoffFileDates[$type])) {
+
+                $postCutoffFileDates[$type][$date] = true;
+            }
+        }
+
+        $migratedStmt->close();
     }
 
     // --------------------------------------------------
-    // POST-CUTOFF: collect every remote URL that needs a HEAD check
-    // across ALL post-cutoff dates, de-duplicated via isset(), then
-    // fire them all concurrently with curl_multi instead of one at a
-    // time with curl_exec.
+    // Resolve final availability: LOCAL OR DB/S3
     // --------------------------------------------------
 
-    $remoteUrlsToFetch = [];
+    $resolvedPostCutoff = [];
 
     foreach ($postCutoffDates as $date) {
 
-        $urlsForDate = [
-            RUN_RACES_BASE_URL . "Handicaps_{$date}.html",
-            RUN_RACES_BASE_URL . "Acceptance_{$date}.html",
-            RUN_RACES_BASE_URL . "Declarations_{$date}.html",
-            RUN_RACES_BASE_URL . "Race_results_{$date}.html",
-            RUN_RACES_BASE_URL . "Rating_change_{$date}.html",
+        $resolvedPostCutoff[$date] = [
+            'handicaps' =>
+                isset($postCutoffFileDates['handicaps'][$date]),
+
+            'acceptances' =>
+                isset($postCutoffFileDates['acceptances'][$date]),
+
+            'declarations' =>
+                isset($postCutoffFileDates['declarations'][$date]),
+
+            'racecard' =>
+                isset($postCutoffFileDates['racecard'][$date]),
+
+            'results' =>
+                isset($postCutoffFileDates['race_results'][$date]),
+
+            'rating' =>
+                isset($postCutoffFileDates['rating_change'][$date])
         ];
-
-        if (isset($reportFilenames[$date])) {
-            $urlsForDate[] = RACEDAY_REPORT_BASE_URL . $reportFilenames[$date];
-        }
-
-        foreach ($urlsForDate as $url) {
-            if (!isset($remoteUrlsToFetch[$url])) {
-                $remoteUrlsToFetch[$url] = true;
-            }
-        }
-    }
-
-    $remoteStatusCache = []; // url => bool (2xx = true)
-
-    if (!empty($remoteUrlsToFetch)) {
-
-        $multiHandle = curl_multi_init();
-        $curlHandles = [];
-
-        foreach (array_keys($remoteUrlsToFetch) as $url) {
-
-            $ch = curl_init($url);
-
-            curl_setopt_array($ch, [
-                CURLOPT_NOBODY         => true,   // HEAD request, no body needed
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_CONNECTTIMEOUT => REMOTE_CHECK_CONNECT_TIMEOUT,
-                CURLOPT_TIMEOUT        => REMOTE_CHECK_TIMEOUT,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_SSL_VERIFYPEER => true,
-                CURLOPT_SSL_VERIFYHOST => 2,
-            ]);
-
-            curl_multi_add_handle($multiHandle, $ch);
-            $curlHandles[$url] = $ch;
-        }
-
-        $stillRunning = null;
-        do {
-            $mrc = curl_multi_exec($multiHandle, $stillRunning);
-            if ($stillRunning) {
-                curl_multi_select($multiHandle);
-            }
-        } while ($stillRunning && $mrc === CURLM_OK);
-
-        foreach ($curlHandles as $url => $ch) {
-
-            $errorNumber = curl_errno($ch);
-            $httpCode    = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-            if ($errorNumber !== 0) {
-                $security->logLine("ARCHIVES_API_REMOTE_CHECK_ERROR | {$url} | curl_errno={$errorNumber}");
-                $remoteStatusCache[$url] = false;
-            } else {
-                $remoteStatusCache[$url] = ($httpCode >= 200 && $httpCode < 300);
-            }
-
-            curl_multi_remove_handle($multiHandle, $ch);
-            curl_close($ch);
-        }
-
-        curl_multi_close($multiHandle);
     }
 
     // --------------------------------------------------
-    // Build events: walk $raceDates once, reading everything from the
-    // already-loaded arrays above via isset() — no per-date DB query,
-    // no per-date HTTP request.
+    // Build events
     // --------------------------------------------------
 
     foreach ($raceDates as $raceDate) {
@@ -470,29 +575,59 @@ try {
             $results      = isset($resultsDates[$date]);
             $raceDayCheck = isset($raceDayDbDates[$date]);
             $ratingCheck  = isset($ratingDates[$date]);
-
+            $racecard     = false;
         } else {
 
-            $handicapUrl     = RUN_RACES_BASE_URL . "Handicaps_{$date}.html";
-            $acceptancesUrl  = RUN_RACES_BASE_URL . "Acceptance_{$date}.html";
-            $declarationsUrl = RUN_RACES_BASE_URL . "Declarations_{$date}.html";
-            $resultsUrl      = RUN_RACES_BASE_URL . "Race_results_{$date}.html";
-            $ratingUrl       = RUN_RACES_BASE_URL . "Rating_change_{$date}.html";
+            /*
+             * Post-cutoff:
+             *
+             * Each migrated archive follows:
+             *
+             *   run_races HTML exists
+             *          OR
+             *   run_race_details contains a valid S3 file_url
+             *
+             * Trackwork is not involved in this branch and remains unchanged.
+             */
 
-            $handicap     = isset($remoteStatusCache[$handicapUrl]) && $remoteStatusCache[$handicapUrl];
-            $acceptances  = isset($remoteStatusCache[$acceptancesUrl]) && $remoteStatusCache[$acceptancesUrl];
-            $declarations = isset($remoteStatusCache[$declarationsUrl]) && $remoteStatusCache[$declarationsUrl];
-            $results      = isset($remoteStatusCache[$resultsUrl]) && $remoteStatusCache[$resultsUrl];
-            $ratingCheck  = isset($remoteStatusCache[$ratingUrl]) && $remoteStatusCache[$ratingUrl];
+            $resolved = $resolvedPostCutoff[$date] ?? [];
 
-            // Race day report HTML is also on the remote server, keyed by
-            // the filename found in raceday_report for this date.
-            $filename = $reportFilenames[$date] ?? '';
+            $handicap =
+                !empty($resolved['handicaps']);
+
+            $acceptances =
+                !empty($resolved['acceptances']);
+
+            $declarations =
+                !empty($resolved['declarations']);
+
+            $results =
+                !empty($resolved['results']);
+
+            $ratingCheck =
+                !empty($resolved['rating']);
+
+            $racecard =
+                !empty($resolved['racecard']);
+
+            /*
+             * RACE DAY REPORT - existing logic preserved.
+             */
+            $filename = isset($reportFilenames[$date])
+                ? $reportFilenames[$date]
+                : '';
 
             if ($filename !== '') {
-                $raceDayUrl   = RACEDAY_REPORT_BASE_URL . $filename;
-                $raceDayCheck = isset($remoteStatusCache[$raceDayUrl]) && $remoteStatusCache[$raceDayUrl];
+
+                $raceDayUrl =
+                    RACEDAY_REPORT_BASE_URL . $filename;
+
+                $raceDayCheck =
+                    isset($remoteStatusCache[$raceDayUrl])
+                    && $remoteStatusCache[$raceDayUrl];
+
             } else {
+
                 $raceDayCheck = false;
             }
         }
@@ -504,6 +639,16 @@ try {
                 "title"     => "Handicap",
                 "start"     => $date,
                 "url"       => "erp_handcaps.php?date={$date}",
+            ];
+        }
+
+        if ($racecard) {
+            $jsonArray[] = [
+                "id"        => 8,
+                "className" => "racecard",
+                "title"     => "Race Card",
+                "start"     => $date,
+                "url"       => "race_details?type=racecard&date={$date}",
             ];
         }
 
@@ -566,13 +711,12 @@ try {
         $cacheKey,
         $jsonArray
     );
-
 } catch (Throwable $error) {
 
     // Log actual database error
     $security->logLine(
         "ARCHIVES_API_ERROR | "
-        . $error->getMessage()
+            . $error->getMessage()
     );
 
     // Do not expose database error publicly
@@ -580,7 +724,6 @@ try {
         "Internal server error",
         500
     );
-
 } finally {
 
     // Close database connection

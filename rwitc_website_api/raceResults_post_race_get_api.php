@@ -94,25 +94,187 @@ if ($security->serveCache($cacheKey)) {
 
 if ($date > "2022-10-14") {
 
-    $fileDate = date("Ymd", strtotime($date));
-    $htmlFilePath = RUN_RACES_LOCAL_PATH . "/Race_results_" . $date . ".html";
+    /*
+     * POST-CUTOFF RACE RESULTS
+     *
+     * Source priority:
+     *   1. Local run_races/Race_results_<date>.html
+     *   2. run_race_details -> S3
+     *
+     * source:
+     *   LOCAL_RUN_RACES = local file
+     *   DB_S3           = database file_url -> S3
+     */
 
-    if (file_exists($htmlFilePath)) {
-        $htmlContent = file_get_contents($htmlFilePath);
+    $cacheKey = "race_results_html_" . md5($date . "_" . $searaceno);
 
-        $security->respondAndCache($cacheKey, [
-            "found" => true,
-            "mode"  => "html",
-            "html"  => $htmlContent,
-            "date"  => $date,
-        ]);
-    } else {
-        $security->respondAndCache($cacheKey, [
-            "found" => false,
-            "mode"  => "html",
-            "html"  => "",
-            "date"  => $date,
-        ]);
+    if ($security->serveCache($cacheKey)) {
+        exit;
+    }
+
+    try {
+
+        // 1) Local run_races HTML
+        $htmlFile = rtrim(RUN_RACES_LOCAL_PATH, "/\\")
+            . "/Race_results_" . $date . ".html";
+
+        $htmlContent = false;
+        $source = "";
+
+        if (is_file($htmlFile)) {
+
+            $source = "LOCAL_RUN_RACES";
+            $htmlContent = file_get_contents($htmlFile);
+
+            if ($htmlContent === false) {
+                throw new Exception(
+                    "Unable to read local race results file"
+                );
+            }
+        }
+
+        // 2) DB -> S3 fallback
+        if ($htmlContent === false) {
+
+            $source = "DB_S3";
+
+            $stmt = $conn->prepare("
+                SELECT file_url
+                FROM run_race_details
+                WHERE `date` = ?
+                  AND `type` IN ('race_result', 'race_results')
+                  AND `race_type` = 'pre_race'
+                  AND file_url IS NOT NULL
+                  AND file_url <> ''
+                ORDER BY id DESC
+                LIMIT 1
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param("s", $date);
+
+            if (!$stmt->execute()) {
+                throw new Exception($conn->error);
+            }
+
+            $result = $stmt->get_result();
+
+            if (!$result || $result->num_rows === 0) {
+
+                $stmt->close();
+
+                $security->respondError(
+                    "No race results data found for this date",
+                    404
+                );
+
+                exit;
+            }
+
+            $row = $result->fetch_assoc();
+            $s3Url = trim((string)($row["file_url"] ?? ""));
+
+            $stmt->close();
+
+            if ($s3Url === "") {
+                throw new Exception(
+                    "Race results S3 file URL is empty"
+                );
+            }
+
+            $htmlContent = @file_get_contents($s3Url);
+
+            if ($htmlContent === false) {
+                throw new Exception(
+                    "Unable to read race results file from S3"
+                );
+            }
+        }
+
+        // 3) Download link
+        $htmFile = rtrim(RUN_RACES_LOCAL_PATH, "/\\")
+            . "/Race_results_" . $date . ".htm";
+
+        $downloadAvailable = false;
+
+        if (is_file($htmFile)) {
+
+            $downloadAvailable = true;
+
+        } else {
+
+            // If local .htm is missing, confirm migrated DB/S3 record.
+            $stmt = $conn->prepare("
+                SELECT id
+                FROM run_race_details
+                WHERE `date` = ?
+                  AND `type` IN ('race_result', 'race_results')
+                  AND `race_type` = 'pre_race'
+                  AND file_url IS NOT NULL
+                  AND file_url <> ''
+                ORDER BY id DESC
+                LIMIT 1
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param("s", $date);
+
+            if (!$stmt->execute()) {
+                throw new Exception($conn->error);
+            }
+
+            $result = $stmt->get_result();
+
+            if ($result && $result->num_rows > 0) {
+                $downloadAvailable = true;
+            }
+
+            $stmt->close();
+        }
+
+        $downloadFile = $downloadAvailable
+            ? RUN_RACES_BASE_URL . "/Race_results_" . $date . ".htm"
+            : null;
+
+        // 4) Final response
+        $response = [
+            "found"              => true,
+            "mode"               => "html",
+            "html"               => $htmlContent,
+            "date"               => $date,
+            "source"             => $source,
+            "download_file"      => $downloadFile,
+            "download_available" => $downloadAvailable
+        ];
+
+        $security->respondAndCache($cacheKey, $response);
+
+    } catch (Throwable $error) {
+
+        $security->logLine(
+            "RACE_RESULTS_HTML_READ_ERROR | " . $error->getMessage()
+        );
+
+        $security->respondError(
+            "Internal server error",
+            500
+        );
+
+    } finally {
+
+        if (isset($conn)) {
+            $conn->close();
+        }
+
+        if (isset($handle) && is_resource($handle)) {
+            fclose($handle);
+        }
     }
 
     exit;

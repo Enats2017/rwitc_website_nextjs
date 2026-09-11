@@ -94,7 +94,7 @@
             alert(delete-postrace);
             if (confirm ("Are you sure ?")){
 
-                location.href="admin/erp_postrace.php?q=delete-postrace&id="+postraceID;
+                location.href="turf-console/erp_postrace.php?q=delete-postrace&id="+postraceID;
             }
         }
     </script>
@@ -198,7 +198,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     <?php } ?>    
     
         <div class="postrace-header">
-              <a class="add-postrace-btn" href="admin/erp_postrace.php?q=add-postrace"><i class="fas fa-plus"></i> Add</a>
+              <a class="add-postrace-btn" href="turf-console/erp_postrace.php?q=add-postrace"><i class="fas fa-plus"></i> Add</a>
               <div class="header-links">
                 <!-- <a href="admin/dashboard.php">Dashboard</a>
                 <a href="admin/adminlogin.php?q=logout">Logout</a> -->
@@ -206,7 +206,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
         </div>
                <?php if ($q=="add-postrace") { ?>              
                 <div class="postrace-form-wrap">
-                <form  method="post" action="admin/erp_postrace.php">
+                <form  method="post" action="turf-console/erp_postrace.php">
                     <input type="hidden" name="q" value="add-postrace" />
                     <div class="form-row">
                         <label class="form-label" for="postrace_date">Date</label>
@@ -227,7 +227,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                 <?php foreach ($allpostrace as $postraceInfo) { ?>
                     <div class="postrace-list-row">
                         <div class="postrace-date"><i class="far fa-calendar-alt"></i> <?php echo date("d-m-y",strtotime($postraceInfo['racedate'])); ?></div>
-                        <a class="postrace-delete" href="admin/erp_postrace.php?q=delete-postrace&id=<?php echo $postraceInfo['id'] ?>"><i class="fas fa-trash-alt"></i> Delete</a>
+                        <a class="postrace-delete" href="turf-console/erp_postrace.php?q=delete-postrace&id=<?php echo $postraceInfo['id'] ?>"><i class="fas fa-trash-alt"></i> Delete</a>
                     </div>
                 <?php } ?>
               </div>

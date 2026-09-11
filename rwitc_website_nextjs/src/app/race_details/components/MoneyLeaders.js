@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getMoneyLeaders } from "@/services/moneyLeadersService";
 import "./MoneyLeaders.css";
 
 const TABS = [
@@ -54,24 +55,27 @@ export default function MoneyLeaders() {
     const [updatedAt, setUpdatedAt] = useState("");
 
     useEffect(() => {
+        let cancelled = false;
+
         async function loadData() {
             try {
                 setLoading(true);
                 setError(null);
 
-                const res = await fetch(`/api/money-leaders?type=${activeTab}`, {
-                    cache: "force-cache",
-                });
+                const result = await getMoneyLeaders(activeTab);
 
-                if (!res.ok) throw new Error("Failed to load");
+                if (cancelled) return;
 
-                const html = await res.text();
-                setRawHtml(html);
+                if (!result.available) {
+                    setRawHtml("");
+                    setError("Data not available.");
+                    return;
+                }
 
-                const lastModifiedHeader = res.headers.get("X-Updated-At");
+                setRawHtml(result.html);
 
-                if (lastModifiedHeader) {
-                    const formatted = new Date(lastModifiedHeader).toLocaleDateString(
+                if (result.updatedAt) {
+                    const formatted = new Date(result.updatedAt).toLocaleDateString(
                         "en-GB",
                         { day: "2-digit", month: "2-digit", year: "numeric" }
                     );
@@ -80,14 +84,22 @@ export default function MoneyLeaders() {
                     setUpdatedAt("");
                 }
             } catch (err) {
-                console.error(err);
-                setError("Unable to load data.");
+                if (!cancelled) {
+                    console.error(err);
+                    setError("Unable to load data.");
+                }
             } finally {
-                setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         }
 
         loadData();
+
+        return () => {
+            cancelled = true;
+        };
     }, [activeTab]);
 
     return (

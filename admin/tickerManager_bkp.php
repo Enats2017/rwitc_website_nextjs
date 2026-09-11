@@ -232,7 +232,7 @@ $design->js='
 
         if (confirm ("Are you sure ?")){
 
-            location.href="admin/tickerManager.php?q=delete-ticker&id="+tickerID;
+            location.href="turf-console/tickerManager.php?q=delete-ticker&id="+tickerID;
 
         }
 
@@ -456,13 +456,13 @@ $design->openDiv("leftArea");
 
         <div class="submenu">
 
-          <a href="admin/tickerManager.php?q=new-ticker">Add New Ticker</a>
+          <a href="turf-console/tickerManager.php?q=new-ticker">Add New Ticker</a>
 
           <div style="float:right;">
 
-                <a style="float:left;" href="admin/dashboard.php">Dashboard</a>
+                <a style="float:left;" href="turf-console/dashboard.php">Dashboard</a>
 
-                <a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
+                <a style="float:left; margin-left: 5px;" href="turf-console/index.php?q=logout">Logout</a>
 
            </div>
 
@@ -474,7 +474,7 @@ $design->openDiv("leftArea");
 
           <?php if ($q=="new-ticker" || $q=="edit-ticker") { ?>              
 
-           <form name="tickerForm" method="post" action="admin/tickerManager.php">
+           <form name="tickerForm" method="post" action="turf-console/tickerManager.php">
 
             <table class="contentTable">
 
@@ -530,7 +530,7 @@ $design->openDiv("leftArea");
 
                         <input type="submit" name="submit" value="Save" />
 
-                        <input type="reset" name="reset" value="Clear" onclick="location.href='admin/tickerManager.php'" />
+                        <input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/tickerManager.php'" />
 
                         <?php if ($q=="new-ticker") { ?>
 
@@ -620,7 +620,7 @@ $design->openDiv("leftArea");
 
                     <td>
 
-                        <a href="admin/tickerManager.php?id=<?php echo $tickerInfo['id'];?>&q=edit-ticker">Edit</a>
+                        <a href="turf-console/tickerManager.php?id=<?php echo $tickerInfo['id'];?>&q=edit-ticker">Edit</a>
 
                         <a href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $tickerInfo['id']; ?>);" >Delete</a>
 

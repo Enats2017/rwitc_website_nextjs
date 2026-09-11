@@ -6,8 +6,12 @@
 
   require_once("../lib/userchecks.php");
 
-  $user = "rwitc_erp";
-    $pass = "S4Y@3tAZ@GvLJ1";
+//   $user = "rwitc_erp";
+//     $pass = "S4Y@3tAZ@GvLJ1";
+    $user = "root";
+    // $user = "app_user";
+    // $pass = 'ho{HslC)jWaky${L';
+    $pass = '';
     $schema = 'rwitc_website';
     $conn = mysqli_connect('localhost',$user,$pass,$schema);
     // Check connection

@@ -94,7 +94,7 @@
             alert(delete-prerace);
             if (confirm ("Are you sure ?")){
 
-                location.href="admin/erp_prerace.php?q=delete-prerace&id="+preraceID;
+                location.href="turf-console/erp_prerace.php?q=delete-prerace&id="+preraceID;
             }
         }
     </script>
@@ -198,7 +198,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     <?php } ?>    
     
         <div class="prerace-header">
-              <a class="add-prerace-btn" href="admin/erp_prerace.php?q=add-prerace"><i class="fas fa-plus"></i> Add</a>
+              <a class="add-prerace-btn" href="turf-console/erp_prerace.php?q=add-prerace"><i class="fas fa-plus"></i> Add</a>
               <div class="header-links">
                 <!-- <a href="admin/dashboard.php">Dashboard</a>
                 <a href="admin/adminlogin.php?q=logout">Logout</a> -->
@@ -206,7 +206,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
         </div>
                <?php if ($q=="add-prerace") { ?>              
                 <div class="prerace-form-wrap">
-                <form  method="post" action="admin/erp_prerace.php">
+                <form  method="post" action="turf-console/erp_prerace.php">
                     <input type="hidden" name="q" value="add-prerace" />
                     <div class="form-row">
                         <label class="form-label" for="prerace_date">Date</label>
@@ -227,7 +227,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                 <?php foreach ($allprerace as $preraceInfo) { ?>
                     <div class="prerace-list-row">
                         <div class="prerace-date"><i class="far fa-calendar-alt"></i> <?php echo date("d-m-y",strtotime($preraceInfo['racedate'])); ?></div>
-                        <a class="prerace-delete" href="admin/erp_prerace.php?q=delete-prerace&id=<?php echo $preraceInfo['id'] ?>"><i class="fas fa-trash-alt"></i> Delete</a>
+                        <a class="prerace-delete" href="turf-console/erp_prerace.php?q=delete-prerace&id=<?php echo $preraceInfo['id'] ?>"><i class="fas fa-trash-alt"></i> Delete</a>
                     </div>
                 <?php } ?>
               </div>

@@ -74,7 +74,7 @@ $design->js = '
     <script type="text/javascript">
         function confirmDelete(ratingID) {
             if (confirm ("Are you sure ?")){
-                location.href="admin/ratingsChangeManager.php?q=delete-rating&id="+ratingID;
+                location.href="turf-console/ratingsChangeManager.php?q=delete-rating&id="+ratingID;
             }
         }
     </script>
@@ -368,16 +368,16 @@ $design->openDiv("leftArea", 'col-lg-9');
 <?php } ?>
 <?php if ($_SESSION['rating_change'] == "Y") { ?>
     <div class="ratings-header">
-        <a class="add-rating-btn" href="admin/ratingsChangeManager.php?q=new-report"><i class="fas fa-plus"></i> Add New Rating Change</a>
+        <a class="add-rating-btn" href="turf-console/ratingsChangeManager.php?q=new-report"><i class="fas fa-plus"></i> Add New Rating Change</a>
         <div class="header-links">
-            <!-- <a href="admin/dashboard.php">Dashboard</a>
-                    <a href="admin/adminlogin.php?q=logout">Logout</a> -->
+            <!-- <a href="dashboard.php">Dashboard</a>
+                    <a href="adminlogin.php?q=logout">Logout</a> -->
         </div>
     </div>
 
     <?php if ($q == "new-report") { ?>
         <div class="rating-form-wrap">
-            <form name="dividendForm" method="post" action="admin/ratingsChangeManager.php" enctype="multipart/form-data">
+            <form name="dividendForm" method="post" action="turf-console/ratingsChangeManager.php" enctype="multipart/form-data">
                 <div class="form-row">
                     <label class="form-label" for="rating_date">Date</label>
                     <input type="text" name="date" id='rating_date' value="<?php echo $date; ?>" />

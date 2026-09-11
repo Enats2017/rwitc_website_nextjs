@@ -129,7 +129,7 @@ $design->js='
 <script type="text/javascript">
     function confirmDelete(sponsorID) {
         if (confirm ("Are you sure ?")){
-            location.href="admin/sponsorofthedayManager.php?q=delete-sponsoroftheday&id="+sponsorID;
+            location.href="turf-console/sponsorofthedayManager.php?q=delete-sponsoroftheday&id="+sponsorID;
         }
     }
 </script>
@@ -305,16 +305,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 	</div>
 	<!--
 	<div class="submenu">
-	  	<a href="admin/sponsorofthedayManager.php">Sponsor Of the Day Manager</a>
+	  	<a href="sponsorofthedayManager.php">Sponsor Of the Day Manager</a>
 	  	<div style="float:right;">
-			<a style="float:left;" href="admin/dashboard.php">Dashboard</a>
-			<a style="float:left; margin-left: 5px;" href="admin/adminlogin.php?q=logout">Logout</a>
+			<a style="float:left;" href="dashboard.php">Dashboard</a>
+			<a style="float:left; margin-left: 5px;" href="adminlogin.php?q=logout">Logout</a>
 	   	</div>
 	</div>
 	-->
 
 	<div class="sponsor-upload-wrap">
-	<form enctype="multipart/form-data" name="sponsorimageForm" method="post" action="admin/sponsorofthedayManager.php">
+	<form enctype="multipart/form-data" name="sponsorimageForm" method="post" action="turf-console/sponsorofthedayManager.php">
 	  	<table class="sponsor-upload-table">
 		  	<col width="20%"><col width="80%">
 		  	<tr>
@@ -328,7 +328,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 				  	<input type="submit" name="submit" value="Upload" />
 				  	<input type="hidden" name="q" value="image-upload" />
 				  	<input type="hidden" name="count" value="<?php echo $sponsoroftheday_datas_count; ?>" />
-				  	<input type="reset" name="reset" value="Clear" onclick="location.href='admin/sponsorofthedayManager.php'" />
+				  	<input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/sponsorofthedayManager.php'" />
 			  	</td>
 		  	</tr>
 	  	</table>
@@ -342,7 +342,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 		<input type="text" id="sponsorSearchInput" placeholder="Search by name or sort order..." />
 	</div>
 
-	<form enctype="multipart/form-data" name="sponsorForm" method="post" action="admin/sponsorofthedayManager.php">
+	<form enctype="multipart/form-data" name="sponsorForm" method="post" action="turf-console/sponsorofthedayManager.php">
 	  	<div id="sponsorNoResults" class="sponsor-empty" style="display:none;">No sponsors match your search.</div>
 	  	<div class="sponsor-grid">
 

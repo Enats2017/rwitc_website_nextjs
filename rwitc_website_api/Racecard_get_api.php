@@ -87,38 +87,220 @@ if ($date === "" || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || strtotime($da
 // the raw markup back to the frontend (see Race_card.js "html" mode).
 if ($date > "2022-11-08") {
 
+    /*
+     * ============================================================
+     * POST-CUTOFF RACECARD
+     * ============================================================
+     *
+     * Source priority:
+     *
+     *   1. LOCAL run_races folder
+     *   2. Database -> S3 fallback
+     *
+     * Existing frontend response format is preserved.
+     */
+
     $cacheKey = "racecard_html_" . md5($date);
 
+    /*
+     * ------------------------------------------------------------
+     * CACHE
+     * ------------------------------------------------------------
+     */
     if ($security->serveCache($cacheKey)) {
-        exit;
-    }
-
-    $htmlFile = RUN_RACES_LOCAL_PATH . "/Race_Card_" . $date . ".html";
-
-    if (!file_exists($htmlFile)) {
-        $security->respondError("No race card found for this date", 404);
         exit;
     }
 
     try {
 
-        $htmlContent = file_get_contents($htmlFile);
+        /*
+         * ========================================================
+         * FIRST: LOCAL run_races FILE
+         * ========================================================
+         *
+         * Existing generated filename:
+         *     Race_Card_YYYY-MM-DD.html
+         */
+        $htmlFile = rtrim(RUN_RACES_LOCAL_PATH, "/\\")
+            . "/Race_Card_" . $date . ".html";
 
-        if ($htmlContent === false) {
-            throw new Exception("Unable to read archive file: " . $htmlFile);
+        $htmlContent = false;
+        $source = "";
+
+        if (is_file($htmlFile)) {
+
+            $source = "LOCAL_RUN_RACES";
+
+            $htmlContent = file_get_contents($htmlFile);
+
+            if ($htmlContent === false) {
+                throw new Exception(
+                    "Unable to read local racecard file: " . $htmlFile
+                );
+            }
         }
 
-        // Same download-link derivation as the DB branch below.
-        $htmFile = RUN_RACES_LOCAL_PATH . "/Race_Card_Report_" . $date . ".htm";
-        $downloadAvailable = file_exists($htmFile);
+        /*
+         * ========================================================
+         * SECOND: DATABASE -> S3
+         * ========================================================
+         *
+         * Local file missing:
+         *
+         *     run_race_details
+         *          |
+         *          +-- type = racecard
+         *          +-- race_type = pre_race
+         *          |
+         *          +-- file_url = S3 HTML URL
+         *
+         * Then read the actual HTML from S3.
+         */
+        if ($htmlContent === false) {
+
+            $source = "DB_S3";
+
+            $stmt = $conn->prepare("
+                SELECT file_url
+                FROM run_race_details
+                WHERE `date` = ?
+                  AND `type` = 'racecard'
+                  AND `race_type` = 'pre_race'
+                  AND file_url IS NOT NULL
+                  AND file_url <> ''
+                LIMIT 1
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param("s", $date);
+
+            if (!$stmt->execute()) {
+                throw new Exception($conn->error);
+            }
+
+            $result = $stmt->get_result();
+
+            if (!$result || $result->num_rows === 0) {
+
+                $stmt->close();
+
+                $security->respondError(
+                    "No race card found for this date",
+                    404
+                );
+
+                exit;
+            }
+
+            $row = $result->fetch_assoc();
+            $s3Url = trim((string)($row["file_url"] ?? ""));
+
+            $stmt->close();
+
+            if ($s3Url === "") {
+                throw new Exception(
+                    "Racecard S3 file URL is empty"
+                );
+            }
+
+            /*
+             * Read actual HTML content from S3.
+             */
+            $htmlContent = @file_get_contents($s3Url);
+
+            if ($htmlContent === false) {
+                throw new Exception(
+                    "Unable to read racecard file from S3"
+                );
+            }
+        }
+
+        /*
+         * ========================================================
+         * DOWNLOAD FILE
+         * ========================================================
+         *
+         * Keep the existing website-facing .htm URL:
+         *
+         *     Race_Card_Report_YYYY-MM-DD.htm
+         *
+         * The S3 URL is never exposed to the frontend.
+         */
+        $htmFile = rtrim(RUN_RACES_LOCAL_PATH, "/\\")
+            . "/Race_Card_Report_" . $date . ".htm";
+
+        $downloadAvailable = false;
+
+        /*
+         * Local .htm exists.
+         */
+        if (is_file($htmFile)) {
+
+            $downloadAvailable = true;
+
+        } else {
+
+            /*
+             * Local .htm is missing.
+             *
+             * For migrated records, the same run_race_details
+             * record confirms that the migrated racecard exists.
+             */
+            $stmt = $conn->prepare("
+                SELECT id
+                FROM run_race_details
+                WHERE `date` = ?
+                  AND `type` = 'racecard'
+                  AND `race_type` = 'pre_race'
+                  AND file_url IS NOT NULL
+                  AND file_url <> ''
+                LIMIT 1
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param("s", $date);
+
+            if (!$stmt->execute()) {
+                throw new Exception($conn->error);
+            }
+
+            $result = $stmt->get_result();
+
+            if ($result && $result->num_rows > 0) {
+                $downloadAvailable = true;
+            }
+
+            $stmt->close();
+        }
+
+        /*
+         * Keep the old website URL format.
+         */
         $downloadFile = $downloadAvailable
             ? RUN_RACES_BASE_URL . "/Race_Card_Report_" . $date . ".htm"
             : null;
 
+        /*
+         * ========================================================
+         * RESPONSE
+         * ========================================================
+         *
+         * source is included only to verify the migration:
+         *
+         *     LOCAL_RUN_RACES
+         *     DB_S3
+         */
         $response = [
             "found"              => true,
             "date"               => $date,
             "mode"               => "html",
+            "source"             => $source,
             "html"               => $htmlContent,
             "download_file"      => $downloadFile,
             "download_available" => $downloadAvailable
@@ -128,8 +310,14 @@ if ($date > "2022-11-08") {
 
     } catch (Throwable $error) {
 
-        $security->logLine("RACECARD_HTML_READ_ERROR | " . $error->getMessage());
-        $security->respondError("Internal server error", 500);
+        $security->logLine(
+            "RACECARD_HTML_READ_ERROR | " . $error->getMessage()
+        );
+
+        $security->respondError(
+            "Internal server error",
+            500
+        );
 
     } finally {
 
@@ -144,6 +332,7 @@ if ($date > "2022-11-08") {
 
     exit;
 }
+
 // ============================================================
 // <<< CHANGE END
 // ============================================================

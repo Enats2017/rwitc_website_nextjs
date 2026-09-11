@@ -1,4 +1,3 @@
-cat > .gitignore << 'EOF'
 lib/name_service54.zip
 lib/service04.txt
 lib/service_54.txt
@@ -7,6 +6,8 @@ admin/error_log
 images/newdesign/error_log
 rwitc_website_api/cache/
 rwitc_website_api/rate_limits/
-EOF
 images/Club-House-11-02-2026.mp4
 rwitc_website_api/logs/api_logs.txt
+downloads/
+images/
+staticpages/

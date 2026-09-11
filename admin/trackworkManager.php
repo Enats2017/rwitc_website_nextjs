@@ -125,7 +125,7 @@ $design->js = '
 <script type="text/javascript">
      function confirmDelete(trackworkID) {       
        if (confirm(\'Are you Sure?\')) {          
-            location.href = "admin/trackworkManager.php?id="+trackworkID+"&q=delete-trackwork";
+            location.href = "turf-console/trackworkManager.php?id="+trackworkID+"&q=delete-trackwork";
         }    
     }
        
@@ -234,15 +234,15 @@ $design->openDiv("leftArea", 'col-lg-9');
 <?php } ?>
 <?php if (empty($msg) && empty($secmsg)) { ?>
     <div class="trackwork-header">
-        <a class="add-trackwork-btn" href="admin/trackworkManager.php?q=new-trackwork"><i class="fas fa-plus"></i> Add New Trackwork</a>
+        <a class="add-trackwork-btn" href="turf-console/trackworkManager.php?q=new-trackwork"><i class="fas fa-plus"></i> Add New Trackwork</a>
         <div class="header-links">
-            <!-- <a href="admin/dashboard.php">Dashboard</a>
-            <a href="admin/adminlogin.php?q=logout">Logout</a> -->
+            <!-- <a href="dashboard.php">Dashboard</a>
+            <a href="adminlogin.php?q=logout">Logout</a> -->
         </div>
     </div>
     <?php if ($q == "new-trackwork" || $q == "edit-trackwork") { ?>
         <div class="trackwork-form-wrap">
-            <form name="trackworkForm" method="post" action="admin/trackworkManager.php">
+            <form name="trackworkForm" method="post" action="turf-console/trackworkManager.php">
                 <table class="contentTable">
                     <col width="20%">
                     <col width="80%">
@@ -315,7 +315,7 @@ $design->openDiv("leftArea", 'col-lg-9');
                     <span class="tag">Published <b class="<?php echo ($trackworkInfo['published'] == 'Y') ? 'yes' : 'no'; ?>"><?php echo $trackworkInfo['published']; ?></b></span>
                 </div>
                 <div class="trackwork-actions">
-                    <a href="admin/trackworkManager.php?id=<?php echo $trackworkInfo['id']; ?>&q=edit-trackwork"><i class="fas fa-edit"></i> Edit</a>
+                    <a href="turf-console/trackworkManager.php?id=<?php echo $trackworkInfo['id']; ?>&q=edit-trackwork"><i class="fas fa-edit"></i> Edit</a>
                     <a href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $trackworkInfo['id']; ?>);"><i class="fas fa-trash-alt"></i> Delete</a>
                 </div>
             </div>

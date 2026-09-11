@@ -15,7 +15,7 @@ if (
     !isset($_SESSION['role']) ||
     strtoupper((string)$_SESSION['role']) !== 'ADMIN'
 ) {
-    header("Location: ../adminlogin.php");
+    header("Location: ../index.php");
     exit;
 }
 
@@ -376,7 +376,7 @@ $design->openDiv("leftArea",'col-lg-9');
                 <h1>User Groups</h1>
                 <p>Define roles and control which modules each role can view or edit.</p>
             </div>
-            <a href="admin/userGroup.php?action=form" class="btn btn-primary"><i class="fa fa-plus"></i> Add User Group</a>
+            <a href="turf-console/userGroup.php?action=form" class="btn btn-primary"><i class="fa fa-plus"></i> Add User Group</a>
         </div>
 
         <div class="stat-strip">
@@ -443,11 +443,11 @@ $design->openDiv("leftArea",'col-lg-9');
                             </td>
                             <td data-label="">
                                 <div class="row-actions">
-                                    <a href="admin/userGroup.php?action=form&user_group_id=<?php echo (int)$g['user_group_id']; ?>" class="icon-btn" title="Edit"><i class="fa fa-pencil"></i></a>
+                                    <a href="turf-console/userGroup.php?action=form&user_group_id=<?php echo (int)$g['user_group_id']; ?>" class="icon-btn" title="Edit"><i class="fa fa-pencil"></i></a>
                                     <?php if ($is_admin_group): ?>
                                         <span class="icon-btn locked" title="System group can't be deleted"><i class="fa fa-trash-o"></i></span>
                                     <?php else: ?>
-                                        <a href="admin/userGroup.php?action=delete&user_group_id=<?php echo (int)$g['user_group_id']; ?>"
+                                        <a href="turf-console/userGroup.php?action=delete&user_group_id=<?php echo (int)$g['user_group_id']; ?>"
                                             class="icon-btn danger" title="Delete"
                                             onclick="return confirm('Delete this group? This cannot be undone.');">
                                             <i class="fa fa-trash-o"></i>
@@ -487,10 +487,10 @@ $design->openDiv("leftArea",'col-lg-9');
                 <h1><?php echo $edit_group && !empty($edit_group['name']) ? htmlspecialchars($edit_group['name']) : 'Add User Group'; ?></h1>
                 <p>Set the group name and choose module-level access &amp; edit rights.</p>
             </div>
-            <a href="admin/userGroup.php" class="btn btn-ghost"><i class="fa fa-arrow-left"></i> Back to list</a>
+            <a href="turf-console/userGroup.php" class="btn btn-ghost"><i class="fa fa-arrow-left"></i> Back to list</a>
         </div>
 
-        <form method="post" action="admin/userGroup.php?action=form" id="form-group">
+        <form method="post" action="turf-console/userGroup.php?action=form" id="form-group">
             <?php if ($edit_group && !empty($edit_group['user_group_id'])): ?>
                 <input type="hidden" name="user_group_id" value="<?php echo (int)$edit_group['user_group_id']; ?>">
             <?php endif; ?>
@@ -542,7 +542,7 @@ $design->openDiv("leftArea",'col-lg-9');
                 </div>
 
                 <div class="form-footer">
-                    <a href="admin/userGroup.php" class="btn btn-ghost">Cancel</a>
+                    <a href="turf-console/userGroup.php" class="btn btn-ghost">Cancel</a>
                     <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save Group</button>
                 </div>
             </div>

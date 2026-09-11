@@ -140,7 +140,7 @@ if (isAdminlogin()) {
 				function confirmDelete(imageID,sponsorID) {
 					//alert(sponsorID);        
 					if (confirm ("Are you sure ?")){
-							location.href="admin/galleryManagerbulk.php?q=delete-image&id="+imageID+"&sponsorID="+sponsorID;
+							location.href="turf-console/galleryManagerbulk.php?q=delete-image&id="+imageID+"&sponsorID="+sponsorID;
 					}
 				}
 		</script>
@@ -167,7 +167,7 @@ if (isAdminlogin()) {
 		$('.sponsorList').click(function() {  
 			if ($('#image_date').val()) {
 				$.ajax( {
-					url : 'admin/galleryManagerbulk.php?q=fetch-sponsor&date='+$('#image_date').val(),
+					url : 'turf-console/galleryManagerbulk.php?q=fetch-sponsor&date='+$('#image_date').val(),
 					type: 'GET',
 					success: function (msg) {
 						//alert(msg);
@@ -307,8 +307,8 @@ $design->openDiv("leftArea","col-lg-9");
 
 	<div class="gallery-header">
 		<div class="gallery-header-actions">
-			<a class="gallery-btn" href="admin/galleryManager.php?q=new-image"><i class="fas fa-image"></i> Add New Image</a>
-			<a class="gallery-btn solid" href="admin/galleryManagerbulk.php?q=new-image"><i class="fas fa-layer-group"></i> Add Bulk Image</a>
+			<a class="gallery-btn" href="turf-console/galleryManager.php?q=new-image"><i class="fas fa-image"></i> Add New Image</a>
+			<a class="gallery-btn solid" href="turf-console/galleryManagerbulk.php?q=new-image"><i class="fas fa-layer-group"></i> Add Bulk Image</a>
 		</div>
 		<!--
 		<div style="float:right;">
@@ -321,7 +321,7 @@ $design->openDiv("leftArea","col-lg-9");
 	<?php if ($q=="new-image") { ?>
 	<div class="gallery-form-wrap">
 	    <h3 class="form-section-title">Add Bulk Image</h3>
-		<form name="dividendForm" method="post" action="admin/galleryManagerbulk.php" enctype="multipart/form-data">
+		<form name="dividendForm" method="post" action="turf-console/galleryManagerbulk.php" enctype="multipart/form-data">
 			<table class="gallery-form-table">
 				<col width="20%"><col width="80%">
 				<tr>
@@ -349,7 +349,7 @@ $design->openDiv("leftArea","col-lg-9");
 								
 	<?php if ($q=="view-images") { ?>
 		<div class="section-title"><i class="fas fa-images"></i> Images for <?php echo date("d-M-Y",strtotime($date)); ?></div>
-		<form name="dividendForm" method="post" action="admin/galleryManagerbulk.php" enctype="multipart/form-data">
+		<form name="dividendForm" method="post" action="turf-console/galleryManagerbulk.php" enctype="multipart/form-data">
 			<div class="bulk-images-grid">
 				<?php 
 					$i=0;

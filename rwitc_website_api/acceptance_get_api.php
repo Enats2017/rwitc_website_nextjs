@@ -63,11 +63,12 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 // VALIDATE INPUT
 // --------------------------------------------------
 
-// NOTE: this endpoint only serves historical race days (<= 2022-09-25),
-// which is the branch of the legacy page that pulled data straight from
-// the DB tables (prospect/decl/hmaster/trainers/operrace/pools). Anything
-// after that cutoff was rendered from static Acceptance_YYYY-MM-DD.html
-// files on disk in the legacy page and is intentionally out of scope here.
+// Historical dates (<= 2022-09-25) continue to use the original
+// DB-backed response below. Dates after the cutoff use the generated
+// Acceptance_YYYY-MM-DD.html archive. The archive is read locally first;
+// if the local file is missing, the S3 URL stored in run_race_details
+// is used as the fallback. The frontend still receives the legacy
+// rwitc.com/run_races/Acceptance_YYYY-MM-DD.htm download URL.
 
 $date = isset($_GET["date"]) ? trim($_GET["date"]) : "";
 
@@ -81,38 +82,190 @@ if ($date === "" || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || strtotime($da
 
 if ($date > "2022-09-25") {
 
-    $cacheKey = "acceptance_html_" . md5($date);
+    $cacheKey = "acceptance_html_" . $date;
 
+    // Return cached response if available
     if ($security->serveCache($cacheKey)) {
-        exit;
-    }
+        if (isset($conn)) {
+            $conn->close();
+        }
 
-    $htmlFile = RUN_RACES_LOCAL_PATH . "/Acceptance_" . $date . ".html";
+        if (isset($handle) && is_resource($handle)) {
+            fclose($handle);
+        }
 
-    if (!file_exists($htmlFile)) {
-        $security->respondError("No acceptance data found for this date", 404);
         exit;
     }
 
     try {
 
-        $htmlContent = file_get_contents($htmlFile);
+        /*
+         * ======================================================
+         * FIRST: OLD LOCAL FILE
+         * ======================================================
+         */
 
-        if ($htmlContent === false) {
-            throw new Exception("Unable to read archive file: " . $htmlFile);
+        $htmlFile = RUN_RACES_LOCAL_PATH . "/Acceptance_" . $date . ".html";
+
+        $htmlContent = false;
+        $source = "";
+
+        if (file_exists($htmlFile)) {
+
+            $source = "LOCAL_RUN_RACES";
+
+            $htmlContent = file_get_contents($htmlFile);
+
+            if ($htmlContent === false) {
+                throw new Exception(
+                    "Unable to read local acceptance file: " . $htmlFile
+                );
+            }
         }
 
+        /*
+         * ======================================================
+         * SECOND: NEW S3 FILE
+         *
+         * Local file not found -> DB -> S3
+         * ======================================================
+         */
+
+        if ($htmlContent === false) {
+
+            $source = "DB_S3";
+
+            $stmt = $conn->prepare("
+                SELECT file_url
+                FROM run_race_details
+                WHERE `date` = ?
+                AND `type` = 'acceptances'
+                AND `race_type` = 'pre_race'
+                LIMIT 1
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param("s", $date);
+
+            if (!$stmt->execute()) {
+                throw new Exception($conn->error);
+            }
+
+            $result = $stmt->get_result();
+
+            if (!$result || $result->num_rows == 0) {
+
+                $stmt->close();
+
+                $security->respondError(
+                    "No acceptance data found for this date",
+                    404
+                );
+
+                exit;
+            }
+
+            $row = $result->fetch_assoc();
+            $s3Url = $row["file_url"];
+
+            $stmt->close();
+
+            /*
+             * Read the actual HTML from S3.
+             * The S3 URL is used internally only.
+             */
+            if (empty($s3Url)) {
+                throw new Exception(
+                    "Acceptance S3 file URL is empty"
+                );
+            }
+
+            $htmlContent = @file_get_contents($s3Url);
+
+            if ($htmlContent === false) {
+                throw new Exception(
+                    "Unable to read acceptance file from S3"
+                );
+            }
+        }
+
+        /*
+         * ======================================================
+         * DOWNLOAD LINK
+         *
+         * Always expose the old website URL.
+         * Never expose the S3 URL to frontend.
+         * ======================================================
+         */
+
         $htmFile = RUN_RACES_LOCAL_PATH . "/Acceptance_" . $date . ".htm";
-        $downloadAvailable = file_exists($htmFile);
+
+        $downloadAvailable = false;
+
+        /*
+         * Old .htm file exists locally
+         */
+        if (file_exists($htmFile)) {
+
+            $downloadAvailable = true;
+
+        } else {
+
+            /*
+             * New file:
+             * Check DB record exists.
+             */
+            $stmt = $conn->prepare("
+                SELECT id
+                FROM run_race_details
+                WHERE `date` = ?
+                AND `type` = 'acceptances'
+                AND `race_type` = 'pre_race'
+                LIMIT 1
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param("s", $date);
+
+            if (!$stmt->execute()) {
+                throw new Exception($conn->error);
+            }
+
+            $result = $stmt->get_result();
+
+            if ($result && $result->num_rows > 0) {
+                $downloadAvailable = true;
+            }
+
+            $stmt->close();
+        }
+
+        /*
+         * IMPORTANT:
+         * Frontend always receives the old URL format.
+         */
         $downloadFile = $downloadAvailable
             ? RUN_RACES_BASE_URL . "/Acceptance_" . $date . ".htm"
             : null;
+
+        /*
+         * ======================================================
+         * RESPONSE
+         * ======================================================
+         */
 
         $response = [
             "found"              => true,
             "date"               => $date,
             "mode"               => "html",
-            "html"               => $htmlContent,
+            "source"              => $source,
+            "html"                => $htmlContent,
             "download_file"      => $downloadFile,
             "download_available" => $downloadAvailable
         ];
@@ -121,7 +274,10 @@ if ($date > "2022-09-25") {
 
     } catch (Throwable $error) {
 
-        $security->logLine("ACCEPTANCE_HTML_READ_ERROR | " . $error->getMessage());
+        $security->logLine(
+            "ACCEPTANCE_HTML_READ_ERROR | " . $error->getMessage()
+        );
+
         $security->respondError("Internal server error", 500);
 
     } finally {
