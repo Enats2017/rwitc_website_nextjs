@@ -3,6 +3,11 @@ include_once('../bootstrap.php');
 require_once('../lib/gallery.class.php');
 require_once("../lib/users.class.php");
 require_once("../lib/userchecks.php");
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../rwitc_website_api/config/config.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 $q = getParameterString('q','',$db);  
 session_start();                    
 if(isset($_COOKIE['uid'])){                    
@@ -61,18 +66,37 @@ if (isAdminlogin()) {
 					}
 					foreach ($files_arr as $fkey => $fvalue) {
 						$timestamp = date('YmdHis').rand(10, 10000);
-						$file = $fvalue['name'];
-						if($file != ''){
-							$exist_path = $file_upload_path.$file;
-							if(file_exists($exist_path)){
-								unlink($exist_path);
-							}
+						$file = $timestamp . '_' . $fvalue['name'];
+
+						// ===== S3 Upload =====
+						$s3_url = '';
+						try {
+							$s3Client = new S3Client([
+								'version'     => 'latest',
+								'region'      => AWS_REGION,
+								'credentials' => [
+									'key'    => AWS_ACCESS_KEY_ID,
+									'secret' => AWS_SECRET_ACCESS_KEY,
+								],
+							]);
+
+							$result = $s3Client->putObject([
+								'Bucket'      => AWS_BUCKET,
+								'Key'         => 'uploads/Gallery/' . $file,
+								'SourceFile'  => $fvalue['tmp_name'],
+								// 'ACL'         => 'public-read',
+								'ContentType' => mime_content_type($fvalue['tmp_name']),
+							]);
+
+							$s3_url = $result['ObjectURL'];
+						} catch (AwsException $e) {
+							$s3_url = '';
 						}
-						if (move_uploaded_file($fvalue['tmp_name'], $file_upload_path . $file)) {
-							$destFile = $file_upload_path . $file;
-							chmod($destFile, 0777);
+						// ===== End S3 Upload =====
+
+						if ($s3_url != '') {
+							$images->insertImage($date, $captions, $s3_url, 1); // 1- sponsorID which means none 
 						}
-						$images->insertImage($date,$captions,$file,1); // 1- sponsorID which means none 
 					}
 					$q = "view-images";
 					$raceDayImages = $images->getAllImagesByDateAndSponsorID($date,1);
@@ -109,12 +133,20 @@ if (isAdminlogin()) {
 				$imageDetails = $images->getImageById($imageID);
 				$date = $imageDetails['racedate'];
 				$dirname = date("d-M-Y",strtotime($imageDetails['racedate']));   
-				if ( unlink($base.GALLERY_BASE."/$dirname/".$imageDetails['filename']) ) {
+
+				if (strpos($imageDetails['filename'], 'http') === 0) {
+					// S3-hosted image — just remove the DB row
 					$images->deleteImageByID($imageID);
 					$msg = 'Image Delete successfully';
 				} else {
-					$msg = 'Could Not Delete Image. Please try again';
-				} 
+					if ( unlink($base.GALLERY_BASE."/".$dirname."/".$imageDetails['filename']) ) {
+						$images->deleteImageByID($imageID);
+						$msg = 'Image Delete successfully';
+					} else {
+						$msg = 'Could Not Delete Image. Please try again';
+					} 
+				}
+
 				$q = "view-images";
 				$raceDayImages = $images->getAllImagesByDateAndSponsorID($date,1);
 			} catch (Exception $err) {
@@ -361,7 +393,8 @@ $design->openDiv("leftArea","col-lg-9");
 						echo '<div class="bulk-image-card">';
 						echo '<div class="thumb-wrap">';
 						if ($sponsorID == 1) { 
-							echo '<img src="'.GALLERY_BASE.'/'.$dirname.'/'.$raceDayImage['filename'].'" alt="" />';
+						$imgSrc = (strpos($raceDayImage['filename'], 'http') === 0) ? $raceDayImage['filename'] : GALLERY_BASE.'/'.$dirname.'/'.$raceDayImage['filename'];
+						echo '<img src="'.$imgSrc.'" alt="" />';
 						}
 						echo '</div>';
 						echo '<div class="bulk-image-body">';
@@ -398,4 +431,4 @@ $design->openDiv("leftArea","col-lg-9");
 	$design->endPage();
 	$design->pageClose();
 	$design = NULL; // release object
-?>
+?> 

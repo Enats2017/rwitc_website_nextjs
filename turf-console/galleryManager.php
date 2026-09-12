@@ -44,7 +44,6 @@ if (isAdminlogin()) {
             $sponsorID = getParameterNumber('sponsorID', 1);
             // save new dividend     
             if ($q == "add-image") {
-                echo $sponsorID;
                 try {
                     $dirname = date("d-M-Y", strtotime($date));
                     // if (!file_exists(GALLERY_BASE . "/" . $dirname)) {
@@ -137,6 +136,9 @@ if (isAdminlogin()) {
                         }
                     }
 
+                    $_SESSION['gallery_msg'] = 'Image Uploaded Successfully!';
+                    header("Location: galleryManager.php");
+                    exit;
 
                     /*
                   if (!$_FILES['imageFile']['error'] )  { // error =0  
@@ -170,21 +172,28 @@ if (isAdminlogin()) {
             try {
                 $imageDetails = $images->getImageById($imageID);
                 $date = $imageDetails['racedate'];
-                if ($sponsorID == 1) {
-                    $dirname = date("d-M-Y", strtotime($imageDetails['racedate']));
-                    if (unlink($base . GALLERY_BASE . "/$dirname/" . $imageDetails['filename'])) {
-                        $images->deleteImageByID($imageID);
-                        $msg = 'Image Delete successfully';
-                    } else {
-                        $msg = 'Could Not Delete Image. Please try again';
+
+                if (strpos($imageDetails['filename'], 'http') === 0) {
+                    // S3-hosted image — just remove the DB row
+                    $images->deleteImageByID($imageID);
+                    $msg = 'Image Delete successfully';
+                } else {
+                    if ($sponsorID == 1) {
+                        $dirname = date("d-M-Y", strtotime($imageDetails['racedate']));
+                        if (unlink($base . GALLERY_BASE . "/$dirname/" . $imageDetails['filename'])) {
+                            $images->deleteImageByID($imageID);
+                            $msg = 'Image Delete successfully';
+                        } else {
+                            $msg = 'Could Not Delete Image. Please try again';
+                        }
                     }
-                }
-                if ($sponsorID > 1) {
-                    if (unlink($base . SPONSOR_GALLERY_BASE . "/$sponsorID/" . $imageDetails['filename'])) {
-                        $images->deleteImageByID($imageID);
-                        $msg = 'Image Delete successfully';
-                    } else {
-                        $msg = 'Could Not Delete Image. Please try again';
+                    if ($sponsorID > 1) {
+                        if (unlink($base . SPONSOR_GALLERY_BASE . "/$sponsorID/" . $imageDetails['filename'])) {
+                            $images->deleteImageByID($imageID);
+                            $msg = 'Image Delete successfully';
+                        } else {
+                            $msg = 'Could Not Delete Image. Please try again';
+                        }
                     }
                 }
 
@@ -886,6 +895,13 @@ $design->openDiv("leftArea", "col-lg-9");
         }
     }
 </style>
+
+<?php 
+if (isset($_SESSION['gallery_msg'])) {
+    $msg = $_SESSION['gallery_msg'];
+    unset($_SESSION['gallery_msg']);
+}
+?>
 
 <?php if (!empty($msg)) { ?>
     <div class="message">

@@ -26,7 +26,8 @@ export default function Sponsors() {
                             sponsors.map((item) => (
                                 <div className="sponsorItem" key={item.id}>
                                     <img
-                                        src={`${UPLOAD_URL}/sponsors/${item.source}`}
+                                        // src={`${UPLOAD_URL}/sponsors/${item.source}`}
+                                        src={item.source.startsWith('http') ? item.source : `${UPLOAD_URL}/sponsors/${item.source}`}
                                         alt={item.title}
                                         draggable="false"
                                     />
@@ -37,7 +38,8 @@ export default function Sponsors() {
                             sponsors.map((item) => (
                                 <div className="sponsorItem" key={`duplicate-${item.id}`}>
                                     <img
-                                        src={`${UPLOAD_URL}/sponsors/${item.source}`}
+                                        // src={`${UPLOAD_URL}/sponsors/${item.source}`}
+                                        src={item.source.startsWith('http') ? item.source : `${UPLOAD_URL}/sponsors/${item.source}`}
                                         alt={item.title}
                                         draggable="false"
                                     />
