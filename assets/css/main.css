@@ -517,7 +517,14 @@ img.pull-left { margin-right: 10px; }
         .rightlogo{margin-left: 31px;margin-top: 4px;}
         .rightlogo img{height: 48px;width: 69px;}
         .event {padding-top :20px;}
-        #title{font-size: 12px;margi-left:50px;margin-top: 14px;color: #000101}
+        #title {
+    font-size: 14px;
+    margin-left: 0;
+    margin-top: 10px;
+    color: #ffffff !important;
+    width: auto;
+    text-align: center;
+}
         #tickerWrapper { margin-top: 20px; }
         .eventCalendar {text-align: center; }
         #sponser table td { padding-top: 75px;}
@@ -748,4 +755,61 @@ img.pull-left { margin-right: 10px; }
     display: inline-block;
     float: none;
     text-align: center;
+}
+/* Common header title - same on all pages */
+#header #title {
+    color: white !important;
+    font-size: 34px !important;
+    font-family: 'Times New Roman', serif !important;
+    font-weight: bold !important;
+    margin-top: 35px !important;
+    text-align: center !important;
+}
+/* Mobile header fix */
+@media only screen and (max-width: 768px) {
+
+    #header {
+        height: 60px !important;
+        width: 100% !important;
+        overflow: hidden;
+    }
+
+    #header .navbar-header.logo {
+        float: none !important;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 0 !important;
+        width: auto !important;
+    }
+
+    #header .navbar-header.logo:first-child {
+        float: left !important;
+    }
+
+    #header .navbar-header.logo:first-child .navbar-brand {
+        padding: 10px 0 0 10px !important;
+    }
+
+    #header .navbar-header.logo:first-child img {
+        height: 40px !important;
+        width: auto !important;
+    }
+
+    #header .navbar-header.logo:nth-of-type(5) {
+        margin-left: 0 !important;
+    }
+
+    #header #title {
+        color: #ffffff !important;
+        font-size: 13px !important;
+        margin: 12px 5px 0 5px !important;
+        width: auto !important;
+        text-align: center !important;
+        white-space: nowrap;
+    }
+
+    #header .navbar-collapse {
+        display: none !important;
+    }
+
 }

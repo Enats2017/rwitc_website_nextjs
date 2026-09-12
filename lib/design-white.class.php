@@ -40,8 +40,8 @@ class Design
 
         //$mtime = filemtime($_SERVER['DOCUMENT_ROOT'] .'/rwitc_website/assets/css/main.css');
 
-        // $mtime = filemtime(DIR_BASE . 'assets/css/main.css');
-        $mtime = filemtime(SITE_ROOT . 'assets/css/main.css');
+        $mtime = filemtime(DIR_BASE . 'assets/css/main.css');
+        // $mtime = filemtime(SITE_ROOT . 'assets/css/main.css');
 
         $main_css = $main_file . '?version=' . $mtime;
 
@@ -889,7 +889,7 @@ TICKER;
 
                 </div>
 
-                <div class="navbar-header logo" style="margin-left: 2%;">
+                <div class="navbar-header logo header-title">
 
                     <p id="title">
 
@@ -2128,19 +2128,15 @@ RIGHT_FOOTER;
                 <h3 id="sponsorsTitle">SPONSORS</h3>
 
                 <div id="sponsorBlock" style="background: #FFFFFF;">
-
-                    <marquee style="border: none; margin: 0; top: 0;" id="sponsorBlock" behavior="scroll" direction="left" scrollamount="2"  width="100%">
-
-                    
-
-
-
-                    $sponsors
-
-                    
-
+                    <marquee
+                        style="border: none; margin: 0; top: 0;"
+                        behavior="scroll"
+                        direction="left"
+                        scrollamount="2"
+                        width="100%"
+                    >
+                        $sponsors
                     </marquee>
-
                 </div>
 
             </div>
