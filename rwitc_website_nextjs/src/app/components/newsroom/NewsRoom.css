@@ -345,3 +345,19 @@
         width: 100%;
     }
 }
+
+.topStoryText {
+    animation: slideStory 0.45s ease-in-out;
+}
+
+@keyframes slideStory {
+    from {
+        opacity: 0;
+        transform: translateX(25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}

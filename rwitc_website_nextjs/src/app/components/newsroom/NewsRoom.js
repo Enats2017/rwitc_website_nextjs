@@ -12,6 +12,7 @@ export default function NewsRoom() {
     const router = useRouter();
     const [news, setNews] = useState([]);
     const [topStories, setTopStories] = useState([]);
+    const [topStoryIndex, setTopStoryIndex] = useState(0);
     const [showAll, setShowAll] = useState(false);
     const [raceHeight, setRaceHeight] = useState(null);
     const newsCardRef = useRef(null);
@@ -40,9 +41,21 @@ export default function NewsRoom() {
         }
     }, [news, showAll]);
 
-    const handleNewClick = (item) => {
-        console.log(item);
-    };
+const handleNewClick = (item) => {
+    console.log(item);
+};
+
+const handlePreviousTopStory = () => {
+    setTopStoryIndex((prev) =>
+        prev === 0 ? topStories.length - 1 : prev - 1
+    );
+};
+
+const handleNextTopStory = () => {
+    setTopStoryIndex((prev) =>
+        prev === topStories.length - 1 ? 0 : prev + 1
+    );
+};
 
     // Block right-click (context menu) inside this section only
     const handleContextMenu = (e) => {
@@ -75,22 +88,39 @@ export default function NewsRoom() {
                         </div>
                         {
                             topStories.length > 0 ? (
-                                <h2 style={{ whiteSpace: "pre-line", lineHeight: "1.5" }}>
-                                    {topStories[0].body}
-                                </h2>
+                                <h2
+            key={topStoryIndex}
+            className="topStoryText"
+            style={{ whiteSpace: "pre-line", lineHeight: "1.5" }}
+        >
+            {topStories[topStoryIndex].body}
+        </h2>
                             ) : (
                                 <h2>Loading...</h2>
                             )
                         }
 
                         <div className="raceNav">
-                            <button className="navCircle" aria-label="Previous">
-                                <FaChevronLeft />
-                            </button>
-                            <button className="navCircle" aria-label="Next">
-                                <FaChevronRight />
-                            </button>
-                        </div>
+    <button
+        type="button"
+        className="navCircle"
+        aria-label="Previous"
+        onClick={handlePreviousTopStory}
+        disabled={topStories.length <= 1}
+    >
+        <FaChevronLeft />
+    </button>
+
+    <button
+        type="button"
+        className="navCircle"
+        aria-label="Next"
+        onClick={handleNextTopStory}
+        disabled={topStories.length <= 1}
+    >
+        <FaChevronRight />
+    </button>
+</div>
                     </div>
                     <div className="raceImageWrap">
                         <img
