@@ -1,0 +1,134 @@
+
+    .articlesSection {
+    width: 100%;
+    padding: 30px 40px;
+    background: #ffffff;
+}
+
+.articlesHeading {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.articlesHeading h1 {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #11a14e;
+    color: #ffffff;
+    border-radius: 33px;
+    padding: 11px 25px;
+    font-size: 22px;
+    margin: 0;
+}
+
+.articlesContainer {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.articleCard {
+    border: 1px solid #0b6d2a;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+}
+
+.articleTitle {
+    color: #0b6d2a;
+    font-weight: 700;
+    margin: 0 0 6px;
+}
+
+.articleDate {
+    font-size: 13px;
+    color: #444;
+    margin: 0 0 10px;
+}
+
+.articleBtnWrap {
+    text-align: right;
+}
+
+.articleViewBtn {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.articleViewBtn:hover {
+    background-color: #3fd145;
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pageLabel {
+    color: #0b6d2a;
+    font-weight: 700;
+    margin-right: 6px;
+}
+
+.pageBtn {
+    background: transparent;
+    border: 1px solid #4caf50;
+    color: #4caf50;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.pageBtn:hover {
+    background: #4caf50;
+    color: #fff;
+}
+
+.activePage {
+    background: #4caf50;
+    color: #fff;
+}
+
+.navBtn {
+    font-weight: 600;
+}
+
+.navBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pageDots {
+    padding: 6px 4px;
+    color: #4caf50;
+    font-weight: 700;
+}
+
+.articleBodyContent,
+.articleBodyContent p,
+.articleBodyContent span,
+.articleBodyContent div,
+.articleBodyContent h1,
+.articleBodyContent h2,
+.articleBodyContent h3,
+.articleBodyContent h4,
+.articleBodyContent li,
+.articleBodyContent strong,
+.articleBodyContent b {
+    color: #1c1c1c !important;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.articleBodyContent {
+    margin-top: 15px;
+}

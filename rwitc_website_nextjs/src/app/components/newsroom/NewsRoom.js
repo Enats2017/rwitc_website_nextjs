@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import "./NewsRoom.css";
 import { FaTrophy, FaRegNewspaper, FaChevronLeft, FaChevronRight, } from "react-icons/fa";
 import { UPLOAD_URL } from "../../../services/api";
@@ -8,6 +9,7 @@ import { getTopStories } from "../../../services/topStoriesService";
 import Watermark from "../../../security/Watermark";
 
 export default function NewsRoom() {
+    const router = useRouter();
     const [news, setNews] = useState([]);
     const [topStories, setTopStories] = useState([]);
     const [showAll, setShowAll] = useState(false);
@@ -130,9 +132,9 @@ export default function NewsRoom() {
                                 <button
                                     type="button"
                                     className="viewAllBtn"
-                                    onClick={() => setShowAll(!showAll)}
+                                    onClick={() => router.push("/articles")}
                                 >
-                                    {showAll ? "View Less News" : "View More News"}
+                                    View More News
                                 </button>
                             )
                         }

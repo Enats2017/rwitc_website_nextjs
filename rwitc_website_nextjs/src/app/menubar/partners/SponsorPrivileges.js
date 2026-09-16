@@ -52,7 +52,7 @@ export default function SponsorPrivileges() {
                             <strong>Note:</strong> The Mumbai Racing Season runs from
                             mid-November to end-April and racing is on most Sundays and
                             Thursdays. In Pune, the season is from August to October,
-                            with racing on all Saturdays and Sundays.
+                            with racing on all Saturdays and Sundays. 
                         </p>
 
                     </div>
