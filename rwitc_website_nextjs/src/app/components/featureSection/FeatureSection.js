@@ -15,7 +15,8 @@ export default function FeatureSection() {
         { title: "Video Archives", icon: <FaVideo />, image: "body_img4.jpeg", link: "https://www.rwitcraces.com/RaceArchives.aspx" },
         { title: "Money Leaders", icon: <FaBriefcase />, image: "body_img5.jpeg", link: "/race_details?type=moneyLeaders" },
         { title: "Racing Fixtures", icon: <FaCalendarAlt />, image: "body_img6.jpeg", link: "/race_details?type=racingFixtures" },
-        { title: "Entries For Sweepstake Races", icon: <FaFlagCheckered />, image: "body_img7.jpeg", wide: true, link: "/race_details?type=sweepstakes" },
+        { title: "Mock Race Result", icon: <FaFlagCheckered />, image: "body_img1.jpeg", link: "/race_details?type=mockRaceResults" },
+        { title: "Entries For Sweepstake Races", icon: <FaFlagCheckered />, image: "body_img7.jpeg", link: "/race_details?type=sweepstakes" },
         { title: "Indian Stud Book", icon: <FaBook />, image: "body_img2.jpeg", link: "https://www.indianstudbook.com" },
     ];
 

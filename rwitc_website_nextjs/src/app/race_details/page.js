@@ -22,6 +22,7 @@ import MoneyLeaders from "./components/MoneyLeaders";
 import Archives from "./components/Archives";
 import RacingFixtures from "./components/RacingFixtures";
 import FoalRecords from "./components/FoalRecords";
+import MockRaceResult from "./components/MockRaceResult";
 
 
 function RaceDetailsContent() {
@@ -67,6 +68,8 @@ function RaceDetailsContent() {
         ContentComponent = <MoneyLeaders />;
     } else if (type === "archives") {
         ContentComponent = <Archives />;
+    } else if (type === "mockRaceResults") {
+        ContentComponent = <MockRaceResult />;
     } else if (type === "racingFixtures") {
         ContentComponent = <RacingFixtures />;
     } else {

@@ -5,7 +5,7 @@ $host = "localhost";
 $user = "root";
 
 // live
-// $password = '...';
+// $password = 'ho{HslC)jWaky${L';
 
 // local
 $password = "";
@@ -37,21 +37,41 @@ try {
 
 }
 
+// ============================================================
 // AWS S3 CONFIG
+// ============================================================
+
 require_once __DIR__ . "/run_races_config.php";
+
+// live
+// $envFile = __DIR__ . "/../../.env.local";
+
+// local
 $envFile = __DIR__ . "/../../rwitc_website_nextjs/.env.local";
+
 if (!file_exists($envFile)) {
     die("Environment configuration file not found.");
 }
-$env = parse_ini_file($envFile, false, INI_SCANNER_RAW);
+$env = parse_ini_file(
+    $envFile,
+    false,
+    INI_SCANNER_RAW
+);
+
 if ($env === false) {
     die("Unable to read environment configuration.");
 }
-define("AWS_ACCESS_KEY_ID", $env["AWS_ACCESS_KEY_ID"]);
-define("AWS_SECRET_ACCESS_KEY", $env["AWS_SECRET_ACCESS_KEY"]);
-define("AWS_REGION", $env["AWS_REGION"]);
-if (IS_LOCAL) {
-    define("AWS_BUCKET", $env["AWS_TEST_BUCKET"]);
-} else {
-    define("AWS_BUCKET", $env["AWS_LIVE_BUCKET"]);
-}
+// ------------------------------------------------------------
+// AWS Credentials
+// ------------------------------------------------------------
+define( "AWS_ACCESS_KEY_ID", $env["AWS_ACCESS_KEY_ID"]);
+define( "AWS_SECRET_ACCESS_KEY", $env["AWS_SECRET_ACCESS_KEY"]);
+define( "AWS_REGION", $env["AWS_REGION"]);
+// ------------------------------------------------------------
+// AWS Bucket
+// ------------------------------------------------------------
+// Current server = test.rwitc.com
+// Therefore use TEST bucket.
+// ------------------------------------------------------------
+define( "AWS_BUCKET", $env["AWS_TEST_BUCKET"]);
+define( "WEBSITE_API_BASE_URL", "https://test.rwitc.com/rwitc-website/rwitc_website_api");
