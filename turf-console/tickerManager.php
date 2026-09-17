@@ -12,23 +12,21 @@ require_once("../lib/userchecks.php");
 
 require_once("../lib/function_ticker_manager.php");
 
-  
 
-$q = getParameterString('q','',$db);
+
+$q = getParameterString('q', '', $db);
 
 session_start();
 
-if(isset($_COOKIE['uid'])){                    
+if (isset($_COOKIE['uid'])) {
 
-  $uid = $_COOKIE['uid'];    
-
+    $uid = $_COOKIE['uid'];
 } else {
 
-  $uid = 0;
+    $uid = 0;
+}
 
-}        
-
-$userObj = new Users($db);  
+$userObj = new Users($db);
 
 
 
@@ -36,7 +34,7 @@ $userObj = new Users($db);
 
 $msg = $secmsg = "";
 
-$pageno = getParameterNumber('pageno',1);
+$pageno = getParameterNumber('pageno', 1);
 
 $articles = new Articles($db);
 
@@ -46,183 +44,175 @@ if (isAdminlogin()) {
 
         //if (get_magic_quotes_gpc()) {
 
-            function stripslashes_deep($value) {
+        function stripslashes_deep($value)
+        {
 
-                $value = is_array($value) ?   array_map('stripslashes_deep', $value) : stripslashes($value);
+            $value = is_array($value) ?   array_map('stripslashes_deep', $value) : stripslashes($value);
 
-                return $value;
+            return $value;
+        }
 
-            }
+        $_POST = array_map('stripslashes_deep', $_POST);
 
-            $_POST = array_map('stripslashes_deep', $_POST);
-
-            $_REQUEST = array_map('stripslashes_deep', $_REQUEST);
+        $_REQUEST = array_map('stripslashes_deep', $_REQUEST);
 
         //}
 
-      
 
-          // all actions POST form submissions go here
 
-          if (isset($_REQUEST['submit'])) {
+        // all actions POST form submissions go here
 
-              $body = getParameterString('message','',$db);
+        if (isset($_REQUEST['submit'])) {
 
-              $sort_order = getParameterString('sort_order','',$db);
+            $body = getParameterString('message', '', $db);
 
-              $published = getParameterString('publish','N',$db);
+            $sort_order = getParameterString('sort_order', '', $db);
 
-              // handle checkbox state
+            $published = getParameterString('publish', 'N', $db);
+            $image_url = '';
+            // handle checkbox state
 
-              if (strtolower($published)== "on") {
+            if (strtolower($published) == "on") {
 
-                 $published="Y";
+                $published = "Y";
+            }
 
-              }     
+            // save new ticker
 
-              // save new ticker
+           if ($q == "add-ticker") {
 
-              if ($q == "add-ticker") {
+    try {
 
-                  try {
+        $articles->insertTicker(
+            $body,
+            $published,
+            $sort_order,
+            $image_url
+        );
 
-                    $tickerID = $articles->insertTicker($body,$published, $sort_order); 
+        $msg = "New Ticker added";
 
-                    $msg = "New Ticker added";
+    } catch (Exception $err) {
 
-                 } catch (Exception $err) {
-
-                     echo $err->getMessage();
-
-                 }
-
-              }
-
-          
-
-              //update new ticker 
-
-              if ($q == "update-ticker") {
-
-                 $tickerID=getParameterNumber('id',0);    
-
-                 try {
-
-                    $rowsAffected = $articles->updateTicker($tickerID,$body,$published,$sort_order);
-
-                    $msg = "Ticker Updated";
-
-                 } catch (Exception $err) {
-
-                     echo $err->getMessage();
-
-                 }      
-
-              }
-
-          }
+        echo $err->getMessage();
+    }
+}
 
 
 
-          if ($q=="edit-ticker") {
+            //update new ticker 
 
-             $tickerID=getParameterNumber('id',0);         
+            if ($q == "update-ticker") {
 
-             try {
+    $tickerID = getParameterNumber('id', 0);
 
-                $tickerDetails = $articles->getTickerByID($tickerID);        
+    try {
 
-             } catch (Exception $err) {
+        $rowsAffected = $articles->updateTicker(
+            $tickerID,
+            $body,
+            $published,
+            $sort_order,
+            $image_url
+        );
+
+        $msg = "Ticker Updated";
+
+    } catch (Exception $err) {
+
+        echo $err->getMessage();
+    }
+}
+        }
+
+
+
+        if ($q == "edit-ticker") {
+
+            $tickerID = getParameterNumber('id', 0);
+
+            try {
+
+                $tickerDetails = $articles->getTickerByID($tickerID);
+            } catch (Exception $err) {
 
                 $msg = $err->getMessage();
 
                 echo $msg;
+            }
+        }
 
-             }
+        if ($q == "delete-ticker") {
 
-          }
+            $tickerID = getParameterNumber('id', 0);
 
-          if ($q == "delete-ticker") {
+            try {
 
-             $tickerID=getParameterNumber('id',0);         
-
-             try {
-
-                $articles->deleteTicker($tickerID);                
+                $articles->deleteTicker($tickerID);
 
                 $msg = "Ticker Deleted";
 
                 // clear action
 
-                $q="";
-
-             } catch (Exception $err) {
+                $q = "";
+            } catch (Exception $err) {
 
                 $msg = $err->getMessage();
 
                 echo $msg;
+            }
+        }
 
-             }
-
-          }
-
-          if(!isset($tickerDetails['body'])){
+        if (!isset($tickerDetails['body'])) {
 
             $tickerDetails['body'] = '';
+        }
 
-          }
-
-          if(!isset($tickerDetails['sort_order'])){
+        if (!isset($tickerDetails['sort_order'])) {
 
             $tickerDetails['sort_order'] = '';
+        }
 
-          }
-
-          if(!isset($tickerDetails['published'])){
+        if (!isset($tickerDetails['published'])) {
 
             $tickerDetails['published'] = 'N';
+        }
 
-          }
 
-          
 
-          $totalTickers = $articles->getAllTickersCount();
+        $totalTickers = $articles->getAllTickersCount();
 
-          // create a pagination object
+        // create a pagination object
 
-          //$paging = new Pagination($pageno,TICKERS_PER_PAGE,$totalTickers);  
+        //$paging = new Pagination($pageno,TICKERS_PER_PAGE,$totalTickers);  
 
-          //$allReports = $rrObj->getRaceRecordsPageWise($pageno,REPORTS_PER_PAGE);
+        //$allReports = $rrObj->getRaceRecordsPageWise($pageno,REPORTS_PER_PAGE);
 
-          
 
-          // fetch all articles
 
-          //$allArticles = $articles->getAllArticles();
+        // fetch all articles
 
-          $allTickers = $articles->getTickersPageWise($pageno,TICKERS_PER_PAGE);
+        //$allArticles = $articles->getAllArticles();
 
-      } else {
+        $allTickers = $articles->getTickersPageWise($pageno, TICKERS_PER_PAGE);
+    } else {
 
         $msg = "You do not have access to this page.";
-
-      }  
-
+    }
 } else {
 
     $secmsg = "Please login to access this page";
-
 }
 
-$pageTitle ='Ticker Manager';        
+$pageTitle = 'Ticker Manager';
 
 // create a template object
 
-$design = new Design();  
+$design = new Design();
 
 
 
-$design->js='
+$design->js = '
 
 <script type="text/javascript" src="lib/ckeditor/ckeditor.js"></script>
 
@@ -242,7 +232,7 @@ $design->js='
 
 ';
 
-$design->css ='
+$design->css = '
 
 <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />
 
@@ -431,63 +421,63 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
 ';
 
-$design->jqueryJs = ""; 
+$design->jqueryJs = "";
 
-$design->startPage("$pageTitle");  
+$design->startPage("$pageTitle");
 
 $design->writeLogoTickerMenu();
 
 $design->openDiv("contentWrapper");
 
-$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("infoWrapper", "col-lg-12");
 
-$design->openDiv("leftArea",'col-lg-9');
+$design->openDiv("leftArea", 'col-lg-9');
 
 ?>
 
-    <?php if (!empty($msg)) {?>
+<?php if (!empty($msg)) { ?>
 
-        <div class="message">
+    <div class="message">
 
-            <?php echo $msg; ?>
+        <?php echo $msg; ?>
 
-        </div>
+    </div>
 
-    <?php } ?>
+<?php } ?>
 
-    <?php if (!empty($secmsg)) {?>
+<?php if (!empty($secmsg)) { ?>
 
-        <div class="message">
+    <div class="message">
 
-            <?php echo $secmsg; ?>
+        <?php echo $secmsg; ?>
 
-        </div>
+    </div>
 
-    <?php } ?>    
+<?php } ?>
 
-    <?php if ($_SESSION['tickerManager'] == "Y") { ?>
+<?php if ($_SESSION['tickerManager'] == "Y") { ?>
 
-        <div class="ticker-header">
+    <div class="ticker-header">
 
-          <a class="add-ticker-btn" href="turf-console/tickerManager.php?q=new-ticker"><i class="fas fa-plus"></i> Add New Ticker</a>
+        <a class="add-ticker-btn" href="turf-console/tickerManager.php?q=new-ticker"><i class="fas fa-plus"></i> Add New Ticker</a>
 
-          <div class="header-links">
+        <div class="header-links">
 
-                <!-- <a href="dashboard.php">Dashboard</a>
+            <!-- <a href="dashboard.php">Dashboard</a>
 
                 <a href="adminlogin.php?q=logout">Logout</a> -->
 
-           </div>
-
         </div>
 
-          
+    </div>
 
-          <?php if ($q=="new-ticker" || $q=="edit-ticker") { ?>              
 
-           <div class="ticker-form-wrap">
 
-           <form name="tickerForm" method="post" action="turf-console/tickerManager.php">
+    <?php if ($q == "new-ticker" || $q == "edit-ticker") { ?>
+
+        <div class="ticker-form-wrap">
+
+            <form name="tickerForm" method="post" action="turf-console/tickerManager.php" enctype="multipart/form-data">
 
                 <div class="form-row">
 
@@ -499,19 +489,18 @@ $design->openDiv("leftArea",'col-lg-9');
 
                 <div class="form-row checkbox-row">
 
-                        <?php 
+                    <?php
 
-                        $checked = "checked=\"checked\"";
+                    $checked = "checked=\"checked\"";
 
-                        if ($tickerDetails['published'] == "N") {
+                    if ($tickerDetails['published'] == "N") {
 
-                            $checked ="";        
+                        $checked = "";
+                    }
 
-                        } 
+                    ?>
 
-                        ?>
-
-                        <input type="checkbox" name="publish" id='publish' <?php echo $checked; ?> />
+                    <input type="checkbox" name="publish" id='publish' <?php echo $checked; ?> />
 
                     <label class="form-label" for="publish" style="margin-bottom:0;">Publish</label>
 
@@ -519,114 +508,122 @@ $design->openDiv("leftArea",'col-lg-9');
 
                 <div class="form-row">
 
-                  <label class="form-label" for="sort_order">Sort Order</label>
+                    <label class="form-label" for="sort_order">Sort Order</label>
 
                     <input type="text" name="sort_order" id="sort_order" value="<?php echo $tickerDetails['sort_order']; ?>" />
 
                 </div>
+                <div class="form-row">
+                    <label class="form-label" for="ticker_image">Image</label>
+                    <input type="file" name="ticker_image" id="ticker_image" accept="image/jpeg,image/png,image/webp,image/gif" />
+                    <?php if (!empty($tickerDetails['image_url'])) { ?>
+                        <div style="margin-top:10px;">
+                            <img src="<?php echo htmlspecialchars($tickerDetails['image_url']); ?>" alt="Ticker Image" style="max-width:200px; max-height:120px; border-radius:8px;" />
+                        </div>
+                    <?php } ?>
+                    <small style="display:block; margin-top:6px; color:#7a8c84;"> Optional. Leave blank if you don't want to upload an image. </small>
+                </div>
 
                 <div class="form-actions">
 
-                        <input type="submit" name="submit" value="Save" />
+                    <input type="submit" name="submit" value="Save" />
 
-                        <input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/tickerManager.php'" />
+                    <input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/tickerManager.php'" />
 
-                        <?php if ($q=="new-ticker") { ?>
+                    <?php if ($q == "new-ticker") { ?>
 
-                            <input type="hidden" name="q" value="add-ticker" />
+                        <input type="hidden" name="q" value="add-ticker" />
 
-                        <?php } elseif ($q == "edit-ticker") { ?>
+                    <?php } elseif ($q == "edit-ticker") { ?>
 
-                                <input type="hidden" name="q" value="update-ticker" />
+                        <input type="hidden" name="q" value="update-ticker" />
 
-                                <input type="hidden" name="id" value="<?php echo $tickerID; ?>" />
+                        <input type="hidden" name="id" value="<?php echo $tickerID; ?>" />
 
-                        <?php  }   ?>
+                    <?php  }   ?>
 
                 </div>
 
             </form>
 
-            </div>
+        </div>
 
-           <script type="text/javascript">
+        <script type="text/javascript">
+            //<![CDATA[
 
-             //<![CDATA[
-
-            CKEDITOR.replace( 'message111',
+            CKEDITOR.replace('message111',
 
                 {
 
-                    fullPage : true,
+                    fullPage: true,
 
-                    filebrowserBrowseUrl : 'lib/ckfinder/ckfinder.html',
+                    filebrowserBrowseUrl: 'lib/ckfinder/ckfinder.html',
 
-                    filebrowserImageBrowseUrl : 'lib/ckfinder/ckfinder.html?type=Images',
+                    filebrowserImageBrowseUrl: 'lib/ckfinder/ckfinder.html?type=Images',
 
-                    filebrowserFlashBrowseUrl : 'lib/ckfinder/ckfinder.html?type=Flash',
+                    filebrowserFlashBrowseUrl: 'lib/ckfinder/ckfinder.html?type=Flash',
 
-                    filebrowserUploadUrl : 'imageUpload.php'
+                    filebrowserUploadUrl: 'imageUpload.php'
 
                 });
 
             //]]>
-
-            </script>
-
-          <?php } ?>
-
-          <div class="tickers-grid">
-
-            <?php if (empty($allTickers)) { ?>
-
-                <div class="tickers-empty">No tickers found.</div>
-
-            <?php } ?>
-
-            <?php foreach ($allTickers as $tickerInfo) { ?>
-
-                <div class="ticker-card">
-
-                    <div class="ticker-card-body"><?php echo nl2br($tickerInfo['body']); ?></div>
-
-                    <div class="ticker-meta"><i class="far fa-calendar-alt"></i> <?php echo date("d-M-Y",$tickerInfo['created']); ?></div>
-
-                    <div class="ticker-tags">
-
-                        <span class="tag">Published <b class="<?php echo ($tickerInfo['published']=='Y') ? 'yes' : 'no'; ?>"><?php echo $tickerInfo['published']; ?></b></span>
-
-                        <span class="tag">Order <b class="order"><?php echo $tickerInfo['sort_order']; ?></b></span>
-
-                    </div>
-
-                    <div class="ticker-actions">
-
-                        <a href="turf-console/tickerManager.php?id=<?php echo $tickerInfo['id'];?>&q=edit-ticker"><i class="fas fa-edit"></i> Edit</a>
-
-                        <a href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $tickerInfo['id']; ?>);" ><i class="fas fa-trash-alt"></i> Delete</a>
-
-                    </div>
-
-                </div>
-
-            <?php } ?>
-
-          </div>
-
-          <div class="pagination-wrap"><?php echo displayPaginationBelow(TICKERS_PER_PAGE,$pageno, $db); ?></div>
+        </script>
 
     <?php } ?>
 
-<?php                   
+    <div class="tickers-grid">
 
-  $design->closeDiv();
+        <?php if (empty($allTickers)) { ?>
 
-  $design->writeLeftPanel();
+            <div class="tickers-empty">No tickers found.</div>
 
-  $design->closeDiv();
+        <?php } ?>
 
-  $design->endPage();
+        <?php foreach ($allTickers as $tickerInfo) { ?>
 
-  $design->pageClose();    
+            <div class="ticker-card">
+
+                <div class="ticker-card-body"><?php echo nl2br($tickerInfo['body']); ?></div>
+
+                <div class="ticker-meta"><i class="far fa-calendar-alt"></i> <?php echo date("d-M-Y", $tickerInfo['created']); ?></div>
+
+                <div class="ticker-tags">
+
+                    <span class="tag">Published <b class="<?php echo ($tickerInfo['published'] == 'Y') ? 'yes' : 'no'; ?>"><?php echo $tickerInfo['published']; ?></b></span>
+
+                    <span class="tag">Order <b class="order"><?php echo $tickerInfo['sort_order']; ?></b></span>
+
+                </div>
+
+                <div class="ticker-actions">
+
+                    <a href="turf-console/tickerManager.php?id=<?php echo $tickerInfo['id']; ?>&q=edit-ticker"><i class="fas fa-edit"></i> Edit</a>
+
+                    <a href="javascript:void(0);" onclick="javascript: confirmDelete(<?php echo $tickerInfo['id']; ?>);"><i class="fas fa-trash-alt"></i> Delete</a>
+
+                </div>
+
+            </div>
+
+        <?php } ?>
+
+    </div>
+
+    <div class="pagination-wrap"><?php echo displayPaginationBelow(TICKERS_PER_PAGE, $pageno, $db); ?></div>
+
+<?php } ?>
+
+<?php
+
+$design->closeDiv();
+
+$design->writeLeftPanel();
+
+$design->closeDiv();
+
+$design->endPage();
+
+$design->pageClose();
 
 $design = NULL; // release object

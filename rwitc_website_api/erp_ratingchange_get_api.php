@@ -215,7 +215,7 @@ try {
             FROM run_race_details
             WHERE `date` = ?
               AND `type` = 'rating_change'
-              AND `race_type` = 'pre_race'
+              AND `race_type` = 'post_race'
               AND file_url IS NOT NULL
               AND file_url != ''
             ORDER BY id DESC

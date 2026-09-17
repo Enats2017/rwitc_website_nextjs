@@ -18,16 +18,15 @@ const CLASS_COLORS = {
     raceresults: "#8b1e1e",
     "rating-change": "#8b1e1e",
     "raceday-report": "#8b1e1e",
-    racecard: "racecard",
+    racecard: "#2563eb",
 };
 
-// Maps the API's className + PHP-style url (e.g. "erp_handcaps.php?date=..."
-// or "trackwork.php?id=...") to the existing /race_details route + type.
 const CLASS_TO_TYPE = {
     trackwork: "trackWork",
     handicaps: "handicaps",
     acceptances: "acceptances",
     declarations: "declarations",
+    racecard: "racecard",
     raceresults: "raceResults",
     "rating-change": "ratingChange",
     "raceday-report": "raceDayReport",

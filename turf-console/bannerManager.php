@@ -1,6 +1,9 @@
 <?php
 //error_reporting(E_ALL);
 //ini_set("display_errors", 1);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 include_once('../bootstrap.php');
 
@@ -801,7 +804,7 @@ if (isset($_SESSION['banner_msg'])) {
 	-->
 
 <div class="banner-upload-wrap">
-	<form enctype="multipart/form-data" name="bannerimageForm" method="post" action="turf-console/bannerManager.php">
+	<form enctype="multipart/form-data" name="bannerimageForm" method="post" action="<?php echo $http_base; ?>bannerManager.php">
 
 		<table class="banner-upload-table">
 
@@ -830,7 +833,7 @@ if (isset($_SESSION['banner_msg'])) {
 
 					<input type="hidden" name="count" value="<?php echo $banner_datas_count; ?>" />
 
-					<input type="reset" name="reset" value="Clear" onclick="location.href='turf-console/bannerManager.php'" />
+					<input type="reset" name="reset" value="Clear" onclick="location.href='<?php echo $http_base; ?>bannerManager.php'" />
 
 				</td>
 
@@ -846,7 +849,7 @@ if (isset($_SESSION['banner_msg'])) {
 	<i class="fas fa-magnifying-glass"></i>
 	<input type="text" id="bannerSearchInput" placeholder="Search by name or sort order..." />
 </div>
-<form enctype="multipart/form-data" name="bannerForm" method="post" action="turf-console/bannerManager.php">
+<form enctype="multipart/form-data" name="bannerForm" method="post" action="<?php echo $http_base; ?>bannerManager.php">
 	<div id="bannerNoResults" class="banner-empty" style="display:none;">No banners match your search.</div>
 	<div class="banner-grid">
 

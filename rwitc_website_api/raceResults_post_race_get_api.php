@@ -143,7 +143,7 @@ if ($date > "2022-10-14") {
                 FROM run_race_details
                 WHERE `date` = ?
                   AND `type` IN ('race_result', 'race_results')
-                  AND `race_type` = 'pre_race'
+                  AND `race_type` = 'post_race'
                   AND file_url IS NOT NULL
                   AND file_url <> ''
                 ORDER BY id DESC
