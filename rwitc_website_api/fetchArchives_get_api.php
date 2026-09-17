@@ -1,5 +1,4 @@
 <?php
-
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET");
@@ -235,21 +234,31 @@ try {
 
     $migratedDatesStmt = $conn->prepare(
         "SELECT DISTINCT `date`
-         FROM run_race_details
-         WHERE `date` >= ?
-           AND `date` <= ?
-           AND `race_type` = 'pre_race'
-           AND `type` IN (
-               'handicaps',
-               'acceptances',
-               'declarations',
-               'racecard',
-               'race_result',
-               'race_results',
-               'rating_change'
-           )
-           AND file_url IS NOT NULL
-           AND file_url <> ''"
+     FROM run_race_details
+     WHERE `date` >= ?
+       AND `date` <= ?
+       AND (
+           (
+    `race_type` = 'pre_race'
+    AND `type` IN (
+        'handicaps',
+        'acceptances',
+        'declarations',
+        'racecard'
+    )
+)
+OR
+(
+    `race_type` = 'post_race'
+    AND `type` IN (
+        'race_result',
+        'race_results',
+        'rating_change'
+    )
+)
+       )
+       AND file_url IS NOT NULL
+       AND file_url <> ''"
     );
 
     if ($migratedDatesStmt === false) {
@@ -390,14 +399,17 @@ try {
     }
 
     // --------------------------------------------------
-    // POST-CUTOFF: LOCAL run_races + DB/S3 fallback
+    // POST-CUTOFF: LOCAL run_races + API fallback
     //
     // Priority:
     //   1. Local physical run_races file (.html OR .htm)
-    //   2. run_race_details.file_url (S3)
+    //   2. Website API response (S3-backed data)
     //
-    // This is a UNION, not an either/or date source:
-    // local files and DB/S3 records both make an archive available.
+    // IMPORTANT:
+    //   - Local run_races behaviour remains unchanged.
+    //   - API is called ONLY when a post-cutoff file is missing locally.
+    //   - The API is GET-only.
+    //   - No direct run_race_details file_url lookup is done here.
     //
     // Trackwork is intentionally untouched.
     // --------------------------------------------------
@@ -414,7 +426,7 @@ try {
     /*
      * LOCAL FILES
      *
-     * Check the actual filesystem, not the public URL.
+     * Check the actual filesystem first.
      * Both .html and .htm are supported.
      */
     foreach ($postCutoffDates as $date) {
@@ -470,68 +482,152 @@ try {
     }
 
     /*
-     * DB/S3 FALLBACK
+     * API FALLBACK
+     *
+     * Only call the API if at least one requested post-cutoff file
+     * was NOT found in the local run_races folder.
+     *
+     * Current API:
+     *   s3_bucket_get_api.php
+     *
+     * is GET-only and returns the S3-backed file list after syncing
+     * S3 data into run_race_details.
+     *
+     * We call it once for the whole request instead of once per date.
      */
-    if (!empty($postCutoffDates)) {
+    $apiFallbackNeeded = false;
 
-        $placeholdersPost = implode(
-            ',',
-            array_fill(0, count($postCutoffDates), '?')
-        );
+    foreach ($postCutoffDates as $date) {
 
-        $migratedStmt = $conn->prepare("
-            SELECT `date`, `type`, file_url
-            FROM run_race_details
-            WHERE `date` IN ({$placeholdersPost})
-              AND `race_type` = 'pre_race'
-              AND `type` IN (
-                  'handicaps',
-                  'acceptances',
-                  'declarations',
-                  'racecard',
-                  'race_result',
-                  'race_results',
-                  'rating_change'
-              )
-              AND file_url IS NOT NULL
-              AND file_url <> ''
-        ");
+        if (
+            !isset($postCutoffFileDates['handicaps'][$date]) ||
+            !isset($postCutoffFileDates['acceptances'][$date]) ||
+            !isset($postCutoffFileDates['declarations'][$date]) ||
+            !isset($postCutoffFileDates['racecard'][$date]) ||
+            !isset($postCutoffFileDates['race_results'][$date]) ||
+            !isset($postCutoffFileDates['rating_change'][$date])
+        ) {
+            $apiFallbackNeeded = true;
+            break;
+        }
+    }
 
-        if ($migratedStmt === false) {
-            throw new Exception($conn->error);
+    if ($apiFallbackNeeded && !empty($postCutoffDates)) {
+
+        // Website API URL
+        $websiteApiUrl = rtrim(WEBSITE_API_BASE_URL, '/') . '/s3_bucket_get_api.php?action=list';
+        $ch = curl_init($websiteApiUrl);
+
+        if ($ch === false) {
+            throw new Exception("Unable to initialize cURL for website API");
         }
 
-        $typesPost = str_repeat('s', count($postCutoffDates));
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPGET        => true,
 
-        $migratedStmt->bind_param(
-            $typesPost,
-            ...$postCutoffDates
-        );
+            CURLOPT_HTTPHEADER => [
+                'Accept: application/json',
+                'User-Agent: Mozilla/5.0'
+            ],
 
-        $migratedStmt->execute();
+            CURLOPT_CONNECTTIMEOUT => 3,
+            CURLOPT_TIMEOUT        => 15,
 
-        $migratedResult = $migratedStmt->get_result();
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2
+        ]);
 
-        while ($row = $migratedResult->fetch_assoc()) {
+        $apiResponse = curl_exec($ch);
 
-            $date = $row['date'];
-            $type = $row['type'];
+        $curlError = curl_error($ch);
+        $httpCode  = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-            if ($type === 'race_result' || $type === 'race_results') {
+        curl_close($ch);
 
-                $postCutoffFileDates['race_results'][$date] = true;
+        if ($apiResponse === false) {
 
-            } elseif (isset($postCutoffFileDates[$type])) {
+            $security->logLine(
+                "ARCHIVES_API_FALLBACK_CURL_ERROR | "
+                    . $curlError
+            );
+        } elseif ($httpCode >= 200 && $httpCode < 300) {
 
-                $postCutoffFileDates[$type][$date] = true;
+            $apiData = json_decode($apiResponse, true);
+
+            if (
+                is_array($apiData)
+                && isset($apiData['success'])
+                && $apiData['success'] === true
+            ) {
+
+                /*
+                 * Current s3_bucket_get_api.php returns files under:
+                 *
+                 *   data.files[]
+                 *
+                 * Each file contains date/type information.
+                 */
+                $apiFiles = $apiData['data']['files'] ?? [];
+
+                if (is_array($apiFiles)) {
+
+                    foreach ($apiFiles as $file) {
+
+                        if (!is_array($file)) {
+                            continue;
+                        }
+
+                        $fileDate = $file['date'] ?? '';
+                        $fileType = $file['type'] ?? '';
+
+                        if ($fileDate === '') {
+                            continue;
+                        }
+
+                        // Only use dates requested by this archive call.
+                        if (!in_array($fileDate, $postCutoffDates, true)) {
+                            continue;
+                        }
+
+                        /*
+                         * Normalize API type names to the types used
+                         * by archives_get.php.
+                         */
+                        if (
+                            $fileType === 'race_result'
+                            || $fileType === 'race_results'
+                        ) {
+                            $fileType = 'race_results';
+                        }
+
+                        if (!isset($postCutoffFileDates[$fileType])) {
+                            continue;
+                        }
+
+                        $postCutoffFileDates[$fileType][$fileDate] = true;
+                    }
+                }
+            } else {
+
+                $security->logLine(
+                    "ARCHIVES_API_FALLBACK_INVALID_RESPONSE | "
+                        . substr($apiResponse, 0, 1000)
+                );
             }
-        }
+        } else {
 
-        $migratedStmt->close();
+            $security->logLine(
+                "ARCHIVES_API_FALLBACK_HTTP_ERROR | HTTP "
+                    . $httpCode
+                    . " | "
+                    . substr($apiResponse, 0, 1000)
+            );
+        }
     }
 
     // --------------------------------------------------
-    // Resolve final availability: LOCAL OR DB/S3
+    // Resolve final availability: LOCAL OR API
     // --------------------------------------------------
 
     $resolvedPostCutoff = [];
@@ -540,22 +636,22 @@ try {
 
         $resolvedPostCutoff[$date] = [
             'handicaps' =>
-                isset($postCutoffFileDates['handicaps'][$date]),
+            isset($postCutoffFileDates['handicaps'][$date]),
 
             'acceptances' =>
-                isset($postCutoffFileDates['acceptances'][$date]),
+            isset($postCutoffFileDates['acceptances'][$date]),
 
             'declarations' =>
-                isset($postCutoffFileDates['declarations'][$date]),
+            isset($postCutoffFileDates['declarations'][$date]),
 
             'racecard' =>
-                isset($postCutoffFileDates['racecard'][$date]),
+            isset($postCutoffFileDates['racecard'][$date]),
 
             'results' =>
-                isset($postCutoffFileDates['race_results'][$date]),
+            isset($postCutoffFileDates['race_results'][$date]),
 
             'rating' =>
-                isset($postCutoffFileDates['rating_change'][$date])
+            isset($postCutoffFileDates['rating_change'][$date])
         ];
     }
 
@@ -581,11 +677,11 @@ try {
             /*
              * Post-cutoff:
              *
-             * Each migrated archive follows:
+             * Each post-cutoff archive follows:
              *
              *   run_races HTML exists
              *          OR
-             *   run_race_details contains a valid S3 file_url
+             *   website API returns the S3-backed file
              *
              * Trackwork is not involved in this branch and remains unchanged.
              */
@@ -625,7 +721,6 @@ try {
                 $raceDayCheck =
                     isset($remoteStatusCache[$raceDayUrl])
                     && $remoteStatusCache[$raceDayUrl];
-
             } else {
 
                 $raceDayCheck = false;

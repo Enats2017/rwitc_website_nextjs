@@ -157,23 +157,58 @@ Class Articles {
         return "SELECT * FROM `working_group` WHERE `id`= '".$WorkingID."' ";
 	}
 
-	function insertTicker($body,$published,$sort_order) {
-		$this->db->insert(self::sqlInsertTicker($body,$published,$sort_order));
-	}
+	function insertTicker($body, $published, $sort_order, $image_url = '') {
+    $this->db->insert(
+        self::sqlInsertTicker(
+            $body,
+            $published,
+            $sort_order,
+            $image_url
+        )
+    );
+}
 	
-	private static function sqlInsertTicker($body,$published, $sort_order) {
-        return "INSERT INTO tickers (body,created,published,sort_order) VALUES
-			   ('$body',now(),'$published','$sort_order');
-			   ";
-	}
+	private static function sqlInsertTicker($body,$published,$sort_order,$image_url) {
+    return "INSERT INTO tickers
+            (body,created,published,sort_order,image_url)
+            VALUES
+            ('$body',NOW(),'$published','$sort_order','$image_url')";
+    }
 
-	function updateTicker($tickerID,$body,$published,$sort_order) {
-		return $this->db->update(self::sqlUpdateTicker($tickerID,$body,$published,$sort_order));
-	}
-	
-	private static function sqlUpdateTicker($tickerID,$body,$published,$sort_order) {
-		return "UPDATE `tickers` SET `body` = '".$body."', `published` = '".$published."', `sort_order` = '".$sort_order."' WHERE `id` = '".$tickerID."' ";
-	}
+	function updateTicker($tickerID, $body, $published, $sort_order, $image_url = '') {
+    return $this->db->update(
+        self::sqlUpdateTicker(
+            $tickerID,
+            $body,
+            $published,
+            $sort_order,
+            $image_url
+        )
+    );
+}
+
+private static function sqlUpdateTicker($tickerID, $body, $published, $sort_order, $image_url = '') {
+
+    if ($image_url != '') {
+
+        return "UPDATE `tickers`
+                SET
+                    `body` = '".$body."',
+                    `published` = '".$published."',
+                    `sort_order` = '".$sort_order."',
+                    `image_url` = '".$image_url."'
+                WHERE `id` = '".$tickerID."' ";
+
+    } else {
+
+        return "UPDATE `tickers`
+                SET
+                    `body` = '".$body."',
+                    `published` = '".$published."',
+                    `sort_order` = '".$sort_order."'
+                WHERE `id` = '".$tickerID."' ";
+    }
+}
 
 	function deleteTicker($tickerID) {
 		$this->db->query(self::sqlDeleteTicker($tickerID));
@@ -188,8 +223,8 @@ Class Articles {
 	}
 	
 	private static function sqlGetAllTickers() {
-		return "SELECT `id`, UNIX_TIMESTAMP(`created`) as `created`, `body`, `published`, `sort_order` FROM `tickers` ORDER BY `created` DESC";
-	}
+        return "SELECT `id`, UNIX_TIMESTAMP(`created`) as `created`, `body`, `published`, `sort_order`, `image_url` FROM `tickers` ORDER BY `created` DESC";
+    }
     
     function getAllTickersCount() {
         return $this->db->getSingleValue(self::sqlGetAllTickersCount());
@@ -204,8 +239,8 @@ Class Articles {
         return $this->db->getMultiDimensionalArray(self::sqlGetTickersPageWise($currPage,$itemsPerPage));
     }
     
-    private static function sqlGetTickersPageWise($currPage,$itemsPerPage){        
-        return "SELECT `id`, UNIX_TIMESTAMP(`created`) as `created`, `body`, `published`, `sort_order` FROM `tickers` ORDER BY `created` DESC LIMIT ".($currPage - 1)*$itemsPerPage . "," .$itemsPerPage;
+    private static function sqlGetTickersPageWise($currPage,$itemsPerPage) {
+        return "SELECT `id`, UNIX_TIMESTAMP(`created`) as `created`, `body`, `published`, `sort_order`, `image_url` FROM `tickers` ORDER BY `created` DESC LIMIT ".($currPage - 1)*$itemsPerPage.",".$itemsPerPage;
     }
     
 	function getTickerByID($tickerID) {
@@ -213,7 +248,7 @@ Class Articles {
 	}
 	
 	private static function sqlGetTickerByID($tickerID) {				
-        return "SELECT UNIX_TIMESTAMP(`created`) as `created`, `body`, `published`, `sort_order` FROM `tickers` WHERE `id` = '".$tickerID."' ";
+        return "SELECT UNIX_TIMESTAMP(`created`) as `created`, `body`, `published`, `sort_order`, `image_url` FROM `tickers` WHERE `id` = '".$tickerID."' ";
 	}
     
 }

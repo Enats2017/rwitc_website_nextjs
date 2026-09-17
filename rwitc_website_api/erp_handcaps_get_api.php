@@ -10,7 +10,28 @@ require_once __DIR__ . "/config/run_races_config.php";
 
 // Load ApiSecurity class
 require_once __DIR__ . "/ApiSecurity.php";
+// AWS SDK (bucket is private, so we need authenticated reads for S3)
+if (!class_exists('Aws\S3\S3Client')) {
+    require_once __DIR__ . "/../vendor/autoload.php";
+}
 
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+
+$s3Client = null;
+
+try {
+    $s3Client = new S3Client([
+        "version"     => "latest",
+        "region"      => AWS_REGION,
+        "credentials" => [
+            "key"    => AWS_ACCESS_KEY_ID,
+            "secret" => AWS_SECRET_ACCESS_KEY
+        ]
+    ]);
+} catch (Throwable $e) {
+    $s3Client = null;
+}
 // Make sure the class was loaded correctly
 if (!class_exists("ApiSecurity")) {
     http_response_code(500);
@@ -227,15 +248,35 @@ if ($date > "2022-09-25") {
 
             $stmt->close();
 
-            /*
-             * Read the actual HTML from S3.
-             * The S3 URL is used internally only.
+                       /*
+             * Read the actual HTML from S3 using an authenticated
+             * request. Bucket is private, so plain file_get_contents()
+             * on the public S3 URL returns 403 — must go via the SDK.
              */
-            $htmlContent = @file_get_contents($s3Url);
+            if ($s3Client === null) {
+                throw new Exception("S3 client is not available");
+            }
 
-            if ($htmlContent === false) {
+            $s3Path = parse_url($s3Url, PHP_URL_PATH);
+            $s3Key  = ltrim(rawurldecode($s3Path), '/');
+
+            try {
+                $s3Object = $s3Client->getObject([
+                    "Bucket" => AWS_BUCKET,
+                    "Key"    => $s3Key
+                ]);
+
+                $htmlContent = (string) $s3Object["Body"];
+
+            } catch (AwsException $e) {
                 throw new Exception(
-                    "Unable to read handicaps file from S3"
+                    "Unable to read handicaps file from S3: " . $e->getMessage()
+                );
+            }
+
+            if ($htmlContent === "" || $htmlContent === false) {
+                throw new Exception(
+                    "Unable to read handicaps file from S3 (empty content)"
                 );
             }
         }
@@ -443,16 +484,16 @@ try {
 
             $stmt = $conn->prepare("
                 SELECT w.`SRNOCTRL`, UNIX_TIMESTAMP(w.`RACEDATE`) as RACEDATE,
-       w.`WEIGHT`, w.`NAME`, w.`SRNO`, w.`HORSESEQ`,
-       w.`ACCPFLAG`, w.`HRATING`, w.`RAISELOWER`, w.`FRT`,
-       w.`SSBAN`, w.`VOBAN`, w.`MKBAN`, w.`SSREQD`, w.`SHOE`,
-       w.`SHOEDET`, w.`BITSDET`, w.`SORDER`, w.`TRAINERNME`,
-       h.SIRE, h.DAM, h.DAMNAT, h.AGE, h.SEX, h.COLOR
-FROM weights w
-INNER JOIN hmaster h ON w.`HORSESEQ` = h.`HORSESEQ`
-WHERE w.`RACEDATE` = ? AND w.`SRNO` = ?
-GROUP BY w.`HORSESEQ`
-ORDER BY w.`SORDER` ASC
+                w.`WEIGHT`, w.`NAME`, w.`SRNO`, w.`HORSESEQ`,
+                w.`ACCPFLAG`, w.`HRATING`, w.`RAISELOWER`, w.`FRT`,
+                w.`SSBAN`, w.`VOBAN`, w.`MKBAN`, w.`SSREQD`, w.`SHOE`,
+                w.`SHOEDET`, w.`BITSDET`, w.`SORDER`, w.`TRAINERNME`,
+                h.SIRE, h.DAM, h.DAMNAT, h.AGE, h.SEX, h.COLOR
+                FROM weights w
+                INNER JOIN hmaster h ON w.`HORSESEQ` = h.`HORSESEQ`
+                WHERE w.`RACEDATE` = ? AND w.`SRNO` = ?
+                GROUP BY w.`HORSESEQ`
+                ORDER BY w.`SORDER` ASC
             ");
 
             if ($stmt === false) {
