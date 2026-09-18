@@ -21,9 +21,10 @@ $db = new dbTool();
 
 <?php
 //include_once('trustee-wag-15-16.htm');
-include_once('trustee1.html');
+// include_once('trustee1.html');
+include_once('trustee.html');
 ?>
-            
+
 <?php                   
   $design->closeDiv();
   $design->writeLeftPanel();

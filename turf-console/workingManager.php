@@ -82,7 +82,8 @@ if (isAdminlogin()) {
               if ($json['error'] == '') {
                 //echo 'aaaa';exit;
                 $file = 'trustee.html';
-                $upload_file_path = '/var/www/vhosts/rwitc.com/httpdocs/club/'.$file;
+                // $upload_file_path = '/var/www/vhosts/rwitc.com/httpdocs/club/'.$file;
+                $upload_file_path = __DIR__ . '/../club/' . $file;
                 //echo $upload_file_path;exit;
                 move_uploaded_file($_FILES['file']['tmp_name'], $upload_file_path);
                 $json['success'] = 'File Uploaded';

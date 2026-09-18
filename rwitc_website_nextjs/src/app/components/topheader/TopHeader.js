@@ -300,7 +300,7 @@ export default function TopHeader() {
                         <span className="calendarButtonText">Gallery</span>
                     </Link>
 
-                    <a href="#" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
+                    <a href="https://play.rwitc.com/" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
                         <FaPlay className="headerLiveBtnIcon" />
                         <span className="headerLiveBtnText">Live Stream</span>
                         <span className="headerLiveBtnTextShort">Live</span>
