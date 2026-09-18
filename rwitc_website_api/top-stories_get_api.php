@@ -88,6 +88,11 @@ try {
     $topStories = [];
 
     while ($row = $result->fetch_assoc()) {
+
+        if (!empty($row['image_url']) && strpos($row['image_url'], 'http') !== 0) {
+            $row['image_url'] = WEBSITE_API_BASE_URL . "/s3_set_url.php?key=" . urlencode($row['image_url']);
+        }
+
         $topStories[] = $row;
     }
 
@@ -99,13 +104,12 @@ try {
         "top_stories",
         $topStories
     );
-
 } catch (Throwable $error) {
 
     // Log actual database error internally
     $security->logLine(
         "TOP_STORIES_API_ERROR | "
-        . $error->getMessage()
+            . $error->getMessage()
     );
 
     // Do not expose database/database configuration errors
@@ -113,7 +117,6 @@ try {
         "Internal server error",
         500
     );
-
 } finally {
 
     // Close database connection

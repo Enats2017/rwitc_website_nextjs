@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { FaArrowLeft } from "react-icons/fa";
 import "./Articles.css";
 import { getArticleById } from "../../services/newsService";
 import { UPLOAD_URL } from "../../services/api";
@@ -8,7 +9,6 @@ import { UPLOAD_URL } from "../../services/api";
 export default function Article() {
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
-    const router = useRouter();
     const [article, setArticle] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -44,8 +44,12 @@ export default function Article() {
     return (
         <section className="articlesSection">
             <div className="articlesContainer">
-                <button className="articleViewBtn" onClick={() => router.push("/articles")}>
-                    ← Back to Articles
+                <button
+                    className="backToArticlesBtn"
+                    onClick={() => { window.location.href = "/rwitc-website/articles"; }}
+                >
+                    <FaArrowLeft className="backToArticlesIcon" />
+                    <span>Back to Articles</span>
                 </button>
 
                 <div className="articleCard" style={{ marginTop: "20px" }}>

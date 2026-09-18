@@ -47,8 +47,11 @@ if (IS_LOCAL) {
 
     define("RUN_RACES_LOCAL_PATH", realpath(__DIR__ . "/../../run_races"));
 
-    // Raceday Report .HTM files - server filesystem path
-    define("RACEDAY_REPORT_DIR", realpath(__DIR__ . "/../../../racedayreports"));
+    // Raceday Report .HTM files - server filesystem path 
+    //local
+    // define("RACEDAY_REPORT_DIR", realpath(__DIR__ . "/../../../racedayreports"));
+    //live
+    define("RACEDAY_REPORT_DIR", realpath(__DIR__ . "/../../staticpages/racedayreports"));
 
     // Raceday Report .HTM files - public URL (for download link / remote check)
     define("RACEDAY_REPORT_PUBLIC_BASE", "https://test.rwitc.com/rwitc-website/staticpages/racedayreports/");

@@ -44,10 +44,10 @@ try {
 require_once __DIR__ . "/run_races_config.php";
 
 // live
-// $envFile = __DIR__ . "/../../.env.local";
+$envFile = __DIR__ . "/../../.env.local";
 
 // local
-$envFile = __DIR__ . "/../../rwitc_website_nextjs/.env.local";
+// $envFile = __DIR__ . "/../../rwitc_website_nextjs/.env.local";
 
 if (!file_exists($envFile)) {
     die("Environment configuration file not found.");
@@ -74,4 +74,4 @@ define( "AWS_REGION", $env["AWS_REGION"]);
 // Therefore use TEST bucket.
 // ------------------------------------------------------------
 define( "AWS_BUCKET", $env["AWS_TEST_BUCKET"]);
-define( "WEBSITE_API_BASE_URL", "https://test.rwitc.com/rwitc-website/rwitc_website_api");
+define("WEBSITE_API_BASE_URL", $env["NEXT_PUBLIC_API_URL"]);

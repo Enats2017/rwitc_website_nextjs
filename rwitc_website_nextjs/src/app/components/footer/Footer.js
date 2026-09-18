@@ -5,6 +5,13 @@ import "./Footer.css";
 import { FaFacebookF, FaInstagram, FaYoutube, FaXTwitter, FaApple } from "react-icons/fa6";
 
 export default function Footer() {
+
+    // ---- WEATHER CITY TOGGLE ----
+    // Jo city dikhani hai usse active rakho, doosri ko comment kar do.
+
+    // const WEATHER_CITY = { name: "MUMBAI", lat: 19.0760, lon: 72.8777 };
+    const WEATHER_CITY = { name: "PUNE", lat: 18.5204, lon: 73.8567 };
+
     const [currentTemp, setCurrentTemp] = useState(null);
     const [currentIcon, setCurrentIcon] = useState("🌦️");
     const [weather, setWeather] = useState([]);
@@ -20,7 +27,9 @@ export default function Footer() {
 
     useEffect(() => {
         async function loadWeather() {
-            const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=19.0760&longitude=72.8777&daily=weathercode,temperature_2m_max,temperature_2m_min&current_weather=true&timezone=Asia%2FKolkata");
+            const res = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_CITY.lat}&longitude=${WEATHER_CITY.lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&current_weather=true&timezone=Asia%2FKolkata`
+            );
             const data = await res.json();
             setCurrentTemp(Math.round(data.current_weather.temperature));
             setCurrentIcon(codeToIcon(data.current_weather.weathercode));
@@ -35,7 +44,7 @@ export default function Footer() {
             setWeather(days);
         }
         loadWeather();
-    }, []);
+    }, [WEATHER_CITY.name]);
 
     return (
         <footer className="footer">
@@ -61,10 +70,11 @@ export default function Footer() {
                             <a href="suggestion" className="contactUsBtn">Suggestion</a>
                         </div>
                     </div>
-                    {/* MIDDLE - WEATHER INLINE */}
+
+                    {/* MIDDLE - WEATHER INLINE (single city, toggle via WEATHER_CITY above) */}
                     <div className="weatherInline">
                         <div className="weatherMain">
-                            <h3>MUMBAI</h3>
+                            <h3>{WEATHER_CITY.name}</h3>
                             <div className="weatherMainRow">
                                 <span>{currentIcon}</span>
                                 <h1>
@@ -77,10 +87,7 @@ export default function Footer() {
                         </div>
                         <div className="weatherDays">
                             {weather.map((item, index) => (
-                                <div
-                                    className="weatherDay"
-                                    key={index}
-                                >
+                                <div className="weatherDay" key={index}>
                                     <h4>{item.day}</h4>
                                     <span>{item.icon}</span>
                                     <div className="weatherTemps">

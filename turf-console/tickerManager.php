@@ -12,7 +12,11 @@ require_once("../lib/userchecks.php");
 
 require_once("../lib/function_ticker_manager.php");
 
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../rwitc_website_api/config/config.php';
 
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 
 $q = getParameterString('q', '', $db);
 
@@ -62,70 +66,88 @@ if (isAdminlogin()) {
 
         // all actions POST form submissions go here
 
-        if (isset($_REQUEST['submit'])) {
+      if (isset($_REQUEST['submit'])) {
 
-            $body = getParameterString('message', '', $db);
+    $body = getParameterString('message', '', $db);
+    $sort_order = getParameterString('sort_order', '', $db);
+    $published = getParameterString('publish', 'N', $db);
+    $image_url = '';
 
-            $sort_order = getParameterString('sort_order', '', $db);
+    // handle checkbox state
+    if (strtolower($published) == "on") {
+        $published = "Y";
+    }
 
-            $published = getParameterString('publish', 'N', $db);
+    // ===== S3 Upload (same pattern as galleryManager.php) =====
+    if (isset($_FILES['ticker_image']) && $_FILES['ticker_image']['error'] === UPLOAD_ERR_OK) {
+
+        try {
+            $s3Client = new S3Client([
+                'version'     => 'latest',
+                'region'      => AWS_REGION,
+                'credentials' => [
+                    'key'    => AWS_ACCESS_KEY_ID,
+                    'secret' => AWS_SECRET_ACCESS_KEY,
+                ],
+            ]);
+
+            $tmpFile   = $_FILES['ticker_image']['tmp_name'];
+            $fileName  = date('YmdHis') . rand(10, 10000) . '_' . basename($_FILES['ticker_image']['name']);
+            $s3Key     = 'uploads/Tickers/' . $fileName;
+
+            $result = $s3Client->putObject([
+                'Bucket'      => AWS_BUCKET,
+                'Key'         => $s3Key,
+                'SourceFile'  => $tmpFile,
+                'ContentType' => mime_content_type($tmpFile),
+            ]);
+
+            $image_url = $s3Key;
+
+        } catch (AwsException $e) {
             $image_url = '';
-            // handle checkbox state
-
-            if (strtolower($published) == "on") {
-
-                $published = "Y";
-            }
-
-            // save new ticker
-
-           if ($q == "add-ticker") {
-
-    try {
-
-        $articles->insertTicker(
-            $body,
-            $published,
-            $sort_order,
-            $image_url
-        );
-
-        $msg = "New Ticker added";
-
-    } catch (Exception $err) {
-
-        echo $err->getMessage();
-    }
-}
-
-
-
-            //update new ticker 
-
-            if ($q == "update-ticker") {
-
-    $tickerID = getParameterNumber('id', 0);
-
-    try {
-
-        $rowsAffected = $articles->updateTicker(
-            $tickerID,
-            $body,
-            $published,
-            $sort_order,
-            $image_url
-        );
-
-        $msg = "Ticker Updated";
-
-    } catch (Exception $err) {
-
-        echo $err->getMessage();
-    }
-}
         }
 
+    } elseif ($q == "update-ticker") {
+        // No new file selected while editing — keep the existing image
+        $tickerID = getParameterNumber('id', 0);
+        $existingTicker = $articles->getTickerByID($tickerID);
+        $image_url = $existingTicker['image_url'] ?? '';
+    }
+    // ===== End S3 Upload =====
 
+    // save new ticker
+    if ($q == "add-ticker") {
+        try {
+            $articles->insertTicker(
+                $body,
+                $published,
+                $sort_order,
+                $image_url
+            );
+            $msg = "New Ticker added";
+        } catch (Exception $err) {
+            echo $err->getMessage();
+        }
+    }
+
+    // update new ticker
+    if ($q == "update-ticker") {
+        $tickerID = getParameterNumber('id', 0);
+        try {
+            $rowsAffected = $articles->updateTicker(
+                $tickerID,
+                $body,
+                $published,
+                $sort_order,
+                $image_url
+            );
+            $msg = "Ticker Updated";
+        } catch (Exception $err) {
+            echo $err->getMessage();
+        }
+    }
+}
 
         if ($q == "edit-ticker") {
 
