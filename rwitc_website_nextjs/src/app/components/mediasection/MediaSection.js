@@ -56,7 +56,7 @@ export default function MediaSection() {
         loadData();
     }, []);
 
-    const video = media.find(item => item.type == 2);
+    const video = [...media].reverse().find(item => item.type == 2);
     const images = media.filter(item => item.type == 1);
     // video is there or not
     const hasVideo = Boolean(video);
@@ -107,7 +107,10 @@ export default function MediaSection() {
                         hasVideo && (
                             <div className="videoArea" id="live-video">
                                 <video controls autoPlay muted loop width="100%" height="100%">
-                                    <source src={`${UPLOAD_URL}/${video?.path}`} type="video/mp4" />
+                                    <source
+                                        src={video?.path?.startsWith('http') ? video.path : `${UPLOAD_URL}/${video?.path}`}
+                                        type="video/mp4"
+                                    />
                                 </video>
                             </div>
                         )
@@ -151,7 +154,7 @@ export default function MediaSection() {
                                             </SwiperSlide>
                                         ))
                                     }
-                                    
+
                                 </Swiper>
 
                                 {

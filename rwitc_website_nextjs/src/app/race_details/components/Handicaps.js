@@ -101,6 +101,8 @@ export default function Handicaps() {
 
     const searchParams = useSearchParams();
     const date = searchParams.get("date");
+    const type = searchParams.get("type") || "";
+    const raceType = searchParams.get("race_type") || "";
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -126,7 +128,7 @@ export default function Handicaps() {
                 setLoading(true);
                 setError(null);
 
-                const data = await getHandicaps(date);
+                const data = await getHandicaps(date, type, raceType);
 
                 setMode(data.mode || "json");
                 setRawHtml(data.html || "");
@@ -150,7 +152,7 @@ export default function Handicaps() {
 
         loadHandicaps();
 
-    }, [date]);
+    }, [date, type, raceType]);
 
     const isHtmlMode = mode === "html";
     const hasNoData = !isHtmlMode && races.length === 0;

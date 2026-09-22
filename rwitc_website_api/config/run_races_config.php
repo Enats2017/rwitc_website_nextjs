@@ -12,7 +12,7 @@
 // ============================================================
 
 // Set this to false when deploying to the live server
-define("IS_LOCAL", true);
+define("IS_LOCAL", false);
 
 if (IS_LOCAL) {
 
@@ -37,6 +37,7 @@ if (IS_LOCAL) {
 
     // Dividends .htm files public URL (for API response)
     define("STATIC_DIVIDENDS_URL", "http://localhost/staticpages/dividends/");
+    define("STATIC_LIVE_URL", "http://localhost/staticpages/live/");
 } else {
 
     // ----------------------------------------------------
@@ -61,4 +62,5 @@ if (IS_LOCAL) {
 
     // Dividends .htm files public URL (production)
     define("STATIC_DIVIDENDS_URL", "https://test.rwitc.com/rwitc-website/staticpages/dividends/");
+    define("STATIC_LIVE_URL", "https://test.rwitc.com/rwitc-website/staticpages/live/");
 }

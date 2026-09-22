@@ -1,11 +1,17 @@
-
 import { API_URL } from "./api";
 
-export async function getRaceResult(racedate, raceno) {
-
+export async function getRaceResult(
+    racedate,
+    raceno,
+    type = "race_result",
+    raceType = "post_race"
+) {
     try {
+        const params = new URLSearchParams();
 
-        const params = new URLSearchParams({ date: racedate });
+        params.set("date", racedate);
+        params.set("type", type);
+        params.set("race_type", raceType);
 
         if (raceno) {
             params.set("raceno", raceno);
@@ -18,16 +24,25 @@ export async function getRaceResult(racedate, raceno) {
         const json = await response.json();
 
         if (!response.ok || !json.success) {
-            throw new Error(json.message || json.error || "Failed to fetch race results");
+            throw new Error(
+                json.message ||
+                json.error ||
+                "Failed to fetch race results"
+            );
         }
 
-        const data = json.data;
+        const data = json.data || {};
 
         if (data?.mode === "html") {
             return {
                 mode: "html",
                 html: data.html || "",
-                found: data?.found ?? true,
+                found: data?.found ?? false,
+                date: data?.date || racedate,
+                type: data?.type || type,
+                raceType: data?.race_type || raceType,
+                downloadFile: data?.download_file || null,
+                downloadAvailable: data?.download_available ?? false,
             };
         }
 
@@ -47,11 +62,7 @@ export async function getRaceResult(racedate, raceno) {
         };
 
     } catch (error) {
-
         console.error("Race Result Error :", error);
-
         throw error;
-
     }
-
 }

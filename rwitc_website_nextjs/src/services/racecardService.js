@@ -1,11 +1,19 @@
 import { API_URL } from "./api";
 
-export async function getRaceCard(date) {
-
+export async function getRaceCard(
+    date,
+    type = "racecard",
+    raceType = "pre_race"
+) {
     try {
+        const params = new URLSearchParams();
+
+        params.set("date", date);
+        params.set("type", type);
+        params.set("race_type", raceType);
 
         const response = await fetch(
-            `${API_URL}/Racecard_get_api.php?date=${date}`
+            `${API_URL}/Racecard_get_api.php?${params.toString()}`
         );
 
         if (!response.ok) {
@@ -15,14 +23,15 @@ export async function getRaceCard(date) {
         const json = await response.json();
 
         if (!json.success) {
-            throw new Error(json.error || "Failed to fetch race card");
+            throw new Error(
+                json.error ||
+                json.message ||
+                "Failed to fetch race card"
+            );
         }
 
-        const data = json.data;
+        const data = json.data || {};
 
-        // Archive dates (date > 2022-11-08): API returns the raw
-        // Race_Card_<date>.html markup as-is, same as the old PHP
-        // page's `include`. Pass it straight through — no parsing.
         if (data?.mode === "html") {
             return {
                 mode: "html",
@@ -31,13 +40,13 @@ export async function getRaceCard(date) {
                 dayNarrative: "",
                 clubName: null,
                 downloadFile: data?.download_file || null,
-                downloadAvailable: data?.download_available || false,
+                downloadAvailable:
+                    data?.download_available || false,
                 races: [],
                 pools: [],
             };
         }
 
-        // DB-sourced dates (date <= 2022-11-08): structured JSON.
         return {
             mode: "json",
             html: null,
@@ -95,13 +104,8 @@ export async function getRaceCard(date) {
             })),
             pools: data?.pools || [],
         };
-
     } catch (error) {
-
         console.error("Race Card Error :", error);
-
         throw error;
-
     }
-
 }

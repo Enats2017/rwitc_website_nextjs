@@ -233,7 +233,7 @@ function getFileInformation($filename)
         strpos($name, "race_result_") === 0
     ) {
         return array(
-            "type"      => "race_results",
+            "type"      => "race_result",
             "race_type" => "post_race"
         );
     }

@@ -1,0 +1,86 @@
+/* RACE DAY / NOTICE BUTTONS (MediaSection ke theek upar) */
+.raceDayWrap {
+    position: relative;
+    z-index: 4;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 0 0;
+}
+
+.raceDayRow {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    gap: 19px;
+    align-items: stretch;
+}
+
+/* load hote waqt jagah roke rakhne ke liye */
+.raceDayLoading {
+    height: 70px;
+}
+
+.raceDayBtn {
+    flex: 1;
+    min-width: 0;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 20px;
+    background: linear-gradient(90deg, #08501f, #0b6d2a);
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-decoration: none;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.raceDayBtn:hover {
+    color: #ffffff;
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, .25);
+}
+
+/* RESPONSIVE (MediaSection ke breakpoints jaise hi) */
+@media (max-width: 1200px) {
+    .raceDayWrap {
+        padding: 30px 20px 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .raceDayWrap {
+        padding: 20px 20px 0;
+    }
+
+    .raceDayRow {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .raceDayLoading {
+        height: 60px;
+    }
+
+    .raceDayBtn {
+        height: 60px;
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .raceDayWrap {
+        padding: 16px 15px 0;
+    }
+
+    .raceDayBtn {
+        font-size: 16px;
+    }
+}

@@ -30,6 +30,8 @@ export default function RaceResult() {
     const searchParams = useSearchParams();
     const racedate = searchParams.get("racedate") || searchParams.get("date");
     const raceno = searchParams.get("raceno");
+    const type = searchParams.get("type") || "race_result";
+    const raceType = searchParams.get("race_type") || "post_race";
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -41,6 +43,7 @@ export default function RaceResult() {
     const [conditions, setConditions] = useState(null);
     const [races, setRaces] = useState([]);
     const [downloadUrl, setDownloadUrl] = useState(null);
+    const [downloadAvailable, setDownloadAvailable] = useState(false);
 
     useEffect(() => {
 
@@ -57,13 +60,20 @@ export default function RaceResult() {
                 setLoading(true);
                 setError(null);
 
-                const data = await getRaceResult(racedate, raceno);
+                const data = await getRaceResult(
+                    racedate,
+                    raceno,
+                    type,
+                    raceType
+                );
 
     setMode(data.mode || "json");
 
     if (data.mode === "html") {
         setRawHtml(data.html || "");
         setFound(data.found);
+        setDownloadUrl(data.downloadFile || null);
+        setDownloadAvailable(data.downloadAvailable || false);
         setLoading(false);
         return;
     }
@@ -91,7 +101,7 @@ export default function RaceResult() {
 
         loadRaceResult();
 
-    }, [racedate, raceno]);
+    }, [racedate, raceno, type, raceType]);
 
     const hasNoResults = !found || races.length === 0;
 

@@ -1,14 +1,14 @@
 <?php
 
 $host = "localhost";
-// $user = "app_user";
-$user = "root";
+$user = "app_user";
+// $user = "root";
 
 // live
-// $password = 'ho{HslC)jWaky${L';
+$password = 'ho{HslC)jWaky${L';
 
 // local
-$password = "";
+// $password = "";
 $database = "rwitc_website";
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);

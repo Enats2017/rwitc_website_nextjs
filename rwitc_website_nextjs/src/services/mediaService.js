@@ -21,3 +21,22 @@ export async function getRaceMedia() {
 
     return json.data || { preRace: [], postRace: [], trackWork: [] };
 }
+
+export async function getRaceDayStatus() {
+
+    const fallback = { raceDay: false, today: "", mediaTipsUrl: "", updatesUrl: "" };
+
+    try {
+        const res = await fetch(
+            `${API_URL}/race_day_status_get.php`,
+            { cache: "no-store" }
+        );
+
+        const json = await res.json();
+
+        return json.data || fallback;
+    } catch (err) {
+        // API fail ho to normal mode (2 buttons) dikhao
+        return fallback;
+    }
+}

@@ -134,6 +134,8 @@ export default function Acceptance() {
 
     const searchParams = useSearchParams();
     const date = searchParams.get("date");
+    const type = searchParams.get("type") || "";
+    const raceType = searchParams.get("race_type") || "";
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -160,7 +162,7 @@ export default function Acceptance() {
                 setLoading(true);
                 setError(null);
 
-                const data = await getAcceptance(date);
+                const data = await getAcceptance(date, type, raceType);
 
                 setMode(data.mode || "json");
                 setRawHtml(data.html || "");
@@ -185,7 +187,7 @@ export default function Acceptance() {
 
         loadAcceptance();
 
-    }, [date]);
+    }, [date, type, raceType]);
 
     const isHtmlMode = mode === "html";
     const hasNoHtml = isHtmlMode && !rawHtml.trim();

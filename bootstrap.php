@@ -12,8 +12,8 @@ define('CURRENT_SEASON', '');
 // $base = '/var/www/html/rwitc_website/';//$_SERVER['DOCUMENT_ROOT'];
 
 
-$base = 'C:/xampp/htdocs/rwitc_website/';
-// $base = '/var/www/html/rwitc-website/turf-console/';
+// $base = 'C:/xampp/htdocs/rwitc_website/';
+$base = '/var/www/html/rwitc-website/turf-console/';
 
 
 //$http_base = 'http://localhost:8012/rwitc_website/';//$_SERVER['DOCUMENT_ROOT'];
@@ -21,23 +21,23 @@ $base = 'C:/xampp/htdocs/rwitc_website/';
 
 // $http_base = 'https://rwitc.com/';
 
-$http_base = 'http://localhost/rwitc_website/';
-// $http_base = 'https://test.rwitc.com/rwitc-website/turf-console/';
+// $http_base = 'http://localhost/rwitc_website/';
+$http_base = 'https://test.rwitc.com/rwitc-website/turf-console/';
 
 //define('BASE_HREF',"http://localhost:8012/rwitc_website/"); // rwitcmumbai page ID
 //define('BASE_HREF',"https://rw1.space2let.com/~rwitc/"); // rwitcmumbai page ID
 // define('BASE_HREF',"https://rwitc.com/");
 
-define('BASE_HREF', "http://localhost/rwitc_website/");
-// define('BASE_HREF', "https://test.rwitc.com/rwitc-website/");
+// define('BASE_HREF', "http://localhost/rwitc_website/");
+define('BASE_HREF', "https://test.rwitc.com/rwitc-website/");
 
 //define('DIR_BASE',"C:/xampp/htdocs/rwitc_website/"); // rwitcmumbai page ID
 //define('DIR_BASE',"https://rw1.space2let.com/~rwitc/"); // rwitcmumbai page ID
 // define('DIR_BASE',"/var/www/html/rwitc_website/");
 
 
-define('DIR_BASE', "C:/xampp/htdocs/rwitc_website/");
-// define('DIR_BASE', "/var/www/html/rwitc-website/turf-console/");
+// define('DIR_BASE', "C:/xampp/htdocs/rwitc_website/");
+define('DIR_BASE', "/var/www/html/rwitc-website/turf-console/");
 
 // Points to the actual site root (used for assets like CSS that live outside turf-console)
 define('SITE_ROOT', "/var/www/html/rwitc-website/");

@@ -73,8 +73,30 @@ const PRE_RACE_LIMIT   = 4;
 const POST_RACE_LIMIT  = 4;
 const TRACK_WORK_LIMIT = 18;
 
+/*
+ * run_race_details.type  ->  dot mapping
+ *
+ * PRE-RACE  (race_type = pre_race)
+ *   handicaps      -> Handicaps
+ *   acceptances    -> Acceptances
+ *   declarations   -> Declarations
+ *   racecard       -> Race Card
+ *
+ * POST-RACE (race_type = post_race)
+ *   race_result   -> Race Results
+ *   rating_change  -> Rating Change
+ *
+ * (mock_race_result is not shown in these tables, so it is ignored)
+ */
+const DB_TYPE_HANDICAPS     = "handicaps";
+const DB_TYPE_ACCEPTANCES   = "acceptances";
+const DB_TYPE_DECLARATIONS  = "declarations";
+const DB_TYPE_RACECARD      = "racecard";
+const DB_TYPE_RACE_RESULT  = "race_result";
+const DB_TYPE_RATING_CHANGE = "rating_change";
+
 // --------------------------------------------------
-// CHECK IF REMOTE FILE EXISTS
+// CHECK IF REMOTE FILE EXISTS (local run_races folder)
 // --------------------------------------------------
 
 function remoteFileExists($url)
@@ -139,13 +161,67 @@ function fetchByDatesIn($conn, $sql, array $dates)
 }
 
 // --------------------------------------------------
+// run_race_details ME REGISTERED FILES (DB / S3 files)
+//
+// Returns:
+//   $map["2026-08-22"]["rating_change"] = true
+//
+// One query for all dates, no per-date DB calls.
+// --------------------------------------------------
+
+function fetchRunRaceFilesByDates($conn, array $dates)
+{
+    $map = [];
+
+    if (empty($dates)) {
+        return $map;
+    }
+
+    $result = fetchByDatesIn(
+        $conn,
+        "SELECT `date`, `type`
+         FROM run_race_details
+         WHERE `date` IN (%s)
+           AND file_url IS NOT NULL
+           AND file_url != ''",
+        $dates
+    );
+
+    while ($row = $result->fetch_assoc()) {
+        $map[$row["date"]][$row["type"]] = true;
+    }
+
+    return $map;
+}
+
+// --------------------------------------------------
+// FILE AVAILABLE?
+//
+// 1. DB (run_race_details) has this date + type  -> YES
+//    (this covers files that live only in S3)
+// 2. Otherwise check the local run_races folder  -> old behaviour
+//
+// DB is checked first so we skip the slow curl call
+// whenever the DB already knows about the file.
+// --------------------------------------------------
+
+function isFileAvailable(array $dbFiles, $date, $dbType, $url)
+{
+    if (isset($dbFiles[$date][$dbType])) {
+        return true;
+    }
+
+    return remoteFileExists($url);
+}
+
+// --------------------------------------------------
 // FETCH DATA
 // --------------------------------------------------
 
 try {
 
-    // $runRacesBaseUrl = rtrim(RUN_RACES_BASE_URL, "/") . "/";
-    $runRacesBaseUrl = "http://localhost/run_races/";
+    $runRacesBaseUrl = rtrim(RUN_RACES_BASE_URL, "/") . "/";
+    // $runRacesBaseUrl = "http://localhost/run_races/";
 
     // ==================================================
     // PRE-RACE
@@ -165,11 +241,18 @@ try {
         throw new Exception($conn->error);
     }
 
-    $preRace = [];
+    $preRaceDates = [];
 
     while ($row = $preRaceResult->fetch_assoc()) {
+        $preRaceDates[] = $row["racedate"];
+    }
 
-        $date = $row["racedate"];
+    // One query for all pre-race dates
+    $preDbFiles = fetchRunRaceFilesByDates($conn, $preRaceDates);
+
+    $preRace = [];
+
+    foreach ($preRaceDates as $date) {
 
         // Old logic:
         // Dates <= 25-09-2022 always show the dot
@@ -206,25 +289,45 @@ try {
 
             "handicaps" => [
                 "available" => $isOldDate ||
-                    remoteFileExists($handicapsUrl),
+                    isFileAvailable(
+                        $preDbFiles,
+                        $date,
+                        DB_TYPE_HANDICAPS,
+                        $handicapsUrl
+                    ),
                 "url" => $handicapsUrl
             ],
 
             "acceptances" => [
                 "available" => $isOldDate ||
-                    remoteFileExists($acceptancesUrl),
+                    isFileAvailable(
+                        $preDbFiles,
+                        $date,
+                        DB_TYPE_ACCEPTANCES,
+                        $acceptancesUrl
+                    ),
                 "url" => $acceptancesUrl
             ],
 
             "declarations" => [
                 "available" => $isOldDate ||
-                    remoteFileExists($declarationsUrl),
+                    isFileAvailable(
+                        $preDbFiles,
+                        $date,
+                        DB_TYPE_DECLARATIONS,
+                        $declarationsUrl
+                    ),
                 "url" => $declarationsUrl
             ],
 
             "raceCard" => [
                 "available" => $isOldDate ||
-                    remoteFileExists($raceCardUrl),
+                    isFileAvailable(
+                        $preDbFiles,
+                        $date,
+                        DB_TYPE_RACECARD,
+                        $raceCardUrl
+                    ),
                 "url" => $raceCardUrl
             ]
         ];
@@ -258,6 +361,12 @@ try {
     $postRace = [];
 
     if (!empty($postRaceDates)) {
+
+        // ----------------------------------------------
+        // BATCH: run_race_details (DB / S3 files)
+        // ----------------------------------------------
+
+        $postDbFiles = fetchRunRaceFilesByDates($conn, $postRaceDates);
 
         // ----------------------------------------------
         // BATCH: RACEDAY REPORT (1 query instead of N)
@@ -327,7 +436,12 @@ try {
             // Only applicable from 22-09-2014 onwards
             $raceResultsAvailable =
                 strtotime($date) >= 1411344000 &&
-                remoteFileExists($raceResultsUrl);
+                isFileAvailable(
+                    $postDbFiles,
+                    $date,
+                    DB_TYPE_RACE_RESULT,
+                    $raceResultsUrl
+                );
 
             // RATING CHANGE
             $ratingChangeUrl =
@@ -337,7 +451,12 @@ try {
                 ".html";
 
             $ratingChangeAvailable =
-                remoteFileExists($ratingChangeUrl);
+                isFileAvailable(
+                    $postDbFiles,
+                    $date,
+                    DB_TYPE_RATING_CHANGE,
+                    $ratingChangeUrl
+                );
 
             // RACEDAY REPORT
             $raceDayReportAvailable =
