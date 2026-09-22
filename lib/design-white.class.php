@@ -40,7 +40,8 @@ class Design
 
         //$mtime = filemtime($_SERVER['DOCUMENT_ROOT'] .'/rwitc_website/assets/css/main.css');
 
-        $mtime = filemtime(DIR_BASE . 'assets/css/main.css');
+        // $mtime = filemtime(DIR_BASE . 'assets/css/main.css');
+        $mtime = filemtime(__DIR__ . '/../assets/css/main.css');
         // $mtime = filemtime(SITE_ROOT . 'assets/css/main.css');
 
         $main_css = $main_file . '?version=' . $mtime;
@@ -1518,7 +1519,7 @@ LEFTPANEL;
 }
 #sponsorBlockWrapper { max-width: 1500px; margin: 10px auto 30px; float: none; }
 #sponsorsTitle { color: var(--rwitc-dark-green) !important; font-family: 'Source Serif 4',serif; font-weight: 700; letter-spacing: 1px; }
-#sponsorBlock { border: 1px solid var(--rwitc-border) !important; border-radius: 14px !important; background: #fff !important; box-shadow: 0 4px 14px rgba(11,61,36,0.06); }
+#sponsorBlock { border-radius: 14px !important; background: #fff !important; box-shadow: 0 4px 14px rgba(11,61,36,0.06); }
 @media (max-width: 768px) {
     #sponsorBlockWrapper { margin: 10px 8px 20px !important; }
     #sponsorBlock { height: 90px !important; padding: 8px 0 !important; }
@@ -1959,120 +1960,58 @@ BOXES;
 
 
 
-    function rightSponsor()
-
-    {
-
+    function rightSponsor() {
         require_once("dbTools.php");
-
         $db = new dbTool();
-
         $raceObj = new Racedata($db);
-
         $sponsoroftheday_datas = $raceObj->getsponsoroftheday_datas();
-
         $sponsorofthday = '';
 
         foreach ($sponsoroftheday_datas as $skey => $svalue) {
+            // Fix: support both S3 full URL and old local path
+            $imgSrc = (strpos($svalue['source'], 'http') === 0) ? $svalue['source'] : 'images/sponsors/' . $svalue['source'];
 
             if ($skey == 0) {
-
                 $sponsorofthday .= '<div class="item active">';
-
-                $link = $svalue['link'];
-
                 if ($svalue['link'] != '') {
-
-                    $sponsorofthday .= '<a href="' . $link . '">';
-
-                    $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
-
-                    $sponsorofthday .= '<a>';
-                } else {
-
-                    $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
-                }
-
-                $sponsorofthday .= '</div>';
-            } else {
-
-                $sponsorofthday .= '<div class="item">';
-
-                $link = $svalue['link'];
-
-                if ($svalue['link'] != '') {
-
-                    $sponsorofthday .= '<a href="' . $link . '">';
-
-                    $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
-
+                    $sponsorofthday .= '<a href="' . $svalue['link'] . '">';
+                    $sponsorofthday .= '<img width="150" height="150" src="' . $imgSrc . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
                     $sponsorofthday .= '</a>';
                 } else {
-
-                    $sponsorofthday .= '<img width="150" height="150" src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
+                    $sponsorofthday .= '<img width="150" height="150" src="' . $imgSrc . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
                 }
-
+                $sponsorofthday .= '</div>';
+            } else {
+                $sponsorofthday .= '<div class="item">';
+                if ($svalue['link'] != '') {
+                    $sponsorofthday .= '<a href="' . $svalue['link'] . '">';
+                    $sponsorofthday .= '<img width="150" height="150" src="' . $imgSrc . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
+                    $sponsorofthday .= '</a>';
+                } else {
+                    $sponsorofthday .= '<img width="150" height="150" src="' . $imgSrc . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" />';
+                }
                 $sponsorofthday .= '</div>';
             }
         }
 
         echo <<< RIGHT_FOOTER
-
             <div class="col-lg-12 col-xs-12 col-sm-6 col-md-6">
-
                 <div class="row">
-
                     <div class="sponserborder" id="sponsorside" style="margin-top:0px !important;padding-left: 25px !important;padding-right: 25px !important;">
-
                         <div class="sponsorLabel">
-
                             <img src="assets/images/sponserheader.png">
-
                         </div>
-
                         <div class="daySponsor">
-
                             <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
-
-                                <!-- Indicators -->
-
-                                <!-- Wrapper for slides -->
-
                                 <div class="carousel-inner" role="listbox">
-
-                                $sponsorofthday     
-
-                                <!--
-
-                                    <div class="item active">
-
-                                        <img width="150" height="150" src="rwitc_upload/sponsor/rwitc.jpg" alt='Sponsor of the day' />
-
-                                    </div>
-
-                                    <div class="item">
-
-                                       <img width="150" height="150" src="rwitc_upload/sponsor/rwitc.jpg" alt='Sponsor of the day' />
-
-                                    </div>
-
-                                -->
-
-                                <!-- Controls -->
-
+                                $sponsorofthday
                                 </div>
-
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
-
-RIGHT_FOOTER;
+        RIGHT_FOOTER;
     }
 
 

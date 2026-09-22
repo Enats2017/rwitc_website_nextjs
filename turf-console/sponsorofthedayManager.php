@@ -4,12 +4,20 @@ include_once('../lib/pagination.class.php');
 require_once("../lib/users.class.php");
 require_once("../lib/userchecks.php");
 require_once("../lib/race.class.php");
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../rwitc_website_api/config/config.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+
 $q = getParameterString('q','',$db);
 session_start();                    
+
 $uid = $_SESSION['uid'];             
 $userObj = new Users($db);  
 $msg = $secmsg = "";
 $rObj = new Racedata($db);
+
 if (isAdminlogin()) {
 	if ($_SESSION['sponsorofthedayManager'] == "Y") { // check login
 		//if (get_magic_quotes_gpc()) {
@@ -60,52 +68,71 @@ if (isAdminlogin()) {
 	            $json['success'] = 'Sponsor Of the Day Data Updated';      
 	        }      		
 
-			if(isset($_FILES['file']) && $q == 'image-upload'){
-				date_default_timezone_set("Asia/Kolkata");
-				$file_upload_path = DIR_SPONSOR_UPLOAD.'/';
-				$files_arr = array();
-		   		$image_name = array();
-		   		foreach ($_FILES['file']['name'] as $key => $value) {
-		   			$files_arr[$key]['name'] = $value;
-		   			$image_name[] = $value;
-		   		}
-		   		foreach ($_FILES['file']['type'] as $key => $value) {
-		   			$files_arr[$key]['type'] = $value;
-		   		}
-		   		foreach ($_FILES['file']['tmp_name'] as $key => $value) {
-		   			$files_arr[$key]['tmp_name'] = $value;
-		   		}
-		   		foreach ($_FILES['file']['error'] as $key => $value) {
-		   			$files_arr[$key]['error'] = $value;
-		   		}
-		   		foreach ($_FILES['file']['size'] as $key => $value) {
-		   			$files_arr[$key]['size'] = $value;
-		   		}
-		   		$cnt = $_POST['count'];
-		   		//$image_name_string = '';
-		   		foreach ($files_arr as $fkey => $fvalue) {
-					$timestamp = date('YmdHis').rand(10, 10000);
-					$file = 'Image_'.$timestamp.'.jpg';
-					$file_titles = explode('.', $fvalue['name']);
-					$file_title = $file_titles[0];
-					if($file != ''){
-						$exist_path = $file_upload_path.$file;
-						if(file_exists($exist_path)){
-							unlink($exist_path);
-						}
-					}
-					if (move_uploaded_file($fvalue['tmp_name'], $file_upload_path . $file)) {
-						$destFile = $file_upload_path . $file;
-						chmod($destFile, 0777);
-					}
-					
-					$sql = "INSERT INTO `sponsoroftheday` SET `title` = '".$file_title."', `link` = '', `source` = '".$file."', `sort_order` = '".$cnt."' ";
-					
-					$rObj->insertSponsorofthedayimage($sql); 
-					$cnt ++;
-				}
-				$json['success'] = 'Sponsor Of the Day Images Uploaded';
-			}
+            if (isset($_FILES['file']) && $q == 'image-upload') {
+
+                date_default_timezone_set("Asia/Kolkata");
+                $files_arr = array();
+                foreach ($_FILES['file']['name'] as $key => $value) {
+                    $files_arr[$key]['name'] = $value;
+                }
+                foreach ($_FILES['file']['type'] as $key => $value) {
+                    $files_arr[$key]['type'] = $value;
+                }
+                foreach ($_FILES['file']['tmp_name'] as $key => $value) {
+                    $files_arr[$key]['tmp_name'] = $value;
+                }
+                foreach ($_FILES['file']['error'] as $key => $value) {
+                    $files_arr[$key]['error'] = $value;
+                }
+                foreach ($_FILES['file']['size'] as $key => $value) {
+                    $files_arr[$key]['size'] = $value;
+                }
+                $cnt = $_POST['count'];
+
+                foreach ($files_arr as $fkey => $fvalue) {
+
+                    $timestamp = date('YmdHis') . rand(10, 10000);
+                    $file = 'Image_' . $timestamp . '.jpg';
+                    $file_titles = explode('.', $fvalue['name']);
+                    $file_title = $file_titles[0];
+
+                    // ===== S3 Upload to SponsorOfTheDay folder =====
+                    $s3_url = '';
+                    try {
+                        $s3Client = new S3Client([
+                            'version'     => 'latest',
+                            'region'      => AWS_REGION,
+                            'credentials' => [
+                                'key'    => AWS_ACCESS_KEY_ID,
+                                'secret' => AWS_SECRET_ACCESS_KEY,
+                            ],
+                        ]);
+
+                        $result = $s3Client->putObject([
+                            'Bucket'      => AWS_BUCKET,
+                            'Key'         => 'uploads/SponsorOfTheDay/' . $file,   // ← new folder
+                            'SourceFile'  => $fvalue['tmp_name'],
+                            'ContentType' => mime_content_type($fvalue['tmp_name']),
+                        ]);
+
+                        $s3_url = $result['ObjectURL'];
+                    } catch (AwsException $e) {
+                        $s3_url = '';
+                    }
+                    // ===== End S3 Upload =====
+
+                    if ($s3_url != '') {
+                        $sql = "INSERT INTO `sponsoroftheday` SET 
+                                    `title` = '" . $file_title . "', 
+                                    `link` = '', 
+                                    `source` = '" . $s3_url . "', 
+                                    `sort_order` = '" . $cnt . "' ";
+                        $rObj->insertSponsorofthedayimage($sql);
+                        $cnt++;
+                    }
+                }
+                $json['success'] = 'Sponsor Of the Day Images Uploaded';
+            }
 		}
 		$sponsoroftheday_datas = $rObj->getsponsoroftheday_datas();
 		$sponsoroftheday_datas_count = count($sponsoroftheday_datas) + 1;
@@ -351,7 +378,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
 			  	<div class="sponsor-card">
 			  		<div class="thumb-wrap">
-			  			<img src="<?php echo HTTP_SPONSOR_UPLOAD.'/'.$bvalue['source']; ?>" alt="" />
+                        <img src="<?php echo (strpos($bvalue['source'], 'http') === 0) ? $bvalue['source'] : HTTP_SPONSOR_UPLOAD.'/'.$bvalue['source']; ?>" alt="" />
 			  		</div>
 			  		<div class="sponsor-card-body">
 			  			<label>Image Title</label>

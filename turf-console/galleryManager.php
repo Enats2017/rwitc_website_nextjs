@@ -267,64 +267,56 @@ $design->js = '
 $design->css = '
   <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
   ';
-$design->jqueryJs = "
-    jQuery.browser = {};
-    (function () {
-        jQuery.browser.msie = false;
-        jQuery.browser.version = 0;
-        if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
-            jQuery.browser.msie = true;
-            jQuery.browser.version = RegExp.$1;
-        }
-    })();
-    $('#image_date').datepicker({
-            showOn: 'button',
-            buttonImage: 'images/calendar.gif',
-            buttonImageOnly: true,
-            dateFormat : 'yy-mm-dd'
-        });
-        $('.sponsorList').click(function() {  
-            if ($('#image_date').val()) {
-                    $.ajax( {
-                        url : 'turf-console/galleryManager.php?q=fetch-sponsor&date='+$('#image_date').val(),
-                        type: 'GET',
-                        success: function (msg) {
-                            //alert(msg);
-                            $('#sponsors_list').html(msg);
-                        }
-                    });
-            } else {
-                alert ('Please select a date');
-            }
-        });
 
-        /* ===== date-search widget (replaces scrolling through the full race-day list) ===== */
-        $('#search_image_date').datepicker({
-            buttonImage: 'images/calendar.gif',
-            buttonImageOnly: true,
-            dateFormat : 'yy-mm-dd'
-        });
-        $('#searchSponsorTrigger').click(function() {
-            if ($('#search_image_date').val()) {
-                $.ajax({
-                    url: 'turf-console/galleryManager.php?q=fetch-sponsor&date=' + $('#search_image_date').val(),
-                    type: 'GET',
-                    success: function (msg) {
-                        $('#search_sponsors_list').html(msg);
-                    }
-                });
-            } else {
-                alert('Please select a date');
+$design->jqueryJs = "
+jQuery.browser = {};
+(function () {
+    jQuery.browser.msie = false;
+    jQuery.browser.version = 0;
+    if (navigator.userAgent.match(/MSIE ([0-9]+)\\./)) {
+        jQuery.browser.msie = true;
+        jQuery.browser.version = RegExp.\$1;
+    }
+})();
+
+if ($('#image_date').length) {
+    $('#image_date').datepicker({
+        showOn: 'button',
+        buttonImage: 'images/calendar.gif',
+        buttonImageOnly: true,
+        dateFormat: 'yy-mm-dd'
+    });
+}
+
+$('.sponsorList').click(function() {
+    if ($('#image_date').val()) {
+        $.ajax({
+            url: 'turf-console/galleryManager.php?q=fetch-sponsor&date=' + $('#image_date').val(),
+            type: 'GET',
+            success: function(msg) {
+                $('#sponsors_list').html(msg);
             }
         });
-        $('#viewImagesBtn').click(function() {
-            var d = $('#search_image_date').val();
-            if (!d) { alert('Please select a date'); return; }
-            var sponsorSelect = $('#search_sponsors_list select[name=sponsorID]');
-            var sid = sponsorSelect.length ? sponsorSelect.val() : 1;
-            window.location.href = 'turf-console/galleryManager.php?q=view-images&date=' + encodeURIComponent(d) + '&sponsorID=' + sid;
+    } else {
+        alert('Please select a date');
+    }
+});
+
+$('#searchSponsorTrigger').click(function() {
+    if ($('#search_image_date').val()) {
+        $.ajax({
+            url: 'turf-console/galleryManager.php?q=fetch-sponsor&date=' + $('#search_image_date').val(),
+            type: 'GET',
+            success: function(msg) {
+                $('#search_sponsors_list').html(msg);
+            }
         });
-  ";
+    } else {
+        alert('Please select a date');
+    }
+});
+";
+
 $design->startPage("$pageTitle");
 
 $design->writeLogoTickerMenu();
@@ -969,7 +961,7 @@ if (isset($_SESSION['gallery_msg'])) {
                                 </td>
                             </tr>
                         </table>
-                        <script type='text/javscript'>
+                        <script type='text/javascript'>
 
                         </script>
                     </form>
@@ -1030,12 +1022,31 @@ if (isset($_SESSION['gallery_msg'])) {
     <div class="gallery-search-card">
         <div class="gallery-search-title"><i class="fas fa-magnifying-glass"></i> Jump to a Race Day</div>
         <div class="gallery-search-row">
-            <input type="text" id="search_image_date" placeholder="Select date" readonly />
-            <a class="sponsorList" id="searchSponsorTrigger">Get Sponsor List</a>
+            <input type="date" id="search_image_date" />
+            <a id="searchSponsorTrigger">Get Sponsor List</a>
             <span id="search_sponsors_list"></span>
             <button type="button" id="viewImagesBtn" class="gallery-btn solid"><i class="fas fa-images"></i> View Images</button>
         </div>
     </div>
+
+    <script type="text/javascript">
+        document.getElementById('viewImagesBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+
+            var d = document.getElementById('search_image_date').value;
+
+            if (!d) {
+                alert('Please select a date');
+                return;
+            }
+
+            var sponsorSelect = document.querySelector('#search_sponsors_list select[name="sponsorID"]');
+            var sid = sponsorSelect ? sponsorSelect.value : 1;
+
+            var url = 'turf-console/galleryManager.php?q=view-images&date=' + encodeURIComponent(d) + '&sponsorID=' + sid;
+            window.location.href = url;
+        });
+    </script>
 
     <details class="gallery-browse-all" open>
         <summary><i class="fas fa-chevron-right"></i> Browse all race days (<?php echo count($allDates); ?>)</summary>
