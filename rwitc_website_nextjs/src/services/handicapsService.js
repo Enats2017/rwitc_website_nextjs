@@ -1,11 +1,26 @@
 import { API_URL } from "./api";
 
-export async function getHandicaps(date) {
+export async function getHandicaps(date, type = "", raceType = "") {
 
     try {
 
+        const params = new URLSearchParams();
+
+        params.set("date", date);
+
+        // New flow: ERP metadata is forwarded when available.
+        // If an old page URL only has date, the API resolves the metadata
+        // from run_race_details for backward compatibility.
+        if (type) {
+            params.set("type", type);
+        }
+
+        if (raceType) {
+            params.set("race_type", raceType);
+        }
+
         const response = await fetch(
-            `${API_URL}/erp_handcaps_get_api.php?date=${date}`
+            `${API_URL}/erp_handcaps_get_api.php?${params.toString()}`
         );
 
         if (!response.ok) {

@@ -44,6 +44,33 @@ export default function PerformanceProfile() {
 
         const urlHorseName = searchParams.get("horsename") || searchParams.get("as_values");
 
+        const raceNo = searchParams.get("race_no");
+        const raceDate = searchParams.get("race_date");
+        const raceView = searchParams.get("view");
+
+        if (raceView === "raceResult" && raceNo && raceDate) {
+            (async () => {
+                setView("raceResult");
+                setLoadingRaceResult(true);
+                setRaceResultError(null);
+                setRaceResultData(null);
+
+                const data = await getRaceResult(raceNo, raceDate);
+
+                if (data.found) {
+                    setRaceResultData(data);
+                } else {
+                    setRaceResultData(null);
+                    setRaceResultError(
+                        data.message || "No results found for this race."
+                    );
+                }
+
+                setLoadingRaceResult(false);
+            })();
+            return;
+        }
+
         if (urlHorseName && urlHorseName.trim()) {
 
             // setHorseName(urlHorseName);  // search box should stay empty when data comes via horse click
@@ -64,10 +91,19 @@ export default function PerformanceProfile() {
 
                 setSubmitting(false);
             })();
+        }else {
+            setProfileData(null);
+            setProfileError(null);
+            setRaceResultData(null);
+            setRaceResultError(null);
+            setSubmitting(false);
+            setLoadingRaceResult(false);
+            setView("profile");
+            setHorseName("");
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [searchParams]);
 
     async function handleInputChange(e) {
         const value = e.target.value;
@@ -136,28 +172,35 @@ export default function PerformanceProfile() {
         // Update URL after data is loaded — avoids remounting mid-fetch
         const params = new URLSearchParams(searchParams.toString());
         params.set("horsename", horseName.trim());
-        router.replace(`?${params.toString()}`, { scroll: false });
+        router.push(`?${params.toString()}`, { scroll: false });
     }
 
     // RACENO click — swaps the profile card for the race result card,
     // same as the live site's ?q=result view.
     async function handleRaceNoClick(raceno, racedate) {
+        // setView("raceResult");
+        // setLoadingRaceResult(true);
+        // setRaceResultError(null);
+        // setRaceResultData(null);
 
-        setView("raceResult");
-        setLoadingRaceResult(true);
-        setRaceResultError(null);
-        setRaceResultData(null);
+        // const data = await getRaceResult(raceno, racedate);
 
-        const data = await getRaceResult(raceno, racedate);
+        // if (data.found) {
+        //     setRaceResultData(data);
+        // } else {
+        //     setRaceResultData(null);
+        //     setRaceResultError(data.message || "No results found for this race.");
+        // }
 
-        if (data.found) {
-            setRaceResultData(data);
-        } else {
-            setRaceResultData(null);
-            setRaceResultError(data.message || "No results found for this race.");
-        }
+        // setLoadingRaceResult(false);
 
-        setLoadingRaceResult(false);
+        const url = new URL(window.location.href);
+
+        url.searchParams.set("race_no", raceno);
+        url.searchParams.set("race_date", racedate);
+        url.searchParams.set("view", "raceResult");
+
+        window.open(url.toString(), "_blank");
     }
 
     // Horse name click inside Race Result — loads that horse's profile, same page
@@ -181,8 +224,14 @@ export default function PerformanceProfile() {
         setSubmitting(false);
 
         const params = new URLSearchParams(searchParams.toString());
+
+        params.delete("race_no");
+        params.delete("race_date");
+        params.delete("view");
+
         params.set("horsename", name);
-        router.replace(`?${params.toString()}`, { scroll: false });
+
+        router.push(`?${params.toString()}`, { scroll: false });
     }
 
     function handleBackToProfile() {
@@ -383,13 +432,13 @@ export default function PerformanceProfile() {
                 {view === "raceResult" && (
                     <div className="ppResultsCard">
 
-                        <button
+                        {/* <button
                             type="button"
                             className="ppBackBtn"
                             onClick={handleBackToProfile}
                         >
                             ← Back to Horse Profile
-                        </button>
+                        </button> */}
 
                         {loadingRaceResult && (
                             <p className="ppResultsLoading">Loading race result…</p>

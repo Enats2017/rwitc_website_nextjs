@@ -162,9 +162,8 @@ if (isAdminlogin()) {
                         header("Location: image_upload.php");
                         exit;
                     }
-                } elseif ($_POST['file_type'] == 2 && isset($_POST['video_url'])) {
-                    echo "inn2";
-                    // Video Upload Logic
+                } elseif ($_POST['file_type'] == 2 && isset($_FILES['video_file'])) {
+                    // Video Upload Logic - S3
                     $file_type = $_POST['file_type'];
                     if (isset($_POST['selected_date'])) {
                         $selected_date = $_POST['selected_date'];
@@ -172,13 +171,46 @@ if (isAdminlogin()) {
                         $selected_date = '';
                     }
 
+                    date_default_timezone_set("Asia/Kolkata");
                     $current_date = date('Y-m-d');
 
-                    foreach ($_POST['video_url'] as $key => $value) {
-                        $url = trim($value);
-                        if (!empty($url)) {
-                            $sql = "INSERT INTO `images_upload` SET `curr_date` = '" . $current_date . "', `enter_date` = '" . $selected_date . "', `path` = '" . $url . "', `type` = '" . $file_type . "'";
-                            $rObj->insertBannerimage($sql);
+                    foreach ($_FILES['video_file']['name'] as $key => $value) {
+                        if ($_FILES['video_file']['error'][$key] == UPLOAD_ERR_OK) {
+                            $timestamp = date('YmdHis') . rand(10, 10000);
+                            $ext = pathinfo($value, PATHINFO_EXTENSION);
+                            $file = 'Video_' . $timestamp . '.' . $ext;
+
+                            $s3_url = '';
+                            try {
+                                $s3Client = new S3Client([
+                                    'version'     => 'latest',
+                                    'region'      => AWS_REGION,
+                                    'credentials' => [
+                                        'key'    => AWS_ACCESS_KEY_ID,
+                                        'secret' => AWS_SECRET_ACCESS_KEY,
+                                    ],
+                                ]);
+
+                                $tmpFile = $_FILES['video_file']['tmp_name'][$key];
+                                $s3Key   = 'uploads/Videos/' . $file;
+
+                                $result = $s3Client->putObject([
+                                    'Bucket'      => AWS_BUCKET,
+                                    'Key'         => $s3Key,
+                                    'SourceFile'  => $tmpFile,
+                                    'ContentType' => mime_content_type($tmpFile),
+                                ]);
+
+                                $s3_url = $result['ObjectURL'];
+                            } catch (AwsException $e) {
+                                $s3_url = '';
+                                // error_log('S3 Video Upload Error: ' . $e->getMessage());
+                            }
+
+                            if ($s3_url != '') {
+                                $sql = "INSERT INTO `images_upload` SET `curr_date` = '" . $current_date . "', `enter_date` = '" . $selected_date . "', `path` = '" . $s3_url . "', `type` = '" . $file_type . "'";
+                                $rObj->insertBannerimage($sql);
+                            }
                         }
                     }
 
@@ -481,13 +513,11 @@ $design->openDiv("leftArea", "col-lg-9");
             <?php } ?>
 
 
-            <!-- Dynamic Video URL Inputs -->
+            <!-- Dynamic Video File Inputs -->
             <tr id="text_input_row" style="display:none;">
-                <th>Video URLs</th>
+                <th>Video Upload</th>
                 <td class="alignLeft">
-                    <?php for ($i = 1; $i <= 3; $i++) { ?>
-                        <input type="text" name="video_url[]" placeholder="Enter video URL <?php echo $i; ?>" />
-                    <?php } ?>
+                    <input type="file" name="video_file[]" accept="video/mp4,video/x-m4v,video/*" multiple />
                 </td>
             </tr>
 

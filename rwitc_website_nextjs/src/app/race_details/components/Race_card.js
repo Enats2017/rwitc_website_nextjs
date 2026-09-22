@@ -169,6 +169,8 @@ export default function RaceCard() {
 
     const searchParams = useSearchParams();
     const date = searchParams.get("date");
+    const type = searchParams.get("type") || "racecard";
+    const raceType = searchParams.get("race_type") || "pre_race";
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -197,7 +199,7 @@ export default function RaceCard() {
                 setLoading(true);
                 setError(null);
 
-                const data = await getRaceCard(date);
+                const data = await getRaceCard(date, type, raceType);
 
                 setMode(data.mode || "json");
                 setRawHtml(data.html || "");
@@ -223,7 +225,7 @@ export default function RaceCard() {
 
         loadRaceCard();
 
-    }, [date]);
+    }, [date, type, raceType]);
 
     const toggleRuns = (key) => {
         setOpenRuns((prev) => ({ ...prev, [key]: !prev[key] }));

@@ -1518,7 +1518,7 @@ LEFTPANEL;
 }
 #sponsorBlockWrapper { max-width: 1500px; margin: 10px auto 30px; float: none; }
 #sponsorsTitle { color: var(--rwitc-dark-green) !important; font-family: 'Source Serif 4',serif; font-weight: 700; letter-spacing: 1px; }
-#sponsorBlock { border: 1px solid var(--rwitc-border) !important; border-radius: 14px !important; background: #fff !important; box-shadow: 0 4px 14px rgba(11,61,36,0.06); }
+#sponsorBlock { border-radius: 14px !important; background: #fff !important; box-shadow: 0 4px 14px rgba(11,61,36,0.06); }
 @media (max-width: 768px) {
     #sponsorBlockWrapper { margin: 10px 8px 20px !important; }
     #sponsorBlock { height: 90px !important; padding: 8px 0 !important; }

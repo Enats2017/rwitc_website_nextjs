@@ -130,6 +130,8 @@ export default function Declarations() {
 
     const searchParams = useSearchParams();
     const date = searchParams.get("date");
+    const type = searchParams.get("type") || "declarations";
+    const raceType = searchParams.get("race_type") || "pre_race";
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -156,7 +158,11 @@ export default function Declarations() {
                 setLoading(true);
                 setError(null);
 
-                const data = await getDeclarations(date);
+                const data = await getDeclarations(
+                    date,
+                    type,
+                    raceType
+                );
 
                 setMode(data.mode || "json");
                 setRawHtml(data.html || "");
@@ -181,7 +187,7 @@ export default function Declarations() {
 
         loadDeclarations();
 
-    }, [date]);
+    }, [date, type, raceType]);
 
     const isHtmlMode = mode === "html";
     const hasNoHtml = isHtmlMode && !rawHtml.trim();

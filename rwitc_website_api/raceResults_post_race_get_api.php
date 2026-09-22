@@ -2,12 +2,246 @@
 
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(204);
+    exit;
+}
 
 // Load database and security
 require_once __DIR__ . "/config/config.php";
 require_once __DIR__ . "/ApiSecurity.php";
 require_once __DIR__ . "/config/run_races_config.php";
+
+// --------------------------------------------------
+ // HELPERS
+ // --------------------------------------------------
+
+function raceResultJsonResponse($success, $data = [], $message = null, $status = 200)
+{
+    http_response_code($status);
+
+    echo json_encode([
+        "success" => (bool) $success,
+        "data"    => $data,
+        "message" => $message,
+    ]);
+
+    exit;
+}
+
+function raceResultValidType($value)
+{
+    return is_string($value)
+        && $value !== ""
+        && preg_match("/^[A-Za-z0-9_-]+$/", $value);
+}
+
+function raceResultValidRaceType($value)
+{
+    return is_string($value)
+        && $value !== ""
+        && preg_match("/^[A-Za-z0-9_-]+$/", $value);
+}
+
+// --------------------------------------------------
+// EXISTING S3 HTML READER
+// Same flow as Handicaps / Acceptance / Declarations / Race Card
+// --------------------------------------------------
+
+function raceResultS3Key($fileUrl)
+{
+    $fileUrl = trim((string) $fileUrl);
+
+    if ($fileUrl === "") {
+        return "";
+    }
+
+    if (preg_match("/^https?:\/\//i", $fileUrl)) {
+        $path = parse_url($fileUrl, PHP_URL_PATH);
+        $fileUrl = ($path !== null) ? $path : "";
+    }
+
+    return ltrim(rawurldecode($fileUrl), "/");
+}
+
+function getS3BucketGetApiUrl()
+{
+    if (
+        defined("S3_BUCKET_GET_API_URL") &&
+        S3_BUCKET_GET_API_URL !== ""
+    ) {
+        return rtrim(S3_BUCKET_GET_API_URL, "/");
+    }
+
+    $scheme = "https";
+
+    if (
+        isset($_SERVER["HTTPS"]) &&
+        $_SERVER["HTTPS"] !== "off"
+    ) {
+        $scheme = "https";
+    } elseif (
+        isset($_SERVER["REQUEST_SCHEME"]) &&
+        $_SERVER["REQUEST_SCHEME"] !== ""
+    ) {
+        $scheme = $_SERVER["REQUEST_SCHEME"];
+    }
+
+    $host = $_SERVER["HTTP_HOST"] ?? "";
+
+    if ($host === "") {
+        return "";
+    }
+
+    $scriptDir = dirname($_SERVER["SCRIPT_NAME"] ?? "");
+
+    if ($scriptDir === "." || $scriptDir === "/") {
+        $scriptDir = "";
+    }
+
+    return $scheme . "://" . $host . $scriptDir . "/s3_set_url.php";
+}
+
+function readHtmlFromS3BucketApi($fileUrl)
+{
+    $s3Key = raceResultS3Key($fileUrl);
+
+    if (
+        $s3Key === "" ||
+        strpos($s3Key, "run_races/") !== 0 ||
+        strtolower(pathinfo($s3Key, PATHINFO_EXTENSION)) !== "html"
+    ) {
+        throw new Exception(
+            "Invalid race result S3 file key"
+        );
+    }
+
+    $helperUrl = getS3BucketGetApiUrl();
+
+    if ($helperUrl === "") {
+        throw new Exception(
+            "S3 HTML helper URL is not configured"
+        );
+    }
+
+    $requestUrl =
+        $helperUrl .
+        "?key=" .
+        rawurlencode($s3Key);
+
+    $ch = curl_init($requestUrl);
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+    curl_setopt(
+        $ch,
+        CURLOPT_USERAGENT,
+        "RWITC Race Result S3 Reader"
+    );
+
+    $content = curl_exec($ch);
+
+    if ($content === false) {
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        throw new Exception(
+            "S3 HTML helper cURL failed: " . $curlError
+        );
+    }
+
+    $httpCode = curl_getinfo(
+        $ch,
+        CURLINFO_HTTP_CODE
+    );
+
+    curl_close($ch);
+
+    if (
+        $httpCode < 200 ||
+        $httpCode >= 300
+    ) {
+        throw new Exception(
+            "S3 HTML helper returned HTTP " .
+            $httpCode
+        );
+    }
+
+    if (
+        $content === "" ||
+        trim((string) $content) === ""
+    ) {
+        throw new Exception(
+            "S3 HTML helper returned empty content"
+        );
+    }
+
+    return $content;
+}
+
+function raceResultInjectCss($html)
+{
+    $style = <<<HTML
+<style>
+    * { box-sizing: border-box; }
+    html, body { overflow-x: hidden !important; width: 100% !important; }
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 12px;
+    }
+    table {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-collapse: collapse;
+    }
+    td, th {
+        word-break: break-word;
+        padding: 10px 12px !important;
+        border: 1px solid #cccccc;
+    }
+    th {
+        color: #000 !important;
+        font-weight: 700;
+        text-align: center;
+        background: #fff;
+    }
+    td {
+        color: #222 !important;
+        background: #fff;
+    }
+    span, a {
+        text-decoration: none;
+        color: #333333;
+    }
+    .download {
+        display: none !important;
+    }
+</style>
+HTML;
+
+    if (preg_match("/<head\\b[^>]*>/i", $html)) {
+        return preg_replace(
+            "/(<head\\b[^>]*>)/i",
+            "$1" . $style,
+            $html,
+            1
+        );
+    }
+
+    return "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">" .
+        $style .
+        "</head><body>" .
+        $html .
+        "</body></html>";
+}
 
 // --------------------------------------------------
 // LOG SETUP
@@ -46,7 +280,198 @@ if (!$security->gate()) {
 }
 
 // --------------------------------------------------
-// ONLY ALLOW GET
+// POST = ERP PUSH TO WEBSITE
+// --------------------------------------------------
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    try {
+
+        $date = isset($_POST["date"]) ? trim($_POST["date"]) : "";
+        $type = isset($_POST["type"]) ? trim($_POST["type"]) : "";
+        $raceType = isset($_POST["race_type"])
+            ? trim($_POST["race_type"])
+            : "";
+
+        $htmlFile = isset($_POST["html_file"])
+            ? trim($_POST["html_file"])
+            : "";
+
+        $fileUrl = isset($_POST["file_url"])
+            ? trim($_POST["file_url"])
+            : "";
+
+        if (
+            $date === ""
+            || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
+            || strtotime($date) === false
+        ) {
+            raceResultJsonResponse(
+                false,
+                [],
+                "A valid date parameter (YYYY-MM-DD) is required",
+                400
+            );
+        }
+
+        if (!raceResultValidType($type)) {
+            raceResultJsonResponse(
+                false,
+                [],
+                "Invalid type",
+                400
+            );
+        }
+
+        if (!raceResultValidRaceType($raceType)) {
+            raceResultJsonResponse(
+                false,
+                [],
+                "Invalid race_type",
+                400
+            );
+        }
+
+        if (
+            $htmlFile === ""
+            || strpos($htmlFile, "run_races/") !== 0
+            || !preg_match("/\\.html$/i", $htmlFile)
+        ) {
+            raceResultJsonResponse(
+                false,
+                [],
+                "A valid run_races .html file is required",
+                400
+            );
+        }
+
+        // Store the actual S3 URL when available.
+        // If the uploader did not return a URL, store the S3 key.
+        $storedFileUrl = $fileUrl !== ""
+            ? $fileUrl
+            : $htmlFile;
+
+        $sql = "
+            SELECT id
+            FROM run_race_details
+            WHERE `date` = ?
+              AND `type` = ?
+              AND `race_type` = ?
+            ORDER BY id DESC
+            LIMIT 1
+        ";
+
+        $stmt = $conn->prepare($sql);
+
+        if ($stmt === false) {
+            throw new Exception($conn->error);
+        }
+
+        $stmt->bind_param(
+            "sss",
+            $date,
+            $type,
+            $raceType
+        );
+
+        if (!$stmt->execute()) {
+            throw new Exception($conn->error);
+        }
+
+        $result = $stmt->get_result();
+        $existing = $result ? $result->fetch_assoc() : null;
+        $stmt->close();
+
+        if ($existing && isset($existing["id"])) {
+
+            $stmt = $conn->prepare("
+                UPDATE run_race_details
+                SET file_url = ?
+                WHERE id = ?
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param(
+                "si",
+                $storedFileUrl,
+                $existing["id"]
+            );
+
+        } else {
+
+            $stmt = $conn->prepare("
+                INSERT INTO run_race_details
+                    (`date`, `type`, `file_url`, `race_type`)
+                VALUES (?, ?, ?, ?)
+            ");
+
+            if ($stmt === false) {
+                throw new Exception($conn->error);
+            }
+
+            $stmt->bind_param(
+                "ssss",
+                $date,
+                $type,
+                $storedFileUrl,
+                $raceType
+            );
+        }
+
+        if (!$stmt->execute()) {
+            throw new Exception($conn->error);
+        }
+
+        $stmt->close();
+
+        if (is_resource($handle)) {
+            $security->logLine(
+                "RACE_RESULT_PUSH_SUCCESS | date={$date} | type={$type} | race_type={$raceType} | file={$htmlFile}"
+            );
+        }
+
+        raceResultJsonResponse(
+            true,
+            [
+                "date"      => $date,
+                "type"      => $type,
+                "race_type" => $raceType,
+                "html_file" => $htmlFile,
+                "file_url"  => $storedFileUrl,
+            ],
+            "Race result HTML file registered successfully"
+        );
+
+    } catch (Throwable $error) {
+
+        $security->logLine(
+            "RACE_RESULT_PUSH_ERROR | " . $error->getMessage()
+        );
+
+        raceResultJsonResponse(
+            false,
+            [],
+            "Internal server error",
+            500
+        );
+
+    } finally {
+
+        if (isset($conn)) {
+            $conn->close();
+        }
+
+        if (isset($handle) && is_resource($handle)) {
+            fclose($handle);
+        }
+    }
+}
+
+// --------------------------------------------------
+// GET
 // --------------------------------------------------
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
@@ -63,17 +488,32 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
 // VALIDATE INPUT
 // --------------------------------------------------
 
-// NOTE: this page's own cutoff is 2022-10-14 (different from the other
-// legacy pages' cutoffs) - dates after that were rendered from static
-// Race_results_YYYY-MM-DD.html files and are intentionally out of scope.
-
 $date = isset($_GET["date"]) ? trim($_GET["date"]) : "";
 $searaceno = isset($_GET["raceno"]) ? (int) $_GET["raceno"] : 0;
 
-// A season race number can resolve its own date, so date is only
-// required up front when no raceno was given.
+$type = isset($_GET["type"])
+    ? trim($_GET["type"])
+    : "";
+
+/*
+ * The website page historically sends "raceResults".
+ * The registered document type in run_race_details is "race_result".
+ * Keep the database/S3 flow canonical as race_result.
+ */
+if ($type === "raceResults") {
+    $type = "race_result";
+}
+
+$raceType = isset($_GET["race_type"])
+    ? trim($_GET["race_type"])
+    : "";
+
 if ($searaceno <= 0) {
-    if ($date === "" || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) || strtotime($date) === false) {
+    if (
+        $date === ""
+        || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
+        || strtotime($date) === false
+    ) {
         $security->respondError(
             "A valid date parameter (YYYY-MM-DD), or a raceno parameter, is required",
             400
@@ -82,41 +522,188 @@ if ($searaceno <= 0) {
     }
 }
 
-// --------------------------------------------------
-// CACHE KEY
-// --------------------------------------------------
+/*
+ * Resolve race_type dynamically from run_race_details when the frontend
+ * sends the document type but does not send race_type.
+ *
+ * This keeps the document API free of hardcoded race_type defaults.
+ */
+if ($raceType === "" && $type !== "" && $date !== "") {
 
-$cacheKey = "race_results_" . md5($date . "_" . $searaceno);
+    $stmt = $conn->prepare("
+        SELECT race_type
+        FROM run_race_details
+        WHERE `date` = ?
+          AND `type` IN (?, 'race_results')
+          AND race_type IS NOT NULL
+          AND race_type <> ''
+        ORDER BY id DESC
+        LIMIT 1
+    ");
 
-if ($security->serveCache($cacheKey)) {
-    exit;
-}
-
-if ($date > "2022-10-14") {
-
-    /*
-     * POST-CUTOFF RACE RESULTS
-     *
-     * Source priority:
-     *   1. Local run_races/Race_results_<date>.html
-     *   2. run_race_details -> S3
-     *
-     * source:
-     *   LOCAL_RUN_RACES = local file
-     *   DB_S3           = database file_url -> S3
-     */
-
-    $cacheKey = "race_results_html_" . md5($date . "_" . $searaceno);
-
-    if ($security->serveCache($cacheKey)) {
+    if ($stmt === false) {
+        $security->respondError("Unable to resolve race_type", 500);
         exit;
     }
 
+    $stmt->bind_param(
+        "ss",
+        $date,
+        $type
+    );
+
+    if (!$stmt->execute()) {
+        $stmt->close();
+        $security->respondError("Unable to resolve race_type", 500);
+        exit;
+    }
+
+    $result = $stmt->get_result();
+
+    if ($result && ($row = $result->fetch_assoc())) {
+        $raceType = trim((string)($row["race_type"] ?? ""));
+    }
+
+    $stmt->close();
+}
+
+if ($date !== "" && $date > "2022-10-14") {
+
+    if (!raceResultValidType($type)) {
+        $security->respondError("Invalid type", 400);
+        exit;
+    }
+
+    if (!raceResultValidRaceType($raceType)) {
+        $security->respondError("Invalid race_type", 400);
+        exit;
+    }
+} elseif ($type !== "" && !raceResultValidType($type)) {
+
+    $security->respondError("Invalid type", 400);
+    exit;
+}
+
+// --------------------------------------------------
+// POST-CUTOFF RACE RESULTS
+// --------------------------------------------------
+
+if ($date !== "" && $date > "2022-10-14") {
+
+    // --------------------------------------------------
+    // DOWNLOAD / OPEN HTML
+    // --------------------------------------------------
+
+    if (
+        isset($_GET["download"])
+        && $_GET["download"] === "1"
+    ) {
+
+        try {
+
+            $htmlFile = rtrim(
+                RUN_RACES_LOCAL_PATH,
+                "/\\"
+            ) . "/Race_results_" . $date . ".html";
+
+            $htmlContent = false;
+
+            if (is_file($htmlFile)) {
+                $htmlContent = file_get_contents($htmlFile);
+
+                if ($htmlContent === false) {
+                    throw new Exception(
+                        "Unable to read local race result HTML file"
+                    );
+                }
+
+            } else {
+
+                $stmt = $conn->prepare("
+                    SELECT file_url
+                    FROM run_race_details
+                    WHERE `date` = ?
+                      AND `type` IN ('race_result', 'race_results')
+                      AND `race_type` = ?
+                      AND file_url IS NOT NULL
+                      AND file_url <> ''
+                    ORDER BY id DESC
+                    LIMIT 1
+                ");
+
+                if ($stmt === false) {
+                    throw new Exception($conn->error);
+                }
+
+                $stmt->bind_param(
+                    "ss",
+                    $date,
+                    $raceType
+                );
+
+                if (!$stmt->execute()) {
+                    throw new Exception($conn->error);
+                }
+
+                $result = $stmt->get_result();
+
+                if (!$result || $result->num_rows === 0) {
+                    $stmt->close();
+
+                    http_response_code(404);
+                    header("Content-Type: text/plain; charset=UTF-8");
+                    echo "Race result HTML file not found.";
+                    exit;
+                }
+
+                $row = $result->fetch_assoc();
+                $stmt->close();
+
+                $htmlContent =
+                    readHtmlFromS3BucketApi(
+                        $row["file_url"] ?? ""
+                    );
+            }
+
+            $downloadContent = raceResultInjectCss($htmlContent);
+
+            header("Content-Type: text/html; charset=UTF-8");
+            header(
+                'Content-Disposition: inline; filename="Race_results_' .
+                $date .
+                '.html"'
+            );
+
+            echo $downloadContent;
+            exit;
+
+        } catch (Throwable $error) {
+
+            $security->logLine(
+                "RACE_RESULTS_DOWNLOAD_ERROR | " .
+                $error->getMessage()
+            );
+
+            http_response_code(500);
+            header("Content-Type: text/plain; charset=UTF-8");
+            echo "Unable to open race result HTML file.";
+            exit;
+        }
+    }
+
+    // --------------------------------------------------
+    // NORMAL HTML RESPONSE
+    // Same local-first -> DB -> s3_set_url.php flow.
+    // HTML archive mode is intentionally not cached.
+    // --------------------------------------------------
+
     try {
 
-        // 1) Local run_races HTML
-        $htmlFile = rtrim(RUN_RACES_LOCAL_PATH, "/\\")
-            . "/Race_results_" . $date . ".html";
+        // 1) Local HTML first
+        $htmlFile = rtrim(
+            RUN_RACES_LOCAL_PATH,
+            "/\\"
+        ) . "/Race_results_" . $date . ".html";
 
         $htmlContent = false;
         $source = "";
@@ -128,12 +715,12 @@ if ($date > "2022-10-14") {
 
             if ($htmlContent === false) {
                 throw new Exception(
-                    "Unable to read local race results file"
+                    "Unable to read local race result HTML file"
                 );
             }
         }
 
-        // 2) DB -> S3 fallback
+        // 2) DB -> private S3 fallback
         if ($htmlContent === false) {
 
             $source = "DB_S3";
@@ -143,7 +730,7 @@ if ($date > "2022-10-14") {
                 FROM run_race_details
                 WHERE `date` = ?
                   AND `type` IN ('race_result', 'race_results')
-                  AND `race_type` = 'post_race'
+                  AND `race_type` = ?
                   AND file_url IS NOT NULL
                   AND file_url <> ''
                 ORDER BY id DESC
@@ -154,7 +741,11 @@ if ($date > "2022-10-14") {
                 throw new Exception($conn->error);
             }
 
-            $stmt->bind_param("s", $date);
+            $stmt->bind_param(
+                "ss",
+                $date,
+                $raceType
+            );
 
             if (!$stmt->execute()) {
                 throw new Exception($conn->error);
@@ -175,90 +766,45 @@ if ($date > "2022-10-14") {
             }
 
             $row = $result->fetch_assoc();
-            $s3Url = trim((string)($row["file_url"] ?? ""));
-
             $stmt->close();
 
-            if ($s3Url === "") {
-                throw new Exception(
-                    "Race results S3 file URL is empty"
+            $htmlContent =
+                readHtmlFromS3BucketApi(
+                    $row["file_url"] ?? ""
                 );
-            }
-
-            $htmlContent = @file_get_contents($s3Url);
-
-            if ($htmlContent === false) {
-                throw new Exception(
-                    "Unable to read race results file from S3"
-                );
-            }
         }
 
-        // 3) Download link
-        $htmFile = rtrim(RUN_RACES_LOCAL_PATH, "/\\")
-            . "/Race_results_" . $date . ".htm";
-
-        $downloadAvailable = false;
-
-        if (is_file($htmFile)) {
-
-            $downloadAvailable = true;
-
-        } else {
-
-            // If local .htm is missing, confirm migrated DB/S3 record.
-            $stmt = $conn->prepare("
-                SELECT id
-                FROM run_race_details
-                WHERE `date` = ?
-                  AND `type` IN ('race_result', 'race_results')
-                  AND `race_type` = 'pre_race'
-                  AND file_url IS NOT NULL
-                  AND file_url <> ''
-                ORDER BY id DESC
-                LIMIT 1
-            ");
-
-            if ($stmt === false) {
-                throw new Exception($conn->error);
-            }
-
-            $stmt->bind_param("s", $date);
-
-            if (!$stmt->execute()) {
-                throw new Exception($conn->error);
-            }
-
-            $result = $stmt->get_result();
-
-            if ($result && $result->num_rows > 0) {
-                $downloadAvailable = true;
-            }
-
-            $stmt->close();
-        }
-
-        $downloadFile = $downloadAvailable
-            ? RUN_RACES_BASE_URL . "/Race_results_" . $date . ".htm"
+        $downloadFile =
+            defined("RUN_RACES_BASE_URL")
+            ? RUN_RACES_BASE_URL .
+                "/raceResults_post_race_get_api.php?date=" .
+                urlencode($date) .
+                "&type=" .
+                urlencode($type) .
+                "&race_type=" .
+                urlencode($raceType) .
+                "&download=1"
             : null;
 
-        // 4) Final response
         $response = [
             "found"              => true,
             "mode"               => "html",
             "html"               => $htmlContent,
             "date"               => $date,
+            "type"               => $type,
+            "race_type"          => $raceType,
             "source"             => $source,
             "download_file"      => $downloadFile,
-            "download_available" => $downloadAvailable
+            "download_available" => true
         ];
 
-        $security->respondAndCache($cacheKey, $response);
+        $security->respondSuccess($response);
 
     } catch (Throwable $error) {
 
         $security->logLine(
-            "RACE_RESULTS_HTML_READ_ERROR | " . $error->getMessage()
+            "RACE_RESULTS_HTML_READ_ERROR | " .
+            $error->getMessage()
         );
 
         $security->respondError(
@@ -426,6 +972,13 @@ function buildToteStructured($toteInfo)
         "tanala"              => $tanala,
     ];
 }
+
+// --------------------------------------------------
+// CACHE KEY (historical data only)
+// Historical race-result JSON/data is safe to cache per date/type/race_type.
+// HTML archive mode above is deliberately not cached.
+$cacheKey = "race_results_" .
+    md5($date . "_" . $type . "_" . $raceType);
 
 // --------------------------------------------------
 // FETCH DATA

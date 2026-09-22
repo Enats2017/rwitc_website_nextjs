@@ -11,3 +11,5 @@ rwitc_website_api/logs/api_logs.txt
 downloads/
 images/
 staticpages/
+.next/
+_next/
