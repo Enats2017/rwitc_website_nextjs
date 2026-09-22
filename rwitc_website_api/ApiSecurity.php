@@ -266,13 +266,60 @@ class ApiSecurity
      *  3. STANDARD JSON RESPONSES
      * ══════════════════════════════════════════════════════════════════════ */
 
+    public function utf8Clean($data)
+    {
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->utf8Clean($value);
+            }
+            return $data;
+        }
+
+        if (is_string($data)) {
+            $data = str_replace("\0", '', $data);
+            if (!mb_check_encoding($data, 'UTF-8')) {
+                $data = mb_convert_encoding($data, 'UTF-8', 'Windows-1252, ISO-8859-1, UTF-8');
+            }
+            return mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+        }
+
+        return $data;
+    }
+
+    public function safeJsonEncode($payload): string
+    {
+        $flags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+        if (defined('JSON_INVALID_UTF8_SUBSTITUTE')) {
+            $flags |= JSON_INVALID_UTF8_SUBSTITUTE;
+        }
+
+        $json = json_encode($payload, $flags);
+
+        if ($json === false) {
+            $cleaned = $this->utf8Clean($payload);
+            $json = json_encode($cleaned, $flags);
+        }
+
+        if ($json === false) {
+            $json = json_encode([
+                'success' => false,
+                'data'    => null,
+                'error'   => 'JSON encoding error: ' . json_last_error_msg(),
+            ]);
+        }
+
+        return $json;
+    }
+
     public function respondAndCache(string $cacheTag, $data, string $scope = ''): void
     {
-        $json = json_encode([
+        $payload = [
             'success' => true,
-            'data'    => $data,
+            'data'    => $this->utf8Clean($data),
             'error'   => null,
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        ];
+
+        $json = $this->safeJsonEncode($payload);
 
         header('X-Cache: MISS');
         $this->writeCache($cacheTag, $json, $scope);
@@ -281,11 +328,13 @@ class ApiSecurity
 
     public function respondSuccess($data): void
     {
-        echo json_encode([
+        $payload = [
             'success' => true,
-            'data'    => $data,
+            'data'    => $this->utf8Clean($data),
             'error'   => null,
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        ];
+
+        echo $this->safeJsonEncode($payload);
     }
 
     public function respondError(string $message, int $httpCode = 400): void
