@@ -66,8 +66,8 @@ $pageTitle ='Reset Race Data Manager';
 $design = new Design();  
 
 $design->js='
-<script type="text/javascript" src="js/jquery.ui.core.min.js"></script>    
-<script type="text/javascript" src="js/jquery.ui.datepicker.min.js"></script>
+<script type="text/javascript" src="assets/js/jquery.ui.core.min.js"></script>    
+<script type="text/javascript" src="assets/js/jquery.ui.datepicker.min.js"></script>
 <script type="text/javascript">
     function confirmDelete(calendarID) {
         if (confirm ("Are you sure ?")){
@@ -77,7 +77,7 @@ $design->js='
 </script>
 ';
 $design->css ='
-<link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
+<link type="text/css" href="assets/css/jquery.ui.all.css" rel="stylesheet" />    
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style type="text/css">
 #infoWrapper.col-lg-12 {

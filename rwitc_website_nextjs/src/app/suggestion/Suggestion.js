@@ -8,10 +8,9 @@ import { submitSuggestion } from "../../services/suggestionService";
 import "./Suggestion.css";
 
 // Live key (used in production)
-// const RECAPTCHA_SITE_KEY = "6Lcg84giAAAAAI97yR_2PmV6nFxNGfEqtKo-7WMU";
+const RECAPTCHA_SITE_KEY =
+  process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
-// Test key (used in development) — paired with secret key in suggestion_feedback.php
-const RECAPTCHA_SITE_KEY = "6Ldq-IEtAAAAANW8QR0KhjOMeHxdvOoiwLF5kSjy";
 
 export default function Suggestion() {
   const recaptchaRef = useRef(null);

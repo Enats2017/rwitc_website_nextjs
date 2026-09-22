@@ -24,8 +24,6 @@ require_once 'PHPMailer/class.smtp.php';
 // vars) — they were hardcoded in the original file too, this just
 // centralizes them at the top instead of scattering them inline.
 
-// const RECAPTCHA_SECRET_KEY = '6Ld4_qcgAAAAAPvbqUjY5ErbJJT27T-CLke-XtIQ';  // Live key (used in production)
-const RECAPTCHA_SECRET_KEY = '6Ldq-IEtAAAAAF0iWpY7CmTsTpUy8FOFUXFD_wR3';     // Test key (used in development)
  
 const RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify';
 
