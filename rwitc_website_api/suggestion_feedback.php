@@ -46,11 +46,10 @@ if ($recaptcha === '') {
     exit;
 }
 
-// Live key (used in production)
-// $secret_key = '6Ld4_qcgAAAAAPvbqUjY5ErbJJT27T-CLke-XtIQ';
+// Live & local key (used in production)
+$secret_key = RECAPTCHA_SECRET_KEY;
 
-// Test key (used in development) — paired with site key in Suggestion.js
-$secret_key = '6Ldq-IEtAAAAAF0iWpY7CmTsTpUy8FOFUXFD_wR3';
+
 
 $ch = curl_init('https://www.google.com/recaptcha/api/siteverify');
 curl_setopt_array($ch, [

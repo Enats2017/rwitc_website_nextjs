@@ -20,20 +20,27 @@ $userObj = new Users($db);
       $message = $_REQUEST['message'];
       $newmessage = nl2br($message);      
       $users = new Users($db);
-      $userList = $users->getUserListByType($usertype);
+    //   $userList = $users->getUserListByType($usertype);
+    // TESTING ONLY: hardcoded dummy users (DB se list nahi aayegi)
+$userList = array(
+    array('email' => 'rajangupta7790@gmail.com', 'firstname' => 'Rajan', 'lastname' => 'Gupta'),
+    array('email' => 'sonupta99@gmail.com', 'firstname' => 'Sonu', 'lastname' => 'Gupta'),
+    array('email' => 'guptarg4545@gmail.com', 'firstname' => 'Gupta', 'lastname' => 'Gupta'),
+);
       //$from ='web@rwitc.com';
       //$fromName = 'RWITC Mailers';
-      $from = 'edp@rwitc.com';
+    //   $from = 'edp@rwitc.com';
+      $from = 'rajangupta7790@gmail.com';
       $fromName = 'RWITC Mailers';
       $msg = '';
       foreach ($userList as $user) {
-        mailer1($from,$fromName,$user['email'],$user['firstname']." ".$user['lastname'],$subject,$newmessage,'','','');
-        //sleep(1);
-        $msg = "Mail Sent to {$user['email']}<br />";
+        $ret = mailer1($from,$fromName,$user['email'],$user['firstname']." ".$user['lastname'],$subject,$newmessage,'','','');
+        $msg .= htmlspecialchars($user['email'])." : mailer1 returned ".var_export($ret, true)."<br />";
       }
       
   }
-    } else {
+
+} else {
         $msg = "You do not have access to this page.";
       }  
 } else {
@@ -130,7 +137,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
             </div>
 
 <div class="mailer-form-wrap">
-<form method="post" action="turf-console/sendMailers.php?q=send-mail">
+<form method="post" action="sendMailers.php?q=send-mail">
     <div class="form-row">
         <label class="form-label">Select User Type</label>
         <div class="radio-group">

@@ -483,40 +483,74 @@ function detectDevice() {
         return array($mobile,$device);
 }
 
-// function mailer1($from,$fromName='',$to,$toName='',$subject,$body,$cc='',$bcc='',$attachmentStub='') {
+// // function mailer1($from,$fromName='',$to,$toName='',$subject,$body,$cc='',$bcc='',$attachmentStub='') {
+// function mailer1($from,$fromName='',$to='',$toName='',$subject='',$body='',$cc='',$bcc='',$attachmentStub='') {
+//     if (empty($fromName)) {
+//       $fromName = $from;
+//     }
+//     if (empty($toName)) {
+//       $toName = $to;
+//     }
+    
+//     if($attachmentStub != ''){
+//         $http_upload_path = HTTP_ATTACHMENT_DBF.'/';
+//         $destFile_http = $http_upload_path . $attachmentStub;
+//         $attachment_array[] = $destFile_http;
+//     } else {
+//         $attachment_array = array();
+//     }
+    
+//     require('Mailin.php');
+//     $mailin = new Mailin("https://api.sendinblue.com/v2.0","N12OPU6qLfTsxnK7");
+//     $data = array("to" => array($to => $toName),
+//                 "from" => array($from, $fromName),
+//                 "subject" => $subject,
+//                 "html" => html_entity_decode(trim($body)),
+//                 "attachment" => $attachment_array
+//             );
+//     // echo '<pre>';
+//     // print_r($data);
+//     // exit;
+//     $response = $mailin->send_email($data);
+//     if($response['code'] == 'success'){
+//         //$msg = "Mail Sent";
+//         return true;
+//     } else {
+//         return false;
+//         //$msg = "Please try again later";
+//     }
+// }
+
+
+// ...test for ...
+
 function mailer1($from,$fromName='',$to='',$toName='',$subject='',$body='',$cc='',$bcc='',$attachmentStub='') {
-    if (empty($fromName)) {
-      $fromName = $from;
-    }
-    if (empty($toName)) {
-      $toName = $to;
-    }
-    
-    if($attachmentStub != ''){
-        $http_upload_path = HTTP_ATTACHMENT_DBF.'/';
-        $destFile_http = $http_upload_path . $attachmentStub;
-        $attachment_array[] = $destFile_http;
-    } else {
-        $attachment_array = array();
-    }
-    
-    require('Mailin.php');
-    $mailin = new Mailin("https://api.sendinblue.com/v2.0","N12OPU6qLfTsxnK7");
-    $data = array("to" => array($to => $toName),
-                "from" => array($from, $fromName),
-                "subject" => $subject,
-                "html" => html_entity_decode(trim($body)),
-                "attachment" => $attachment_array
-            );
-    // echo '<pre>';
-    // print_r($data);
-    // exit;
-    $response = $mailin->send_email($data);
-    if($response['code'] == 'success'){
-        //$msg = "Mail Sent";
-        return true;
-    } else {
-        return false;
-        //$msg = "Please try again later";
-    }
+    if (empty($fromName)) { $fromName = $from; }
+    if (empty($toName))   { $toName = $to; }
+
+    $payload = array(
+        'sender'      => array('name' => $fromName, 'email' => $from),
+        'to'          => array(array('email' => $to, 'name' => $toName)),
+        'subject'     => $subject,
+        'htmlContent' => html_entity_decode(trim($body))
+    );
+
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'accept: application/json',
+        'content-type: application/json',
+        'api-key: xyz' // Replace with your actual Brevo API key
+    ));
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+    $resp = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    file_put_contents(dirname(__FILE__).'/brevo_debug.txt', date('Y-m-d H:i:s')." | $to | HTTP $code | $resp\n", FILE_APPEND);
+
+    return ($code == 201);
 }
