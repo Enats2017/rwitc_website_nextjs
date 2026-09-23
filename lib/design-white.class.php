@@ -1309,8 +1309,15 @@ MENU;
 
         $usersMenuHtml = '';
         if ($isSuperAdmin) {
+
+            $isUsersPage = ($currentPage === 'users.php');
+            $isUserGroupPage = ($currentPage === 'userGroup.php');
+            $usersDropdownOpenClass = ($isUsersPage || $isUserGroupPage) ? ' open' : '';
+            $usersSubActiveClass = $isUsersPage ? ' active' : '';
+            $userGroupSubActiveClass = $isUserGroupPage ? ' active' : '';
+
             $usersMenuHtml = '
-    <li class="sidebar-user-dropdown" id="navUsers">
+    <li class="sidebar-user-dropdown' . $usersDropdownOpenClass . '" id="navUsers">
 
         <a href="#" onclick="toggleSidebarUsers(event);">
             <i class="fas fa-users"></i>
@@ -1320,15 +1327,15 @@ MENU;
 
         <ul id="sidebarUsersMenu" class="sidebar-submenu">
 
-            <li>
+            <li class="' . trim($usersSubActiveClass) . '">
                 <a href="turf-console/users.php">
                     <i class="fas fa-user"></i>
                     Users
                 </a>
             </li>
 
-            <li>
-                <a href="turf-console/userGroup.php">
+            <li class="' . trim($userGroupSubActiveClass) . '">
+                <a href="turf-console/userGroup.php">   
                     <i class="fas fa-user-group"></i>
                     User Group
                 </a>
@@ -1338,6 +1345,87 @@ MENU;
 
     </li>';
         }
+
+        // -----------------------------------------------------------
+        // NEW: category-wise visibility check
+        // -----------------------------------------------------------
+
+        $userAccessList = (isset($_SESSION['permissions']['access']) && is_array($_SESSION['permissions']['access']))
+            ? $_SESSION['permissions']['access']
+            : array();
+
+        $raceManagementModules = array(
+            'race_history',
+            'rating_change',
+            'dividends',
+            'stewards_report',
+            'race_day_reports',
+            'calendar',
+            'availability_calendar',
+            'trackworkManager',
+            'erp_prerace',
+            'erp_postrace',
+            'reset_horse_weight',
+            'reset_race_data',
+        );
+
+        $socialManagementModules = array(
+            'gallery',
+            'video',
+            'youtube_upload',
+            'bannerManager',
+            'polls',
+            'homepopup',
+        );
+
+        $reportsManagementModules = array(
+            'stewards_report',
+            'race_day_report',
+            'suggestion_feedback',
+        );
+
+        $articlesMailsManagementModules = array(
+            'articles',
+            'send_mailer',
+            'prakash_gosavi',
+            'shiven_surendranath',
+            'mailManager',
+            'chairman_email',
+        );
+
+        $showRaceManagement = $isSuperAdmin || (array_intersect($raceManagementModules, $userAccessList) ? true : false);
+        $showSocialManagement = $isSuperAdmin || (array_intersect($socialManagementModules, $userAccessList) ? true : false);
+        $showReportsManagement = $isSuperAdmin || (array_intersect($reportsManagementModules, $userAccessList) ? true : false);
+        $showArticlesMailsManagement = $isSuperAdmin || (array_intersect($articlesMailsManagementModules, $userAccessList) ? true : false);
+
+        $activeRace = ($currentPage === 'Racemanagement.php') ? ' active' : '';
+        $activeSocial = ($currentPage === 'Socialmanagement.php') ? ' active' : '';
+        $activeReports = ($currentPage === 'Reportsmanagement.php') ? ' active' : '';
+        $activeArticles = ($currentPage === 'Articlesmailsmanagement.php') ? ' active' : '';
+        $activeAllModules = ($currentPage === 'allModules.php') ? ' active' : '';
+        $activeDashboard = ($currentPage === 'dashboard.php') ? ' active' : '';
+
+        $raceManagementMenuHtml = $showRaceManagement
+            ? '<li class="' . trim($activeRace) . '"><a href="turf-console/Racemanagement.php"><i class="fas fa-horse-head"></i> Race Management</a></li>'
+            : '';
+
+        $socialManagementMenuHtml = $showSocialManagement
+            ? '<li class="' . trim($activeSocial) . '"><a href="turf-console/Socialmanagement.php"><i class="fas fa-share-nodes"></i> Social Management</a></li>'
+            : '';
+
+        $reportsManagementMenuHtml = $showReportsManagement
+            ? '<li class="' . trim($activeReports) . '"><a href="turf-console/Reportsmanagement.php"><i class="fas fa-chart-bar"></i> Reports Management</a></li>'
+            : '';
+
+        $articlesMailsManagementMenuHtml = $showArticlesMailsManagement
+            ? '<li class="' . trim($activeArticles) . '"><a href="turf-console/Articlesmailsmanagement.php"><i class="fas fa-newspaper"></i> Articles &amp; Mails Management</a></li>'
+            : '';
+
+    $dashboardMenuHtml = $isSuperAdmin
+        ? '<li class="' . trim($activeDashboard) . '" id="navDashboard">
+                        <a href="turf-console/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>'
+        : '';
 
         echo <<< LEFTPANEL
 
@@ -1379,6 +1467,8 @@ MENU;
         #rightArea .quick-access-list li a i { width: 18px; text-align: center; color: #0f5c33; }
         #rightArea .quick-access-list li a:hover { background: #e6f4ec; }
         #rightArea .quick-access-list li.active a { background: #e6f4ec; color: #0f5c33; font-weight: 600; border-left: 3px solid #0f5c33; }
+        #rightArea .quick-access-list li.active a { background: #e6f4ec; color: #0f5c33; font-weight: 600; border-left: 3px solid #0f5c33; }
+        #rightArea .sidebar-submenu li.active a { background: #e6f4ec; color: #0f5c33; font-weight: 600; }
         #rightArea .logout-btn { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #e2e6e4; color: #2b332f; background: #fff; padding: 9px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; margin-top: 16px; }
         #rightArea .logout-btn:hover { background: #e6f4ec; color: #0f5c33; }
         .share-wrapper:hover #shareDropdown,
@@ -1438,19 +1528,17 @@ function toggleSidebarUsers(event) {
 
             <div class="quick-access-title">QUICK ACCESS</div>
 
-            <ul class="quick-access-list">
-                <li class="active" id="navDashboard">
-                    <a href="turf-console/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-                </li>
-                {$usersMenuHtml}
-                <li id="navAllModules">
-    <a href="turf-console/allModules.php"><i class="fas fa-th-large"></i> All Modules</a>
-</li>
-<li><a href="turf-console/raceManagement.php"><i class="fas fa-horse-head"></i> Race Management</a></li>
-<li><a href="turf-console/socialManagement.php"><i class="fas fa-share-nodes"></i> Social Management</a></li>
-<li><a href="turf-console/reportsManagement.php"><i class="fas fa-chart-bar"></i> Reports Management</a></li>
-<li><a href="turf-console/articlesMailsManagement.php"><i class="fas fa-newspaper"></i> Articles &amp; Mails Management</a></li>
-            </ul>
+                               <ul class="quick-access-list">
+                    {$dashboardMenuHtml}
+                    {$usersMenuHtml}
+                                       <li class="{$activeAllModules}" id="navAllModules">
+                        <a href="turf-console/allModules.php"><i class="fas fa-th-large"></i> All Modules</a>
+                    </li>
+                        {$raceManagementMenuHtml}
+                        {$socialManagementMenuHtml}
+                        {$reportsManagementMenuHtml}
+                        {$articlesMailsManagementMenuHtml}
+                </ul>
 
                         <div class="share-wrapper" onmouseleave="document.getElementById('shareDropdown').classList.remove('show');" style="position: relative; margin-bottom: 12px;">
                 <a href="#" class="logout-btn" onclick="document.getElementById('shareDropdown').classList.toggle('show'); return false;">
@@ -1960,7 +2048,8 @@ BOXES;
 
 
 
-    function rightSponsor() {
+    function rightSponsor()
+    {
         require_once("dbTools.php");
         $db = new dbTool();
         $raceObj = new Racedata($db);
