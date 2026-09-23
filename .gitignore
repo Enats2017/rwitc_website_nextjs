@@ -13,3 +13,4 @@ images/
 staticpages/
 .next/
 _next/
+vendor/

@@ -222,20 +222,25 @@
 .eventPill {
     display: block;
     width: 100%;
-    padding: 5px 10px;
+    padding: 6px 10px;
+    margin: 0;
     border: none;
     border-radius: 8px;
-    color: #ffffff;
+    color: #ffffff !important;
+    background-color: #16a34a;
     font-family: inherit;
     font-size: 12px;
     font-weight: 700;
-    text-decoration: none;
+    text-decoration: none !important;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     transition: 0.2s;
     cursor: pointer;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .eventPill:hover {
@@ -251,73 +256,14 @@
     color: #00843d;
 }
 
-/* ==========================================
-   MOCK RACE RESULT VIEWER
-   (auto-height iframe, same pattern as
-   Handicaps' docArchiveHtml — no fixed
-   height, no nested scrollbar)
-========================================== */
-
-.mockRaceResultViewer {
-    max-width: 1200px;
-    margin: 30px auto 0;
-    background: #ffffff;
-    border: 1px solid #edf1f4;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
-}
-
-.mockRaceResultViewerHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    padding: 18px 22px;
-    background: #00843d;
-    color: #ffffff;
-}
-
-.mockRaceResultViewerHeader h2 {
-    margin: 0 0 3px;
-    color: #ffffff;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.mockRaceResultViewerHeader span {
-    color: #eaf8ef;
-    font-size: 13px;
-}
-
-.closeResultBtn {
-    border: none;
-    background: #ffffff;
-    color: #00843d;
-    padding: 9px 16px;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.closeResultBtn:hover {
-    background: #f1f5f3;
-}
-
-.mockRaceResultError {
-    padding: 30px 20px;
-    text-align: center;
+.raceResultError {
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    background: #fff1f2;
     color: #be123c;
-    font-weight: 700;
-}
-
-/* No fixed/min height here — iframe grows to fit its
-   own content via the onLoad handler in the JS. */
-.mockRaceResultIframe {
-    width: 100%;
-    border: none;
-    display: block;
-    min-height: 200px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 /* ==========================================
@@ -355,25 +301,12 @@
 
     .eventPill {
         font-size: 11px;
-        padding: 4px 8px;
+        padding: 5px 8px;
     }
 
     .raceResultTitle {
         font-size: 21px;
         margin-bottom: 18px;
-    }
-
-    .mockRaceResultViewer {
-        margin-top: 20px;
-        border-radius: 14px;
-    }
-
-    .mockRaceResultViewerHeader {
-        padding: 14px 16px;
-    }
-
-    .mockRaceResultViewerHeader h2 {
-        font-size: 17px;
     }
 }
 
@@ -403,7 +336,7 @@
 
     .eventPill {
         font-size: 10px;
-        padding: 3px 6px;
+        padding: 4px 6px;
         border-radius: 6px;
     }
 
@@ -422,17 +355,88 @@
         width: auto;
         padding: 0 14px;
     }
+}
 
-    .mockRaceResultViewerHeader {
-        align-items: flex-start;
-    }
+/* ==========================================
+   MOCK RACE RESULT — SINGLE DOCUMENT VIEW
+========================================== */
 
-    .mockRaceResultViewerHeader h2 {
-        font-size: 16px;
-    }
+.docBadgeWrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
 
-    .closeResultBtn {
-        padding: 8px 12px;
-        font-size: 12px;
+.docBadge {
+    display: inline-block;
+    padding: 12px 32px;
+    border-radius: 999px;
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.docContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px 30px 34px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+    border: 1px solid #edf1f4;
+}
+
+.docBackBtn {
+    display: inline-block;
+    margin-bottom: 18px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    background: #eef7f0;
+    color: #00843d;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.docBackBtn:hover {
+    background: #d9f0df;
+}
+
+.docStateBox {
+    text-align: center;
+    padding: 60px 20px;
+    color: #4b5563;
+    font-size: 15px;
+}
+
+.docStateError {
+    color: #be123c;
+}
+
+.docLoader {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto 14px;
+    border: 4px solid #d9f0df;
+    border-top-color: #16a34a;
+    border-radius: 50%;
+    animation: docSpin 0.8s linear infinite;
+}
+
+@keyframes docSpin {
+    to {
+        transform: rotate(360deg);
     }
+}
+
+.docArchiveHtml {
+    width: 100%;
+    border: none;
+    min-height: 300px;
+    display: block;
 }

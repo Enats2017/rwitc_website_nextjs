@@ -1,68 +1,121 @@
 "use client";
 
-import { useRef } from "react";
-import { RWITC_UPLOAD_URL } from "../../../services/api";
+import { useEffect, useState } from "react";
+import { SITE_URL } from "../../../services/api";
 import "./HorseRatings.css";
 
-const RATINGS_FILE_URL = `${RWITC_UPLOAD_URL}/static/RATINGS.HTM`;
+const RATINGS_PAGE_URL = `${SITE_URL}/horseRatings.php?content=1`;
 
 export default function HorseRatings() {
-    const iframeRef = useRef(null);
+    const [ratingsHtml, setRatingsHtml] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const handleIframeLoad = () => {
-        try {
-            const iframeDoc =
-                iframeRef.current?.contentDocument ||
-                iframeRef.current?.contentWindow?.document;
+    useEffect(() => {
+        const fetchRatings = async () => {
+            try {
+                setLoading(true);
+                setError("");
 
-            if (!iframeDoc) return;
-    
-const style = iframeDoc.createElement("style");
-style.innerHTML = `
-    html, body {
-        margin: 0;
-        padding: 0;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-    html::-webkit-scrollbar,
-    body::-webkit-scrollbar {
-        display: none;
-        width: 0;
-        height: 0;
-    }
-    table {
-        margin: 0 auto;
-    }
-`;
-iframeDoc.head.appendChild(style);
-        } catch (err) {
-            // cross-origin case: can't inject, silently ignore
-            console.warn("Could not style iframe content:", err);
+                const response = await fetch(RATINGS_PAGE_URL, {
+                    cache: "no-store",
+                });
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to load ratings. Status: ${response.status}`
+                    );
+                }
+
+                const html = await response.text();
+
+                if (!html.trim()) {
+                    throw new Error(
+                        "Ratings content could not be found."
+                    );
+                }
+
+                setRatingsHtml(html);
+            } catch (err) {
+                console.error("Error loading ratings:", err);
+                setError("Unable to load ratings.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRatings();
+    }, []);
+
+    const handleDownload = () => {
+        if (!ratingsHtml) {
+            return;
         }
+
+        const downloadHtml = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Ratings of all horses</title>
+                </head>
+                <body>
+                    ${ratingsHtml}
+                </body>
+            </html>
+        `;
+
+        const blob = new Blob(
+            [downloadHtml],
+            { type: "text/html;charset=utf-8", }
+        );
+
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "RATINGS.HTM";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
     };
 
     return (
         <div className="horseRatingsPage">
             <div className="horseRatingsHeader">
-
-                <a href={RATINGS_FILE_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <button
+                    type="button"
+                    onClick={handleDownload}
                     className="horseRatingsDownloadBtn"
+                    disabled={!ratingsHtml || loading}
                 >
                     Download
-                </a>
+                </button>
             </div>
 
             <div className="horseRatingsContentWrapper">
-                <iframe
-                    ref={iframeRef}
-                    className="horseRatingsFrame"
-                    src={RATINGS_FILE_URL}
-                    title="Ratings"
-                    onLoad={handleIframeLoad}
-                />
+                {loading && (
+                    <div className="horseRatingsLoading">
+                        Loading ratings...
+                    </div>
+                )}
+
+                {!loading && error && (
+                    <div className="horseRatingsError">
+                        {error}
+                    </div>
+                )}
+
+                {!loading && !error && ratingsHtml && (
+                    <iframe
+                        className="horseRatingsFrame"
+                        title="Ratings"
+                        srcDoc={ratingsHtml}
+                    />
+                )}
             </div>
         </div>
     );
