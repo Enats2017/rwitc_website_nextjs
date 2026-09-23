@@ -3,14 +3,26 @@
 /**
  * RWITC MOCK RACE RESULT CALENDAR API
  *
- * Fetch priority:
- * 1. Check local run_races folder first.
- * 2. If the file exists locally, return its normal run_races URL.
- * 3. If it does not exist locally, check run_race_details.
- * 4. For DB/S3 fallback, return this API's open URL, never the S3 URL.
+ * Flow:
+ *   1. Local run_races is checked first.
+ *   2. Local .html/.htm files are returned directly.
+ *   3. If a file is not local, run_race_details is checked.
+ *   4. S3 fallback is read through s3_set_url.php.
+ *   5. S3 URL is never exposed to the browser.
  *
- * open=1&id=112 makes this same API fetch the S3 HTML internally
- * and output it, so the S3 URL remains hidden from the browser.
+ * Multiple Mock Race Results on the same date are returned as
+ * separate calendar events:
+ *
+ *   Mock Race 1
+ *   Mock Race 2
+ *   Mock Race 3
+ *
+ * New files:
+ *   Mock_Race_Result_1_YYYY-MM-DD.html
+ *   Mock_Race_Result_2_YYYY-MM-DD.html
+ *
+ * Legacy file:
+ *   Mock_Race_Result_YYYY-MM-DD.html
  */
 
 header("Content-Type: application/json; charset=UTF-8");
@@ -25,13 +37,17 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 
 require_once __DIR__ . "/config/config.php";
 
+/* ============================================================
+   RESPONSE
+   ============================================================ */
+
 function sendResponse($success, $data = array(), $error = null, $statusCode = 200)
 {
     http_response_code($statusCode);
 
     echo json_encode(
         array(
-            "success" => $success,
+            "success" => (bool)$success,
             "data"    => $data,
             "error"   => $error
         ),
@@ -41,131 +57,557 @@ function sendResponse($success, $data = array(), $error = null, $statusCode = 20
     exit;
 }
 
-if (!isset($conn) || !($conn instanceof mysqli)) {
-    sendResponse(false, array(), "Database connection is not available.", 500);
+/* ============================================================
+   S3 HELPERS
+   ============================================================ */
+
+function mockRaceS3KeyFromUrl($fileUrl)
+{
+    $fileUrl = trim((string)$fileUrl);
+
+    if ($fileUrl === "") {
+        return "";
+    }
+
+    if (preg_match("/^https?:\/\//i", $fileUrl)) {
+        $path = parse_url($fileUrl, PHP_URL_PATH);
+        $fileUrl = ($path !== null) ? $path : "";
+    }
+
+    return ltrim(
+        rawurldecode($fileUrl),
+        "/"
+    );
+}
+
+function getS3SetUrlApi()
+{
+    if (
+        defined("S3_SET_URL_API_URL") &&
+        S3_SET_URL_API_URL !== ""
+    ) {
+        return rtrim(
+            S3_SET_URL_API_URL,
+            "/"
+        );
+    }
+
+    $scheme = "https";
+
+    if (
+        isset($_SERVER["HTTPS"]) &&
+        $_SERVER["HTTPS"] !== "off"
+    ) {
+        $scheme = "https";
+    } elseif (
+        isset($_SERVER["REQUEST_SCHEME"]) &&
+        $_SERVER["REQUEST_SCHEME"] !== ""
+    ) {
+        $scheme = $_SERVER["REQUEST_SCHEME"];
+    }
+
+    $host = $_SERVER["HTTP_HOST"] ?? "";
+
+    if ($host === "") {
+        return "";
+    }
+
+    $scriptDir = dirname(
+        $_SERVER["SCRIPT_NAME"] ?? ""
+    );
+
+    if (
+        $scriptDir === "." ||
+        $scriptDir === "/"
+    ) {
+        $scriptDir = "";
+    }
+
+    return $scheme .
+        "://" .
+        $host .
+        $scriptDir .
+        "/s3_set_url.php";
+}
+
+function readMockRaceHtmlFromS3($fileUrl)
+{
+    $s3Key =
+        mockRaceS3KeyFromUrl(
+            $fileUrl
+        );
+
+    if (
+        $s3Key === "" ||
+        strpos($s3Key, "run_races/") !== 0 ||
+        strtolower(
+            pathinfo(
+                $s3Key,
+                PATHINFO_EXTENSION
+            )
+        ) !== "html"
+    ) {
+        throw new Exception(
+            "Invalid Mock Race Result S3 HTML key."
+        );
+    }
+
+    $helperUrl =
+        getS3SetUrlApi();
+
+    if ($helperUrl === "") {
+        throw new Exception(
+            "S3 HTML helper URL is not configured."
+        );
+    }
+
+    $requestUrl =
+        $helperUrl .
+        "?key=" .
+        rawurlencode(
+            $s3Key
+        );
+
+    $ch =
+        curl_init(
+            $requestUrl
+        );
+
+    if ($ch === false) {
+        throw new Exception(
+            "Unable to initialize S3 HTML helper cURL."
+        );
+    }
+
+    curl_setopt(
+        $ch,
+        CURLOPT_RETURNTRANSFER,
+        true
+    );
+
+    curl_setopt(
+        $ch,
+        CURLOPT_FOLLOWLOCATION,
+        true
+    );
+
+    curl_setopt(
+        $ch,
+        CURLOPT_CONNECTTIMEOUT,
+        10
+    );
+
+    curl_setopt(
+        $ch,
+        CURLOPT_TIMEOUT,
+        30
+    );
+
+    curl_setopt(
+        $ch,
+        CURLOPT_SSL_VERIFYPEER,
+        true
+    );
+
+    curl_setopt(
+        $ch,
+        CURLOPT_SSL_VERIFYHOST,
+        2
+    );
+
+    curl_setopt(
+        $ch,
+        CURLOPT_USERAGENT,
+        "RWITC Mock Race Result S3 Reader"
+    );
+
+    $content =
+        curl_exec($ch);
+
+    if ($content === false) {
+
+        $curlError =
+            curl_error($ch);
+
+        curl_close($ch);
+
+        throw new Exception(
+            "S3 HTML helper cURL failed: " .
+            $curlError
+        );
+    }
+
+    $httpCode =
+        curl_getinfo(
+            $ch,
+            CURLINFO_HTTP_CODE
+        );
+
+    curl_close($ch);
+
+    if (
+        $httpCode < 200 ||
+        $httpCode >= 300
+    ) {
+        throw new Exception(
+            "S3 HTML helper returned HTTP " .
+            $httpCode
+        );
+    }
+
+    if (
+        $content === "" ||
+        trim((string)$content) === ""
+    ) {
+        throw new Exception(
+            "S3 HTML helper returned empty content."
+        );
+    }
+
+    return $content;
+}
+
+/* ============================================================
+   FILENAME HELPERS
+   ============================================================ */
+
+function getMockRaceFilenameInfo($filename)
+{
+    $name =
+        basename(
+            (string)$filename
+        );
+
+    /*
+     * New file:
+     * Mock_Race_Result_1_2026-09-22.html
+     */
+    if (preg_match(
+        '/^Mock_Race_Result_(\d+)_(\d{4}-\d{2}-\d{2})\.html$/i',
+        $name,
+        $matches
+    )) {
+        return array(
+            "sequence" => (int)$matches[1],
+            "date"     => $matches[2]
+        );
+    }
+
+    /*
+     * Legacy file:
+     * Mock_Race_Result_2026-09-22.html
+     */
+    if (preg_match(
+        '/^Mock_Race_Result_(\d{4}-\d{2}-\d{2})\.(html|htm)$/i',
+        $name,
+        $matches
+    )) {
+        return array(
+            "sequence" => null,
+            "date"     => $matches[1]
+        );
+    }
+
+    return null;
+}
+
+function nextMockRaceSequence(array &$usedSequences, $date)
+{
+    if (!isset($usedSequences[$date])) {
+        $usedSequences[$date] = array();
+    }
+
+    $sequence = 1;
+
+    while (
+        isset(
+            $usedSequences[$date][$sequence]
+        )
+    ) {
+        $sequence++;
+    }
+
+    $usedSequences[$date][$sequence] = true;
+
+    return $sequence;
+}
+
+/* ============================================================
+   DATABASE
+   ============================================================ */
+
+if (
+    !isset($conn) ||
+    !($conn instanceof mysqli)
+) {
+    sendResponse(
+        false,
+        array(),
+        "Database connection is not available.",
+        500
+    );
 }
 
 $conn->set_charset("utf8mb4");
 
-
 /* ============================================================
    OPEN MODE
-   ============================================================
-   Example:
-   mock_race_result_calendar_api.php?open=1&id=112
-
-   This same API reads the S3 URL from DB and returns the HTML.
-   The S3 URL is never exposed to the browser.
+   ?open=1&id=<run_race_details.id>
    ============================================================ */
 
-$open = isset($_GET["open"]) ? (int)$_GET["open"] : 0;
+$open =
+    isset($_GET["open"])
+    ? (int)$_GET["open"]
+    : 0;
 
 if ($open === 1) {
 
-    $id = isset($_GET["id"]) ? (int)$_GET["id"] : 0;
+    $id =
+        isset($_GET["id"])
+        ? (int)$_GET["id"]
+        : 0;
 
     if ($id <= 0) {
+
         http_response_code(400);
-        header("Content-Type: text/plain; charset=UTF-8");
+        header(
+            "Content-Type: text/plain; charset=UTF-8"
+        );
+
         echo "Invalid Mock Race Result ID.";
         exit;
     }
 
     $openSql = "
-        SELECT file_url
+        SELECT
+            id,
+            file_url
         FROM run_race_details
         WHERE id = ?
           AND `type` = 'mock_race_result'
-          AND `race_type` = 'post_race'
+          AND `race_type` IN ('post_race', 'result')
         LIMIT 1
     ";
 
-    $openStmt = $conn->prepare($openSql);
+    $openStmt =
+        $conn->prepare(
+            $openSql
+        );
 
     if ($openStmt === false) {
+
         http_response_code(500);
-        header("Content-Type: text/plain; charset=UTF-8");
+        header(
+            "Content-Type: text/plain; charset=UTF-8"
+        );
+
         echo "Unable to prepare database query.";
         exit;
     }
 
-    $openStmt->bind_param("i", $id);
+    $openStmt->bind_param(
+        "i",
+        $id
+    );
 
     if (!$openStmt->execute()) {
+
         $openStmt->close();
+
         http_response_code(500);
-        header("Content-Type: text/plain; charset=UTF-8");
+        header(
+            "Content-Type: text/plain; charset=UTF-8"
+        );
+
         echo "Database query failed.";
         exit;
     }
 
-    $openResult = $openStmt->get_result();
-    $openRow = $openResult->fetch_assoc();
+    $openResult =
+        $openStmt->get_result();
+
+    $openRow =
+        $openResult
+        ? $openResult->fetch_assoc()
+        : null;
+
     $openStmt->close();
 
     if (!$openRow) {
+
         http_response_code(404);
-        header("Content-Type: text/plain; charset=UTF-8");
+        header(
+            "Content-Type: text/plain; charset=UTF-8"
+        );
+
         echo "Mock Race Result not found.";
         exit;
     }
 
-    $s3Url = trim($openRow["file_url"]);
+    $fileUrl =
+        trim(
+            (string)(
+                $openRow["file_url"] ?? ""
+            )
+        );
 
-    if ($s3Url === "") {
+    if ($fileUrl === "") {
+
         http_response_code(404);
-        header("Content-Type: text/plain; charset=UTF-8");
+        header(
+            "Content-Type: text/plain; charset=UTF-8"
+        );
+
         echo "Mock Race Result file URL is empty.";
         exit;
     }
 
-    $context = stream_context_create(
-        array(
-            "http" => array(
-                "method" => "GET",
-                "timeout" => 30,
-                "follow_location" => 1
-            )
-        )
-    );
+    /*
+     * Local first.
+     */
+    $filePath =
+        parse_url(
+            $fileUrl,
+            PHP_URL_PATH
+        );
 
-    $html = @file_get_contents($s3Url, false, $context);
+    $fileName =
+        basename(
+            (string)$filePath
+        );
 
-    if ($html === false) {
-        http_response_code(404);
-        header("Content-Type: text/plain; charset=UTF-8");
-        echo "Unable to load Mock Race Result file from S3.";
-        exit;
+    if ($fileName !== "") {
+
+        $localFile =
+            rtrim(
+                RUN_RACES_LOCAL_PATH,
+                "/\\"
+            ) .
+            DIRECTORY_SEPARATOR .
+            $fileName;
+
+        if (is_file($localFile)) {
+
+            $html =
+                file_get_contents(
+                    $localFile
+                );
+
+            if ($html === false) {
+
+                http_response_code(500);
+                header(
+                    "Content-Type: text/plain; charset=UTF-8"
+                );
+
+                echo "Unable to read local Mock Race Result file.";
+                exit;
+            }
+
+            header(
+                "Content-Type: text/html; charset=UTF-8"
+            );
+
+            header(
+                "Cache-Control: no-store"
+            );
+
+            echo $html;
+            exit;
+        }
     }
 
-    header("Content-Type: text/html; charset=UTF-8");
-    header("Cache-Control: public, max-age=300");
+    /*
+     * S3 fallback through s3_set_url.php.
+     */
+    try {
 
-    echo $html;
-    exit;
+        $html =
+            readMockRaceHtmlFromS3(
+                $fileUrl
+            );
+
+        header(
+            "Content-Type: text/html; charset=UTF-8"
+        );
+
+        header(
+            "Cache-Control: no-store"
+        );
+
+        echo $html;
+        exit;
+
+    } catch (Throwable $error) {
+
+        error_log(
+            "MOCK_RACE_RESULT_OPEN_ERROR | " .
+            $error->getMessage()
+        );
+
+        http_response_code(500);
+        header(
+            "Content-Type: text/plain; charset=UTF-8"
+        );
+
+        echo "Unable to load Mock Race Result file.";
+        exit;
+    }
 }
-
 
 /* ============================================================
    YEAR / MONTH
    ============================================================ */
 
-$year = isset($_GET["year"]) ? trim($_GET["year"]) : "";
-$month = isset($_GET["month"]) ? trim($_GET["month"]) : "";
+$year =
+    isset($_GET["year"])
+    ? trim($_GET["year"])
+    : "";
 
-if ($year !== "" && !preg_match('/^\d{4}$/', $year)) {
-    sendResponse(false, array(), "Invalid year. Expected YYYY.", 400);
+$month =
+    isset($_GET["month"])
+    ? trim($_GET["month"])
+    : "";
+
+if (
+    $year !== "" &&
+    !preg_match(
+        '/^\d{4}$/',
+        $year
+    )
+) {
+    sendResponse(
+        false,
+        array(),
+        "Invalid year. Expected YYYY.",
+        400
+    );
 }
 
 if ($month !== "") {
 
-    if (!preg_match('/^(0?[1-9]|1[0-2])$/', $month)) {
-        sendResponse(false, array(), "Invalid month. Expected 1-12.", 400);
+    if (
+        !preg_match(
+            '/^(0?[1-9]|1[0-2])$/',
+            $month
+        )
+    ) {
+        sendResponse(
+            false,
+            array(),
+            "Invalid month. Expected 1-12.",
+            400
+        );
     }
 
-    $month = str_pad($month, 2, "0", STR_PAD_LEFT);
+    $month =
+        str_pad(
+            $month,
+            2,
+            "0",
+            STR_PAD_LEFT
+        );
 }
-
 
 /* ============================================================
    DATE RANGE
@@ -174,16 +616,26 @@ if ($month !== "") {
 $startDate = "";
 $endDate = "";
 
-if ($year !== "" && $month !== "") {
+if (
+    $year !== "" &&
+    $month !== ""
+) {
 
-    $startDate = $year . "-" . $month . "-01";
+    $startDate =
+        $year .
+        "-" .
+        $month .
+        "-01";
 
-    $endDate = date(
-        "Y-m-d",
-        strtotime($startDate . " +1 month")
-    );
+    $endDate =
+        date(
+            "Y-m-d",
+            strtotime(
+                $startDate .
+                " +1 month"
+            )
+        );
 }
-
 
 /* ============================================================
    API BASE URL
@@ -197,33 +649,52 @@ $scheme =
     ? "https://"
     : "http://";
 
+$host =
+    $_SERVER["HTTP_HOST"] ?? "";
+
 $apiBaseUrl =
     $scheme .
-    $_SERVER["HTTP_HOST"] .
+    $host .
     rtrim(
-        str_replace("\\", "/", dirname($_SERVER["SCRIPT_NAME"])),
+        str_replace(
+            "\\",
+            "/",
+            dirname(
+                $_SERVER["SCRIPT_NAME"] ?? ""
+            )
+        ),
         "/"
     );
 
 $apiOpenBaseUrl =
     $apiBaseUrl .
     "/" .
-    basename($_SERVER["SCRIPT_NAME"]);
-
+    basename(
+        $_SERVER["SCRIPT_NAME"]
+    );
 
 /* ============================================================
-   LOCAL RUN_RACES CONFIG
+   LOCAL RUN_RACES
    ============================================================ */
 
-$localRunRacesPath = rtrim(RUN_RACES_LOCAL_PATH, "/\\");
-$runRacesBaseUrl = rtrim(RUN_RACES_BASE_URL, "/");
+$localRunRacesPath =
+    rtrim(
+        RUN_RACES_LOCAL_PATH,
+        "/\\"
+    );
+
+$runRacesBaseUrl =
+    rtrim(
+        RUN_RACES_BASE_URL,
+        "/"
+    );
 
 $events = array();
 $localFiles = array();
-
+$usedSequences = array();
 
 /* ============================================================
-   STEP 1: CHECK LOCAL RUN_RACES FIRST
+   STEP 1: LOCAL FILES FIRST
    ============================================================ */
 
 if (
@@ -232,13 +703,19 @@ if (
 ) {
 
     $patterns = array(
-        $localRunRacesPath . DIRECTORY_SEPARATOR . "Mock_Race_Result_*.html",
-        $localRunRacesPath . DIRECTORY_SEPARATOR . "Mock_Race_Result_*.htm"
+        $localRunRacesPath .
+            DIRECTORY_SEPARATOR .
+            "Mock_Race_Result_*.html",
+
+        $localRunRacesPath .
+            DIRECTORY_SEPARATOR .
+            "Mock_Race_Result_*.htm"
     );
 
     foreach ($patterns as $pattern) {
 
-        $matchedFiles = glob($pattern);
+        $matchedFiles =
+            glob($pattern);
 
         if ($matchedFiles === false) {
             continue;
@@ -250,17 +727,23 @@ if (
                 continue;
             }
 
-            $fileName = basename($fullPath);
+            $fileName =
+                basename($fullPath);
 
-            if (!preg_match(
-                '/^Mock_Race_Result_(\d{4}-\d{2}-\d{2})\.(html|htm)$/i',
-                $fileName,
-                $matches
-            )) {
+            $fileInfo =
+                getMockRaceFilenameInfo(
+                    $fileName
+                );
+
+            if ($fileInfo === null) {
                 continue;
             }
 
-            $fileDate = $matches[1];
+            $fileDate =
+                $fileInfo["date"];
+
+            $sequence =
+                $fileInfo["sequence"];
 
             if (
                 $year !== "" &&
@@ -274,38 +757,100 @@ if (
             }
 
             /*
-             * Mark this filename as already available locally.
-             * If DB contains the same file, local version wins.
+             * Legacy date-only file should not be shown when new
+             * numbered files already exist for that date.
              */
+            if ($sequence === null) {
+
+                $numberedPattern =
+                    $localRunRacesPath .
+                    DIRECTORY_SEPARATOR .
+                    "Mock_Race_Result_*_" .
+                    $fileDate .
+                    ".html";
+
+                $numberedFiles =
+                    glob(
+                        $numberedPattern
+                    );
+
+                if (
+                    $numberedFiles !== false &&
+                    !empty($numberedFiles)
+                ) {
+                    continue;
+                }
+
+                $sequence =
+                    nextMockRaceSequence(
+                        $usedSequences,
+                        $fileDate
+                    );
+
+            } else {
+
+                if (
+                    !isset(
+                        $usedSequences[$fileDate]
+                    )
+                ) {
+                    $usedSequences[$fileDate] =
+                        array();
+                }
+
+                if (
+                    isset(
+                        $usedSequences[$fileDate][$sequence]
+                    )
+                ) {
+                    continue;
+                }
+
+                $usedSequences[$fileDate][$sequence] =
+                    true;
+            }
+
             $localFiles[$fileName] = true;
 
             $events[] = array(
-                "id" => "local_" . md5($fileName),
+                "id" =>
+                    "local_" .
+                    md5($fileName),
 
-                "title" => "Mock Race Result",
+                "title" =>
+                    "Mock Race " .
+                    $sequence,
 
-                "start" => $fileDate,
+                "start" =>
+                    $fileDate,
 
                 "url" =>
                     $runRacesBaseUrl .
                     "/" .
-                    rawurlencode($fileName),
+                    rawurlencode(
+                        $fileName
+                    ),
 
                 "raceNo" => null,
 
-                "type" => "mock_race_result",
+                "type" =>
+                    "mock_race_result",
 
-                "raceType" => "post_race",
+                "raceType" =>
+                    "post_race",
 
-                "source" => "run_races"
+                "mockSequence" =>
+                    $sequence,
+
+                "source" =>
+                    "run_races"
             );
         }
     }
 }
 
-
 /* ============================================================
-   STEP 2: CHECK DATABASE FOR FILES NOT FOUND LOCALLY
+   STEP 2: DATABASE / S3 FALLBACK
    ============================================================ */
 
 $sql = "
@@ -317,11 +862,13 @@ $sql = "
         file_url
     FROM run_race_details
     WHERE `type` = ?
-      AND `race_type` = ?
+      AND `race_type` IN (?, ?)
 ";
 
-if ($year !== "" && $month !== "") {
-
+if (
+    $year !== "" &&
+    $month !== ""
+) {
     $sql .= "
         AND `date` >= ?
         AND `date` < ?
@@ -332,21 +879,39 @@ $sql .= "
     ORDER BY `date` ASC, id ASC
 ";
 
-$stmt = $conn->prepare($sql);
+$stmt =
+    $conn->prepare(
+        $sql
+    );
 
 if ($stmt === false) {
-    sendResponse(false, array(), "Unable to prepare database query.", 500);
+    sendResponse(
+        false,
+        array(),
+        "Unable to prepare database query.",
+        500
+    );
 }
 
-$type = "mock_race_result";
-$raceType = "post_race";
+$type =
+    "mock_race_result";
 
-if ($year !== "" && $month !== "") {
+$raceTypePost =
+    "post_race";
+
+$raceTypeLegacy =
+    "result";
+
+if (
+    $year !== "" &&
+    $month !== ""
+) {
 
     $stmt->bind_param(
-        "ssss",
+        "sssss",
         $type,
-        $raceType,
+        $raceTypePost,
+        $raceTypeLegacy,
         $startDate,
         $endDate
     );
@@ -354,82 +919,201 @@ if ($year !== "" && $month !== "") {
 } else {
 
     $stmt->bind_param(
-        "ss",
+        "sss",
         $type,
-        $raceType
+        $raceTypePost,
+        $raceTypeLegacy
     );
 }
 
 if (!$stmt->execute()) {
 
-    $error = $stmt->error;
+    $error =
+        $stmt->error;
+
     $stmt->close();
 
     sendResponse(
         false,
         array(),
-        "Database query failed: " . $error,
+        "Database query failed: " .
+            $error,
         500
     );
 }
 
-$result = $stmt->get_result();
+$result =
+    $stmt->get_result();
 
+/*
+ * Read DB rows first so we can identify dates that already have the
+ * new numbered filename format. This prevents an old legacy
+ * Mock_Race_Result_YYYY-MM-DD.html row from appearing together with
+ * Mock_Race_Result_1_YYYY-MM-DD.html, Mock_Race_Result_2_YYYY-MM-DD.html.
+ */
+$dbRows = array();
+$dbNumberedDates = array();
 
-/* ============================================================
-   DB/S3 FALLBACK
-   ============================================================ */
+while (
+    $row =
+        $result->fetch_assoc()
+) {
+    $dbRows[] = $row;
 
-while ($row = $result->fetch_assoc()) {
-
-    $date = isset($row["date"])
-        ? trim($row["date"])
-        : "";
-
-    $fileUrl = isset($row["file_url"])
+    $dbFileUrl = isset($row["file_url"])
         ? trim($row["file_url"])
         : "";
 
-    if ($date === "" || $fileUrl === "") {
+    if ($dbFileUrl === "") {
         continue;
     }
 
-    $formattedDate = date(
-        "Y-m-d",
-        strtotime($date)
-    );
+    $dbFilePath =
+        parse_url(
+            $dbFileUrl,
+            PHP_URL_PATH
+        );
 
-    /*
-     * Extract only filename from the S3 URL.
-     * The complete S3 URL is NOT returned.
-     */
-    $filePath = parse_url(
-        $fileUrl,
-        PHP_URL_PATH
-    );
+    $dbFileName =
+        basename(
+            (string)$dbFilePath
+        );
 
-    $fileName = basename($filePath);
+    if ($dbFileName === "") {
+        continue;
+    }
+
+    $dbFileInfo =
+        getMockRaceFilenameInfo(
+            $dbFileName
+        );
+
+    if (
+        $dbFileInfo !== null &&
+        $dbFileInfo["sequence"] !== null
+    ) {
+        $dbNumberedDates[
+            $dbFileInfo["date"]
+        ] = true;
+    }
+}
+
+/* ============================================================
+   DB/S3 EVENTS
+   ============================================================ */
+
+foreach ($dbRows as $row) {
+
+    $date =
+        isset($row["date"])
+        ? trim($row["date"])
+        : "";
+
+    $fileUrl =
+        isset($row["file_url"])
+        ? trim($row["file_url"])
+        : "";
+
+    if (
+        $date === "" ||
+        $fileUrl === ""
+    ) {
+        continue;
+    }
+
+    $formattedDate =
+        date(
+            "Y-m-d",
+            strtotime($date)
+        );
+
+    $filePath =
+        parse_url(
+            $fileUrl,
+            PHP_URL_PATH
+        );
+
+    $fileName =
+        basename(
+            (string)$filePath
+        );
 
     if ($fileName === "") {
         continue;
     }
 
     /*
-     * LOCAL FILE HAS PRIORITY.
-     *
-     * If the same filename exists in run_races,
-     * do not return the DB/S3 fallback.
+     * Local file always wins when the same filename exists.
      */
-    if (isset($localFiles[$fileName])) {
+    if (
+        isset(
+            $localFiles[$fileName]
+        )
+    ) {
         continue;
     }
 
+    $fileInfo =
+        getMockRaceFilenameInfo(
+            $fileName
+        );
+
+    $sequence =
+        $fileInfo !== null
+        ? $fileInfo["sequence"]
+        : null;
+
+    if (
+        $fileInfo !== null &&
+        $fileInfo["date"] !== $formattedDate
+    ) {
+        $sequence = null;
+    }
+
     /*
-     * File was not found locally.
-     *
-     * Return THIS API URL instead of S3 URL.
-     * When clicked, open=1 makes this same file
-     * fetch the S3 HTML internally.
+     * When a date has new numbered DB files, ignore the old
+     * date-only DB record for that same date.
+     */
+    if (
+        $sequence === null &&
+        isset($dbNumberedDates[$formattedDate])
+    ) {
+        continue;
+    }
+
+    if ($sequence === null) {
+
+        $sequence =
+            nextMockRaceSequence(
+                $usedSequences,
+                $formattedDate
+            );
+
+    } else {
+
+        if (
+            !isset(
+                $usedSequences[$formattedDate]
+            )
+        ) {
+            $usedSequences[$formattedDate] =
+                array();
+        }
+
+        if (
+            isset(
+                $usedSequences[$formattedDate][$sequence]
+            )
+        ) {
+            continue;
+        }
+
+        $usedSequences[$formattedDate][$sequence] =
+            true;
+    }
+
+    /*
+     * Hide S3 URL from the frontend.
      */
     $hiddenS3Url =
         $apiOpenBaseUrl .
@@ -437,42 +1121,69 @@ while ($row = $result->fetch_assoc()) {
         (int)$row["id"];
 
     $events[] = array(
-        "id" => (int)$row["id"],
+        "id" =>
+            (int)$row["id"],
 
-        "title" => "Mock Race Result",
+        "title" =>
+            "Mock Race " .
+            $sequence,
 
-        "start" => $formattedDate,
+        "start" =>
+            $formattedDate,
 
-        "url" => $hiddenS3Url,
+        "url" =>
+            $hiddenS3Url,
 
         "raceNo" => null,
 
-        "type" => $row["type"],
+        "type" =>
+            "mock_race_result",
 
-        "raceType" => $row["race_type"],
+        "raceType" =>
+            "post_race",
 
-        "source" => "run_race_details"
+        "mockSequence" =>
+            $sequence,
+
+        "source" =>
+            "run_race_details"
     );
 }
 
 $stmt->close();
 
-
 /* ============================================================
-   SORT EVENTS BY DATE
+   SORT
    ============================================================ */
 
 usort(
     $events,
     function ($a, $b) {
 
-        $dateCompare = strcmp(
-            $a["start"],
-            $b["start"]
-        );
+        $dateCompare =
+            strcmp(
+                $a["start"],
+                $b["start"]
+            );
 
         if ($dateCompare !== 0) {
             return $dateCompare;
+        }
+
+        $sequenceA =
+            (int)(
+                $a["mockSequence"] ??
+                0
+            );
+
+        $sequenceB =
+            (int)(
+                $b["mockSequence"] ??
+                0
+            );
+
+        if ($sequenceA !== $sequenceB) {
+            return $sequenceA <=> $sequenceB;
         }
 
         return strcmp(
@@ -481,7 +1192,6 @@ usort(
         );
     }
 );
-
 
 /* ============================================================
    RESPONSE

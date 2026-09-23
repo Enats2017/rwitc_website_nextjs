@@ -1,118 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FaChevronLeft, FaChevronRight, FaCalendarAlt } from "react-icons/fa";
-import { getMockRaceResults } from "../../../services/mockRaceResultService";
 import { API_URL } from "../../../services/api";
 import "./MockRaceResult.css";
-
-const MOCK_RACE_RESULT_STYLES = `
-<style>
-html,
-body {
-    margin: 0;
-    padding: 0;
-    background: #ffffff;
-    color: #333333;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 14px;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    padding: 20px;
-    overflow-x: auto;
-}
-
-a {
-    color: #00843d;
-    text-decoration: none;
-}
-
-img {
-    max-width: 100%;
-    height: auto;
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-th {
-    color: #ffffff !important;
-    background: #11a14e !important;
-    border: 1px solid #bcbec0 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    text-align: center !important;
-    padding: 8px !important;
-}
-
-td {
-    color: #333333 !important;
-    border: 1px solid #dee2e6 !important;
-    padding: 7px !important;
-    font-weight: 600;
-    vertical-align: middle;
-}
-
-tr:nth-child(even) td {
-    background: #f8faf9;
-}
-
-h1,
-h2,
-h3 {
-    color: #00843d;
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.pageHeading {
-    text-align: center;
-}
-
-.download {
-    display: none !important;
-}
-
-.racehead {
-    background: #11a14e !important;
-    color: #ffffff !important;
-    padding: 8px !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
-}
-
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-
-    table {
-        min-width: 700px;
-    }
-
-    th {
-        font-size: 12px !important;
-        padding: 6px !important;
-    }
-
-    td {
-        font-size: 11px !important;
-        padding: 5px !important;
-    }
-
-    .racehead {
-        font-size: 12px !important;
-    }
-}
-</style>
-`;
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -120,6 +12,238 @@ const COLOR_PALETTE = [
     "#16a34a", "#2563eb", "#db2777", "#d97706",
     "#7c3aed", "#0891b2", "#dc2626", "#65a30d",
 ];
+
+/*
+ * Styles injected into the single Mock Race Result document view.
+ * Rendered inside a sandboxed iframe (srcDoc) so these styles stay
+ * isolated and can never clash with the app's own global CSS —
+ * exactly like Handicaps' ARCHIVE_STYLES block.
+ */
+const MOCK_RESULT_DOCUMENT_STYLES = `
+<style>
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+        color: #222222;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        padding: 20px;
+        overflow-x: auto;
+    }
+
+    a {
+        color: #00843d;
+        text-decoration: none;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    #leftArea {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .pageHeader {
+        width: 100%;
+    }
+
+    .pageHeading {
+        text-align: center;
+    }
+
+    .subHeading {
+        color: #111111;
+        font-weight: 700;
+        text-align: center;
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 5px 0;
+    }
+
+    .pageHeading h3,
+    h1,
+    h2,
+    h3 {
+        color: #00843d;
+        margin: 10px 0;
+    }
+
+    .pageHeading h3 {
+        font-size: 22px;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .download {
+        display: none !important;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .contentTable {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 12px auto 0;
+        border-collapse: collapse !important;
+    }
+
+    .contentTable th {
+        background: #11a14e !important;
+        color: #ffffff !important;
+        border: 1px solid #bcbec0 !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        padding: 8px !important;
+        vertical-align: middle !important;
+    }
+
+    .contentTable td {
+        background: #ffffff !important;
+        color: #333333 !important;
+        border: 1px solid #dee2e6 !important;
+        padding: 8px !important;
+        font-weight: 600;
+        vertical-align: middle !important;
+    }
+
+    .contentTable tr:nth-child(even) td {
+        background: #f8faf9 !important;
+    }
+
+    .contentTable .darkGrey {
+        background: #eaf5ed !important;
+        color: #222222 !important;
+        font-weight: 700 !important;
+    }
+
+    .contentTable .alignLeft {
+        text-align: left !important;
+    }
+
+    .contentTable .racehead,
+    .racehead {
+        background: #11a14e !important;
+        color: #ffffff !important;
+        padding: 8px !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+    }
+
+    .contentTable span {
+        line-height: 1.45;
+    }
+
+    .clearfix::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    @media (max-width: 768px) {
+        body {
+            padding: 10px;
+        }
+
+        #leftArea {
+            min-width: 700px;
+        }
+
+        .contentTable {
+            min-width: 700px !important;
+        }
+
+        .contentTable th {
+            font-size: 12px !important;
+            padding: 6px !important;
+        }
+
+        .contentTable td {
+            font-size: 11px !important;
+            padding: 6px !important;
+        }
+
+        .subHeading {
+            font-size: 12px;
+        }
+
+        .pageHeading h3 {
+            font-size: 18px;
+        }
+    }
+</style>
+`;
+
+/*
+ * Builds the URL used to actually fetch one Mock Race Result's HTML.
+ *
+ *  - DB/S3 sourced events: rebuild the fetch URL from our own,
+ *    already-correct API_URL constant + id, instead of trusting the
+ *    absolute URL the PHP API generated (which can end up as
+ *    http:// on some proxy setups and get blocked as Mixed Content).
+ *  - Local-file sourced events: use the URL the API gave us, but
+ *    force it to https:// as a safety net.
+ */
+function buildMockDetailFetchUrl({ id, src }) {
+    if (id) {
+        return `${API_URL}/mock_race_result_calendar_api.php?open=1&id=${encodeURIComponent(
+            id
+        )}`;
+    }
+
+    if (src) {
+        try {
+            const decoded = decodeURIComponent(src);
+            return decoded.replace(/^http:\/\//i, "https://");
+        } catch (error) {
+            console.error("Mock Race Result: bad src param", error);
+            return "";
+        }
+    }
+
+    return "";
+}
+
+/*
+ * Builds the internal route for a calendar event, mirroring how
+ * Archives.js sends handicaps/declarations/etc. into /race_details.
+ */
+function buildMockHref(event) {
+    const params = new URLSearchParams();
+
+    params.set("type", "mockRaceResults");
+    params.set(
+        "title",
+        event?.title ||
+            (event?.mockSequence
+                ? `Mock Race ${event.mockSequence}`
+                : "Mock Race Result")
+    );
+
+    if (event?.source === "run_race_details" && event?.id) {
+        params.set("id", String(event.id));
+    } else if (event?.url) {
+        params.set("src", encodeURIComponent(event.url));
+    }
+
+    return `/race_details?${params.toString()}`;
+}
 
 function dateKey(date) {
     const y = date.getFullYear();
@@ -158,16 +282,192 @@ function buildMonthMatrix(year, month) {
     return weeks;
 }
 
+/**
+ * Fetch Mock Race Result calendar events directly from the API.
+ */
+async function fetchMockRaceResults(year, month) {
+    const monthNumber = month + 1;
+
+    const response = await fetch(
+        `${API_URL}/mock_race_result_calendar_api.php?year=${year}&month=${monthNumber}`,
+        {
+            method: "GET",
+            cache: "no-store",
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(
+            `Mock Race Result API failed: ${response.status}`
+        );
+    }
+
+    const json = await response.json();
+
+    if (!json.success) {
+        throw new Error(
+            json.error || "Unable to fetch mock race results."
+        );
+    }
+
+    return Array.isArray(json.data) ? json.data : [];
+}
+
+/*
+ * Single Mock Race Result document view.
+ * Fetches one race's HTML and renders it inside a sandboxed iframe —
+ * same technique, same look as Handicaps' archive HTML view.
+ */
+function MockRaceResultDetail({ id, src, title }) {
+    const router = useRouter();
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [html, setHtml] = useState("");
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function loadDetail() {
+            try {
+                setLoading(true);
+                setError("");
+
+                const fetchUrl = buildMockDetailFetchUrl({ id, src });
+
+                if (!fetchUrl) {
+                    throw new Error("Mock Race Result source is missing.");
+                }
+
+                const response = await fetch(fetchUrl, {
+                    method: "GET",
+                    cache: "no-store",
+                    headers: {
+                        Accept: "text/html",
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Unable to load result (${response.status})`
+                    );
+                }
+
+                const rawHtml = await response.text();
+
+                if (!cancelled) {
+                    setHtml(rawHtml);
+                }
+            } catch (err) {
+                console.error("Mock Race Result Detail Error:", err);
+
+                if (!cancelled) {
+                    setError(
+                        err?.message ||
+                            "Unable to load this Mock Race Result."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        loadDetail();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [id, src]);
+
+    return (
+        <section className="raceResultSection docPage">
+            <div className="docBadgeWrap">
+                <span className="docBadge">
+                    {title || "Mock Race Result"}
+                </span>
+            </div>
+
+            <div className="docContainer">
+                <button
+                    type="button"
+                    className="docBackBtn"
+                    onClick={() => router.back()}
+                >
+                    ← Back to calendar
+                </button>
+
+                {loading && (
+                    <div className="docStateBox">
+                        <div className="docLoader" />
+                        <p>Loading result…</p>
+                    </div>
+                )}
+
+                {!loading && error && (
+                    <div className="docStateBox docStateError">
+                        <p>{error}</p>
+                    </div>
+                )}
+
+                {!loading && !error && !html.trim() && (
+                    <div className="docStateBox">
+                        <p>No data found for this result.</p>
+                    </div>
+                )}
+
+                {!loading && !error && html.trim() && (
+                    <iframe
+                        className="docArchiveHtml"
+                        srcDoc={MOCK_RESULT_DOCUMENT_STYLES + html}
+                        title={title || "Mock Race Result"}
+                        sandbox="allow-same-origin"
+                        onLoad={(e) => {
+                            const iframe = e.target;
+                            const doc = iframe.contentWindow?.document;
+                            if (!doc) return;
+
+                            const setHeight = () => {
+                                iframe.style.height =
+                                    doc.documentElement.scrollHeight + "px";
+                            };
+
+                            setHeight();
+                            requestAnimationFrame(setHeight);
+                            setTimeout(setHeight, 100);
+                        }}
+                    />
+                )}
+            </div>
+        </section>
+    );
+}
+
 export default function MockRaceResult() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const detailId = searchParams.get("id");
+    const detailSrc = searchParams.get("src");
+    const detailTitle = searchParams.get("title");
+
+    // Came here via a calendar click → show the single document,
+    // same as Handicaps rendering one date's HTML.
+    if (detailId || detailSrc) {
+        return (
+            <MockRaceResultDetail
+                id={detailId}
+                src={detailSrc}
+                title={detailTitle}
+            />
+        );
+    }
+
+    // Otherwise: the calendar itself.
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
-    // Mock Race Result viewer
-    const [selectedResult, setSelectedResult] = useState(null);
-    const [resultHtml, setResultHtml] = useState("");
-    const [resultLoading, setResultLoading] = useState(false);
-    const [resultError, setResultError] = useState("");
 
     const [cursor, setCursor] = useState(() => {
         const now = new Date();
@@ -175,7 +475,6 @@ export default function MockRaceResult() {
     });
 
     const dateInputRef = useRef(null);
-    const viewerRef = useRef(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -185,7 +484,7 @@ export default function MockRaceResult() {
                 setLoading(true);
                 setError("");
 
-                const data = await getMockRaceResults(
+                const data = await fetchMockRaceResults(
                     cursor.getFullYear(),
                     cursor.getMonth()
                 );
@@ -222,6 +521,10 @@ export default function MockRaceResult() {
         events.forEach((event) => {
             const key = event.start;
 
+            if (!key) {
+                return;
+            }
+
             if (!map[key]) {
                 map[key] = [];
             }
@@ -229,12 +532,34 @@ export default function MockRaceResult() {
             map[key].push(event);
         });
 
+        Object.keys(map).forEach((key) => {
+            map[key].sort((a, b) => {
+                const seqA =
+                    Number.isFinite(Number(a.mockSequence))
+                        ? Number(a.mockSequence)
+                        : Number.MAX_SAFE_INTEGER;
+
+                const seqB =
+                    Number.isFinite(Number(b.mockSequence))
+                        ? Number(b.mockSequence)
+                        : Number.MAX_SAFE_INTEGER;
+
+                if (seqA !== seqB) {
+                    return seqA - seqB;
+                }
+
+                return String(a.id ?? "").localeCompare(
+                    String(b.id ?? "")
+                );
+            });
+        });
+
         return map;
     }, [events]);
 
     const centreColors = useMemo(() => {
         const uniqueTypes = [
-            ...new Set(events.map((event) => event.title)),
+            ...new Set(events.map((event) => event.title).filter(Boolean)),
         ];
 
         const colorMap = {};
@@ -266,35 +591,20 @@ export default function MockRaceResult() {
     function goPrevMonth() {
         setCursor(
             (prev) =>
-                new Date(
-                    prev.getFullYear(),
-                    prev.getMonth() - 1,
-                    1
-                )
+                new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
         );
     }
 
     function goNextMonth() {
         setCursor(
             (prev) =>
-                new Date(
-                    prev.getFullYear(),
-                    prev.getMonth() + 1,
-                    1
-                )
+                new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
         );
     }
 
     function goToday() {
         const now = new Date();
-
-        setCursor(
-            new Date(
-                now.getFullYear(),
-                now.getMonth(),
-                1
-            )
-        );
+        setCursor(new Date(now.getFullYear(), now.getMonth(), 1));
     }
 
     function openDatePicker() {
@@ -317,65 +627,7 @@ export default function MockRaceResult() {
 
         const [year, month] = value.split("-").map(Number);
 
-        setCursor(
-            new Date(
-                year,
-                month - 1,
-                1
-            )
-        );
-    }
-
-    // Open the PHP API response inside the NextJS page.
-    // This keeps the S3 URL out of the browser address bar.
-    async function openMockRaceResult(event) {
-        try {
-            setSelectedResult(event);
-            setResultHtml("");
-            setResultError("");
-            setResultLoading(true);
-
-            const response = await fetch(
-                `${API_URL}/mock_race_result_calendar_api.php?open=1&id=${encodeURIComponent(event.id)}`
-            );
-
-            if (!response.ok) {
-                throw new Error(
-                    `Unable to load Mock Race Result (${response.status})`
-                );
-            }
-
-            const html = await response.text();
-
-            if (!html.trim()) {
-                throw new Error("Mock Race Result file is empty.");
-            }
-
-            setResultHtml(html);
-
-            // Scroll the viewer into view once content is set —
-            // matches the "opens like a document, in-flow" feel.
-            requestAnimationFrame(() => {
-                viewerRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
-            });
-        } catch (err) {
-            console.error("Mock Race Result Load Error:", err);
-
-            setResultError(
-                err?.message || "Unable to load Mock Race Result."
-            );
-        } finally {
-            setResultLoading(false);
-        }
-    }
-
-    function closeMockRaceResult() {
-        setSelectedResult(null);
-        setResultHtml("");
-        setResultError("");
+        setCursor(new Date(year, month - 1, 1));
     }
 
     return (
@@ -390,6 +642,7 @@ export default function MockRaceResult() {
                         <button
                             className="todayBtn"
                             onClick={goToday}
+                            type="button"
                         >
                             Today
                         </button>
@@ -397,6 +650,7 @@ export default function MockRaceResult() {
                         <button
                             className="navBtn"
                             onClick={goPrevMonth}
+                            type="button"
                             aria-label="Previous month"
                         >
                             <FaChevronLeft />
@@ -405,6 +659,7 @@ export default function MockRaceResult() {
                         <button
                             className="navBtn"
                             onClick={goNextMonth}
+                            type="button"
                             aria-label="Next month"
                         >
                             <FaChevronRight />
@@ -414,6 +669,7 @@ export default function MockRaceResult() {
                             <button
                                 className="navBtn jumpBtn"
                                 onClick={openDatePicker}
+                                type="button"
                                 aria-label="Jump to date"
                                 title="Jump to date"
                             >
@@ -439,15 +695,10 @@ export default function MockRaceResult() {
                     <div className="legendRow">
                         {Object.entries(centreColors).map(
                             ([type, color]) => (
-                                <span
-                                    className="legendItem"
-                                    key={type}
-                                >
+                                <span className="legendItem" key={type}>
                                     <span
                                         className="legendDot"
-                                        style={{
-                                            backgroundColor: color,
-                                        }}
+                                        style={{ backgroundColor: color }}
                                     />
                                     {type}
                                 </span>
@@ -463,27 +714,12 @@ export default function MockRaceResult() {
                 ) : (
                     <>
                         {error && (
-                            <div
-                                style={{
-                                    padding: "12px 14px",
-                                    marginBottom: "16px",
-                                    borderRadius: "10px",
-                                    background: "#fff1f2",
-                                    color: "#be123c",
-                                    fontSize: "14px",
-                                    fontWeight: 600,
-                                }}
-                            >
-                                {error}
-                            </div>
+                            <div className="raceResultError">{error}</div>
                         )}
 
                         <div className="weekdayRow">
                             {WEEKDAYS.map((day) => (
-                                <div
-                                    className="weekdayCell"
-                                    key={day}
-                                >
+                                <div className="weekdayCell" key={day}>
                                     {day}
                                 </div>
                             ))}
@@ -491,22 +727,20 @@ export default function MockRaceResult() {
 
                         <div className="calendarGrid">
                             {weeks.map((week, wi) => (
-                                <div
-                                    className="calendarWeek"
-                                    key={wi}
-                                >
+                                <div className="calendarWeek" key={wi}>
                                     {week.map((day, di) => {
                                         const inMonth =
                                             day.getMonth() ===
                                             cursor.getMonth();
 
-                                        const isToday =
-                                            isSameDay(day, today);
+                                        const isToday = isSameDay(
+                                            day,
+                                            today
+                                        );
 
                                         const dayEvents =
-                                            eventsByDate[
-                                                dateKey(day)
-                                            ] || [];
+                                            eventsByDate[dateKey(day)] ||
+                                            [];
 
                                         return (
                                             <div
@@ -527,41 +761,48 @@ export default function MockRaceResult() {
 
                                                 <div className="dayEvents">
                                                     {dayEvents.map(
-                                                        (
-                                                            event,
-                                                            ei
-                                                        ) => (
-                                                            <button
-                                                                key={
-                                                                    event.id ??
-                                                                    ei
-                                                                }
-                                                                type="button"
-                                                                className="eventPill"
-                                                                onClick={() =>
-                                                                    openMockRaceResult(
-                                                                        event
-                                                                    )
-                                                                }
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        centreColors[
-                                                                            event.title
-                                                                        ] ||
-                                                                        "#16a34a",
-                                                                }}
-                                                                title={
-                                                                    event.raceNo
-                                                                        ? `${event.title} — Race ${event.raceNo}`
-                                                                        : event.title
-                                                                }
-                                                            >
-                                                                {event.title}
-                                                                {event.raceNo
-                                                                    ? ` · R${event.raceNo}`
-                                                                    : ""}
-                                                            </button>
-                                                        )
+                                                        (event, ei) => {
+                                                            const eventTitle =
+                                                                event?.title ||
+                                                                (event?.mockSequence
+                                                                    ? `Mock Race ${event.mockSequence}`
+                                                                    : "Mock Race Result");
+
+                                                            return (
+                                                                <button
+                                                                    key={
+                                                                        event.id ??
+                                                                        `${event.start}-${event.mockSequence ?? ei}`
+                                                                    }
+                                                                    type="button"
+                                                                    className="eventPill"
+                                                                    onClick={() =>
+                                                                        router.push(
+                                                                            buildMockHref(
+                                                                                event
+                                                                            )
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            centreColors[
+                                                                                eventTitle
+                                                                            ] ||
+                                                                            "#16a34a",
+                                                                    }}
+                                                                    title={
+                                                                        event?.raceNo
+                                                                            ? `${eventTitle} — Race ${event.raceNo}`
+                                                                            : eventTitle
+                                                                    }
+                                                                >
+                                                                    {eventTitle}
+                                                                    {event?.raceNo
+                                                                        ? ` · R${event.raceNo}`
+                                                                        : ""}
+                                                                </button>
+                                                            );
+                                                        }
                                                     )}
                                                 </div>
                                             </div>
@@ -571,64 +812,6 @@ export default function MockRaceResult() {
                             ))}
                         </div>
                     </>
-                )}
-
-                {selectedResult && (
-                    <div className="mockRaceResultViewer" ref={viewerRef}>
-                        <div className="mockRaceResultViewerHeader">
-                            <div>
-                                <h2>Mock Race Result</h2>
-                                {selectedResult.start && (
-                                    <span>{selectedResult.start}</span>
-                                )}
-                            </div>
-
-                            <button
-                                type="button"
-                                className="closeResultBtn"
-                                onClick={closeMockRaceResult}
-                            >
-                                Close
-                            </button>
-                        </div>
-
-                        {resultLoading ? (
-                            <div className="raceResultLoading">
-                                Loading Mock Race Result...
-                            </div>
-                        ) : resultError ? (
-                            <div className="mockRaceResultError">
-                                {resultError}
-                            </div>
-                        ) : (
-                            <iframe
-                                className="mockRaceResultIframe"
-                                title="Mock Race Result"
-                                srcDoc={
-                                    MOCK_RACE_RESULT_STYLES +
-                                    resultHtml
-                                }
-                                sandbox="allow-same-origin"
-                                onLoad={(e) => {
-                                    const iframe = e.target;
-                                    const doc = iframe.contentWindow?.document;
-                                    if (!doc) return;
-
-                                    const setHeight = () => {
-                                        iframe.style.height =
-                                            doc.documentElement.scrollHeight + "px";
-                                    };
-
-                                    // Measure again after layout/fonts settle,
-                                    // same pattern as Handicaps' archive iframe.
-                                    setHeight();
-                                    requestAnimationFrame(setHeight);
-                                    setTimeout(setHeight, 100);
-                                    setTimeout(setHeight, 400);
-                                }}
-                            />
-                        )}
-                    </div>
                 )}
             </div>
         </section>
