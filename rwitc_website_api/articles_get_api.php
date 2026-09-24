@@ -34,7 +34,7 @@ $security = new ApiSecurity($handle, [
     "cache_ttl"      => 45,
     "cache_dir"      => __DIR__ . "/cache",
     "rate_limit_dir" => __DIR__ . "/rate_limits",
-    "api_tag"        => "race_media_get"
+    "api_tag"        => "articles_get_api"
 ]);
 
 // --------------------------------------------------

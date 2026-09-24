@@ -124,14 +124,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
             <a
                 style="float:left;"
-                href="admin/dashboard.php"
+                href="turf-console/dashboard.php"
             >
                 Dashboard
             </a>
 
             <a
                 style="float:left; margin-left:5px;"
-                href="admin/adminlogin.php?q=logout"
+                href="turf-console/index.php?q=logout"
             >
                 Logout
             </a>
@@ -172,7 +172,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/articlesManager.php"
+                        href="turf-console/articlesManager.php"
                     >
 
                         <span class="card-icon">
@@ -196,7 +196,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/csrArticlesManager.php"
+                        href="turf-console/csrArticlesManager.php"
                     >
 
                         <span class="card-icon">
@@ -220,7 +220,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/pgArticlesManager.php"
+                        href="turf-console/pgArticlesManager.php"
                     >
 
                         <span class="card-icon">
@@ -244,7 +244,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/ssArticlesManager.php"
+                        href="turf-console/ssArticlesManager.php"
                     >
 
                         <span class="card-icon">
@@ -268,7 +268,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/sendMailers.php"
+                        href="turf-console/sendMailers.php"
                     >
 
                         <span class="card-icon">
@@ -292,7 +292,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/mailManager.php"
+                        href="turf-console/mailManager.php"
                     >
 
                         <span class="card-icon">
@@ -316,7 +316,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/workingManager.php"
+                        href="turf-console/workingManager.php"
                     >
 
                         <span class="card-icon">
@@ -353,7 +353,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/email_to_chairman_list.php"
+                        href="turf-console/email_to_chairman_list.php"
                     >
 
                         <span class="card-icon">
