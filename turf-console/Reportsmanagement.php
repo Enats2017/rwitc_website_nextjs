@@ -124,14 +124,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
             <a
                 style="float:left;"
-                href="admin/dashboard.php"
+                href="turf-console/dashboard.php"
             >
                 Dashboard
             </a>
 
             <a
                 style="float:left; margin-left:5px;"
-                href="admin/adminlogin.php?q=logout"
+                href="turf-console/index.php?q=logout"
             >
                 Logout
             </a>
@@ -172,7 +172,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/manageAdmin.php"
+                        href="turf-console/manageAdmin.php"
                     >
 
                         <span class="card-icon">
@@ -197,7 +197,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/stewardsReportManager.php"
+                        href="turf-console/stewardsReportManager.php"
                     >
 
                         <span class="card-icon">
@@ -221,7 +221,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/racedayReportsManager.php"
+                        href="turf-console/racedayReportsManager.php"
                     >
 
                         <span class="card-icon">
@@ -245,7 +245,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/configManager.php"
+                        href="turf-console/configManager.php"
                     >
 
                         <span class="card-icon">
@@ -282,7 +282,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/suggestion_feedback_list.php"
+                        href="turf-console/suggestion_feedback_list.php"
                     >
 
                         <span class="card-icon">

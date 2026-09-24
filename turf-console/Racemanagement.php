@@ -124,14 +124,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
             <a
                 style="float:left;"
-                href="admin/dashboard.php"
+                href="turf-console/dashboard.php"
             >
                 Dashboard
             </a>
 
             <a
                 style="float:left; margin-left:5px;"
-                href="admin/adminlogin.php?q=logout"
+                href="turf-console/index.php?q=logout"
             >
                 Logout
             </a>
@@ -172,7 +172,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/raceHistoryManager.php"
+                        href="turf-console/raceHistoryManager.php"
                     >
 
                         <span class="card-icon">
@@ -196,7 +196,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/ratingsChangeManager.php"
+                        href="turf-console/ratingsChangeManager.php"
                     >
 
                         <span class="card-icon">
@@ -220,7 +220,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/dividendsManager.php"
+                        href="turf-console/dividendsManager.php"
                     >
 
                         <span class="card-icon">
@@ -245,7 +245,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/calendarManager.php"
+                        href="turf-console/calendarManager.php"
                     >
 
                         <span class="card-icon">
@@ -263,7 +263,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/availibilityManager.php"
+                        href="turf-console/availibilityManager.php"
                     >
 
                         <span class="card-icon">
@@ -287,7 +287,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/horseweightManager.php"
+                        href="turf-console/horseweightManager.php"
                     >
 
                         <span class="card-icon">
@@ -311,7 +311,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/racedataManager.php"
+                        href="turf-console/racedataManager.php"
                     >
 
                         <span class="card-icon">
@@ -348,7 +348,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/erp_prerace.php"
+                        href="turf-console/erp_prerace.php"
                     >
 
                         <span class="card-icon">
@@ -385,7 +385,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/erp_postrace.php"
+                        href="turf-console/erp_postrace.php"
                     >
 
                         <span class="card-icon">
@@ -409,7 +409,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/trackworkManager.php"
+                        href="turf-console/trackworkManager.php"
                     >
 
                         <span class="card-icon">

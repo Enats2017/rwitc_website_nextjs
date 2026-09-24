@@ -124,14 +124,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
             <a
                 style="float:left;"
-                href="admin/dashboard.php"
+                href="turf-console/dashboard.php"
             >
                 Dashboard
             </a>
 
             <a
                 style="float:left; margin-left:5px;"
-                href="admin/adminlogin.php?q=logout"
+                href="turf-console/index.php?q=logout"
             >
                 Logout
             </a>
@@ -171,7 +171,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/galleryManager.php"
+                        href="turf-console/galleryManager.php"
                     >
 
                         <span class="card-icon">
@@ -195,7 +195,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/manageVideos.php"
+                        href="turf-console/manageVideos.php"
                     >
 
                         <span class="card-icon">
@@ -219,7 +219,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/youtube_videos_upload.php"
+                        href="turf-console/youtube_videos_upload.php"
                     >
 
                         <span class="card-icon">
@@ -243,7 +243,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/bannerManager.php"
+                        href="turf-console/bannerManager.php"
                     >
 
                         <span class="card-icon">
@@ -267,7 +267,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/tickerManager.php"
+                        href="turf-console/tickerManager.php"
                     >
 
                         <span class="card-icon">
@@ -291,7 +291,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/sponsorManager.php"
+                        href="turf-console/sponsorManager.php"
                     >
 
                         <span class="card-icon">
@@ -315,7 +315,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/sponsorofthedayManager.php"
+                        href="turf-console/sponsorofthedayManager.php"
                     >
 
                         <span class="card-icon">
@@ -339,7 +339,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/managePolls.php"
+                        href="turf-console/managePolls.php"
                     >
 
                         <span class="card-icon">
@@ -363,7 +363,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/homepopup.php"
+                        href="turf-console/homepopup.php"
                     >
 
                         <span class="card-icon">
@@ -387,7 +387,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="admin/image_upload.php"
+                        href="turf-console/image_upload.php"
                     >
 
                         <span class="card-icon">
