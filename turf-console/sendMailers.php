@@ -13,7 +13,7 @@ $userObj = new Users($db);
  if (isAdminlogin()) {
     if (($_SESSION['role'] == "ADMIN" || ($_SESSION['role'] == "BACK_OFFICE"))) { // check login
  
-        if ($q=="send-mail") {
+if ($q=="send-mail") {
       $usertype = getParameterString('usertype','all',$db,true);   
       $subject = getParameterString('subject','',$db,true);
       //$message = getParameterString('message','',$db,true);
@@ -21,11 +21,10 @@ $userObj = new Users($db);
       $newmessage = nl2br($message);      
       $users = new Users($db);
     //   $userList = $users->getUserListByType($usertype);
-    // TESTING ONLY: hardcoded dummy users (DB se list nahi aayegi)
+    // TESTING ONLY: hardcoded dummy users ()
 $userList = array(
-    array('email' => 'rajangupta7790@gmail.com', 'firstname' => 'Rajan', 'lastname' => 'Gupta'),
-    array('email' => 'sonupta99@gmail.com', 'firstname' => 'Sonu', 'lastname' => 'Gupta'),
-    array('email' => 'guptarg4545@gmail.com', 'firstname' => 'Gupta', 'lastname' => 'Gupta'),
+    array('email' => 'sonupta990@gmail.com', 'firstname' => 'Sonu', 'lastname' => 'Gupta'),
+    array('email' => 'rohanoffice10@gmail.com', 'firstname' => 'Rohan', 'lastname' => 'Singh'),
 );
       //$from ='web@rwitc.com';
       //$fromName = 'RWITC Mailers';
@@ -37,7 +36,17 @@ $userList = array(
         $ret = mailer1($from,$fromName,$user['email'],$user['firstname']." ".$user['lastname'],$subject,$newmessage,'','','');
         $msg .= htmlspecialchars($user['email'])." : mailer1 returned ".var_export($ret, true)."<br />";
       }
-      
+
+      // NEW: store result in session and redirect (Post-Redirect-Get) to avoid resubmission on refresh
+      $_SESSION['mailer_result'] = $msg;
+      header("Location: sendMailers.php?q=mail-sent");
+      exit();
+  }
+
+  // NEW: handle the redirected GET request and show the stored result once
+  if ($q == "mail-sent" && isset($_SESSION['mailer_result'])) {
+      $msg = $_SESSION['mailer_result'];
+      unset($_SESSION['mailer_result']);
   }
 
 } else {
@@ -121,6 +130,12 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
         <div class="message">
             <?php echo $msg; ?>
         </div>
+        
+        <script type="text/javascript">
+            setTimeout(function() {
+                window.location.href = "turf-console/sendMailers.php";
+            }, 1500); 
+        </script>
     <?php } ?>
     <?php if (!empty($secmsg)) {?>
         <div class="message">
@@ -137,7 +152,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
             </div>
 
 <div class="mailer-form-wrap">
-<form method="post" action="sendMailers.php?q=send-mail">
+<form method="post" action="turf-console/sendMailers.php?q=send-mail">
     <div class="form-row">
         <label class="form-label">Select User Type</label>
         <div class="radio-group">
