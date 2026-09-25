@@ -13,27 +13,43 @@ $userObj = new Users($db);
  if (isAdminlogin()) {
     if (($_SESSION['role'] == "ADMIN" || ($_SESSION['role'] == "BACK_OFFICE"))) { // check login
  
-        if ($q=="send-mail") {
+if ($q=="send-mail") {
       $usertype = getParameterString('usertype','all',$db,true);   
       $subject = getParameterString('subject','',$db,true);
       //$message = getParameterString('message','',$db,true);
       $message = $_REQUEST['message'];
       $newmessage = nl2br($message);      
       $users = new Users($db);
-      $userList = $users->getUserListByType($usertype);
+    //   $userList = $users->getUserListByType($usertype);
+    // TESTING ONLY: hardcoded dummy users ()
+$userList = array(
+    array('email' => 'sonupta990@gmail.com', 'firstname' => 'Sonu', 'lastname' => 'Gupta'),
+    array('email' => 'rohanoffice10@gmail.com', 'firstname' => 'Rohan', 'lastname' => 'Singh'),
+);
       //$from ='web@rwitc.com';
       //$fromName = 'RWITC Mailers';
-      $from = 'edp@rwitc.com';
+    //   $from = 'edp@rwitc.com';
+      $from = 'rajangupta7790@gmail.com';
       $fromName = 'RWITC Mailers';
       $msg = '';
       foreach ($userList as $user) {
-        mailer1($from,$fromName,$user['email'],$user['firstname']." ".$user['lastname'],$subject,$newmessage,'','','');
-        //sleep(1);
-        $msg = "Mail Sent to {$user['email']}<br />";
+        $ret = mailer1($from,$fromName,$user['email'],$user['firstname']." ".$user['lastname'],$subject,$newmessage,'','','');
+        $msg .= htmlspecialchars($user['email'])." : mailer1 returned ".var_export($ret, true)."<br />";
       }
-      
+
+      // NEW: store result in session and redirect (Post-Redirect-Get) to avoid resubmission on refresh
+      $_SESSION['mailer_result'] = $msg;
+      header("Location: sendMailers.php?q=mail-sent");
+      exit();
   }
-    } else {
+
+  // NEW: handle the redirected GET request and show the stored result once
+  if ($q == "mail-sent" && isset($_SESSION['mailer_result'])) {
+      $msg = $_SESSION['mailer_result'];
+      unset($_SESSION['mailer_result']);
+  }
+
+} else {
         $msg = "You do not have access to this page.";
       }  
 } else {
@@ -114,6 +130,12 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
         <div class="message">
             <?php echo $msg; ?>
         </div>
+        
+        <script type="text/javascript">
+            setTimeout(function() {
+                window.location.href = "turf-console/sendMailers.php";
+            }, 1500); 
+        </script>
     <?php } ?>
     <?php if (!empty($secmsg)) {?>
         <div class="message">

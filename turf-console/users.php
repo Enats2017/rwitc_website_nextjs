@@ -50,12 +50,12 @@ if ($action == 'delete' && isset($_GET['id'])) {
              WHERE id = $id"
         );
 
-        header("Location: turf-console/users.php?msg=deleted");
+        header("Location: users.php?msg=deleted");
         exit;
     } catch (Exception $e) {
 
         header(
-            "Location: turf-console/users.php?msg=error&err=" .
+            "Location: users.php?msg=error&err=" .
                 urlencode($e->getMessage())
         );
 
@@ -89,12 +89,12 @@ if (
                     ")"
             );
 
-            header("Location: turf-console/users.php?msg=bulk_deleted");
+            header("Location: users.php?msg=bulk_deleted");
             exit;
         } catch (Exception $e) {
 
             header(
-                "Location: turf-console/users.php?msg=error&err=" .
+                "Location: users.php?msg=error&err=" .
                     urlencode($e->getMessage())
             );
 
@@ -103,7 +103,7 @@ if (
     } else {
 
         header(
-            "Location: turf-console/users.php?msg=error&err=" .
+            "Location: users.php?msg=error&err=" .
                 urlencode("No admins selected.")
         );
 
@@ -438,7 +438,7 @@ if (
 
 
                         header(
-                            "Location: turf-console/users.php?msg=added"
+                            "Location: users.php?msg=added"
                         );
 
                         exit;
@@ -808,7 +808,7 @@ function buildPageUrl(
 
 
     return
-        'turf-console/users.php?' .
+        'users.php?' .
         http_build_query($params);
 }
 
@@ -1614,7 +1614,7 @@ $design->writeLogoTickerMenu();
 
         <form
             method="post"
-            action="turf-console/users.php"
+            action="users.php"
             id="bulk-form">
 
             <div

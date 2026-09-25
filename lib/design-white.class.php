@@ -1292,6 +1292,74 @@ MENU;
     }
 
 
+    /**
+     * Module key => [label, url, icon]
+     * Names/files dashboard.php se liye gaye hain.
+     */
+    public static function moduleCatalog()
+    {
+        return array(
+            'articles'               => array('Articles Manager',                        'turf-console/articlesManager.php',           'fas fa-file-alt'),
+            'csr_articles'           => array('CSR Articles Manager',                    'turf-console/csrArticlesManager.php',        'fas fa-heart'),
+            'race_history'           => array('Race History Manager',                    'turf-console/raceHistoryManager.php',        'fas fa-horse-head'),
+            'send_mailer'            => array('Send Mailers',                            'turf-console/sendMailers.php',               'fas fa-envelope'),
+            'rating_change'          => array('Ratings Change Manager',                  'turf-console/ratingsChangeManager.php',      'fas fa-chart-bar'),
+            'gallery'                => array('Gallery Manager',                         'turf-console/galleryManager.php',            'fas fa-images'),
+            'video'                  => array('Videos Manager',                          'turf-console/manageVideos.php',              'fas fa-video'),
+            'dividends'              => array('Dividends Manager',                       'turf-console/dividendsManager.php',          'fas fa-chart-line'),
+            'stewards_report'        => array('Stewards Report Manager',                 'turf-console/stewardsReportManager.php',     'fas fa-shield-alt'),
+            'race_day_report'        => array('Race Day Reports Manager',               'turf-console/racedayReportsManager.php',     'fas fa-clipboard-list'),
+            'calendar'               => array('Calendar Manager',                        'turf-console/calendarManager.php',           'fas fa-calendar-alt'),
+            'availability_calendar'  => array('Racecourse Availability Calendar Manager', 'turf-console/availibilityManager.php',       'fas fa-calendar-check'),
+            'prakash_gosavi'         => array('Prakash Gosavi Articles Manager',         'turf-console/pgArticlesManager.php',         'fas fa-pen-nib'),
+            'shiven_surendranath'    => array('Shiven Surendranath Articles Manager',    'turf-console/ssArticlesManager.php',         'fas fa-feather-alt'),
+            'polls'                  => array('Manage Polls',                            'turf-console/managePolls.php',               'fas fa-poll'),
+            'adminusers'             => array('Manage Admins',                           'turf-console/manageUser.php',                'fas fa-users-cog'),
+            'workingManager'         => array('Working Group Upload',                    'turf-console/workingManager.php',            'fas fa-cloud-upload-alt'),
+            'bannerManager'          => array('Banner Manager',                          'turf-console/bannerManager.php',             'fas fa-image'),
+            'tickerManager'          => array('Ticker Manager',                          'turf-console/tickerManager.php',             'fas fa-stream'),
+            'sponsorManager'         => array('Sponsor Manager',                         'turf-console/sponsorManager.php',            'fas fa-handshake'),
+            'sponsorofthedayManager' => array('Sponsor Of the Day Manager',              'turf-console/sponsorofthedayManager.php',    'fas fa-star'),
+            'horseweightManager'     => array('Reset Horse Weight Manager',              'turf-console/horseweightManager.php',        'fas fa-weight'),
+            'racedataManager'        => array('Reset Race Data Manager',                 'turf-console/racedataManager.php',           'fas fa-database'),
+            'configManager'          => array('Config Manager',                          'turf-console/configManager.php',             'fas fa-cogs'),
+            'mailManager'            => array('Draft Mail Manager',                      'turf-console/mailManager.php',               'fas fa-envelope-open-text'),
+            'homepopup'              => array('Home Popup',                              'turf-console/homepopup.php',                 'fas fa-window-restore'),
+            'erp_prerace'            => array('Pre Race Date',                           'turf-console/erp_prerace.php',               'fas fa-calendar-plus'),
+            'erp_postrace'           => array('Post Race Date',                          'turf-console/erp_postrace.php',              'fas fa-calendar-check'),
+            'trackworkManager'       => array('Trackwork Manager',                       'turf-console/trackworkManager.php',          'fas fa-running'),
+            'suggestion_feedback'    => array('Suggestion Feedback',                     'turf-console/suggestion_feedback_list.php',  'fas fa-comments'),
+            'youtube_upload'         => array('YouTube Upload',                          'turf-console/youtube_videos_upload.php',     'fab fa-youtube'),
+            'chairman_email'         => array('Chairman Email List',                     'turf-console/email_to_chairman_list.php',    'fas fa-envelope'),
+            'image_upload'           => array('Image Upload',                            'turf-console/image_upload.php',              'fas fa-cloud-upload-alt'),
+        );
+    }
+
+    /**
+     * Ek admin ki saari groups ka union nikalta hai.
+     * Login ke time $_SESSION['permissions'] set karne ke liye use karo.
+     * modify = access (ab sirf ek hi "Include" checkbox hai)
+     */
+    public static function getAdminPermissions($db, $adminId)
+    {
+        $access = array();
+        $rows = $db->getMultiDimensionalArray(
+            "SELECT ug.permission
+             FROM admin_user_group aug
+             INNER JOIN user_group ug ON ug.user_group_id = aug.user_group_id
+             WHERE aug.admin_id = " . (int)$adminId
+        );
+        if (is_array($rows)) {
+            foreach ($rows as $r) {
+                $perm = @unserialize($r['permission']);
+                if (is_array($perm) && !empty($perm['access']) && is_array($perm['access'])) {
+                    $access = array_merge($access, $perm['access']);
+                }
+            }
+        }
+        $access = array_values(array_unique($access));
+        return array('access' => $access, 'modify' => $access);
+    }
 
     function writeLeftPanel()
     {
@@ -1299,7 +1367,8 @@ MENU;
         $currentPage = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
         $shareUrl = 'https://' . $_SERVER['HTTP_HOST'] . '' . $_SERVER['REQUEST_URI'];
         $shareTitle = 'Royal Western India Turf Club (RWITC)';
-        // Super Admin check - same logic as top User menu
+        $adminId = isset($_SESSION['uid']) ? (int)$_SESSION['uid'] : 0;
+
         $isSuperAdmin = (
             isset($_SESSION['uid']) &&
             (int)$_SESSION['uid'] === 19 &&
@@ -1307,37 +1376,112 @@ MENU;
             strtoupper((string)$_SESSION['role']) === 'ADMIN'
         );
 
+        // ---------------- Users dropdown (Super Admin only) ----------------
         $usersMenuHtml = '';
         if ($isSuperAdmin) {
-            $usersMenuHtml = '
-    <li class="sidebar-user-dropdown" id="navUsers">
+            $isUsersPage = ($currentPage === 'users.php');
+            $isUserGroupPage = ($currentPage === 'userGroup.php');
+            $usersDropdownOpenClass = ($isUsersPage || $isUserGroupPage) ? ' open' : '';
+            $usersSubActiveClass = $isUsersPage ? ' active' : '';
+            $userGroupSubActiveClass = $isUserGroupPage ? ' active' : '';
 
-        <a href="#" onclick="toggleSidebarUsers(event);">
+            $usersMenuHtml = '
+    <li class="sidebar-user-dropdown' . $usersDropdownOpenClass . '" id="navUsers">
+        <a href="#" onclick="toggleSidebarGroup(event, \'navUsers\');">
             <i class="fas fa-users"></i>
             Users
             <i class="fas fa-chevron-down sidebar-user-arrow"></i>
         </a>
-
         <ul id="sidebarUsersMenu" class="sidebar-submenu">
-
-            <li>
-                <a href="turf-console/users.php">
-                    <i class="fas fa-user"></i>
-                    Users
-                </a>
+            <li class="' . trim($usersSubActiveClass) . '">
+                <a href="turf-console/users.php"><i class="fas fa-user"></i> Users</a>
             </li>
-
-            <li>
-                <a href="turf-console/userGroup.php">
-                    <i class="fas fa-user-group"></i>
-                    User Group
-                </a>
+            <li class="' . trim($userGroupSubActiveClass) . '">
+                <a href="turf-console/userGroup.php"><i class="fas fa-user-group"></i> User Group</a>
             </li>
-
         </ul>
-
     </li>';
         }
+
+        // ---------------- User groups as sidebar dropdowns ----------------
+        $sidebarGroupsHtml = '';
+        $sgRows = array();
+        try {
+            require_once("dbTools.php");
+            $sgDb = new dbTool();
+            if ($isSuperAdmin) {
+                $sgRows = $sgDb->getMultiDimensionalArray(
+                    "SELECT user_group_id, name, permission FROM user_group ORDER BY name ASC"
+                );
+            } else {
+                $sgRows = $sgDb->getMultiDimensionalArray(
+                    "SELECT ug.user_group_id, ug.name, ug.permission
+                     FROM user_group ug
+                     INNER JOIN admin_user_group aug ON aug.user_group_id = ug.user_group_id
+                     WHERE aug.admin_id = " . $adminId . "
+                     ORDER BY ug.name ASC"
+                );
+            }
+        } catch (Exception $e) {
+            $sgRows = array();
+        }
+        if (!is_array($sgRows)) {
+            $sgRows = array();
+        }
+
+        $catalog = self::moduleCatalog();
+
+        foreach ($sgRows as $sg) {
+            $perm = @unserialize($sg['permission']);
+            if (!is_array($perm) || empty($perm['access']) || !is_array($perm['access'])) {
+                continue;
+            }
+
+            $itemsHtml = '';
+            $groupIsOpen = false;
+
+            foreach ($perm['access'] as $k) {
+                if (!isset($catalog[$k])) {
+                    continue;
+                }
+                $label = htmlspecialchars($catalog[$k][0]);
+                $url   = htmlspecialchars($catalog[$k][1]);
+                $icon  = $catalog[$k][2];
+                $isActive = (basename(parse_url($catalog[$k][1], PHP_URL_PATH)) === $currentPage);
+                if ($isActive) {
+                    $groupIsOpen = true;
+                }
+                $itemsHtml .= '<li class="' . ($isActive ? 'active' : '') . '"><a href="' . $url . '"><i class="' . $icon . '"></i> ' . $label . '</a></li>';
+            }
+
+            if ($itemsHtml === '') {
+                continue;
+            }
+
+            $gid   = (int)$sg['user_group_id'];
+            $gName = htmlspecialchars($sg['name']);
+            $gIcon = (isset($perm['icon']) && preg_match('/^fa-[a-z0-9-]+$/', (string)$perm['icon'])) ? $perm['icon'] : 'fa-folder-open';
+
+            $sidebarGroupsHtml .= '
+    <li class="sidebar-user-dropdown' . ($groupIsOpen ? ' open' : '') . '" id="navSg' . $gid . '">
+        <a href="#" onclick="toggleSidebarGroup(event, \'navSg' . $gid . '\');">
+            <i class="fas ' . $gIcon . '"></i>
+            ' . $gName . '
+            <i class="fas fa-chevron-down sidebar-user-arrow"></i>
+        </a>
+        <ul class="sidebar-submenu">' . $itemsHtml . '</ul>
+    </li>';
+        }
+
+        // ---------------- Dashboard / All Modules ----------------
+        $activeAllModules = ($currentPage === 'allModules.php') ? ' active' : '';
+        $activeDashboard  = ($currentPage === 'dashboard.php') ? ' active' : '';
+
+        $dashboardMenuHtml = $isSuperAdmin
+            ? '<li class="' . trim($activeDashboard) . '" id="navDashboard">
+                        <a href="turf-console/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>'
+            : '';
 
         echo <<< LEFTPANEL
 
@@ -1379,6 +1523,7 @@ MENU;
         #rightArea .quick-access-list li a i { width: 18px; text-align: center; color: #0f5c33; }
         #rightArea .quick-access-list li a:hover { background: #e6f4ec; }
         #rightArea .quick-access-list li.active a { background: #e6f4ec; color: #0f5c33; font-weight: 600; border-left: 3px solid #0f5c33; }
+        #rightArea .sidebar-submenu li.active a { background: #e6f4ec; color: #0f5c33; font-weight: 600; }
         #rightArea .logout-btn { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #e2e6e4; color: #2b332f; background: #fff; padding: 9px 18px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; margin-top: 16px; }
         #rightArea .logout-btn:hover { background: #e6f4ec; color: #0f5c33; }
         .share-wrapper:hover #shareDropdown,
@@ -1389,11 +1534,11 @@ MENU;
         #rightArea .sidebar-user-dropdown > a { cursor: pointer; }
         #rightArea .sidebar-user-arrow { margin-left: auto; font-size: 11px; transition: transform 0.2s ease; }
         #rightArea .sidebar-user-dropdown.open .sidebar-user-arrow { transform: rotate(180deg); }
-        #rightArea .sidebar-submenu { display: none; list-style: none; margin: 0 0 6px 0; padding: 0 0 0 28px; }
+        #rightArea .sidebar-submenu { display: none; list-style: none; margin: 0 0 6px 0; padding: 0 0 0 20px; }
         #rightArea .sidebar-user-dropdown.open .sidebar-submenu { display: block; }
         #rightArea .sidebar-submenu li { margin: 0; }
-        #rightArea .sidebar-submenu li a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; color: #2b332f; text-decoration: none; font-size: 14px; margin-bottom: 2px; }
-        #rightArea .sidebar-submenu li a i { width: 16px; text-align: center; color: #0f5c33; }
+        #rightArea .sidebar-submenu li a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; color: #2b332f; text-decoration: none; font-size: 14px; margin-bottom: 2px; line-height: 1.3; }
+        #rightArea .sidebar-submenu li a i { width: 16px; text-align: center; color: #0f5c33; flex-shrink: 0; }
         #rightArea .sidebar-submenu li a:hover { background: #e6f4ec; color: #0f5c33; }
 
         @media (max-width: 900px) {
@@ -1402,6 +1547,7 @@ MENU;
             #rightArea .quick-access-list { display: flex; flex-wrap: wrap; gap: 6px; }
             #rightArea .quick-access-list li { flex: 1 1 calc(50% - 6px); min-width: 130px; }
             #rightArea .quick-access-list li a { padding: 8px 10px; font-size: 13px; margin-bottom: 0; background: #f4f7f5; border-radius: 8px; }
+            #rightArea .sidebar-user-dropdown { flex: 1 1 100% !important; }
             #rightArea .logout-btn { margin-top: 10px; padding: 8px 14px; font-size: 13px; }
         }
         @media (max-width: 480px) {
@@ -1410,11 +1556,9 @@ MENU;
         }
         </style>
 <script>
-function toggleSidebarUsers(event) {
+function toggleSidebarGroup(event, id) {
     event.preventDefault();
-
-    const dropdown = document.getElementById('navUsers');
-
+    var dropdown = document.getElementById(id);
     if (dropdown) {
         dropdown.classList.toggle('open');
     }
@@ -1439,20 +1583,15 @@ function toggleSidebarUsers(event) {
             <div class="quick-access-title">QUICK ACCESS</div>
 
             <ul class="quick-access-list">
-                <li class="active" id="navDashboard">
-                    <a href="turf-console/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-                </li>
+                {$dashboardMenuHtml}
                 {$usersMenuHtml}
-                <li id="navAllModules">
-    <a href="turf-console/allModules.php"><i class="fas fa-th-large"></i> All Modules</a>
-</li>
-<li><a href="turf-console/raceManagement.php"><i class="fas fa-horse-head"></i> Race Management</a></li>
-<li><a href="turf-console/socialManagement.php"><i class="fas fa-share-nodes"></i> Social Management</a></li>
-<li><a href="turf-console/reportsManagement.php"><i class="fas fa-chart-bar"></i> Reports Management</a></li>
-<li><a href="turf-console/articlesMailsManagement.php"><i class="fas fa-newspaper"></i> Articles &amp; Mails Management</a></li>
+                <li class="{$activeAllModules}" id="navAllModules">
+                    <a href="turf-console/allModules.php"><i class="fas fa-th-large"></i> All Modules</a>
+                </li>
+                {$sidebarGroupsHtml}
             </ul>
 
-                        <div class="share-wrapper" onmouseleave="document.getElementById('shareDropdown').classList.remove('show');" style="position: relative; margin-bottom: 12px;">
+            <div class="share-wrapper" onmouseleave="document.getElementById('shareDropdown').classList.remove('show');" style="position: relative; margin-bottom: 12px;">
                 <a href="#" class="logout-btn" onclick="document.getElementById('shareDropdown').classList.toggle('show'); return false;">
                     <i class="fas fa-share-alt"></i> &nbsp; Share On
                 </a>
@@ -1960,7 +2099,8 @@ BOXES;
 
 
 
-    function rightSponsor() {
+    function rightSponsor()
+    {
         require_once("dbTools.php");
         $db = new dbTool();
         $raceObj = new Racedata($db);

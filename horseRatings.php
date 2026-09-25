@@ -10,129 +10,67 @@
 
     include_once('bootstrap.php');
     require_once __DIR__ . '/vendor/autoload.php';
-    require_once __DIR__ . '/rwitc_website_api/config/config.php';
+    require_once __DIR__ . '/rwitc_website_api/config/config.php'; // provides $conn (mysqli) + AWS_* constants
 
     use Aws\S3\S3Client;
 
     $pageTitle = 'Ratings of all horses';
 
-    $ratingsContent = '';
-
-    $latestFile = null;
-    $latestDate = null;
-    $latestSource = null;
-    $latestLocalFile = null;
+    $ratingsContent   = '';
+    $prefix           = 'staticpages/ratingschange/';
     $localRatingsPath = __DIR__ . '/staticpages/ratingschange/';
 
-    if (is_dir($localRatingsPath)) {
-        $localFiles = scandir($localRatingsPath);
+    // ------------------------------------------------------------
+    // 1) DB is the source of truth: get the latest row's filename.
+    //    Delete a row in `ratings_change` -> next latest takes over.
+    // ------------------------------------------------------------
+    $latestFilename = null;
 
-        foreach ($localFiles as $localFile) {
-            if ($localFile === '.' || $localFile === '..') {
-                continue;
-            }
+    $dbResult = $conn->query(
+        "SELECT filename FROM ratings_change ORDER BY racedate DESC, id DESC LIMIT 1"
+    );
 
-            $extension = strtolower(pathinfo($localFile, PATHINFO_EXTENSION));
-
-            // Only HTM / HTML files
-            if (!in_array($extension, ['htm', 'html'])) {
-                continue;
-            }
-
-            $localFullPath = $localRatingsPath . $localFile;
-
-            if (!file_exists($localFullPath)) {
-                continue;
-            }
-
-            if (preg_match('/_(\d{4}-\d{2}-\d{2})\.(htm|html)$/i', $localFile, $matches)) {
-                $fileDate = $matches[1];
-            } else {
-                $fileDate = date('Y-m-d', filemtime($localFullPath));
-            }
-
-            if ($latestLocalFile === null || $fileDate > $latestLocalDate) {
-                $latestLocalDate = $fileDate;
-                $latestLocalFile = $localFullPath;
-            }
-
-            if ($latestDate === null || $fileDate > $latestDate) {
-                $latestDate = $fileDate;
-                $latestFile = $localFullPath;
-                $latestSource = 'local';
-            }
-        }
+    if ($dbResult && $row = $dbResult->fetch_assoc()) {
+        $latestFilename = $row['filename'];
     }
 
+    if ($latestFilename) {
 
-    try {
-        $s3Client = new S3Client([
-            'version' => 'latest',
-            'region' => AWS_REGION,
-            'credentials' => [
-                'key' => AWS_ACCESS_KEY_ID,
-                'secret' => AWS_SECRET_ACCESS_KEY,
-            ],
-        ]);
-
-        $prefix = 'staticpages/ratingschange/';
-
-        $result = $s3Client->listObjectsV2([
-            'Bucket' => AWS_BUCKET,
-            'Prefix' => $prefix,
-        ]);
-
-        if (!empty($result['Contents'])) {
-            foreach ($result['Contents'] as $object) {
-                $filename = basename($object['Key']);
-                $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-                // Only HTM / HTML files
-                if (!in_array($extension, ['htm', 'html'])) {
-                    continue;
-                }
-
-                if (preg_match('/_(\d{4}-\d{2}-\d{2})\.(htm|html)$/i', $filename, $matches)) {
-                    $fileDate = $matches[1];
-                } else {
-                    $fileDate = $object['LastModified']->format('Y-m-d');
-                }
-
-                if ($latestDate === null || $fileDate > $latestDate) {
-                    $latestDate = $fileDate;
-                    $latestFile = $prefix . $filename;
-                    $latestSource = 's3';
-                }
-            }
-        }
-
-    } catch (Throwable $e) {
-
-    }
-
-
-    if ($latestSource === 's3') {
+        // 2) Try S3 first for this exact filename.
         try {
-            $result = $s3Client->getObject([
-                'Bucket' => AWS_BUCKET,
-                'Key' => $latestFile,
+            $s3Client = new S3Client([
+                'version' => 'latest',
+                'region' => AWS_REGION,
+                'credentials' => [
+                    'key' => AWS_ACCESS_KEY_ID,
+                    'secret' => AWS_SECRET_ACCESS_KEY,
+                ],
             ]);
 
-            $ratingsContent = (string) $result['Body'];
+            $s3Result = $s3Client->getObject([
+                'Bucket' => AWS_BUCKET,
+                'Key' => $prefix . $latestFilename,
+            ]);
+
+            $ratingsContent = (string) $s3Result['Body'];
+
         } catch (Throwable $e) {
-            if ($latestLocalFile !== null && file_exists($latestLocalFile)) {
+            $ratingsContent = '';
+        }
+
+        // 3) If not on S3 (deleted / not uploaded there), fall back to local folder.
+        if ($ratingsContent === '') {
+            $localFullPath = $localRatingsPath . $latestFilename;
+
+            if (file_exists($localFullPath)) {
                 ob_start();
-                include $latestLocalFile;
+                include $localFullPath;
                 $ratingsContent = ob_get_clean();
-            } else {
-                $ratingsContent = '<p>No ratings file found.</p>';
             }
         }
-    } elseif ($latestSource === 'local') {
-        ob_start();
-        include $latestFile;
-        $ratingsContent = ob_get_clean();
-    } else {
+    }
+
+    if ($ratingsContent === '') {
         $ratingsContent = '<p>No ratings file found.</p>';
     }
 

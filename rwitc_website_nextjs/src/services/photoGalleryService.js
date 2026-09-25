@@ -1,18 +1,13 @@
-import { API_URL, UPLOAD_URL } from "./api";
+import { API_URL, RWITC_UPLOAD_URL } from "./api";
 
-// The PHP API returns image_url as a path relative to the api folder,
-// e.g. "../rwitc_upload/gallery/24-Jul-2026/xyz.jpg"
-// Locally (and on our server) the actual images folder is "uploads",
-// not "rwitc_upload" — so we strip the PHP prefix and prepend our
-// real UPLOAD_URL instead.
 function buildImageUrl(relativePath) {
 
     if (!relativePath) return "";
 
-    // strip the leading "../rwitc_upload/" the PHP script prepends
+    // "../rwitc_upload/gallery/12-Sep-2026/2.jpg" -> "gallery/12-Sep-2026/2.jpg"
     const cleanPath = relativePath.replace(/^\.\.\/rwitc_upload\//, "");
 
-    return `${UPLOAD_URL}/${cleanPath}`;
+    return `${RWITC_UPLOAD_URL}/${cleanPath}`;
 
 }
 

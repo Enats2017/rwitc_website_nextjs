@@ -107,7 +107,6 @@ try {
             )
         )
     );
-
 } catch (Throwable $e) {
 
     error_log(
@@ -258,6 +257,42 @@ function getFileInformation($filename)
         );
     }
 
+    // MONEY LEADER - OWNER
+    // Money Leader keeps the original fixed S3 filename: owner.html
+    if ($name === "owner.html") {
+        return array(
+            "type"      => "money_owner",
+            "race_type" => "post_race"
+        );
+    }
+
+    // MONEY LEADER - JOCKEY
+    // Money Leader keeps the original fixed S3 filename: jockey.html
+    if ($name === "jockey.html") {
+        return array(
+            "type"      => "money_jockey",
+            "race_type" => "post_race"
+        );
+    }
+
+    // MONEY LEADER - HORSE
+    // Money Leader keeps the original fixed S3 filename: horse.html
+    if ($name === "horse.html") {
+        return array(
+            "type"      => "money_horse",
+            "race_type" => "post_race"
+        );
+    }
+
+    // MONEY LEADER - TRAINER
+    // Money Leader keeps the original fixed S3 filename: trainer.html
+    if ($name === "trainer.html") {
+        return array(
+            "type"      => "money_trainer",
+            "race_type" => "post_race"
+        );
+    }
+
     return array(
         "type"      => "other",
         "race_type" => "other"
@@ -279,6 +314,28 @@ function getFileDate($filename)
         )
     ) {
         return $matches[1];
+    }
+
+    // MONEY LEADER uses fixed filenames without a date:
+    // owner.html, jockey.html, horse.html, trainer.html
+    // The sync/delete date is supplied separately in POST["date"].
+    $fixedMoneyLeaderFiles = array(
+        "owner.html",
+        "jockey.html",
+        "horse.html",
+        "trainer.html"
+    );
+
+    if (
+        in_array(
+            strtolower(basename($filename)),
+            $fixedMoneyLeaderFiles,
+            true
+        )
+    ) {
+        return isset($_POST["date"])
+            ? trim($_POST["date"])
+            : null;
     }
 
     return null;
@@ -372,7 +429,6 @@ function s3ObjectExists($s3, $bucket, $key)
         );
 
         return true;
-
     } catch (AwsException $e) {
 
         $statusCode = $e->getStatusCode();
@@ -401,7 +457,6 @@ if ($method === "GET") {
     $action = isset($_GET["action"])
         ? strtolower(trim($_GET["action"]))
         : "check";
-
 } else {
 
     $action = isset($_POST["action"])
@@ -753,8 +808,8 @@ if (
 
 $referenceKey =
     $htmlKey !== null
-        ? $htmlKey
-        : $htmKey;
+    ? $htmlKey
+    : $htmKey;
 
 $referenceFilename =
     basename($referenceKey);
@@ -867,7 +922,6 @@ try {
                 $htmKey
             );
     }
-
 } catch (AwsException $e) {
 
     error_log(
@@ -1162,7 +1216,6 @@ if ($htmlExists) {
 
     $selectedKey =
         $htmlKey;
-
 } else {
 
     $selectedKey =
@@ -1174,24 +1227,55 @@ $selectedUrl =
         AWS_BUCKET,
         AWS_REGION,
         $selectedKey
-);
+    );
 
 
 // ============================================================
 // CHECK EXISTING DATABASE ROW
 // ============================================================
 
-$checkStmt = $conn->prepare(
-    "
-    SELECT id, file_url
-    FROM run_race_details
-    WHERE `date` = ?
-      AND `type` = ?
-      AND `race_type` = ?
-    ORDER BY id ASC
-    LIMIT 1
-    "
-);
+
+/*
+ * Mock Race Result can have multiple files on the same date:
+ *
+ *   Mock_Race_Result_1_YYYY-MM-DD.html
+ *   Mock_Race_Result_2_YYYY-MM-DD.html
+ *   Mock_Race_Result_3_YYYY-MM-DD.html
+ *
+ * For this document, date + type + race_type is not enough to identify
+ * one file. The exact file_url is also used as the row identity.
+ *
+ * All other document types retain the existing date + type + race_type
+ * upsert behaviour.
+ */
+if ($type === "mock_race_result") {
+
+    $checkStmt = $conn->prepare(
+        "
+        SELECT id, file_url
+        FROM run_race_details
+        WHERE `date` = ?
+          AND `type` = ?
+          AND `race_type` = ?
+          AND file_url = ?
+        ORDER BY id ASC
+        LIMIT 1
+        "
+    );
+} else {
+
+    $checkStmt = $conn->prepare(
+        "
+        SELECT id, file_url
+        FROM run_race_details
+        WHERE `date` = ?
+          AND `type` = ?
+          AND `race_type` = ?
+        ORDER BY id ASC
+        LIMIT 1
+        "
+    );
+}
 
 if ($checkStmt === false) {
 
@@ -1203,12 +1287,24 @@ if ($checkStmt === false) {
     );
 }
 
-$checkStmt->bind_param(
-    "sss",
-    $date,
-    $type,
-    $raceType
-);
+if ($type === "mock_race_result") {
+
+    $checkStmt->bind_param(
+        "ssss",
+        $date,
+        $type,
+        $raceType,
+        $selectedUrl
+    );
+} else {
+
+    $checkStmt->bind_param(
+        "sss",
+        $date,
+        $type,
+        $raceType
+    );
+}
 
 if (!$checkStmt->execute()) {
 
