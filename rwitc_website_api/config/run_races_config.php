@@ -38,6 +38,8 @@ if (IS_LOCAL) {
     // Dividends .htm files public URL (for API response)
     define("STATIC_DIVIDENDS_URL", "http://localhost/staticpages/dividends/");
     define("STATIC_LIVE_URL", "http://localhost/staticpages/live/");
+    define("RIDING_WEIGHT_LOCAL_PATH", "C:/xampp/htdocs/rwitc_upload/static/");
+    define("RECORD_TIMINGS_LOCAL_PATH", "C:/xampp/htdocs/horseracing/");
 } else {
 
     // ----------------------------------------------------
@@ -63,4 +65,6 @@ if (IS_LOCAL) {
     // Dividends .htm files public URL (production)
     define("STATIC_DIVIDENDS_URL", "https://test.rwitc.com/rwitc-website/staticpages/dividends/");
     define("STATIC_LIVE_URL", "https://test.rwitc.com/rwitc-website/staticpages/live/");
+    define("RIDING_WEIGHT_LOCAL_PATH", realpath(__DIR__ . "/../../rwitc_upload/static"));
+    define("RECORD_TIMINGS_LOCAL_PATH", realpath(__DIR__ . "/../../horseracing"));
 }

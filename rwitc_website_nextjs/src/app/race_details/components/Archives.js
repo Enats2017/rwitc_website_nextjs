@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaChevronLeft, FaChevronRight, FaCalendarAlt } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaCalendarAlt, FaHorseHead } from "react-icons/fa";
 import { getArchives } from "../../../services/archivesService";
 import "./Archives.css";
 
@@ -26,7 +26,7 @@ const CLASS_TO_TYPE = {
     handicaps: "handicaps",
     acceptances: "acceptances",
     declarations: "declarations",
-    racecard: "racecard",
+    racecard: "raceCard",
     raceresults: "raceResults",
     "rating-change": "ratingChange",
     "raceday-report": "raceDayReport",
@@ -210,8 +210,13 @@ export default function Archives() {
     return (
         <section className="archivesSection">
 
-            <div className="archivesBadgeWrap">
-                <span className="archivesBadge">Archives</span>
+            <div className="aboutTitleWrap">
+                <h1 className="aboutHeading">Archives</h1>
+                <div className="sectionDivider">
+                    <span className="dividerLine dividerLineLeft"></span>
+                    <FaHorseHead className="dividerIcon" />
+                    <span className="dividerLine dividerLineRight"></span>
+                </div>
             </div>
 
             <div className="archivesCard">

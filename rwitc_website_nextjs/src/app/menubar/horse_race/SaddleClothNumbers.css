@@ -75,6 +75,23 @@
     border: 1px solid #eef1f4;
 }
 
+/* LOADING / ERROR MESSAGE */
+.statsMsg {
+    text-align: center;
+    padding: 30px 0;
+    font-size: 16px;
+    color: #374151;
+}
+
+.statsMsgError {
+    color: #b91c1c;
+}
+
+/* mode:"html" ke liye wrapper (server ki raw HTML string) */
+.statsHtml {
+    width: 100%;
+}
+
 /* =========================================================
    SADDLE SECTION HEADER
 ========================================================= */
@@ -138,8 +155,6 @@
     box-sizing: border-box;
 }
 
-/* Coloured saddle-cloth banner — background/text set inline per
-   section from the parsed cloth label, this just handles shape. */
 .clothLabelRow {
     padding: 14px 10px;
     text-align: center;
@@ -167,7 +182,6 @@
     overflow-wrap: anywhere;
 }
 
-/* Column widths — sum to 100% */
 .colSaddle { width: 8%; }
 .colHorseName { width: 19%; }
 .colColorSex { width: 11%; }
@@ -284,8 +298,7 @@
 
 }
 
-/* MOBILE — table switches to a min-width and scrolls
-   horizontally, keeping text readable and inside borders. */
+/* MOBILE */
 @media (max-width: 768px) {
 
     .aboutPage {

@@ -4,10 +4,10 @@ $host = "localhost";
 $user = "app_user";
 // $user = "root";
 
-// live
+// LIVE
 $password = 'ho{HslC)jWaky${L';
 
-// local
+// LOCAL
 // $password = "";
 $database = "rwitc_website";
 
@@ -37,41 +37,183 @@ try {
 
 }
 
+
 // ============================================================
 // AWS S3 CONFIG
 // ============================================================
 
 require_once __DIR__ . "/run_races_config.php";
 
-// live
+
+// ENVIRONMENT FILE
+// LIVE
 $envFile = __DIR__ . "/../../.env.local";
 
-// local
+// LOCAL
 // $envFile = __DIR__ . "/../../rwitc_website_nextjs/.env.local";
 
 if (!file_exists($envFile)) {
-    die("Environment configuration file not found.");
+
+    http_response_code(500);
+
+    die(json_encode([
+        "success" => false,
+        "data"    => null,
+        "error"   => "Environment configuration file not found."
+    ]));
+
 }
-$env = parse_ini_file(
+
+
+// ============================================================
+// READ .env.local
+// ============================================================
+
+$env = [];
+
+$lines = file(
     $envFile,
-    false,
-    INI_SCANNER_RAW
+    FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES
 );
 
-if ($env === false) {
-    die("Unable to read environment configuration.");
+if ($lines === false) {
+
+    http_response_code(500);
+
+    die(json_encode([
+        "success" => false,
+        "data"    => null,
+        "error"   => "Unable to read environment configuration file."
+    ]));
+
 }
-// ------------------------------------------------------------
-// AWS Credentials
-// ------------------------------------------------------------
-define( "AWS_ACCESS_KEY_ID", $env["AWS_ACCESS_KEY_ID"]);
-define( "AWS_SECRET_ACCESS_KEY", $env["AWS_SECRET_ACCESS_KEY"]);
-define( "AWS_REGION", $env["AWS_REGION"]);
-// ------------------------------------------------------------
-// AWS Bucket
-// ------------------------------------------------------------
+
+
+// ============================================================
+// PARSE ENVIRONMENT VARIABLES
+// ============================================================
+
+foreach ($lines as $line) {
+
+    // Remove BOM if present
+    $line = preg_replace('/^\xEF\xBB\xBF/', '', $line);
+
+    $line = trim($line);
+
+    // Ignore empty lines
+    if ($line === '') {
+        continue;
+    }
+
+    // Ignore comments
+    if (str_starts_with($line, '#')) {
+        continue;
+    }
+
+    // Ignore invalid lines without =
+    if (!str_contains($line, '=')) {
+        continue;
+    }
+
+    // Split only at the FIRST =
+    [$key, $value] = explode('=', $line, 2);
+
+    $key = trim($key);
+    $value = trim($value);
+
+    // Ignore empty key
+    if ($key === '') {
+        continue;
+    }
+
+    // Remove surrounding double quotes
+    if (
+        strlen($value) >= 2 &&
+        $value[0] === '"' &&
+        $value[strlen($value) - 1] === '"'
+    ) {
+        $value = substr($value, 1, -1);
+    }
+
+    // Remove surrounding single quotes
+    elseif (
+        strlen($value) >= 2 &&
+        $value[0] === "'" &&
+        $value[strlen($value) - 1] === "'"
+    ) {
+        $value = substr($value, 1, -1);
+    }
+
+    $env[$key] = $value;
+}
+
+
+// ============================================================
+// REQUIRED ENVIRONMENT VARIABLES
+// ============================================================
+
+$requiredEnv = [
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_REGION",
+    "AWS_TEST_BUCKET",
+    "NEXT_PUBLIC_API_URL"
+];
+
+foreach ($requiredEnv as $requiredKey) {
+
+    if (!array_key_exists($requiredKey, $env) || $env[$requiredKey] === '') {
+
+        http_response_code(500);
+
+        die(json_encode([
+            "success" => false,
+            "data"    => null,
+            "error"   => "Missing environment configuration: " . $requiredKey
+        ]));
+
+    }
+}
+
+
+// ============================================================
+// AWS CREDENTIALS
+// ============================================================
+
+define(
+    "AWS_ACCESS_KEY_ID",
+    $env["AWS_ACCESS_KEY_ID"]
+);
+
+define(
+    "AWS_SECRET_ACCESS_KEY",
+    $env["AWS_SECRET_ACCESS_KEY"]
+);
+
+define(
+    "AWS_REGION",
+    $env["AWS_REGION"]
+);
+
+
+// ============================================================
+// AWS BUCKET
+// ============================================================
+
 // Current server = test.rwitc.com
 // Therefore use TEST bucket.
-// ------------------------------------------------------------
-define( "AWS_BUCKET", $env["AWS_TEST_BUCKET"]);
-define("WEBSITE_API_BASE_URL", $env["NEXT_PUBLIC_API_URL"]);
+
+define(
+    "AWS_BUCKET",
+    $env["AWS_TEST_BUCKET"]
+);
+
+
+// ============================================================
+// WEBSITE API BASE URL
+// ============================================================
+
+define(
+    "WEBSITE_API_BASE_URL",
+    $env["NEXT_PUBLIC_API_URL"]
+);

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getRaceCard } from "../../../services/racecardService";
+import { FaHorseHead } from "react-icons/fa";
 import "./Race_card.css";
 
 const ARCHIVE_STYLES_RACECARD = `
@@ -91,6 +92,10 @@ td > table.infoTable[style*='box-shadow'] {
     .infoTable { width: 100%; }
     .infoTable td { border: 0; padding: 4px 6px; font-size: 13.5px; color: #222; font-weight: 700; }
     .horse_number_class { color: #111 !important; }
+    .infoTable span,
+    .infoTable a {
+        color: #222 !important;
+    }
     .alignLeft { text-align: left !important; }
     .alignRight { text-align: right !important; }
 
@@ -128,7 +133,13 @@ td > table.infoTable[style*='box-shadow'] {
     text-align: center;
     font-weight: 700;
 }
-
+    .perform_data td:nth-child(2),
+    .perform_data td:nth-child(2) *,
+    .perform_data td:nth-child(2) span,
+    .perform_data td:nth-child(2) font,
+    .perform_data td:nth-child(2) a {
+        color: #111 !important;
+    }
     /* ---- Pools table ---- */
     .poolsTable th {
         background: #16a34a;
@@ -238,8 +249,13 @@ export default function RaceCard() {
     return (
         <section className="racecardPage docPage">
 
-            <div className="docBadgeWrap">
-                <span className="docBadge">Race Card</span>
+            <div className="aboutTitleWrap">
+                <h1 className="aboutHeading">Race Card</h1>
+                <div className="sectionDivider">
+                    <span className="dividerLine dividerLineLeft"></span>
+                    <FaHorseHead className="dividerIcon" />
+                    <span className="dividerLine dividerLineRight"></span>
+                </div>
             </div>
 
             <div className="docContainer">
@@ -290,85 +306,163 @@ export default function RaceCard() {
                 )}
 
                 {!loading && !error && isHtmlMode && !hasNoHtml && (
-                   <iframe
-    className="docArchiveHtml"
-    srcDoc={ARCHIVE_STYLES_RACECARD + rawHtml}
-    title="Race Card"
-    sandbox="allow-same-origin"
-    scrolling="no"
-    onLoad={(e) => {
-    const iframe = e.target;
-    const doc = iframe.contentWindow?.document;
-    if (!doc) return;
+                    <iframe
+                        className="docArchiveHtml"
+                        srcDoc={ARCHIVE_STYLES_RACECARD + rawHtml}
+                        title="Race Card"
+                        sandbox="allow-same-origin allow-top-navigation-by-user-activation"
+                        scrolling="no"
+                        onLoad={(e) => {
+                            const iframe = e.target;
+                            const doc = iframe.contentWindow?.document;
+                            if (!doc) return;
 
 
-    doc.querySelectorAll(".race_no_data").forEach((el) => {
-        el.querySelectorAll("th").forEach((th) => {
-            th.style.setProperty("background", "#16a34a", "important");
-        });
-    
-        el.querySelectorAll("span[style*='text-align:center']").forEach((span) => {
-            span.style.textAlign = "left";
-            span.style.display = "block";
-            span.style.marginTop = "2px";
-        });
-        
-        el.querySelectorAll("br").forEach((br) => {
-            br.style.display = "none";
-        });
-    });
+                            doc.querySelectorAll(".race_no_data").forEach((el) => {
+                                el.querySelectorAll("th").forEach((th) => {
+                                    th.style.setProperty("background", "#16a34a", "important");
+                                });
 
-    const setHeight = () => {
-        iframe.style.height = doc.documentElement.scrollHeight + "px";
-    };
+                                el.querySelectorAll("span[style*='text-align:center']").forEach((span) => {
+                                    span.style.textAlign = "left";
+                                    span.style.display = "block";
+                                    span.style.marginTop = "2px";
+                                });
 
-    doc.querySelectorAll(".race_call").forEach((pill) => {
-        pill.style.cursor = "pointer";
-        pill.addEventListener("click", () => {
-            const raceNo = pill.id;
+                                el.querySelectorAll("br").forEach((br) => {
+                                    br.style.display = "none";
+                                });
+                            });
 
-            doc.querySelectorAll(".race_no_data").forEach((block) => {
-                const matches = block.classList.contains("race_no_" + raceNo);
-                block.style.display = matches ? "" : "none";
-            });
+                            const setHeight = () => {
+                                iframe.style.height = doc.documentElement.scrollHeight + "px";
+                            };
 
-            doc.querySelectorAll(".race_call").forEach((p) => {
-                p.style.textDecoration = p.id === raceNo ? "underline" : "none";
-            });
+                            doc.querySelectorAll(".race_call").forEach((pill) => {
+                                pill.style.cursor = "pointer";
+                                pill.addEventListener("click", () => {
+                                    const raceNo = pill.id;
 
-            setHeight();
-            requestAnimationFrame(setHeight);
-        });
-    });
+                                    doc.querySelectorAll(".race_no_data").forEach((block) => {
+                                        const matches = block.classList.contains("race_no_" + raceNo);
+                                        block.style.display = matches ? "" : "none";
+                                    });
 
-    
-    doc.querySelectorAll(".view_perform").forEach((btn) => {
-        btn.style.cursor = "pointer";
-        btn.addEventListener("click", () => {
-            const performanceRow = doc.getElementById("performance_" + btn.id);
+                                    doc.querySelectorAll(".race_call").forEach((p) => {
+                                        p.style.textDecoration = p.id === raceNo ? "underline" : "none";
+                                    });
 
-            if (performanceRow) {
-                const isHidden = performanceRow.style.display === "none" || performanceRow.style.display === "";
-                performanceRow.style.display = isHidden ? "table-row" : "none";
-            }
+                                    setHeight();
+                                    requestAnimationFrame(setHeight);
+                                });
+                            });
 
-            setHeight();
-            requestAnimationFrame(setHeight);
-        });
-    });
 
-   
-    doc.querySelectorAll("a[target='_blank']").forEach((link) => {
-        link.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            window.open(link.href, "_blank", "noopener,noreferrer");
-        });
-    });
+                            doc.querySelectorAll(".view_perform").forEach((btn) => {
+                                btn.style.cursor = "pointer";
+                                btn.addEventListener("click", () => {
+                                    const performanceRow = doc.getElementById("performance_" + btn.id);
 
-    setHeight();
-    requestAnimationFrame(setHeight);
-    setTimeout(setHeight, 100);
-}}
+                                    if (performanceRow) {
+                                        const isHidden = performanceRow.style.display === "none" || performanceRow.style.display === "";
+                                        performanceRow.style.display = isHidden ? "table-row" : "none";
+                                    }
+
+                                    setHeight();
+                                    requestAnimationFrame(setHeight);
+                                });
+                            });
+
+
+                            // doc.querySelectorAll("a[target='_blank']").forEach((link) => {
+                            //     link.addEventListener("click", (ev) => {
+                            //         ev.preventDefault();
+                            //         window.open(link.href, "_blank", "noopener,noreferrer");
+                            //     });
+                            // });
+                            doc.querySelectorAll("a[href*='performanceProfile.php']").forEach((link) => {
+
+                                // Old website ka target remove karo
+                                link.removeAttribute("target");
+
+                                link.addEventListener("click", (ev) => {
+
+                                    // Old URL ko open hone se roko
+                                    ev.preventDefault();
+                                    ev.stopPropagation();
+
+                                    const rawHref = link.getAttribute("href") || "";
+
+                                    console.log("Performance Profile clicked:", rawHref);
+
+                                    try {
+
+                                        const hrefUrl = new URL(rawHref, window.location.origin);
+
+                                        const raceNo =
+                                            hrefUrl.searchParams.get("raceno") ||
+                                            hrefUrl.searchParams.get("race_no");
+
+                                        const raceDate =
+                                            hrefUrl.searchParams.get("racedate") ||
+                                            hrefUrl.searchParams.get("race_date");
+
+                                        console.log("Race No:", raceNo);
+                                        console.log("Race Date:", raceDate);
+
+                                        if (raceNo && raceDate) {
+
+                                            const newUrl =
+                                                `/rwitc-website/race_details` +
+                                                `?type=performanceProfile` +
+                                                `&race_no=${encodeURIComponent(raceNo)}` +
+                                                `&race_date=${encodeURIComponent(raceDate)}` +
+                                                `&view=raceResult`;
+
+                                            console.log("Opening new URL:", newUrl);
+
+                                            window.top.location.href = newUrl;
+
+                                        } else {
+
+                                            console.warn(
+                                                "Race number/date not found. Old URL will NOT be opened:",
+                                                rawHref
+                                            );
+
+                                        }
+
+                                    } catch (error) {
+
+                                        console.error(
+                                            "Invalid performance profile URL:",
+                                            rawHref,
+                                            error
+                                        );
+
+                                    }
+                                });
+                            });
+
+                            // doc.querySelectorAll("a[href*='performanceProfile.php'][href*='get-profile']").forEach((link) => {
+                            //     link.addEventListener("click", (ev) => {
+                            //         ev.preventDefault();
+                            //         const rawHref = link.getAttribute("href") || "";
+                            //         window.open(rawHref, "_blank", "noopener,noreferrer");
+                            //     });
+                            // });
+
+                            doc.querySelectorAll("a[href*='foalRecords.php']").forEach((link) => {
+                                link.addEventListener("click", (ev) => {
+                                    ev.preventDefault();
+                                    const rawHref = link.getAttribute("href") || "";
+                                    window.open(rawHref, "_blank", "noopener,noreferrer");
+                                });
+                            });
+                            setHeight();
+                            requestAnimationFrame(setHeight);
+                            setTimeout(setHeight, 100);
+                        }}
                     />
                 )}
 

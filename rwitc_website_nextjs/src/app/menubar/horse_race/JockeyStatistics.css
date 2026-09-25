@@ -136,6 +136,50 @@
     background: #f7faf7;
 }
 
+.statsMsg {
+    text-align: center;
+    font-size: 16px;
+    color: #374151;
+    padding: 30px 0;
+}
+
+.statsMsgError {
+    color: #b91c1c;
+}
+
+/* server wali HTML file ke table ko same look dene ke liye */
+.statsHtml table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 780px;
+}
+
+.statsHtml th {
+    background: #d9ead9;
+    color: #14532d;
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 16px 14px;
+    text-align: center;
+    border-bottom: 1px solid #cfe4cf;
+    white-space: nowrap;
+}
+
+.statsHtml td {
+    padding: 13px 14px;
+    text-align: center;
+    font-size: 15px;
+    color: #374151;
+    border-bottom: 1px solid #eef1f4;
+    white-space: nowrap;
+}
+
+.statsHtml tr th:first-child,
+.statsHtml tr td:first-child {
+    text-align: left;
+}
+
 /* TABLET */
 @media (max-width: 992px) {
 

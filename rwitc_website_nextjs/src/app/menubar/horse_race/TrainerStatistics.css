@@ -79,6 +79,23 @@
     margin-bottom: 30px;
 }
 
+/* LOADING / ERROR MESSAGE */
+.statsMsg {
+    text-align: center;
+    padding: 30px 0;
+    font-size: 16px;
+    color: #374151;
+}
+
+.statsMsgError {
+    color: #b91c1c;
+}
+
+/* MODE:"html" ke liye wrapper (server ki raw HTML string) */
+.statsHtml {
+    width: 100%;
+}
+
 /* =========================================================
    TABLE
 ========================================================= */
