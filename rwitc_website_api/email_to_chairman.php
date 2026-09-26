@@ -27,21 +27,16 @@ require_once 'PHPMailer/class.smtp.php';
  
 const RECAPTCHA_VERIFY_URL = 'https://www.google.com/recaptcha/api/siteverify';
 
-// const SMTP_HOST     = 'smtp-relay.sendinblue.com'; // Live host (used in production)
-
-const SMTP_HOST     = 'smtp.gmail.com'; // local test host (used in development)
+const SMTP_HOST     = 'smtp-relay.sendinblue.com'; // Live host (used in production)
 const SMTP_PORT     = 587;
  
-// const SMTP_USERNAME = 'info3@rwitc.com'; // Live username (used in production)
-const SMTP_USERNAME = 'rajangupta7790@gmail.com'; // local test username (used in development)
+const SMTP_USERNAME = 'info3@rwitc.com'; // Live username (used in production)
 
-// const SMTP_PASSWORD = '5A7BgS9aTjdUy6Ib';  // Live password (used in production)
-const SMTP_PASSWORD = 'mhenpctylpkjozwu';  // Test password (used in development)
+const SMTP_PASSWORD = '5A7BgS9aTjdUy6Ib';  // Live password (used in production)
 const SMTP_FROM_NAME = 'Rwitc';
 
-// const CONTACT_TO_EMAIL = 'secretary@rwitc.com';  // Live email (used in production)
+const CONTACT_TO_EMAIL = 'secretary@rwitc.com';  // Live email (used in production)
 
-const CONTACT_TO_EMAIL = 'rajangupta7790@gmail.com'; // Test email (used in development)
 
 const CONTACT_SUBJECT  = 'Royal Western India Turf Club Ltd.';
 
@@ -70,7 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $name        = trim($_POST['name'] ?? '');
 $email       = trim($_POST['email'] ?? '');
-$date        = trim($_POST['date'] ?? '');
+// $date        = trim($_POST['date'] ?? '');
+$date = date('Y-m-d');
 $messageText = trim($_POST['message'] ?? '');
 $recaptcha   = $_POST['g-recaptcha-response'] ?? '';
 
@@ -82,9 +78,9 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     respondJson(['success' => false, 'message' => 'Invalid email address'], 400);
 }
 
-if ($date === '') {
-    $date = date('m/d/y');
-}
+// if ($date === '') {
+//     $date = date('m/d/y');
+// }
 
 if ($recaptcha === '') {
     respondJson(['success' => false, 'message' => 'reCAPTCHA verification is required'], 400);
