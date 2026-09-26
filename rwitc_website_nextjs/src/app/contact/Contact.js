@@ -11,8 +11,9 @@ import { FaUser, FaEnvelope, FaCommentDots, FaHorse, FaPhoneAlt, FaMapMarkerAlt,
 // verified server-side in email_to_chairman.php). Site keys are safe
 // to expose in frontend code.
 
-// const RECAPTCHA_SITE_KEY = "6Lcg84giAAAAAI97yR_2PmV6nFxNGfEqtKo-7WMU";  // Live key (used in production)
-const RECAPTCHA_SITE_KEY = "6Ldq-IEtAAAAANW8QR0KhjOMeHxdvOoiwLF5kSjy";     // Test key (used in development)
+// Live key (used in production)
+const RECAPTCHA_SITE_KEY =
+  process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
 export default function Contact() {
     const recaptchaRef = useRef(null);

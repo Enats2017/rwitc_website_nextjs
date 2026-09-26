@@ -109,7 +109,6 @@ $mail->Body = html_entity_decode($html);
 $mail->AddAddress('dgmam@rwitc.com');
 
 $mailSent = $mail->Send();
-
 echo json_encode([
     "success" => true,
     "message" => "Suggestion submitted successfully",
