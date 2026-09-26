@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getRatingChange } from "../../../services/ratingChangeService";
+import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./RatingChange.css";
 import { FaHorseHead } from "react-icons/fa";
 
@@ -194,29 +195,13 @@ export default function RatingChange() {
 
                         <iframe
                             className="docArchiveHtml"
-                            srcDoc={
-                                ARCHIVE_STYLES_RATING_CHANGE +
+                            srcDoc={formatArchiveHtml(
+                                ARCHIVE_STYLES_RATING_CHANGE,
                                 rawHtml
-                            }
+                            )}
                             title="Rating Change"
-                            sandbox="allow-same-origin"
-                            onLoad={(e) => {
-                                const iframe = e.target;
-                                const doc =
-                                    iframe.contentWindow?.document;
-
-                                if (!doc) return;
-
-                                const setHeight = () => {
-                                    iframe.style.height =
-                                        doc.documentElement
-                                            .scrollHeight + "px";
-                                };
-
-                                setHeight();
-                                requestAnimationFrame(setHeight);
-                                setTimeout(setHeight, 100);
-                            }}
+                            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                            onLoad={handleArchiveIframeLoad}
                         />
                     </>
                 )}

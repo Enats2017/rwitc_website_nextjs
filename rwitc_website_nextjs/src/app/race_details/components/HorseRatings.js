@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SITE_URL } from "../../../services/api";
+import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./HorseRatings.css";
 
 const RATINGS_PAGE_URL = `${SITE_URL}/horseRatings.php?content=1`;
@@ -113,7 +114,9 @@ export default function HorseRatings() {
                     <iframe
                         className="horseRatingsFrame"
                         title="Ratings"
-                        srcDoc={ratingsHtml}
+                        srcDoc={formatArchiveHtml("", ratingsHtml)}
+                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                        onLoad={handleArchiveIframeLoad}
                     />
                 )}
             </div>

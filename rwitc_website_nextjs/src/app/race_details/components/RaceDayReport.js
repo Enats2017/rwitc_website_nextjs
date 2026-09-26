@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getRaceDayReport } from "../../../services/raceDayReportService";
+import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./RaceDayReport.css";
 
 const ARCHIVE_STYLES_RACEDAY_REPORT = `
@@ -180,23 +181,11 @@ export default function RaceDayReport() {
                 {!loading && !error && !hasNoHtml && (
                     <iframe
                         className="docArchiveHtml"
-                        srcDoc={ARCHIVE_STYLES_RACEDAY_REPORT + rawHtml}
+                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACEDAY_REPORT, rawHtml)}
                         title="Raceday Report"
-                        sandbox="allow-same-origin"
+                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
                         scrolling="no"
-                        onLoad={(e) => {
-                            const iframe = e.target;
-                            const doc = iframe.contentWindow?.document;
-                            if (!doc) return;
-
-                            const setHeight = () => {
-                                iframe.style.height = doc.documentElement.scrollHeight + "px";
-                            };
-
-                            setHeight();
-                            requestAnimationFrame(setHeight);
-                            setTimeout(setHeight, 100);
-                        }}
+                        onLoad={handleArchiveIframeLoad}
                     />
                 )}
 

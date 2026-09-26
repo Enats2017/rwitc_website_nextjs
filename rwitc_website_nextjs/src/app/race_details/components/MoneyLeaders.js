@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getMoneyLeaders } from "@/services/moneyLeadersService";
+import { formatArchiveHtml, handleArchiveIframeLoad } from "@/utils/archiveHtmlHelper";
 import "./MoneyLeaders.css";
 
 const TABS = [
@@ -138,20 +139,10 @@ export default function MoneyLeaders() {
                             <iframe
                                 key={activeTab}
                                 className="moneyLeadersFrame"
-                                srcDoc={TABLE_STYLES + rawHtml}
+                                srcDoc={formatArchiveHtml(TABLE_STYLES, rawHtml)}
                                 title={`Money Leaders - ${activeTab}`}
-                                sandbox="allow-same-origin"
-                                onLoad={(e) => {
-                                    const iframe = e.target;
-                                    const doc = iframe.contentWindow?.document;
-                                    if (!doc) return;
-                                    const setHeight = () => {
-                                        iframe.style.height = doc.documentElement.scrollHeight + "px";
-                                    };
-                                    setHeight();
-                                    requestAnimationFrame(setHeight);
-                                    setTimeout(setHeight, 100);
-                                }}
+                                sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                                onLoad={handleArchiveIframeLoad}
                             />
                         )}
                     </div>

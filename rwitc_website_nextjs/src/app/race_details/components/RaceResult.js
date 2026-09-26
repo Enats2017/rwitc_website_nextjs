@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getRaceResult } from "../../../services/raceResultService";
+import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import { FaHorseHead, FaPlayCircle } from "react-icons/fa";
 import "./RaceResult.css";
 
@@ -180,19 +181,16 @@ export default function RaceResult() {
                 {!loading && !error && mode === "html" && rawHtml.trim() && (
                     <iframe
                         className="docArchiveHtml"
-                        srcDoc={ARCHIVE_STYLES_RACE_RESULT + rawHtml}
+                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACE_RESULT, rawHtml)}
                         title="Race Results"
-                        sandbox="allow-same-origin allow-popups"
+                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms allow-popups"
                         scrolling="no"
                         style={{ width: "100%", border: "none" }}
                         onLoad={(e) => {
+                            handleArchiveIframeLoad(e);
                             const iframe = e.target;
                             const doc = iframe.contentWindow?.document;
                             if (!doc) return;
-                
-                            const setHeight = () => {
-                                iframe.style.height = doc.documentElement.scrollHeight + "px";
-                            };
 
                             doc.querySelectorAll("th").forEach((th) => {
                                 if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
@@ -217,10 +215,6 @@ export default function RaceResult() {
                                     });
                                 }
                             });
-
-                            setHeight();
-                            requestAnimationFrame(setHeight);
-                            setTimeout(setHeight, 100);
                         }}
                     />
                 )}

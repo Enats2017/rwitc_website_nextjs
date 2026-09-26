@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaChevronLeft, FaChevronRight, FaCalendarAlt } from "react-icons/fa";
 import { API_URL } from "../../../services/api";
+import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./MockRaceResult.css";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -420,23 +421,10 @@ function MockRaceResultDetail({ id, src, title }) {
                 {!loading && !error && html.trim() && (
                     <iframe
                         className="docArchiveHtml"
-                        srcDoc={MOCK_RESULT_DOCUMENT_STYLES + html}
+                        srcDoc={formatArchiveHtml(MOCK_RESULT_DOCUMENT_STYLES, html)}
                         title={title || "Mock Race Result"}
-                        sandbox="allow-same-origin"
-                        onLoad={(e) => {
-                            const iframe = e.target;
-                            const doc = iframe.contentWindow?.document;
-                            if (!doc) return;
-
-                            const setHeight = () => {
-                                iframe.style.height =
-                                    doc.documentElement.scrollHeight + "px";
-                            };
-
-                            setHeight();
-                            requestAnimationFrame(setHeight);
-                            setTimeout(setHeight, 100);
-                        }}
+                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                        onLoad={handleArchiveIframeLoad}
                     />
                 )}
             </div>

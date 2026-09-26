@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getHandicaps } from "../../../services/handicapsService";
+import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./Handicaps.css";
 
 const ARCHIVE_STYLES = `
@@ -222,22 +223,10 @@ export default function Handicaps() {
                 {!loading && !error && isHtmlMode && !hasNoHtml && (
                     <iframe
                         className="docArchiveHtml"
-                        srcDoc={ARCHIVE_STYLES + rawHtml}
+                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES, rawHtml)}
                         title="Handicaps"
-                        sandbox="allow-same-origin"
-                        onLoad={(e) => {
-                            const iframe = e.target;
-                            const doc = iframe.contentWindow?.document;
-                            if (!doc) return;
-
-                            const setHeight = () => {
-                                iframe.style.height = doc.documentElement.scrollHeight + "px";
-                            };
-
-                            setHeight();
-                            requestAnimationFrame(setHeight);
-                            setTimeout(setHeight, 100);
-                        }}
+                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                        onLoad={handleArchiveIframeLoad}
                     />
                 )}
 

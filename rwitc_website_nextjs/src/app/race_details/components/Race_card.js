@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getRaceCard } from "../../../services/racecardService";
+import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import { FaHorseHead } from "react-icons/fa";
 import "./Race_card.css";
 
@@ -308,15 +309,15 @@ export default function RaceCard() {
                 {!loading && !error && isHtmlMode && !hasNoHtml && (
                     <iframe
                         className="docArchiveHtml"
-                        srcDoc={ARCHIVE_STYLES_RACECARD + rawHtml}
+                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACECARD, rawHtml)}
                         title="Race Card"
-                        sandbox="allow-same-origin allow-top-navigation-by-user-activation"
+                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
                         scrolling="no"
                         onLoad={(e) => {
+                            handleArchiveIframeLoad(e);
                             const iframe = e.target;
                             const doc = iframe.contentWindow?.document;
                             if (!doc) return;
-
 
                             doc.querySelectorAll(".race_no_data").forEach((el) => {
                                 el.querySelectorAll("th").forEach((th) => {
@@ -357,7 +358,6 @@ export default function RaceCard() {
                                 });
                             });
 
-
                             doc.querySelectorAll(".view_perform").forEach((btn) => {
                                 btn.style.cursor = "pointer";
                                 btn.addEventListener("click", () => {
@@ -372,96 +372,6 @@ export default function RaceCard() {
                                     requestAnimationFrame(setHeight);
                                 });
                             });
-
-
-                            // doc.querySelectorAll("a[target='_blank']").forEach((link) => {
-                            //     link.addEventListener("click", (ev) => {
-                            //         ev.preventDefault();
-                            //         window.open(link.href, "_blank", "noopener,noreferrer");
-                            //     });
-                            // });
-                            doc.querySelectorAll("a[href*='performanceProfile.php']").forEach((link) => {
-
-                                // Old website ka target remove karo
-                                link.removeAttribute("target");
-
-                                link.addEventListener("click", (ev) => {
-
-                                    // Old URL ko open hone se roko
-                                    ev.preventDefault();
-                                    ev.stopPropagation();
-
-                                    const rawHref = link.getAttribute("href") || "";
-
-                                    console.log("Performance Profile clicked:", rawHref);
-
-                                    try {
-
-                                        const hrefUrl = new URL(rawHref, window.location.origin);
-
-                                        const raceNo =
-                                            hrefUrl.searchParams.get("raceno") ||
-                                            hrefUrl.searchParams.get("race_no");
-
-                                        const raceDate =
-                                            hrefUrl.searchParams.get("racedate") ||
-                                            hrefUrl.searchParams.get("race_date");
-
-                                        console.log("Race No:", raceNo);
-                                        console.log("Race Date:", raceDate);
-
-                                        if (raceNo && raceDate) {
-
-                                            const newUrl =
-                                                `/rwitc-website/race_details` +
-                                                `?type=performanceProfile` +
-                                                `&race_no=${encodeURIComponent(raceNo)}` +
-                                                `&race_date=${encodeURIComponent(raceDate)}` +
-                                                `&view=raceResult`;
-
-                                            console.log("Opening new URL:", newUrl);
-
-                                            window.top.location.href = newUrl;
-
-                                        } else {
-
-                                            console.warn(
-                                                "Race number/date not found. Old URL will NOT be opened:",
-                                                rawHref
-                                            );
-
-                                        }
-
-                                    } catch (error) {
-
-                                        console.error(
-                                            "Invalid performance profile URL:",
-                                            rawHref,
-                                            error
-                                        );
-
-                                    }
-                                });
-                            });
-
-                            // doc.querySelectorAll("a[href*='performanceProfile.php'][href*='get-profile']").forEach((link) => {
-                            //     link.addEventListener("click", (ev) => {
-                            //         ev.preventDefault();
-                            //         const rawHref = link.getAttribute("href") || "";
-                            //         window.open(rawHref, "_blank", "noopener,noreferrer");
-                            //     });
-                            // });
-
-                            doc.querySelectorAll("a[href*='foalRecords.php']").forEach((link) => {
-                                link.addEventListener("click", (ev) => {
-                                    ev.preventDefault();
-                                    const rawHref = link.getAttribute("href") || "";
-                                    window.open(rawHref, "_blank", "noopener,noreferrer");
-                                });
-                            });
-                            setHeight();
-                            requestAnimationFrame(setHeight);
-                            setTimeout(setHeight, 100);
                         }}
                     />
                 )}
