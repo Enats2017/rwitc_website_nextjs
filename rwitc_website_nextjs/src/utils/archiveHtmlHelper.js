@@ -50,6 +50,46 @@ export function handleArchiveIframeLoad(e) {
         requestAnimationFrame(setHeight);
         setTimeout(setHeight, 100);
 
+        // 1. Convert Horse performanceProfile links (/new/performanceProfile.php?as_values=...)
+        doc.querySelectorAll("a[href]").forEach((link) => {
+            const href = link.getAttribute("href");
+            if (!href) return;
+
+            try {
+                const url = new URL(href, "https://rwitc.com");
+
+                if (url.hostname === "rwitc.com" && (url.pathname === "/new/performanceProfile.php" || url.pathname.endsWith("/performanceProfile.php"))) {
+                    const horseName = url.searchParams.get("as_values") || url.searchParams.get("horsename");
+                    if (horseName) {
+                        const newUrl = "race_details?type=performanceProfile&horsename=" + encodeURIComponent(horseName);
+                        link.setAttribute("href", newUrl);
+                    }
+                }
+            } catch (error) {
+                console.error("Horse link update error:", error);
+            }
+        });
+
+        // 2. Convert Mother/Mare foalRecords links (/new/foalRecords.php?mareName=...)
+        doc.querySelectorAll("a[href]").forEach((link) => {
+            const href = link.getAttribute("href");
+            if (!href) return;
+            try {
+                const url = new URL(href, "https://rwitc.com");
+                if (url.hostname === "rwitc.com" && (url.pathname === "/new/foalRecords.php" || url.pathname.endsWith("/foalRecords.php"))) {
+                    const mareName = url.searchParams.get("mareName");
+                    const damNat = url.searchParams.get("damnat");
+
+                    if (!mareName) return;
+                    
+                    const newUrl = "race_details?type=foalRecords&mareName=" + encodeURIComponent(mareName) + (damNat ? "&damnat=" + encodeURIComponent(damNat) : "");
+                    link.setAttribute("href", newUrl);
+                }
+            } catch (error) {
+                console.error("Mother link update error:", error);
+            }
+        });
+
         // Intercept all link clicks to navigate top window cleanly
         doc.querySelectorAll("a").forEach((link) => {
             link.setAttribute("target", "_top");
