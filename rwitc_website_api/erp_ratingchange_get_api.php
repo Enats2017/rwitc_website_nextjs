@@ -192,7 +192,7 @@ function readHtmlFromS3SetUrl($fileUrl)
     ) {
         throw new Exception(
             "S3 HTML helper returned HTTP " .
-            $httpCode
+                $httpCode
         );
     }
 
@@ -398,7 +398,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $stmt->close();
 
             $message = "Rating change file record updated successfully";
-
         } else {
 
             $stmt = $conn->prepare("
@@ -441,12 +440,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             "file_url"  => $storedFileUrl,
             "message"   => $message
         ]);
-
     } catch (Throwable $error) {
 
         $security->logLine(
             "RATING_CHANGE_PUSH_ERROR | "
-            . $error->getMessage()
+                . $error->getMessage()
         );
 
         $security->respondError(
@@ -759,8 +757,8 @@ CSS;
                 $downloadContent = preg_replace(
                     "/<\\/head>/i",
                     "<style>\n"
-                    . $downloadCss
-                    . "\n</style>\n</head>",
+                        . $downloadCss
+                        . "\n</style>\n</head>",
                     $htmlContent,
                     1
                 );
@@ -777,7 +775,6 @@ CSS;
                     . $htmlContent
                     . "\n</body>\n</html>";
             }
-
         } else {
 
             $downloadContent =
@@ -806,17 +803,16 @@ CSS;
 
         header(
             'Content-Disposition: inline; filename="Rating_change_'
-            . $date
-            . '.html"'
+                . $date
+                . '.html"'
         );
 
         echo $downloadContent;
-
     } catch (Throwable $error) {
 
         $security->logLine(
             "RATING_CHANGE_DOWNLOAD_ERROR | "
-            . $error->getMessage()
+                . $error->getMessage()
         );
 
         $security->respondError(
@@ -918,7 +914,7 @@ try {
                 "type"  => $type,
                 "race_type" => $raceType,
                 "message" =>
-                    "No rating Change Found",
+                "No rating Change Found",
                 "html"  => "",
                 "download_file" => null,
                 "download_available" => false
@@ -948,15 +944,22 @@ try {
         $source = "DB_S3";
     }
 
-    // --------------------------------------------------
-    // DOWNLOAD URL
-    // --------------------------------------------------
+    $downloadAvailable = true;
+    $downloadFile = null;
 
-    $downloadFile =
-        "erp_ratingchange_get_api.php?"
-        . "date=" . rawurlencode($date)
-        . "&type=" . rawurlencode($type)
-        . "&race_type=" . rawurlencode($raceType)
+    $baseParts = parse_url(RUN_RACES_BASE_URL);
+    $origin = "";
+
+    if (isset($baseParts["scheme"]) && isset($baseParts["host"])) {
+        $origin = $baseParts["scheme"] . "://" . $baseParts["host"]
+            . (isset($baseParts["port"]) ? ":" . $baseParts["port"] : "");
+    }
+
+    $downloadFile = $origin
+        . $_SERVER["SCRIPT_NAME"]
+        . "?date=" . urlencode($date)
+        . "&type=" . urlencode($type)
+        . "&race_type=" . urlencode($raceType)
         . "&download=1";
 
     $response = [
@@ -973,19 +976,17 @@ try {
     $security->respondSuccess(
         $response
     );
-
 } catch (Throwable $error) {
 
     $security->logLine(
         "RATING_CHANGE_API_ERROR | "
-        . $error->getMessage()
+            . $error->getMessage()
     );
 
     $security->respondError(
         "Internal server error",
         500
     );
-
 } finally {
 
     if (isset($conn)) {

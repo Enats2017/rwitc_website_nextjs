@@ -19,6 +19,7 @@ if (isset($_GET['api']) && $_GET['api'] == 'list') {
 }
 
 if (isset($_GET['api']) && $_GET['api'] == '1') {
+
     header("Access-Control-Allow-Origin: *");
     header("Access-Control-Allow-Methods: GET");
     header("Content-Type: text/html; charset=UTF-8");
@@ -27,19 +28,39 @@ if (isset($_GET['api']) && $_GET['api'] == '1') {
     $apiId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
     if ($apiId > 0) {
+
         $apiReport = $apiSrObj->getStewardsReportById($apiId);
 
         if ($apiReport && !empty($apiReport['filename'])) {
+
             if (strpos($apiReport['filename'], 'http') === 0) {
-                echo file_get_contents($apiReport['filename']);
+
+                $html = file_get_contents($apiReport['filename']);
+
             } else {
-                include($base . STEWARDS_REPORT_BASE . "/" . $apiReport['filename']);
+
+                $filePath = $base . STEWARDS_REPORT_BASE . "/" . $apiReport['filename'];
+
+                $html = file_get_contents($filePath);
             }
+
+            // Convert old HTML encoding to UTF-8
+            $html = mb_convert_encoding(
+                $html,
+                'UTF-8',
+                'ISO-8859-1'
+            );
+
+            echo $html;
+
         } else {
+
             http_response_code(404);
             echo "Report not found";
         }
+
     } else {
+
         http_response_code(400);
         echo "Missing id";
     }

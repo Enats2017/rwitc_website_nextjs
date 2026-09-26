@@ -234,8 +234,6 @@ export default function Handicaps() {
                                 iframe.style.height = doc.documentElement.scrollHeight + "px";
                             };
 
-                            // Measure again after layout/styles fully settle, so the
-                            // height reflects content AFTER .show1 rows are hidden.
                             setHeight();
                             requestAnimationFrame(setHeight);
                             setTimeout(setHeight, 100);

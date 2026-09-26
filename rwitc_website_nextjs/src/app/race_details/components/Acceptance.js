@@ -131,7 +131,6 @@ const ARCHIVE_STYLES_ACCEPTANCE = `
 `;
 
 export default function Acceptance() {
-
     const searchParams = useSearchParams();
     const date = searchParams.get("date");
     const type = searchParams.get("type") || "";
@@ -148,9 +147,7 @@ export default function Acceptance() {
     const [downloadAvailable, setDownloadAvailable] = useState(false);
 
     useEffect(() => {
-
         async function loadAcceptance() {
-
             if (!date) {
                 setError("No date selected.");
                 setLoading(false);
@@ -158,7 +155,6 @@ export default function Acceptance() {
             }
 
             try {
-
                 setLoading(true);
                 setError(null);
 
@@ -171,22 +167,15 @@ export default function Acceptance() {
                 setPools(data.pools);
                 setDownloadFile(data.downloadFile);
                 setDownloadAvailable(data.downloadAvailable);
-
             } catch (err) {
-
                 console.error("Acceptance Error:", err);
                 setError("Unable to load acceptances for this date.");
-
             } finally {
-
                 setLoading(false);
-
             }
-
         }
 
         loadAcceptance();
-
     }, [date, type, raceType]);
 
     const isHtmlMode = mode === "html";
@@ -194,13 +183,11 @@ export default function Acceptance() {
 
     return (
         <section className="acceptancePage docPage">
-
             <div className="docBadgeWrap">
                 <span className="docBadge">Acceptances</span>
             </div>
 
             <div className="docContainer">
-
                 <button
                     type="button"
                     className="docDownloadBtn"
@@ -218,13 +205,9 @@ export default function Acceptance() {
                 {!isHtmlMode && (
                     <div className="docHeader">
                         <p className="docClub">ROYAL WESTERN INDIA TURF CLUB.</p>
-                        {dayNarrative && (
-                            <p className="docMeeting">{dayNarrative}</p>
-                        )}
+                        {dayNarrative && <p className="docMeeting">{dayNarrative}</p>}
                         <h1 className="docWatermark">ACCEPTANCES</h1>
-                        <p className="docHint">
-                            Click on a horse to view its entry details
-                        </p>
+                        <p className="docHint">Click on a horse to view its entry details</p>
                     </div>
                 )}
 
@@ -275,94 +258,84 @@ export default function Acceptance() {
                     />
                 )}
 
-                {!loading && !error && !isHtmlMode && races.map((race, idx) => (
-
-                    <div className="docRaceBlock" key={idx}>
-
-                        <div className="docRaceBar">
-                            <p className="docRaceName">
-                                {race.race_no ?? idx + 1}.&nbsp; {race.race_name}
-                                {race.division && <> &nbsp;({race.division})</>}
-                                {race.void && <span className="docVoidTag">&nbsp; VOID</span>}
-                            </p>
-                            <p className="docRaceMeta">
-                                {race.distance && <>(About) {race.distance} Metres.</>}
-                                {race.time && <>&nbsp;&nbsp;Time: {race.time}</>}
-                                {race.foreign_jockeys_eligible && (
-                                    <span className="docForeignTag">
-                                        &nbsp;&nbsp;Foreign Jockeys Eligible
-                                    </span>
-                                )}
-                            </p>
-                            {race.narrative_entry && (
-                                <p className="docRaceNarration">{race.narrative_entry}</p>
-                            )}
-                        </div>
-
-                        {race.weight_adjustments && race.weight_adjustments.length > 0 && (
-                            <div className="docWeightNotes">
-                                {race.weight_adjustments.map((adj, nIdx) => (
-                                    <p key={nIdx}>
-                                        Weights {adj.direction} by {adj.kg} kg at {adj.stage} stage.
-                                    </p>
-                                ))}
+                {!loading &&
+                    !error &&
+                    !isHtmlMode &&
+                    races.map((race, idx) => (
+                        <div className="docRaceBlock" key={idx}>
+                            <div className="docRaceBar">
+                                <p className="docRaceName">
+                                    {race.race_no ?? idx + 1}.&nbsp; {race.race_name}
+                                    {race.division && <> &nbsp;({race.division})</>}
+                                    {race.void && <span className="docVoidTag">&nbsp; VOID</span>}
+                                </p>
+                                <p className="docRaceMeta">
+                                    {race.distance && <>(About) {race.distance} Metres.</>}
+                                    {race.time && <>&nbsp;&nbsp;Time: {race.time}</>}
+                                    {race.foreign_jockeys_eligible && <span className="docForeignTag">&nbsp;&nbsp;Foreign Jockeys Eligible</span>}
+                                </p>
+                                {race.narrative_entry && <p className="docRaceNarration">{race.narrative_entry}</p>}
                             </div>
-                        )}
 
-                        <div className="docTableWrap">
-                            <table className="docTable">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Horse</th>
-                                        <th>Weight</th>
-                                        <th>Rating</th>
-                                        <th>Trainer</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {race.horses && race.horses.map((horse, hIdx) => (
-                                        <tr key={horse.horseseq || hIdx}>
-                                            <td>{hIdx + 1}</td>
-                                            <td className="docHorseName">
-                                                {horse.name}
-                                                {horse.sire && (
-                                                    <span className="docBreeding">
-                                                        {horse.sire}
-                                                        {horse.dam ? `-${horse.dam}` : ""}
-                                                        {horse.dam_nation
-                                                            ? ` (${horse.dam_nation})`
-                                                            : ""}
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td>{horse.weight ?? "-"}</td>
-                                            <td>{horse.rating ?? "NR"}</td>
-                                            <td>{horse.trainer}</td>
-                                        </tr>
+                            {race.weight_adjustments && race.weight_adjustments.length > 0 && (
+                                <div className="docWeightNotes">
+                                    {race.weight_adjustments.map((adj, nIdx) => (
+                                        <p key={nIdx}>
+                                            Weights {adj.direction} by {adj.kg} kg at {adj.stage} stage.
+                                        </p>
                                     ))}
-                                </tbody>
-                            </table>
+                                </div>
+                            )}
+
+                            <div className="docTableWrap">
+                                <table className="docTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Horse</th>
+                                            <th>Weight</th>
+                                            <th>Rating</th>
+                                            <th>Trainer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {race.horses &&
+                                            race.horses.map((horse, hIdx) => (
+                                                <tr key={horse.horseseq || hIdx}>
+                                                    <td>{hIdx + 1}</td>
+                                                    <td className="docHorseName">
+                                                        {horse.name}
+                                                        {horse.sire && (
+                                                            <span className="docBreeding">
+                                                                {horse.sire}
+                                                                {horse.dam ? `-${horse.dam}` : ""}
+                                                                {horse.dam_nation ? ` (${horse.dam_nation})` : ""}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td>{horse.weight ?? "-"}</td>
+                                                    <td>{horse.rating ?? "NR"}</td>
+                                                    <td>{horse.trainer}</td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-
-                    </div>
-
-                ))}
+                    ))}
 
                 {!loading && !error && !isHtmlMode && pools.length > 0 && (
                     <div className="docPoolsBlock">
                         <p className="docPoolsTitle">Pools</p>
                         {pools.map((pool, pIdx) => (
-    <div className="docPoolRow" key={pIdx}>
-        <span className="docPoolName">{pool.pool_name}</span>
-        <span className="docPoolValue">{pool.members}</span>
-    </div>
-))}
+                            <div className="docPoolRow" key={pIdx}>
+                                <span className="docPoolName">{pool.pool_name}</span>
+                                <span className="docPoolValue">{pool.members}</span>
+                            </div>
+                        ))}
                     </div>
                 )}
-
             </div>
-
         </section>
     );
 }

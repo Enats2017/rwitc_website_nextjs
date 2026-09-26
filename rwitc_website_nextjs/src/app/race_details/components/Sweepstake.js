@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getSweepstakes } from "../../../services/sweepstakeService";
 import "./Sweepstake.css";
+import { FaHorseHead } from "react-icons/fa";
 
 export default function Sweepstake() {
 
@@ -55,8 +56,13 @@ export default function Sweepstake() {
     return (
         <section className="sweepstakePage docPage">
 
-            <div className="docBadgeWrap">
-                <span className="docBadge">Sweep Stakes</span>
+            <div className="aboutTitleWrap">
+                <h1 className="aboutHeading">Sweep Stakes</h1>
+                <div className="sectionDivider">
+                    <span className="dividerLine dividerLineLeft"></span>
+                    <FaHorseHead className="dividerIcon" />
+                    <span className="dividerLine dividerLineRight"></span>
+                </div>
             </div>
 
             <div className="docContainer">

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getRatingChange } from "../../../services/ratingChangeService";
 import "./RatingChange.css";
+import { FaHorseHead } from "react-icons/fa";
 
 const ARCHIVE_STYLES_RATING_CHANGE = `
 <style>
@@ -126,8 +127,14 @@ export default function RatingChange() {
 
     return (
         <section className="ratingChangePage docPage">
-            <div className="docBadgeWrap">
-                <span className="docBadge">Rating Change</span>
+
+            <div className="aboutTitleWrap">
+                <h1 className="aboutHeading">Rating Change</h1>
+                <div className="sectionDivider">
+                    <span className="dividerLine dividerLineLeft"></span>
+                    <FaHorseHead className="dividerIcon" />
+                    <span className="dividerLine dividerLineRight"></span>
+                </div>
             </div>
 
             <div className="docContainer">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getRaceResult } from "../../../services/raceResultService";
+import { FaHorseHead, FaPlayCircle } from "react-icons/fa";
 import "./RaceResult.css";
 
 const ARCHIVE_STYLES_RACE_RESULT = `
@@ -67,24 +68,24 @@ export default function RaceResult() {
                     raceType
                 );
 
-    setMode(data.mode || "json");
+                setMode(data.mode || "json");
 
-    if (data.mode === "html") {
-        setRawHtml(data.html || "");
-        setFound(data.found);
-        setDownloadUrl(data.downloadFile || null);
-        setDownloadAvailable(data.downloadAvailable || false);
-        setLoading(false);
-        return;
-    }
+                if (data.mode === "html") {
+                    setRawHtml(data.html || "");
+                    setFound(data.found);
+                    setDownloadUrl(data.downloadFile || null);
+                    setDownloadAvailable(data.downloadAvailable || false);
+                    setLoading(false);
+                    return;
+                }
 
-    // json mode (dates before cutoff)
-    setFound(data.found);
-    setMessage(data.message);
-    setDayLabel(data.dayLabel);
-    setConditions(data.conditions);
-    setRaces(data.races || []);
-    setDownloadUrl(data.downloadUrl);
+                // json mode (dates before cutoff)
+                setFound(data.found);
+                setMessage(data.message);
+                setDayLabel(data.dayLabel);
+                setConditions(data.conditions);
+                setRaces(data.races || []);
+                setDownloadUrl(data.downloadUrl);
 
             } catch (err) {
 
@@ -112,8 +113,13 @@ export default function RaceResult() {
     return (
         <section className="raceResultPage docPage">
 
-            <div className="docBadgeWrap">
-                <span className="docBadge">Race Results</span>
+            <div className="aboutTitleWrap">
+                <h1 className="aboutHeading">Race Results</h1>
+                <div className="sectionDivider">
+                    <span className="dividerLine dividerLineLeft"></span>
+                    <FaHorseHead className="dividerIcon" />
+                    <span className="dividerLine dividerLineRight"></span>
+                </div>
             </div>
 
             <div className="docContainer">
@@ -123,9 +129,13 @@ export default function RaceResult() {
                     className="docDownloadBtn"
                     onClick={() => {
                         if (downloadUrl) {
-                            window.open(downloadUrl, "_blank", "noopener,noreferrer");
+                            window.open(
+                                downloadUrl,
+                                "_blank",
+                                "noopener,noreferrer"
+                            );
                         } else {
-                            alert("No download file found for this date.");
+                            alert("No race result HTML found for this date.");
                         }
                     }}
                 >
@@ -133,20 +143,20 @@ export default function RaceResult() {
                 </button>
 
                 {mode !== "html" && (
-    <div className="docHeader">
-        <p className="docClub">
-            ROYAL WESTERN INDIA TURF CLUB.
-        </p>
-        {dayLabel && <p className="docClub">{dayLabel}</p>}
-        <h1 className="docWatermark">RACE RESULT</h1>
-        <p className="docHint">
-            Click on a horse to know its Performance Profile @ RWITC
-        </p>
-        <p className="docHint">
-            Click on the Dam to get her progeny details
-        </p>
-    </div>
-)}
+                    <div className="docHeader">
+                        <p className="docClub">
+                            ROYAL WESTERN INDIA TURF CLUB.
+                        </p>
+                        {dayLabel && <p className="docClub">{dayLabel}</p>}
+                        <h1 className="docWatermark">RACE RESULT</h1>
+                        <p className="docHint">
+                            Click on a horse to know its Performance Profile @ RWITC
+                        </p>
+                        <p className="docHint">
+                            Click on the Dam to get her progeny details
+                        </p>
+                    </div>
+                )}
 
                 {loading && (
                     <div className="docStateBox">
@@ -172,16 +182,42 @@ export default function RaceResult() {
                         className="docArchiveHtml"
                         srcDoc={ARCHIVE_STYLES_RACE_RESULT + rawHtml}
                         title="Race Results"
-                        sandbox="allow-same-origin"
+                        sandbox="allow-same-origin allow-popups"
                         scrolling="no"
                         style={{ width: "100%", border: "none" }}
                         onLoad={(e) => {
                             const iframe = e.target;
                             const doc = iframe.contentWindow?.document;
                             if (!doc) return;
+                
                             const setHeight = () => {
                                 iframe.style.height = doc.documentElement.scrollHeight + "px";
                             };
+
+                            doc.querySelectorAll("th").forEach((th) => {
+                                if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
+                                    th.style.whiteSpace = "nowrap";
+                                }
+                            });
+
+                            doc.querySelectorAll("a").forEach((link) => {
+                                if (link.textContent.trim().toLowerCase() === "video") {
+                                    link.textContent = "";
+                                    link.innerHTML =
+                                        '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#16a34a"><path d="M8 5v14l11-7z"/></svg>';
+                                    link.setAttribute("target", "_blank");
+                                    link.setAttribute("rel", "noopener noreferrer");
+                                    link.style.display = "inline-flex";
+                                    link.style.alignItems = "center";
+                                    link.style.justifyContent = "center";
+
+                                    link.addEventListener("click", (ev) => {
+                                        ev.preventDefault();
+                                        window.open(link.href, "_blank", "noopener,noreferrer");
+                                    });
+                                }
+                            });
+
                             setHeight();
                             requestAnimationFrame(setHeight);
                             setTimeout(setHeight, 100);
@@ -258,7 +294,7 @@ export default function RaceResult() {
                             <tbody>
 
                                 <tr>
-                                    <th rowSpan="2" style={{ width: "8%" }}>No.: {race.race_no_season}</th>
+                                    <th rowSpan="2" style={{ width: "8%", whiteSpace: "nowrap" }}>No.: {race.race_no_season}</th>
                                     <th colSpan="6" rowSpan="2">
                                         {race.race_name} {race.division}
                                         {race.void && <span className="docVoidTag">&nbsp; VOID</span>}
@@ -270,7 +306,9 @@ export default function RaceResult() {
                                         (About) {race.distance} Metres.
                                     </th>
                                     <th rowSpan="2" style={{ width: "8%" }}>
-                                        <a href="#" onClick={(e) => e.preventDefault()}>Video</a>
+                                        <a href="#" onClick={(e) => e.preventDefault()} title="Video">
+                                            <FaPlayCircle size={22} />
+                                        </a>
                                     </th>
                                 </tr>
                                 <tr>

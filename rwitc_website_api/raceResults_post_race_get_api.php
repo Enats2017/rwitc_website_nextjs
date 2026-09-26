@@ -16,8 +16,8 @@ require_once __DIR__ . "/ApiSecurity.php";
 require_once __DIR__ . "/config/run_races_config.php";
 
 // --------------------------------------------------
- // HELPERS
- // --------------------------------------------------
+// HELPERS
+// --------------------------------------------------
 
 function raceResultJsonResponse($success, $data = [], $message = null, $status = 200)
 {
@@ -170,7 +170,7 @@ function readHtmlFromS3BucketApi($fileUrl)
     ) {
         throw new Exception(
             "S3 HTML helper returned HTTP " .
-            $httpCode
+                $httpCode
         );
     }
 
@@ -399,7 +399,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $storedFileUrl,
                 $existing["id"]
             );
-
         } else {
 
             $stmt = $conn->prepare("
@@ -444,7 +443,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ],
             "Race result HTML file registered successfully"
         );
-
     } catch (Throwable $error) {
 
         $security->logLine(
@@ -457,7 +455,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             "Internal server error",
             500
         );
-
     } finally {
 
         if (isset($conn)) {
@@ -616,7 +613,6 @@ if ($date !== "" && $date > "2022-10-14") {
                         "Unable to read local race result HTML file"
                     );
                 }
-
             } else {
 
                 $stmt = $conn->prepare("
@@ -670,18 +666,17 @@ if ($date !== "" && $date > "2022-10-14") {
             header("Content-Type: text/html; charset=UTF-8");
             header(
                 'Content-Disposition: inline; filename="Race_results_' .
-                $date .
-                '.html"'
+                    $date .
+                    '.html"'
             );
 
             echo $downloadContent;
             exit;
-
         } catch (Throwable $error) {
 
             $security->logLine(
                 "RACE_RESULTS_DOWNLOAD_ERROR | " .
-                $error->getMessage()
+                    $error->getMessage()
             );
 
             http_response_code(500);
@@ -774,17 +769,23 @@ if ($date !== "" && $date > "2022-10-14") {
                 );
         }
 
-        $downloadFile =
-            defined("RUN_RACES_BASE_URL")
-            ? RUN_RACES_BASE_URL .
-                "/raceResults_post_race_get_api.php?date=" .
-                urlencode($date) .
-                "&type=" .
-                urlencode($type) .
-                "&race_type=" .
-                urlencode($raceType) .
-                "&download=1"
-            : null;
+        $downloadAvailable = true;
+        $downloadFile = null;
+
+        $baseParts = parse_url(RUN_RACES_BASE_URL);
+        $origin = "";
+
+        if (isset($baseParts["scheme"]) && isset($baseParts["host"])) {
+            $origin = $baseParts["scheme"] . "://" . $baseParts["host"]
+                . (isset($baseParts["port"]) ? ":" . $baseParts["port"] : "");
+        }
+
+        $downloadFile = $origin
+            . $_SERVER["SCRIPT_NAME"]
+            . "?date=" . urlencode($date)
+            . "&type=" . urlencode($type)
+            . "&race_type=" . urlencode($raceType)
+            . "&download=1";
 
         $response = [
             "found"              => true,
@@ -799,19 +800,17 @@ if ($date !== "" && $date > "2022-10-14") {
         ];
 
         $security->respondSuccess($response);
-
     } catch (Throwable $error) {
 
         $security->logLine(
             "RACE_RESULTS_HTML_READ_ERROR | " .
-            $error->getMessage()
+                $error->getMessage()
         );
 
         $security->respondError(
             "Internal server error",
             500
         );
-
     } finally {
 
         if (isset($conn)) {
@@ -891,8 +890,14 @@ function convertDecimalToFractionString($decNo)
 function mapPlacingCode($placing, &$nullPlacingCount, &$voidRace)
 {
     $map = [
-        55 => "NDS", 56 => "NS", 57 => "NPR", 58 => "WD",
-        59 => "BO", 60 => "DQ", 61 => "DNC", 62 => "NPR",
+        55 => "NDS",
+        56 => "NS",
+        57 => "NPR",
+        58 => "WD",
+        59 => "BO",
+        60 => "DQ",
+        61 => "DNC",
+        62 => "NPR",
     ];
 
     if ($placing == 0) {
@@ -918,8 +923,14 @@ function mapLengthLabel($lengthCode)
         return null;
     }
     $labels = [
-        20 => "DH", 30 => "Shd", 40 => "Hd", 50 => "nk",
-        60 => "NO", 70 => "SN", 80 => "LN", 90 => "Dist",
+        20 => "DH",
+        30 => "Shd",
+        40 => "Hd",
+        50 => "nk",
+        60 => "NO",
+        70 => "SN",
+        80 => "LN",
+        90 => "Dist",
     ];
     if (isset($labels[$lengthCode])) {
         return $labels[$lengthCode];
@@ -1142,9 +1153,15 @@ try {
 
         $division = "";
         switch ((int) ($prospect["DIV"] ?? 0)) {
-            case 1: $division = "Division I"; break;
-            case 2: $division = "Division II"; break;
-            case 3: $division = "Division III"; break;
+            case 1:
+                $division = "Division I";
+                break;
+            case 2:
+                $division = "Division II";
+                break;
+            case 3:
+                $division = "Division III";
+                break;
         }
 
         $entries = [];
@@ -1161,9 +1178,9 @@ try {
             if ($raceResult["PLACING"] == 1) {
                 $ownership = trim(
                     ($raceResult["FINALNAME"] ?? "")
-                    . ($raceResult["FINALNAME1"] ?? "")
-                    . ($raceResult["FINALNAME2"] ?? "")
-                    . ($raceResult["FINALNAME3"] ?? "")
+                        . ($raceResult["FINALNAME1"] ?? "")
+                        . ($raceResult["FINALNAME2"] ?? "")
+                        . ($raceResult["FINALNAME3"] ?? "")
                 );
                 $breeder = $raceResult["BREEDER"] ?? "";
             }
@@ -1459,13 +1476,12 @@ try {
         $cacheKey,
         $response
     );
-
 } catch (Throwable $error) {
 
     // Log actual database error
     $security->logLine(
         "RACE_RESULTS_API_ERROR | "
-        . $error->getMessage()
+            . $error->getMessage()
     );
 
     // Do not expose database error publicly
@@ -1473,7 +1489,6 @@ try {
         "Internal server error",
         500
     );
-
 } finally {
 
     // Close database connection

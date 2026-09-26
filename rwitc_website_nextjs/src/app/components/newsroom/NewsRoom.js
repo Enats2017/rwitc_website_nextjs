@@ -42,7 +42,7 @@ export default function NewsRoom() {
     }, [news, showAll]);
 
     const handleNewClick = (item) => {
-        console.log(item);
+        router.push(`/articles?id=${item.id}`);
     };
 
     const handlePreviousTopStory = () => {
@@ -141,20 +141,19 @@ export default function NewsRoom() {
                     <div className="newsList">
                         {
                             visibleNews.map((item) => (
-                                <div className="newsItem" key={item.id}>
+                                <div className="newsItem" key={item.id} onClick={() => handleNewClick(item)}>
                                     <p className="newsText">
                                         {item.title}
-                                        {
-                                            item.new === "Y" && (
-                                                <button
-                                                    type="button"
-                                                    className="newLabel"
-                                                    onClick={() => handleNewClick(item)}
-                                                >
-                                                    New
-                                                </button>
-                                            )
-                                        }
+                                        {item.new === "Y" && (
+                                            <button type="button" className="newLabel"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleNewClick(item);
+                                                }}
+                                            >
+                                                New
+                                            </button>
+                                        )}
                                     </p>
                                 </div>
                             ))
