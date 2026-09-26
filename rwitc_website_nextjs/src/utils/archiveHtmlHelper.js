@@ -8,9 +8,13 @@ export function formatArchiveHtml(styles = "", rawHtml = "") {
 
     let processed = rawHtml;
 
+    // Replace full domain URLs targeting race_details with relative path
+    processed = processed.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\/race_details/gi, "race_details");
+    processed = processed.replace(/http:\/\/localhost\/rwitc_website\/race_details/gi, "race_details");
+
     // Replace live, test, and localhost domain paths with relative root
-    processed = processed.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\//gi, "/");
-    processed = processed.replace(/http:\/\/localhost\/rwitc_website\//gi, "/");
+    processed = processed.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\//gi, "./");
+    processed = processed.replace(/http:\/\/localhost\/rwitc_website\//gi, "./");
 
     // Replace legacy PHP page links with Next.js race_details routes
     processed = processed.replace(/performanceProfile\.php\?/gi, "race_details?type=performanceProfile&");
@@ -51,8 +55,8 @@ export function handleArchiveIframeLoad(e) {
             link.setAttribute("target", "_top");
             let href = link.getAttribute("href");
             if (href) {
-                href = href.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\//gi, "/");
-                href = href.replace(/http:\/\/localhost\/rwitc_website\//gi, "/");
+                href = href.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\/race_details/gi, "race_details");
+                href = href.replace(/http:\/\/localhost\/rwitc_website\/race_details/gi, "race_details");
                 link.setAttribute("href", href);
 
                 link.onclick = (event) => {
