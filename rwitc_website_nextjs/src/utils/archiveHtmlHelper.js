@@ -3,6 +3,78 @@
  * links navigate correctly within the Next.js app in the top window.
  */
 
+export function transformPhpUrl(href) {
+    if (!href) return href;
+
+    try {
+        // Parse with dummy base URL if relative
+        const url = new URL(href, "https://rwitc.com");
+        const pathname = url.pathname.toLowerCase();
+        const params = url.searchParams;
+
+        // 1. Performance Profile links (/new/performanceProfile.php or performanceProfile.php)
+        if (pathname.includes("performanceprofile.php")) {
+            const horseName = params.get("as_values") || params.get("horsename");
+            const raceNo = params.get("raceno") || params.get("race_no");
+            const raceDate = params.get("racedate") || params.get("race_date");
+
+            if (horseName) {
+                return `race_details?type=performanceProfile&horsename=${encodeURIComponent(horseName)}`;
+            }
+            if (raceNo && raceDate) {
+                return `race_details?type=performanceProfile&race_no=${encodeURIComponent(raceNo)}&race_date=${encodeURIComponent(raceDate)}`;
+            }
+            return `race_details?type=performanceProfile`;
+        }
+
+        // 2. Foal Records / Mother links (/new/foalRecords.php or foalRecords.php)
+        if (pathname.includes("foalrecords.php")) {
+            const mareName = params.get("mareName") || params.get("marename");
+            const damNat = params.get("damnat") || params.get("dam_nat");
+            if (mareName) {
+                let target = `race_details?type=foalRecords&mareName=${encodeURIComponent(mareName)}`;
+                if (damNat) target += `&damnat=${encodeURIComponent(damNat)}`;
+                return target;
+            }
+            return `race_details?type=foalRecords`;
+        }
+
+        // 3. Horse Ratings links
+        if (pathname.includes("horseratings.php")) {
+            return `race_details?type=horseRatings`;
+        }
+
+        // 4. Dividends links
+        if (pathname.includes("dividends.php")) {
+            const date = params.get("date") || params.get("racedate");
+            return `race_details?type=dividends${date ? `&date=${encodeURIComponent(date)}` : ""}`;
+        }
+
+        // 5. Trainer Horses links
+        if (pathname.includes("trainerhorses.php")) {
+            const trainer = params.get("trainer") || params.get("trainer_name");
+            return `race_details?type=trainerHorses${trainer ? `&trainer=${encodeURIComponent(trainer)}` : ""}`;
+        }
+
+        // 6. Generic race_details query links
+        if (pathname.includes("race_details")) {
+            return `race_details${url.search}`;
+        }
+
+        // 7. Generic .php link: strip legacy domain prefix if present
+        if (pathname.endsWith(".php")) {
+            const cleanHref = href
+                .replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\//gi, "")
+                .replace(/http:\/\/localhost\/rwitc_website\//gi, "");
+            return cleanHref;
+        }
+    } catch (err) {
+        console.error("PHP link transformation error:", err);
+    }
+
+    return href;
+}
+
 export function formatArchiveHtml(styles = "", rawHtml = "") {
     if (!rawHtml) return "";
 
@@ -50,67 +122,32 @@ export function handleArchiveIframeLoad(e) {
         requestAnimationFrame(setHeight);
         setTimeout(setHeight, 100);
 
-        // 1. Convert Horse performanceProfile links (/new/performanceProfile.php?as_values=...)
+        // Process all anchor tags with href
         doc.querySelectorAll("a[href]").forEach((link) => {
-            const href = link.getAttribute("href");
-            if (!href) return;
-
-            try {
-                const url = new URL(href, "https://rwitc.com");
-
-                if (url.hostname === "rwitc.com" && (url.pathname === "/new/performanceProfile.php" || url.pathname.endsWith("/performanceProfile.php"))) {
-                    const horseName = url.searchParams.get("as_values") || url.searchParams.get("horsename");
-                    if (horseName) {
-                        const newUrl = "race_details?type=performanceProfile&horsename=" + encodeURIComponent(horseName);
-                        link.setAttribute("href", newUrl);
-                    }
-                }
-            } catch (error) {
-                console.error("Horse link update error:", error);
-            }
-        });
-
-        // 2. Convert Mother/Mare foalRecords links (/new/foalRecords.php?mareName=...)
-        doc.querySelectorAll("a[href]").forEach((link) => {
-            const href = link.getAttribute("href");
-            if (!href) return;
-            try {
-                const url = new URL(href, "https://rwitc.com");
-                if (url.hostname === "rwitc.com" && (url.pathname === "/new/foalRecords.php" || url.pathname.endsWith("/foalRecords.php"))) {
-                    const mareName = url.searchParams.get("mareName");
-                    const damNat = url.searchParams.get("damnat");
-
-                    if (!mareName) return;
-                    
-                    const newUrl = "race_details?type=foalRecords&mareName=" + encodeURIComponent(mareName) + (damNat ? "&damnat=" + encodeURIComponent(damNat) : "");
-                    link.setAttribute("href", newUrl);
-                }
-            } catch (error) {
-                console.error("Mother link update error:", error);
-            }
-        });
-
-        // Intercept all link clicks to navigate top window cleanly
-        doc.querySelectorAll("a").forEach((link) => {
             link.setAttribute("target", "_top");
-            let href = link.getAttribute("href");
-            if (href) {
-                href = href.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\/race_details/gi, "race_details");
-                href = href.replace(/http:\/\/localhost\/rwitc_website\/race_details/gi, "race_details");
-                link.setAttribute("href", href);
+            const rawHref = link.getAttribute("href");
+            if (!rawHref) return;
 
-                link.onclick = (event) => {
-                    const targetUrl = link.getAttribute("href");
-                    if (targetUrl && !targetUrl.startsWith("#") && !targetUrl.startsWith("javascript:")) {
-                        event.preventDefault();
-                        if (window.top) {
-                            window.top.location.href = targetUrl;
-                        } else {
-                            window.location.href = targetUrl;
-                        }
-                    }
-                };
-            }
+            // Transform any PHP / legacy link to Next.js route
+            const newHref = transformPhpUrl(rawHref);
+            link.setAttribute("href", newHref);
+
+            // Add click listener to guarantee top window redirection for all links (including .php)
+            link.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const hrefToNavigate = link.getAttribute("href") || newHref;
+                if (!hrefToNavigate || hrefToNavigate.startsWith("#") || hrefToNavigate.startsWith("javascript:")) {
+                    return;
+                }
+
+                if (window.top) {
+                    window.top.location.href = hrefToNavigate;
+                } else {
+                    window.location.href = hrefToNavigate;
+                }
+            });
         });
     } catch (err) {
         console.warn("Archive iframe load handler warning:", err);
