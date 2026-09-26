@@ -1,6 +1,6 @@
 // live
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api/proxy";
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://test.rwitc.com/rwitc-website";
 export const UPLOAD_URL = `${SITE_URL}/images`;
 export const NEWS_URL = `${SITE_URL}/news`;
 export const NEW_URL = `${SITE_URL}/new`;

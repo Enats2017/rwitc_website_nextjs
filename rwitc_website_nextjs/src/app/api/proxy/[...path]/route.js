@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://test.rwitc.com/rwitc-website';
-const TARGET_API_BASE = `${SITE_URL.replace(/\/+$/, '')}/rwitc_website_api`;
+export const dynamic = 'force-static';
+export async function generateStaticParams() {
+    return [{ path: ['init'] }];
+}
+
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/+$/, '');
+const TARGET_API_BASE = (process.env.NEXT_PUBLIC_API_URL || `${SITE_URL}/rwitc_website_api`).replace(/\/+$/, '');
 
 export async function GET(request, { params }) {
     const resolvedParams = await Promise.resolve(params);
