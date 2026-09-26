@@ -9,8 +9,8 @@ export default function Footer() {
     // ---- WEATHER CITY TOGGLE ----
     // Jo city dikhani hai usse active rakho, doosri ko comment kar do.
 
-    // const WEATHER_CITY = { name: "MUMBAI", lat: 19.0760, lon: 72.8777 };
-    const WEATHER_CITY = { name: "PUNE", lat: 18.5204, lon: 73.8567 };
+     const WEATHER_CITY = { name: "MUMBAI", lat: 19.0760, lon: 72.8777 };
+    //const WEATHER_CITY = { name: "PUNE", lat: 18.5204, lon: 73.8567 };
 
     const [currentTemp, setCurrentTemp] = useState(null);
     const [currentIcon, setCurrentIcon] = useState("🌦️");
