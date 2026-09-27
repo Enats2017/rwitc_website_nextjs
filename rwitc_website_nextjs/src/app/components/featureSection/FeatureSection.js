@@ -3,7 +3,7 @@
 import { UPLOAD_URL } from "../../../services/api";
 import "./FeatureSection.css";
 import Link from "next/link";
-import { FaTrophy, FaUserTie, FaUsers, FaStar, FaMoneyBillWave, FaVideo, FaBriefcase, FaCalendarAlt, FaFlagCheckered, FaBook, } from "react-icons/fa";
+import { FaTrophy, FaUserTie, FaUsers, FaStar, FaMoneyBillWave, FaVideo, FaBriefcase, FaCalendarAlt, FaFlagCheckered, FaBook, FaImages, } from "react-icons/fa";
 
 export default function FeatureSection() {
     const features = [
@@ -11,9 +11,10 @@ export default function FeatureSection() {
         { title: "Trainerwise Horses In Training", icon: <FaUserTie />, image: "body_img2.jpeg", link: "/race_details?type=trainerHorses" },
         { title: "Webportal For Owners / Trainers", icon: <FaUsers />, image: "body_img4.jpeg", link: "https://erp-1.rwitc.com/rwitc_erp/admin" },
         { title: "Rating of all Horses", icon: <FaStar />, image: "body_img3.jpeg", link: "/race_details?type=horseRatings" },
-        { title: "Tote Dividends", icon: <FaMoneyBillWave />, image: "body_img3.jpeg", wide: true, link: "/race_details?type=dividends", },
+        { title: "Tote Dividends", icon: <FaMoneyBillWave />, image: "body_img3.jpeg", link: "/race_details?type=dividends", },
         { title: "Video Archives", icon: <FaVideo />, image: "body_img4.jpeg", link: "https://www.rwitcraces.com/RaceArchives.aspx" },
         { title: "Money Leaders", icon: <FaBriefcase />, image: "body_img5.jpeg", link: "/race_details?type=moneyLeaders" },
+        { title: "Gallery", icon: <FaImages />, image: "body_img6.jpeg", link: "/race_details?type=photos" },
         { title: "Racing Fixtures", icon: <FaCalendarAlt />, image: "body_img6.jpeg", link: "/race_details?type=racingFixtures" },
         { title: "Mock Race Result", icon: <FaFlagCheckered />, image: "body_img1.jpeg", link: "/race_details?type=mockRaceResults" },
         { title: "Entries For Sweepstake Races", icon: <FaFlagCheckered />, image: "body_img7.jpeg", link: "/race_details?type=sweepstakes" },

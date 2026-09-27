@@ -28,7 +28,9 @@ export default function HorseRatings() {
                     );
                 }
 
-                const html = await response.text();
+                const buffer = await response.arrayBuffer();
+                const decoder = new TextDecoder("windows-1252");
+                const html = decoder.decode(buffer);
 
                 if (!html.trim()) {
                     throw new Error(

@@ -46,7 +46,7 @@ export default function Article() {
             <div className="articlesContainer">
                 <button
                     className="backToArticlesBtn"
-                    onClick={() => { window.location.href = "/rwitc-website/articles"; }}
+                    onClick={() => { window.location.href = "/articles"; }}
                 >
                     <FaArrowLeft className="backToArticlesIcon" />
                     <span>Back to Articles</span>

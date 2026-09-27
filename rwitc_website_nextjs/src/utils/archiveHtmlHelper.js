@@ -64,7 +64,7 @@ export function transformPhpUrl(href) {
         // 7. Generic .php link: strip legacy domain prefix if present
         if (pathname.endsWith(".php")) {
             const cleanHref = href
-                .replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\//gi, "")
+                .replace(/https?:\/\/(www\.|test\.)?rwitc\.com\//gi, "")
                 .replace(/http:\/\/localhost\/rwitc_website\//gi, "");
             return cleanHref;
         }
@@ -81,11 +81,11 @@ export function formatArchiveHtml(styles = "", rawHtml = "") {
     let processed = rawHtml;
 
     // Replace full domain URLs targeting race_details with relative path
-    processed = processed.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\/race_details/gi, "race_details");
+    processed = processed.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/race_details/gi, "race_details");
     processed = processed.replace(/http:\/\/localhost\/rwitc_website\/race_details/gi, "race_details");
 
     // Replace live, test, and localhost domain paths with relative root
-    processed = processed.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\/rwitc-website\//gi, "./");
+    processed = processed.replace(/https?:\/\/(www\.|test\.)?rwitc\.com\//gi, "./");
     processed = processed.replace(/http:\/\/localhost\/rwitc_website\//gi, "./");
 
     // Replace legacy PHP page links with Next.js race_details routes

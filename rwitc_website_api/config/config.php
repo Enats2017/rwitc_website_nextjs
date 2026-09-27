@@ -23,7 +23,6 @@ try {
     );
 
     $conn->set_charset("utf8mb4");
-
 } catch (mysqli_sql_exception $e) {
 
     http_response_code(500);
@@ -34,7 +33,6 @@ try {
         "error"   => "Database connection failed.",
         "message" => $e->getMessage()
     ]));
-
 }
 
 
@@ -61,7 +59,6 @@ if (!file_exists($envFile)) {
         "data"    => null,
         "error"   => "Environment configuration file not found."
     ]));
-
 }
 
 
@@ -85,7 +82,6 @@ if ($lines === false) {
         "data"    => null,
         "error"   => "Unable to read environment configuration file."
     ]));
-
 }
 
 
@@ -156,7 +152,7 @@ $requiredEnv = [
     "AWS_ACCESS_KEY_ID",
     "AWS_SECRET_ACCESS_KEY",
     "AWS_REGION",
-    "AWS_TEST_BUCKET",
+    "AWS_LIVE_BUCKET",
     "NEXT_PUBLIC_API_URL"
 ];
 
@@ -171,7 +167,6 @@ foreach ($requiredEnv as $requiredKey) {
             "data"    => null,
             "error"   => "Missing environment configuration: " . $requiredKey
         ]));
-
     }
 }
 
@@ -200,12 +195,12 @@ define(
 // AWS BUCKET
 // ============================================================
 
-// Current server = test.rwitc.com
-// Therefore use TEST bucket.
+// Server = rwitc.com, but pointing to LIVE bucket
+// because ERP now uploads handicaps/reports to LIVE S3.
 
 define(
     "AWS_BUCKET",
-    $env["AWS_TEST_BUCKET"]
+    $env["AWS_LIVE_BUCKET"]
 );
 
 
@@ -216,4 +211,10 @@ define(
 define(
     "WEBSITE_API_BASE_URL",
     $env["NEXT_PUBLIC_API_URL"]
+);
+
+// captcha key
+define(
+    "RECAPTCHA_SECRET_KEY",
+    $env["RECAPTCHA_SECRET_KEY"]
 );

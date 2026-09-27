@@ -847,7 +847,7 @@ if ($date > "2022-11-08") {
 
         $downloadFile =
             rtrim(
-                "https://test.rwitc.com/rwitc-website/rwitc_website_api/Racecard_get_api.php",
+                "https://rwitc.com/rwitc_website_api/Racecard_get_api.php",
                 "/"
             )
             . "?date="

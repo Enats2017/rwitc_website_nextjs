@@ -328,7 +328,7 @@
 }
 
 .statusDot.active {
-    background: #0b6d2a;
+    background: #4aab69;
     box-shadow: 0 0 6px rgba(11, 109, 42, .35);
     cursor: pointer;
     transition: .3s ease;
