@@ -127,10 +127,15 @@ function readHtmlFromS3BucketApi($fileUrl)
 {
     $s3Key = declarationsS3Key($fileUrl);
 
+    // .html and .htm both allowed
     if (
         $s3Key === "" ||
         strpos($s3Key, "run_races/") !== 0 ||
-        strtolower(pathinfo($s3Key, PATHINFO_EXTENSION)) !== "html"
+        !in_array(
+            strtolower(pathinfo($s3Key, PATHINFO_EXTENSION)),
+            ["html", "htm"],
+            true
+        )
     ) {
         throw new Exception(
             "Invalid declarations S3 file key"
@@ -202,6 +207,30 @@ function readHtmlFromS3BucketApi($fileUrl)
     }
 
     return $content;
+}
+
+// Legacy .htm files Windows-1252 me hote hain. Browser ko UTF-8 chahiye,
+// isliye content ko UTF-8 me convert karte hain.
+function ensureUtf8Html($content)
+{
+    $content = (string) $content;
+
+    // Agar already valid UTF-8 hai to touch mat karo
+    if (mb_check_encoding($content, "UTF-8")) {
+        return $content;
+    }
+
+    $converted = mb_convert_encoding($content, "UTF-8", "Windows-1252");
+
+    // File ke andar purana charset meta ho to UTF-8 se replace karo
+    $converted = preg_replace(
+        '/<meta[^>]+charset[^>]*>/i',
+        '<meta charset="UTF-8">',
+        $converted,
+        1
+    );
+
+    return $converted;
 }
 
 // --------------------------------------------------
@@ -493,13 +522,14 @@ if ($raceType === "" && $type !== "") {
 }
 
 // ============================================================
-// DOWNLOAD MODE
+// DOWNLOAD MODE (.htm ONLY)
 //
 // ?date=2026-08-22&type=declarations&race_type=pre_race&download=1
 //
 // Source priority:
-//   1. Old local run_races HTML file
-//   2. New S3 file registered in run_race_details
+//   1. Local run_races Declarations_<date>.htm
+//   2. S3 .htm file (registered .html key ka .htm version)
+// Koi .html fallback nahi hai.
 // ============================================================
 
 if (
@@ -512,19 +542,19 @@ if (
 
         $downloadContent = false;
 
-        // ---------- 1. LOCAL HTML ----------
+        // ---------- 1. LOCAL .htm ----------
         $localFile =
             RUN_RACES_LOCAL_PATH .
             "/Declarations_" .
             $date .
-            ".html";
+            ".htm";
 
         if (is_file($localFile)) {
             $downloadContent =
                 file_get_contents($localFile);
         }
 
-        // ---------- 2. PRIVATE S3 HTML ----------
+        // ---------- 2. PRIVATE S3 .htm ----------
         // Same S3 reader flow as Handicaps / Acceptance.
         if ($downloadContent === false) {
 
@@ -576,10 +606,15 @@ if (
 
             $stmt->close();
 
+            // DB me .html registered hai, uska .htm version banao
+            $htmUrl = preg_replace(
+                '/\.html$/i',
+                '.htm',
+                (string) ($row["file_url"] ?? "")
+            );
+
             $downloadContent =
-                readHtmlFromS3BucketApi(
-                    $row["file_url"] ?? ""
-                );
+                readHtmlFromS3BucketApi($htmUrl);
         }
 
         if (
@@ -590,6 +625,9 @@ if (
                 "Declarations HTML file is empty"
             );
         }
+
+        // Legacy Windows-1252 content -> UTF-8
+        $downloadContent = ensureUtf8Html($downloadContent);
 
         // ------------------------------------------------------
         // Add the same archive CSS used by Declarations.js.
@@ -761,7 +799,7 @@ CSS;
         header(
             'Content-Disposition: inline; filename="Declarations_' .
             $date .
-            '.html"'
+            '.htm"'
         );
 
         echo $downloadContent;

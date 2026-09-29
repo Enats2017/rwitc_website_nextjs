@@ -6,12 +6,24 @@ import { getDeclarations } from "../../../services/declarationsService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./Declarations.css";
 
+/*
+ * Styles injected INSIDE the archive iframe.
+ *
+ * NOTE: the old "@media (max-width: 500px)" card layout block
+ * (display: contents, td:before data-label, 8-10px fonts) was removed on
+ * purpose, same as Handicaps and Acceptance. The archive .html does not
+ * have data-label attributes on the <td>, so on phones the table was
+ * breaking. On phones the iframe now keeps a minimum width (see
+ * Declarations.css) and the wrapper scrolls sideways, so the table always
+ * looks exactly like the desktop version.
+ */
 const ARCHIVE_STYLES_DECLARATIONS = `
 <style>
     * { box-sizing: border-box; }
-    body { font-family: Arial; margin: 0; padding: 12px; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; word-wrap: break-word; padding: 12px; }
     span, a { display: inline-block; text-decoration: none; color: #333333; }
-    img { vertical-align: middle; }
+    img { max-width: 100%; height: auto; vertical-align: middle; }
     h1 { margin: unset !important; font-size: 26px !important; }
     h3 { font-family: 'Roboto Condensed', Arial, sans-serif; font-size: 32px; color: #c1c1c1; margin: 10px 0; }
     .pageHeading { text-align: center; }
@@ -32,13 +44,15 @@ const ARCHIVE_STYLES_DECLARATIONS = `
     }
     td { text-align: left !important; padding: 6px !important; color: #333333 !important; font-weight: 600; }
     tbody > tr > th { text-align: left !important; }
-    tbody tr td:nth-child(2) { text-align: center important; }
+    tbody tr td:nth-child(2) { text-align: center !important; }
     tbody tr td:nth-child(3) { text-align: center !important; }
 
     .darkGrey_old { font-size: 14px; color: black; text-align: center; font-weight: bold; }
     .darkGrey { font-size: 14px; color: white; text-align: center; font-weight: bold; }
     .white { background-color: #ffffff; color: black !important; }
 
+    /* Legacy "download" link inside the archive markup — hidden because
+       the React page already renders its own working download button. */
     .download,
     .pageHeader .pageHeading .subHeading .download {
         display: none !important;
@@ -62,68 +76,10 @@ const ARCHIVE_STYLES_DECLARATIONS = `
     .tbbody { margin-bottom: 4%; margin-top: -2%; }
     .padd { padding: 1%; }
 
-    /* Desktop: hide only the duplicate/mobile-card "show1" row.
-       .perform_data must stay visible — DO NOT hide it globally. */
-    @media (min-width: 500px) and (max-width: 2560px) {
-        .show1 {
-            display: none;
-        }
-        .left, .left1 {
-            text-align: left !important;
-        }
-    }
-
-    @media (max-width: 500px) {
-        .text_size { font-size: 8px; }
-        #leftArea { padding: 0px !important; }
-        .download { float: unset !important; margin-bottom: 10px; }
-        td { padding: 4px !important; }
-        .table-bordered { border: unset; }
-        .text_size { border: unset !important; }
-        .hide { display: none !important; }
-        .myhead { display: none; }
-        .block { display: block; }
-        .nm { text-align: center !important; }
-
-        .perform_data {
-            display: contents !important;
-            border: 1px solid #cdced3 !important;
-            border-radius: 12px;
-            background: #cdced3 !important;
-            margin-bottom: 5%;
-            padding: 10px !important;
-        }
-        .perform_data td:first-child { padding-left: 10px; }
-        .perform_data td:before {
-            content: attr(data-label);
-            float: left;
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: bold;
-            width: 45%;
-        }
-        .perform_data td { font-size: 10px !important; position: relative; border: unset !important; }
-
-        .poolsTable tr:nth-child(1) th {
-            border: unset !important;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-        }
-        .poolsTable tr th span { margin-left: 6%; }
-        .poolsTable tr td { border: unset !important; padding-left: 30px !important; }
-        .poolsTable { background-color: #cdced3 !important; border-radius: 10px !important; }
-
-        .tbbody { margin-top: -8% !important; }
-        .bot10 { margin-bottom: 20px !important; }
-
-        .tabhead { border: 1px solid #cdced3 !important; background: #cdced3 !important; text-align: center !important; }
-        .tabpads { text-align: center !important; font-size: 12px !important; }
-        .darkGrey { font-size: 12px !important; }
-    }
-
-    @media (min-width: 320px) and (max-width: 375px) {
-        td { padding: 2px !important; }
-    }
+    /* Duplicate/mobile-card "show1" row is hidden on ALL devices.
+       .perform_data is the MAIN data row and must always stay visible. */
+    .show1 { display: none; }
+    .left, .left1 { text-align: left !important; }
 </style>
 `;
 
@@ -168,8 +124,8 @@ export default function Declarations() {
                 setMode(data.mode || "json");
                 setRawHtml(data.html || "");
                 setDayNarrative(data.dayNarrative);
-                setRaces(data.races);
-                setPools(data.pools);
+                setRaces(data.races || []);
+                setPools(data.pools || []);
                 setDownloadFile(data.downloadFile);
                 setDownloadAvailable(data.downloadAvailable);
 
@@ -216,6 +172,8 @@ export default function Declarations() {
                     Download Declarations
                 </button>
 
+                {/* Header block only applies to the structured (DB) view —
+                    the archived HTML already carries its own header markup. */}
                 {!isHtmlMode && (
                     <div className="docHeader">
                         <p className="docClub">ROYAL WESTERN INDIA TURF CLUB.</p>
@@ -254,16 +212,25 @@ export default function Declarations() {
                     </div>
                 )}
 
+                {/* Archive dates: render the Declarations_<date>.html markup
+                    returned by the API as-is, inside an iframe so the archive
+                    file's own <style> block stays isolated from the app's
+                    global CSS. The iframe sits in a scroll wrapper so on
+                    phones the table keeps its real layout and scrolls
+                    sideways instead of breaking. */}
                 {!loading && !error && isHtmlMode && !hasNoHtml && (
-                    <iframe
-                        className="docArchiveHtml"
-                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES_DECLARATIONS, rawHtml)}
-                        title="Declarations"
-                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
-                        onLoad={handleArchiveIframeLoad}
-                    />
+                    <div className="docArchiveScroll">
+                        <iframe
+                            className="docArchiveHtml"
+                            srcDoc={formatArchiveHtml(ARCHIVE_STYLES_DECLARATIONS, rawHtml)}
+                            title="Declarations"
+                            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                            onLoad={handleArchiveIframeLoad}
+                        />
+                    </div>
                 )}
 
+                {/* DB-sourced dates: structured table. */}
                 {!loading && !error && !isHtmlMode && races.map((race, idx) => (
 
                     <div className="docRaceBlock" key={idx}>
@@ -354,11 +321,11 @@ export default function Declarations() {
                     <div className="docPoolsBlock">
                         <p className="docPoolsTitle">Pools</p>
                         {pools.map((pool, pIdx) => (
-    <div className="docPoolRow" key={pIdx}>
-        <span className="docPoolName">{pool.pool_name}</span>
-        <span className="docPoolValue">{pool.members}</span>
-    </div>
-))}
+                            <div className="docPoolRow" key={pIdx}>
+                                <span className="docPoolName">{pool.pool_name}</span>
+                                <span className="docPoolValue">{pool.members}</span>
+                            </div>
+                        ))}
                     </div>
                 )}
 

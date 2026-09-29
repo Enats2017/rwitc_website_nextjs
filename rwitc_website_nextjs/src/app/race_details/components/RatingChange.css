@@ -1,17 +1,15 @@
-/* ================= RATING CHANGE PAGE — PLAIN DOCUMENT STYLE ================= */
+/* ================= RATING CHANGE PAGE — PLAIN DOCUMENT STYLE =================
+   Mobile approach copied from RaceResult: the iframe keeps a real minimum
+   width inside a scroll wrapper, so the archive content never gets squashed;
+   on phones the user just swipes sideways. */
 
-/* ---- ARCHIVE HTML (raw Rating_change_<date>.html passthrough, iframe-isolated) ---- */
-.ratingChangePage .docArchiveHtml {
-    width: 100%;
-    border: none;
-    display: block;
-    min-height: 200px;
-}
-
-.ratingChangePage .docPage {
+/* ---- PAGE ---- (same element has both classes, so no space between them) */
+.ratingChangePage.docPage {
     width: 100%;
     background: #ffffff;
     padding: 48px 16px 60px;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 /* HEADING — same style as "About RWITC" / "Race Result" page */
@@ -37,7 +35,7 @@
     align-items: center;
     justify-content: center;
     gap: 18px;
-    margin-top: 0px;
+    margin-top: 0;
     width: 100%;
     max-width: 480px;
     margin-left: auto;
@@ -64,32 +62,6 @@
     flex-shrink: 0;
 }
 
-@media (max-width: 768px) {
-    .ratingChangePage .aboutHeading {
-        font-size: 26px;
-        padding-bottom: 12px;
-    }
-
-    .ratingChangePage .sectionDivider {
-        max-width: 320px;
-        gap: 12px;
-    }
-
-    .ratingChangePage .dividerIcon {
-        font-size: 18px;
-    }
-}
-
-@media (max-width: 480px) {
-    .ratingChangePage .aboutHeading {
-        font-size: 22px;
-    }
-
-    .ratingChangePage .sectionDivider {
-        max-width: 240px;
-    }
-}
-
 /* ---- CONTAINER (bordered card) ---- */
 .ratingChangePage .docContainer {
     position: relative;
@@ -99,6 +71,30 @@
     padding: 20px 24px 32px;
     border: 1px solid #e2e2e2;
     border-radius: 4px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* ---- ACTION ROW (Download / Open HTML) ---- */
+.ratingChangePage .docActionRow {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+.ratingChangePage .docOpenBtn {
+    padding: 8px 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #1a1a1a;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ratingChangePage .docOpenBtn:hover {
+    background: #f4f4f4;
 }
 
 /* ---- DOWNLOAD BUTTON (kept for future use) ---- */
@@ -115,6 +111,7 @@
     text-decoration: none;
     border: none;
     cursor: pointer;
+    z-index: 2;
 }
 
 .ratingChangePage .docDownloadBtn:hover {
@@ -150,20 +147,84 @@
     }
 }
 
+/* ---- ARCHIVE HTML (raw Rating_change_<date>.html, iframe-isolated) ----
+   The scroll wrapper lets the iframe keep a real minimum width on phones,
+   so the content never gets squashed; the user swipes sideways.
+   On desktop the iframe simply fills the container.
+   Iframe height is set by handleArchiveIframeLoad. */
+.ratingChangePage .docArchiveScroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.ratingChangePage .docArchiveHtml {
+    display: block;
+    width: 100%;
+    min-width: 720px;
+    max-width: none;
+    min-height: 200px;
+    border: none;
+    overflow: hidden;
+}
+
 /* ---- RESPONSIVE ---- */
 @media (max-width: 768px) {
+    .ratingChangePage .aboutHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
 
-    .ratingChangePage .docBadge {
-        font-size: 16px;
-        padding: 10px 24px;
+    .ratingChangePage .sectionDivider {
+        max-width: 320px;
+        gap: 12px;
+    }
+
+    .ratingChangePage .dividerIcon {
+        font-size: 18px;
+    }
+
+    .ratingChangePage .aboutTitleWrap {
+        margin-bottom: 28px;
+    }
+
+    .ratingChangePage.docPage {
+        padding: 32px 12px 40px;
     }
 
     .ratingChangePage .docContainer {
-        padding: 60px 16px 28px;
+        padding: 16px 12px 24px;
     }
 
     .ratingChangePage .docDownloadBtn {
         top: 14px;
-        right: 14px;
+        right: 12px;
+    }
+
+    .ratingChangePage .docStateBox {
+        padding: 40px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ratingChangePage .aboutHeading {
+        font-size: 22px;
+    }
+
+    .ratingChangePage .sectionDivider {
+        max-width: 240px;
+    }
+
+    .ratingChangePage.docPage {
+        padding: 28px 8px 36px;
+    }
+
+    .ratingChangePage .docContainer {
+        padding: 12px 8px 20px;
+    }
+
+    .ratingChangePage .docActionRow {
+        justify-content: center;
     }
 }

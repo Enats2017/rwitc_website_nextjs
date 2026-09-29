@@ -1,15 +1,5 @@
 /* ================= RACE RESULT PAGE — PLAIN DOCUMENT STYLE ================= */
 
-/* ---- ARCHIVE HTML (raw Race_results_<date>.html passthrough, iframe-isolated) ---- */
-.raceResultPage .docArchiveHtml {
-    width: 100%;
-    max-width: 100%;
-    border: none;
-    display: block;
-    min-height: 200px;
-    overflow: hidden;
-}
-
 /* HEADING — same style as "About RWITC" / "Race Card" page */
 .raceResultPage .aboutTitleWrap {
     display: flex;
@@ -58,32 +48,6 @@
     font-size: 22px;
     color: #0d3b1f;
     flex-shrink: 0;
-}
-
-@media (max-width: 768px) {
-    .raceResultPage .aboutHeading {
-        font-size: 26px;
-        padding-bottom: 12px;
-    }
-
-    .raceResultPage .sectionDivider {
-        max-width: 320px;
-        gap: 12px;
-    }
-
-    .raceResultPage .dividerIcon {
-        font-size: 18px;
-    }
-}
-
-@media (max-width: 480px) {
-    .raceResultPage .aboutHeading {
-        font-size: 22px;
-    }
-
-    .raceResultPage .sectionDivider {
-        max-width: 240px;
-    }
 }
 
 /* Video icon column */
@@ -143,6 +107,8 @@
     padding: 28px 32px 40px;
     border: 1px solid #e2e2e2;
     border-radius: 4px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 /* ---- DOWNLOAD BUTTON ---- */
@@ -159,6 +125,7 @@
     text-decoration: none;
     border: none;
     cursor: pointer;
+    z-index: 2;
 }
 
 .raceResultPage .docDownloadBtn:hover {
@@ -222,6 +189,29 @@
     }
 }
 
+/* ---- ARCHIVE HTML (raw Race_results_<date>.html passthrough) ----
+   The scroll wrapper lets the iframe keep a real minimum width on
+   phones, so the table never gets squashed or broken; the user just
+   swipes sideways. On desktop the iframe simply fills the container.
+   Iframe height is set by handleArchiveIframeLoad. */
+.raceResultPage .docArchiveScroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 40px;              /* keeps clear of the Download button */
+}
+
+.raceResultPage .docArchiveHtml {
+    display: block;
+    width: 100%;
+    min-width: 720px;
+    max-width: none;
+    border: none;
+    min-height: 200px;
+    overflow: hidden;
+}
+
 /* ---- RACE BLOCK ---- */
 .raceResultPage .docRaceBlock {
     margin-bottom: 28px;
@@ -259,6 +249,7 @@
 .raceResultPage .docTableWrap {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .raceResultPage .docTable {
@@ -306,27 +297,75 @@
 /* ---- RESPONSIVE ---- */
 @media (max-width: 768px) {
 
+    .raceResultPage .aboutHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
+
+    .raceResultPage .sectionDivider {
+        max-width: 320px;
+        gap: 12px;
+    }
+
+    .raceResultPage .dividerIcon {
+        font-size: 18px;
+    }
+
     .raceResultPage .docBadge {
         font-size: 16px;
         padding: 10px 24px;
     }
 
     .raceResultPage .docContainer {
-        padding: 60px 16px 28px;
+        padding: 60px 12px 28px;
     }
 
     .raceResultPage .docDownloadBtn {
         top: 14px;
-        right: 14px;
+        right: 12px;
     }
 
     .raceResultPage .docWatermark {
         font-size: 24px;
+        letter-spacing: 2px;
+    }
+
+    .raceResultPage .docHint,
+    .raceResultPage .docClub {
+        font-size: 13px;
     }
 
     .raceResultPage .docTable thead th,
     .raceResultPage .docTable tbody td {
         padding: 8px 10px;
         font-size: 12.5px;
+    }
+
+    .raceResultPage .docArchiveScroll {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .raceResultPage .aboutHeading {
+        font-size: 22px;
+    }
+
+    .raceResultPage .sectionDivider {
+        max-width: 240px;
+    }
+
+    .raceResultPage .docBadge {
+        font-size: 15px;
+        padding: 9px 20px;
+    }
+
+    .raceResultPage .docContainer {
+        padding: 56px 8px 24px;
+    }
+
+    .raceResultPage .docRaceBar {
+        padding: 12px 14px;
     }
 }

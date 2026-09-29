@@ -6,12 +6,24 @@ import { getAcceptance } from "../../../services/acceptanceService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./Acceptance.css";
 
+/*
+ * Styles injected INSIDE the archive iframe.
+ *
+ * NOTE: the old "@media (max-width: 500px)" card layout block
+ * (display: contents, td:before data-label, 8-10px fonts) was removed on
+ * purpose, same as Handicaps. The archive .html does not have data-label
+ * attributes on the <td>, so on phones the table was breaking. On phones the
+ * iframe now keeps a minimum width (see Acceptance.css) and the wrapper
+ * scrolls sideways, so the table always looks exactly like the desktop
+ * version.
+ */
 const ARCHIVE_STYLES_ACCEPTANCE = `
 <style>
     * { box-sizing: border-box; }
-    body { font-family: Arial; margin: 0; padding: 12px; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; word-wrap: break-word; padding: 12px; }
     span, a { display: inline-block; text-decoration: none; color: #333333; }
-    img { vertical-align: middle; }
+    img { max-width: 100%; height: auto; vertical-align: middle; }
     h1 { margin: unset !important; font-size: 26px !important; }
     h3 { font-family: 'Roboto Condensed', Arial, sans-serif; font-size: 32px; color: #c1c1c1; margin: 10px 0; }
     .pageHeading { text-align: center; }
@@ -64,70 +76,11 @@ const ARCHIVE_STYLES_ACCEPTANCE = `
     .tbbody { margin-bottom: 4%; margin-top: -2%; }
     .padd { padding: 1%; }
 
-    /* Desktop: hide the duplicate/mobile-card "show1" row only.
+    /* Duplicate/mobile-card "show1" row is hidden on ALL devices.
        .perform_data is the MAIN data row (Horse Name, Color/Sex, Age,
-       Weight, Rating, Breeding, Trainer) and must stay visible here —
-       hiding it globally was the bug that made all tables look empty. */
-    @media (min-width: 500px) and (max-width: 2560px) {
-        .show1 {
-            display: none;
-        }
-        .left, .left1 {
-            text-align: left !important;
-        }
-    }
-
-    @media (max-width: 500px) {
-        .text_size { font-size: 8px; }
-        #leftArea { padding: 0px !important; }
-        .download { float: unset !important; margin-bottom: 10px; }
-        td { padding: 4px !important; }
-        .table-bordered { border: unset; }
-        .text_size { border: unset !important; }
-        .hide { display: none !important; }
-        .myhead { display: none; }
-        .block { display: block; }
-        .nm { text-align: center !important; }
-
-        .perform_data {
-            display: contents !important;
-            border: 1px solid #cdced3 !important;
-            border-radius: 12px;
-            background: #cdced3 !important;
-            margin-bottom: 5%;
-            padding: 10px !important;
-        }
-        .perform_data td:first-child { padding-left: 10px; }
-        .perform_data td:before {
-            content: attr(data-label);
-            float: left;
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: bold;
-            width: 45%;
-        }
-        .perform_data td { font-size: 10px !important; position: relative; border: unset !important; }
-
-        .poolsTable tr:nth-child(1) th {
-            border: unset !important;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-        }
-        .poolsTable tr th span { margin-left: 6%; }
-        .poolsTable tr td { border: unset !important; padding-left: 30px !important; }
-        .poolsTable { background-color: #cdced3 !important; border-radius: 10px !important; }
-
-        .tbbody { margin-top: -8% !important; }
-        .bot10 { margin-bottom: 20px !important; }
-
-        .tabhead { border: 1px solid #cdced3 !important; background: #cdced3 !important; text-align: center !important; }
-        .tabpads { text-align: center !important; font-size: 12px !important; }
-        .darkGrey { font-size: 12px !important; }
-    }
-
-    @media (min-width: 320px) and (max-width: 375px) {
-        td { padding: 2px !important; }
-    }
+       Weight, Rating, Breeding, Trainer) and must always stay visible. */
+    .show1 { display: none; }
+    .left, .left1 { text-align: left !important; }
 </style>
 `;
 
@@ -164,8 +117,8 @@ export default function Acceptance() {
                 setMode(data.mode || "json");
                 setRawHtml(data.html || "");
                 setDayNarrative(data.dayNarrative);
-                setRaces(data.races);
-                setPools(data.pools);
+                setRaces(data.races || []);
+                setPools(data.pools || []);
                 setDownloadFile(data.downloadFile);
                 setDownloadAvailable(data.downloadAvailable);
             } catch (err) {
@@ -203,6 +156,8 @@ export default function Acceptance() {
                     Download Acceptance
                 </button>
 
+                {/* Header block only applies to the structured (DB) view —
+                    the archived HTML already carries its own header markup. */}
                 {!isHtmlMode && (
                     <div className="docHeader">
                         <p className="docClub">ROYAL WESTERN INDIA TURF CLUB.</p>
@@ -237,16 +192,25 @@ export default function Acceptance() {
                     </div>
                 )}
 
+                {/* Archive dates: render the Acceptance_<date>.html markup
+                    returned by the API as-is, inside an iframe so the archive
+                    file's own <style> block stays isolated from the app's
+                    global CSS. The iframe sits in a scroll wrapper so on
+                    phones the table keeps its real layout and scrolls
+                    sideways instead of breaking. */}
                 {!loading && !error && isHtmlMode && !hasNoHtml && (
-                    <iframe
-                        className="docArchiveHtml"
-                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES_ACCEPTANCE, rawHtml)}
-                        title="Acceptances"
-                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
-                        onLoad={handleArchiveIframeLoad}
-                    />
+                    <div className="docArchiveScroll">
+                        <iframe
+                            className="docArchiveHtml"
+                            srcDoc={formatArchiveHtml(ARCHIVE_STYLES_ACCEPTANCE, rawHtml)}
+                            title="Acceptances"
+                            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                            onLoad={handleArchiveIframeLoad}
+                        />
+                    </div>
                 )}
 
+                {/* DB-sourced dates: structured table. */}
                 {!loading &&
                     !error &&
                     !isHtmlMode &&

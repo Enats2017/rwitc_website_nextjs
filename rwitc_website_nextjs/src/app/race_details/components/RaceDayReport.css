@@ -1,117 +1,80 @@
-.raceDayReportPage .docPage {
-    width: 100%;
-    background: #ffffff;
-    padding: 48px 16px 60px;
-}
-
-.raceDayReportPage .docBadgeWrap {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 24px;
-}
-
-.raceDayReportPage .docBadge {
-    display: inline-block;
-    padding: 12px 32px;
-    border-radius: 999px;
-    background: #16a34a;
-    margin-top: 20px;
-    color: #ffffff;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.raceDayReportPage .docContainer {
+/* RACE DAY / NOTICE BUTTONS (just above MediaSection)
+   Uses the SAME side gutters and 1400px max-width as MediaSection,
+   so both sections share the same left and right edges. */
+.raceDayWrap {
     position: relative;
+    z-index: 4;
     width: 100%;
-    max-width: 1140px;
     margin: 0 auto;
-    padding: 28px 32px 40px;
-    border: none;
+    padding: 30px 20px 0;        /* same side gutter as .mediaSection */
+    box-sizing: border-box;
 }
 
-.raceDayReportPage .docDownloadBtn {
-    position: absolute;
-    top: 20px;
-    right: 24px;
-    background: transparent;
-    color: #333333;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: underline;
-    border: none;
-    cursor: pointer;
-}
-
-.raceDayReportPage .docDownloadBtn:hover {
-    color: #16a34a;
-}
-
-.raceDayReportPage .docHeader {
-    display: none;
-}
-
-.raceDayReportPage .docStateBox {
-    text-align: center;
-    padding: 60px 20px;
-    color: #555;
-    font-size: 15px;
-}
-
-.raceDayReportPage .docStateError {
-    color: #b3261e;
-}
-
-.raceDayReportPage .docLoader {
-    width: 34px;
-    height: 34px;
-    margin: 0 auto 16px;
-    border-radius: 50%;
-    border: 3px solid rgba(11, 109, 42, .15);
-    border-top-color: #0b6d2a;
-    animation: docSpinRDR .8s linear infinite;
-}
-
-@keyframes docSpinRDR {
-    to { transform: rotate(360deg); }
-}
-
-.raceDayReportPage .docArchiveHtml {
+.raceDayRow {
     width: 100%;
-    border: none;
-    display: block;
-    min-height: 200px;
-    overflow: hidden;
+    max-width: 1400px;           /* same as .mediaSectionContent */
+    margin: 0 auto;
+    padding: 0;                  /* gutter now comes from the wrapper */
+    display: flex;
+    gap: 19px;                   /* same gap as .mediaContainer */
+    align-items: stretch;
+    box-sizing: border-box;
 }
 
+/* reserves space while loading */
+.raceDayLoading {
+    height: 70px;
+}
+
+.raceDayBtn {
+    flex: 1;
+    min-width: 0;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 20px;
+    background: linear-gradient(90deg, #08501f, #0b6d2a);
+    color: #ffffff;
+    font-size: var(--fs-lg, 20px);
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-decoration: none;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
+    transition: transform .3s ease, box-shadow .3s ease;
+    box-sizing: border-box;
+}
+
+.raceDayBtn:hover {
+    color: #ffffff;
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, .25);
+}
+
+/* RESPONSIVE (same breakpoints and gutters as MediaSection) */
 @media (max-width: 768px) {
-
-    .raceDayReportPage .docBadge {
-        font-size: 16px;
-        padding: 10px 24px;
+    .raceDayWrap {
+        padding: 20px 20px 0;
     }
 
-    .raceDayReportPage .docContainer {
-        padding: 60px 16px 28px;
+    .raceDayRow {
+        flex-direction: column;
+        gap: 12px;
     }
 
-    .raceDayReportPage .docDownloadBtn {
-        top: 14px;
-        right: 14px;
+    .raceDayLoading {
+        height: 60px;
+    }
+
+    .raceDayBtn {
+        height: 60px;
     }
 }
 
-.raceDayReportPage .docBackLink {
-    display: inline-block;
-    color: #333333;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: underline;
-    cursor: pointer;
-    margin-bottom: 12px;
-}
-
-.raceDayReportPage .docBackLink:hover {
-    color: #16a34a;
+@media (max-width: 480px) {
+    .raceDayWrap {
+        padding: 16px 15px 0;
+    }
 }

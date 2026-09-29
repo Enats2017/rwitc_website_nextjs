@@ -1,23 +1,27 @@
-/* RACE DAY / NOTICE BUTTONS (MediaSection ke theek upar) */
+/* RACE DAY / NOTICE BUTTONS (just above MediaSection)
+   Uses the SAME side gutters and 1400px max-width as MediaSection,
+   so both sections share the same left and right edges. */
 .raceDayWrap {
     position: relative;
     z-index: 4;
     width: 100%;
-    max-width: 1200px;
     margin: 0 auto;
-    padding: 30px 0 0;
+    padding: 30px 20px 0;        /* same side gutter as .mediaSection */
+    box-sizing: border-box;
 }
 
 .raceDayRow {
     width: 100%;
-    max-width: 1400px;
+    max-width: 1400px;           /* same as .mediaSectionContent */
     margin: 0 auto;
+    padding: 0;                  /* gutter now comes from the wrapper */
     display: flex;
-    gap: 19px;
+    gap: 19px;                   /* same gap as .mediaContainer */
     align-items: stretch;
+    box-sizing: border-box;
 }
 
-/* load hote waqt jagah roke rakhne ke liye */
+/* reserves space while loading */
 .raceDayLoading {
     height: 70px;
 }
@@ -33,13 +37,14 @@
     padding: 0 20px;
     background: linear-gradient(90deg, #08501f, #0b6d2a);
     color: #ffffff;
-    font-size: 22px;
+    font-size: var(--fs-lg, 20px);
     font-weight: 700;
     letter-spacing: .3px;
     text-decoration: none;
     border-radius: 14px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
     transition: transform .3s ease, box-shadow .3s ease;
+    box-sizing: border-box;
 }
 
 .raceDayBtn:hover {
@@ -48,13 +53,7 @@
     box-shadow: 0 16px 32px rgba(0, 0, 0, .25);
 }
 
-/* RESPONSIVE (MediaSection ke breakpoints jaise hi) */
-@media (max-width: 1200px) {
-    .raceDayWrap {
-        padding: 30px 20px 0;
-    }
-}
-
+/* RESPONSIVE (same breakpoints and gutters as MediaSection) */
 @media (max-width: 768px) {
     .raceDayWrap {
         padding: 20px 20px 0;
@@ -71,7 +70,6 @@
 
     .raceDayBtn {
         height: 60px;
-        font-size: 18px;
     }
 }
 
@@ -79,8 +77,10 @@
     .raceDayWrap {
         padding: 16px 15px 0;
     }
+}
 
-    .raceDayBtn {
-        font-size: 16px;
-    }
+.videoPlayIcon {
+    font-size: 18px;
+    margin-right: 10px;
+    flex-shrink: 0;
 }

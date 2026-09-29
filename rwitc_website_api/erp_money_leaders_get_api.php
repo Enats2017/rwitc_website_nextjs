@@ -72,6 +72,62 @@ $dbType = $allowedTypes[$rawType]["db_type"];
 $raceType = $allowedTypes[$rawType]["race_type"];
 
 // --------------------------------------------------
+// LOCAL run_races HELPER FUNCTION
+// --------------------------------------------------
+
+/**
+ * Look for the Money Leader file in the local run_races folder.
+ * Returns ["html" => ..., "mtime" => ...] or null if not found / empty.
+ *
+ * Folder candidates (first existing file wins):
+ *  1. RUN_RACES_PATH constant (from run_races_config.php), if defined
+ *  2. <api folder>/run_races
+ *  3. <parent of api folder>/run_races
+ */
+function moneyLeaderReadFromLocal($fileName)
+{
+    // $fileName comes only from the whitelist above, but stay safe anyway.
+    $fileName = basename($fileName);
+
+    $dirs = [];
+
+    if (defined("RUN_RACES_PATH")) {
+        $dirs[] = RUN_RACES_PATH;
+    }
+
+    $dirs[] = __DIR__ . "/run_races";
+    $dirs[] = dirname(__DIR__) . "/run_races";
+
+    foreach ($dirs as $dir) {
+
+        $dir = rtrim(str_replace("\\", "/", (string) $dir), "/");
+
+        if ($dir === "") {
+            continue;
+        }
+
+        $path = $dir . "/" . $fileName;
+
+        if (!is_file($path) || !is_readable($path)) {
+            continue;
+        }
+
+        $content = @file_get_contents($path);
+
+        if ($content === false || trim($content) === "") {
+            continue;
+        }
+
+        return [
+            "html"  => $content,
+            "mtime" => (int) @filemtime($path)
+        ];
+    }
+
+    return null;
+}
+
+// --------------------------------------------------
 // S3 HELPER FUNCTIONS
 // --------------------------------------------------
 
@@ -205,12 +261,9 @@ function moneyLeaderReadFromS3Helper($s3Key)
 // --------------------------------------------------
 // FETCH DATA
 // --------------------------------------------------
-// Money Leader is fetched ONLY from run_race_details -> S3.
-// The local run_races folder is intentionally NOT checked.
-//
-// The latest inserted/updated Money Leader record is selected by
-// highest id, because the S3 filenames are fixed and the newest
-// push represents the current website content.
+// Order of lookup:
+//   1. Local run_races folder  -> if file found, use it (S3 is NOT checked)
+//   2. run_race_details (DB)   -> file_url -> S3 (only if local not found)
 //
 // No response cache is used here so a new Push_Website is visible
 // immediately on the next API request.
@@ -226,77 +279,94 @@ try {
     $latestDate = null;
 
     // ==========================================================
-    // 1. DB ONLY - GET LATEST MONEY LEADER RECORD
+    // 1. LOCAL run_races FOLDER FIRST
     // ==========================================================
 
-    $stmt = $conn->prepare("
-        SELECT id, `date`, file_url
-        FROM run_race_details
-        WHERE `type` = ?
-          AND `race_type` = ?
-          AND file_url IS NOT NULL
-          AND file_url <> ''
-        ORDER BY id DESC
-        LIMIT 1
-    ");
+    $local = moneyLeaderReadFromLocal($fileName);
 
-    if ($stmt === false) {
-        throw new Exception(
-            "Unable to prepare run_race_details query: " . $conn->error
-        );
-    }
+    if ($local !== null) {
 
-    $stmt->bind_param(
-        "ss",
-        $dbType,
-        $raceType
-    );
+        $html = $local["html"];
+        $source = "LOCAL";
 
-    if (!$stmt->execute()) {
-        $error = $stmt->error ?: $conn->error;
-        $stmt->close();
-        throw new Exception(
-            "Unable to query run_race_details: " . $error
-        );
-    }
+        if ($local["mtime"] > 0) {
+            $tz = new DateTimeZone("Asia/Kolkata");
+            $dt = new DateTime("@" . $local["mtime"]);
+            $dt->setTimezone($tz);
 
-    $result = $stmt->get_result();
-
-    if ($result && $result->num_rows > 0) {
-
-        $row = $result->fetch_assoc();
-        $stmt->close();
-
-        $latestId = isset($row["id"]) ? (int) $row["id"] : null;
-        $latestDate = isset($row["date"])
-            ? trim((string) $row["date"])
-            : null;
-
-        // ======================================================
-        // 2. DB FILE_URL -> S3 KEY
-        // ======================================================
-
-        $s3Key = moneyLeaderExtractS3Key(
-            $row["file_url"]
-        );
-
-        // ======================================================
-        // 3. READ CURRENT CONTENT FROM S3
-        // ======================================================
-
-        $html = moneyLeaderReadFromS3Helper(
-            $s3Key
-        );
-
-        $source = "DB_S3";
-
-        if ($latestDate !== null && $latestDate !== "") {
-            $updatedAt = $latestDate . "T00:00:00+05:30";
+            $latestDate = $dt->format("Y-m-d");
+            $updatedAt = $dt->format("Y-m-d\TH:i:sP");
         }
 
     } else {
 
-        $stmt->close();
+        // ======================================================
+        // 2. NOT IN LOCAL -> DB LATEST RECORD -> S3
+        // ======================================================
+
+        $stmt = $conn->prepare("
+            SELECT id, `date`, file_url
+            FROM run_race_details
+            WHERE `type` = ?
+              AND `race_type` = ?
+              AND file_url IS NOT NULL
+              AND file_url <> ''
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+
+        if ($stmt === false) {
+            throw new Exception(
+                "Unable to prepare run_race_details query: " . $conn->error
+            );
+        }
+
+        $stmt->bind_param(
+            "ss",
+            $dbType,
+            $raceType
+        );
+
+        if (!$stmt->execute()) {
+            $error = $stmt->error ?: $conn->error;
+            $stmt->close();
+            throw new Exception(
+                "Unable to query run_race_details: " . $error
+            );
+        }
+
+        $result = $stmt->get_result();
+
+        if ($result && $result->num_rows > 0) {
+
+            $row = $result->fetch_assoc();
+            $stmt->close();
+
+            $latestId = isset($row["id"]) ? (int) $row["id"] : null;
+            $latestDate = isset($row["date"])
+                ? trim((string) $row["date"])
+                : null;
+
+            // DB file_url -> S3 key
+            $s3Key = moneyLeaderExtractS3Key(
+                $row["file_url"]
+            );
+
+            // Read current content from S3
+            $html = moneyLeaderReadFromS3Helper(
+                $s3Key
+            );
+
+            $source = "DB_S3";
+
+            if ($latestDate !== null && $latestDate !== "") {
+                $updatedAt = $latestDate . "T00:00:00+05:30";
+            }
+
+        } else {
+
+            $stmt->close();
+        }
     }
 
     // ==========================================================

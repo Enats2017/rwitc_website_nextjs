@@ -175,14 +175,10 @@ if ($sweeptstakeID == 0) {
     $sweepstakeDetails = $sweepstakeObj->getSweepstakeById($sweeptstakeID);
 
     echo "<a class='sweepBack' href='horseracing/sweepstakes.php'>Back</a>";
-
+    
     $filePath = '../' . SWEEPSTAKES_BASE . '/' . $sweepstakeDetails['filename'];
 
     $html = file_get_contents($filePath);
-
-    // Old Sweepstakes HTML files are ISO-8859-1 encoded.
-    // Convert them to UTF-8 for the new website.
-    $html = mb_convert_encoding($html, 'UTF-8', 'ISO-8859-1');
 
     echo $html;
 } ?>

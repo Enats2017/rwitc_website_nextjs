@@ -102,6 +102,13 @@ export default function MediaSection() {
     return (
         <section className="mediaSection">
             <div className="mediaSectionContent">
+                 {/* RUNNING TICKER */}
+                <div className="newsTicker">
+                    <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" className="tickerLogo" draggable="false" />
+                    <div className="tickerTrack">
+                        <p> website is currently being upgraded. We apologize for any inconvenience caused and appreciate your patience. </p>
+                    </div>
+                </div>
                 <div className="mediaContainer">
                     {
                         hasVideo && (

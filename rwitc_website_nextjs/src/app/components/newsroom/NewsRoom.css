@@ -2,15 +2,16 @@
 .newsRoom {
     position: relative;
     width: 100%;
-    padding: 30px 40px;
+    padding: 30px 20px;          /* same side gutter as .mediaSection / .raceDayWrap */
     background: #ffffff;
+    box-sizing: border-box;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
 }
 
-/* CONTAINER - both cards equal width */
+/* CONTAINER - both cards equal width, same 1400px cap as MediaSection */
 .newsContainer {
     position: relative;
     z-index: 1;
@@ -21,6 +22,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 30px;
     align-items: start;
+    box-sizing: border-box;
 }
 
 /* CARDS - white box style for both */
@@ -33,6 +35,7 @@
     box-shadow: 0 15px 40px rgba(0, 0, 0, .08);
     border: 1px solid rgba(0, 0, 0, .04);
     transition: box-shadow .35s ease, transform .35s ease;
+    box-sizing: border-box;
 }
 
 .raceCard:hover,
@@ -48,7 +51,7 @@
     gap: 9px;
     color: #0b6d2a;
     padding: 0;
-    font-size: 13px;
+    font-size: var(--fs-heading, 22px);
     font-weight: 800;
     letter-spacing: .5px;
     text-transform: uppercase;
@@ -58,7 +61,7 @@
 }
 
 .cardTag svg {
-    font-size: 16px;
+    font-size: 1em;
     color: #0b6d2a;
 }
 
@@ -119,7 +122,7 @@
 
 /* HEADING */
 .raceCard h2 {
-    font-size: 16px;
+    font-size: var(--fs-body, 16px);
     line-height: 1.3;
     font-weight: 700;
     color: #4a4a4a;
@@ -187,8 +190,8 @@
 }
 
 .newsText {
-    font-size: 12px;
-    line-height: 17px;
+    font-size: var(--fs-body, 16px);
+    line-height: 1.4;
     color: #1c1c1c;
     font-weight: 500;
     margin: 0;
@@ -208,7 +211,7 @@
     font-family: inherit;
     color: #16a34a;
     font-weight: 800;
-    font-size: 11px;
+    font-size: var(--fs-sm, 14px);
     cursor: pointer;
 }
 
@@ -234,7 +237,7 @@
     border-radius: 999px;
     background: linear-gradient(135deg, #16a34a, #0b6d2a);
     color: #ffffff;
-    font-size: 13px;
+    font-size: var(--fs-sm, 14px);
     font-weight: 700;
     box-shadow: 0 10px 22px rgba(11, 109, 42, .28);
     transition: .3s ease;
@@ -245,7 +248,7 @@
     box-shadow: 0 14px 28px rgba(11, 109, 42, .38);
 }
 
-/* RESPONSIVE */
+/* RESPONSIVE (same gutters as MediaSection / RaceDayButtons) */
 @media (max-width:1200px) {
     .newsContainer {
         grid-template-columns: 1fr;
@@ -285,31 +288,14 @@
         padding-right: 18px;
     }
 
-    .cardTag {
-        font-size: 12px;
-    }
-
-    .cardTag svg {
-        font-size: 15px;
-    }
-
-    .raceCard h2 {
-        font-size: 14px;
-    }
-
     .navCircle {
         width: 32px;
         height: 32px;
         font-size: 11px;
     }
-
-    .newsText {
-        font-size: 11.5px;
-        line-height: 16px;
-    }
 }
 
-@media (max-width:500px) {
+@media (max-width:480px) {
     .newsRoom {
         padding: 30px 15px;
     }
@@ -327,14 +313,6 @@
     .viewAllWrap {
         padding-left: 14px;
         padding-right: 14px;
-    }
-
-    .cardTag {
-        font-size: 11px;
-    }
-
-    .raceCard h2 {
-        font-size: 13px;
     }
 
     .viewAllWrap {

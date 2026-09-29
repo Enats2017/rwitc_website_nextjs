@@ -1,13 +1,5 @@
 /* ================= DECLARATIONS PAGE — PLAIN DOCUMENT STYLE ================= */
 
-/* ---- ARCHIVE HTML (raw Declarations_<date>.html passthrough, iframe-isolated) ---- */
-.declarationsPage .docArchiveHtml {
-    width: 100%;
-    border: none;
-    display: block;
-    min-height: 200px;
-}
-
 .declarationsPage .docPage {
     width: 100%;
     background: #ffffff;
@@ -41,9 +33,11 @@
     padding: 28px 32px 40px;
     border: 1px solid #e2e2e2;
     border-radius: 4px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
-/* ---- DOWNLOAD BUTTON (kept for future use) ---- */
+/* ---- DOWNLOAD BUTTON ---- */
 .declarationsPage .docDownloadBtn {
     position: absolute;
     top: 20px;
@@ -51,10 +45,12 @@
     background: #c9c2a8;
     color: #1a1a1a;
     padding: 6px 14px;
+    border: none;
     border-radius: 4px;
     font-size: 12px;
     font-weight: 700;
     text-decoration: none;
+    z-index: 2;
 }
 
 .declarationsPage .docDownloadBtn:hover {
@@ -93,7 +89,7 @@
 }
 
 .declarationsPage .docHint {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     color: #111;
     margin: 0;
@@ -172,6 +168,7 @@
 .declarationsPage .docTableWrap {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .declarationsPage .docTable {
@@ -239,6 +236,7 @@
 .declarationsPage .docPoolRow {
     display: flex;
     justify-content: space-between;
+    gap: 12px;
     padding: 10px 14px;
     font-size: 13px;
     border-top: 1px solid #e2e2e2;
@@ -252,6 +250,27 @@
 .declarationsPage .docPoolValue {
     color: #333333;
     font-weight: 600;
+    text-align: right;
+}
+
+/* ---- ARCHIVE HTML (raw Declarations_<date>.html passthrough) ----
+   The scroll wrapper lets the iframe keep a real minimum width on
+   phones, so the table never gets squashed or broken; the user just
+   swipes sideways. On desktop the iframe simply fills the container. */
+.declarationsPage .docArchiveScroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 40px;              /* keeps clear of the Download button */
+}
+
+.declarationsPage .docArchiveHtml {
+    display: block;
+    width: 100%;
+    min-width: 720px;
+    border: none;
+    min-height: 200px;
 }
 
 /* ---- RESPONSIVE ---- */
@@ -263,21 +282,47 @@
     }
 
     .declarationsPage .docContainer {
-        padding: 60px 16px 28px;
+        padding: 60px 12px 28px;
     }
 
     .declarationsPage .docDownloadBtn {
         top: 14px;
-        right: 14px;
+        right: 12px;
     }
 
     .declarationsPage .docWatermark {
         font-size: 24px;
+        letter-spacing: 2px;
+    }
+
+    .declarationsPage .docHint,
+    .declarationsPage .docClub {
+        font-size: 13px;
     }
 
     .declarationsPage .docTable thead th,
     .declarationsPage .docTable tbody td {
         padding: 8px 10px;
         font-size: 12.5px;
+    }
+
+    .declarationsPage .docArchiveScroll {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .declarationsPage .docBadge {
+        font-size: 15px;
+        padding: 9px 20px;
+    }
+
+    .declarationsPage .docContainer {
+        padding: 56px 8px 24px;
+    }
+
+    .declarationsPage .docRaceBar {
+        padding: 12px 14px;
     }
 }

@@ -32,7 +32,17 @@ export default function NewsRoom() {
         }
         loadTopStories();
     }, []);
+    useEffect(() => {
+        if (topStories.length <= 1) return;
 
+        const interval = setInterval(() => {
+            setTopStoryIndex((prev) =>
+                prev === topStories.length - 1 ? 0 : prev + 1
+            );
+        }, 5000); // 5 seconds
+
+        return () => clearInterval(interval);
+    }, [topStories.length]);
     // Measure NewsRoom card height ONLY while collapsed,
     // and lock Top Stories card to that height permanently.
     useEffect(() => {

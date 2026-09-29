@@ -56,33 +56,7 @@
     flex-shrink: 0;
 }
 
-/* MOBILE */
-@media (max-width: 768px) {
-    .racecardPage .aboutHeading {
-        font-size: 26px;
-        padding-bottom: 12px;
-    }
-
-    .racecardPage .sectionDivider {
-        max-width: 320px;
-        gap: 12px;
-    }
-
-    .racecardPage .dividerIcon {
-        font-size: 18px;
-    }
-}
-
-@media (max-width: 480px) {
-    .racecardPage .aboutHeading {
-        font-size: 22px;
-    }
-
-    .racecardPage .sectionDivider {
-        max-width: 240px;
-    }
-}
-
+/* ---- GREEN PILL BADGE ---- */
 .racecardPage .docBadgeWrap {
     display: flex;
     justify-content: center;
@@ -100,6 +74,7 @@
     font-weight: 800;
 }
 
+/* ---- CONTAINER (bordered card) ---- */
 .racecardPage .docContainer {
     position: relative;
     width: 100%;
@@ -108,8 +83,11 @@
     padding: 28px 32px 40px;
     border: 1px solid #e2e2e2;
     border-radius: 4px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
+/* ---- DOWNLOAD BUTTON ---- */
 .racecardPage .docDownloadBtn {
     position: absolute;
     top: 20px;
@@ -117,10 +95,12 @@
     background: #c9c2a8;
     color: #1a1a1a;
     padding: 6px 14px;
+    border: none;
     border-radius: 4px;
     font-size: 12px;
     font-weight: 700;
     text-decoration: none;
+    z-index: 2;
 }
 
 .racecardPage .docDownloadBtn:hover {
@@ -129,6 +109,7 @@
     text-decoration: underline;
 }
 
+/* ---- HEADER ---- */
 .racecardPage .docHeader {
     text-align: center;
     margin-bottom: 28px;
@@ -163,6 +144,7 @@
     margin: 0;
 }
 
+/* ---- STATE (loading / error / empty) ---- */
 .racecardPage .docStateBox {
     text-align: center;
     padding: 60px 20px;
@@ -190,11 +172,24 @@
     }
 }
 
-/* ---- ARCHIVE HTML ---- */
-.racecardPage .docArchiveHtml {
+/* ---- ARCHIVE HTML (raw RaceCard_<date>.html passthrough) ----
+   The scroll wrapper lets the iframe keep a real minimum width on
+   phones, so the race card never gets squashed or broken; the user just
+   swipes sideways. On desktop the iframe simply fills the container.
+   Iframe height is set from JS (scrollHeight) in Race_card.js. */
+.racecardPage .docArchiveScroll {
     width: 100%;
-    border: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 40px;              /* keeps clear of the Download button */
+}
+
+.racecardPage .docArchiveHtml {
     display: block;
+    width: 100%;
+    min-width: 720px;
+    border: none;
     min-height: 200px;
     overflow: hidden;
 }
@@ -311,6 +306,7 @@
 .racecardPage .docTableWrap {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-top: 12px;
 }
 
@@ -358,6 +354,7 @@
 .racecardPage .docPoolRow {
     display: flex;
     justify-content: space-between;
+    gap: 12px;
     padding: 10px 14px;
     font-size: 13px;
     border-top: 1px solid #e2e2e2;
@@ -369,8 +366,26 @@
     font-weight: 600;
 }
 
+.racecardPage .docPoolValue {
+    text-align: right;
+}
+
 /* ---- RESPONSIVE ---- */
 @media (max-width: 768px) {
+
+    .racecardPage .aboutHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
+
+    .racecardPage .sectionDivider {
+        max-width: 320px;
+        gap: 12px;
+    }
+
+    .racecardPage .dividerIcon {
+        font-size: 18px;
+    }
 
     .racecardPage .docBadge {
         font-size: 16px;
@@ -378,16 +393,26 @@
     }
 
     .racecardPage .docContainer {
-        padding: 60px 16px 28px;
+        padding: 60px 12px 28px;
     }
 
     .racecardPage .docDownloadBtn {
         top: 14px;
-        right: 14px;
+        right: 12px;
     }
 
     .racecardPage .docWatermark {
         font-size: 24px;
+        letter-spacing: 2px;
+    }
+
+    .racecardPage .docHint,
+    .racecardPage .docClub {
+        font-size: 13px;
+    }
+
+    .racecardPage .docHorseTop {
+        flex-wrap: wrap;
     }
 
     .racecardPage .docHorseRow {
@@ -399,5 +424,37 @@
     .racecardPage .docTable tbody td {
         padding: 6px 8px;
         font-size: 11.5px;
+    }
+
+    .racecardPage .docArchiveScroll {
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .racecardPage .aboutHeading {
+        font-size: 22px;
+    }
+
+    .racecardPage .sectionDivider {
+        max-width: 240px;
+    }
+
+    .racecardPage .docBadge {
+        font-size: 15px;
+        padding: 9px 20px;
+    }
+
+    .racecardPage .docContainer {
+        padding: 56px 8px 24px;
+    }
+
+    .racecardPage .docRaceBar {
+        padding: 12px 14px;
+    }
+
+    .racecardPage .docHorseCard {
+        padding: 12px;
     }
 }

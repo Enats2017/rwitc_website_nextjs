@@ -7,12 +7,24 @@ import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archi
 import { FaHorseHead } from "react-icons/fa";
 import "./Race_card.css";
 
+/*
+ * Styles injected INSIDE the archive iframe.
+ *
+ * NOTE: the old "@media (max-width: 500px)" card layout block
+ * (display: contents, td:before data-label, 10-11px fonts) was removed on
+ * purpose, same as Handicaps / Acceptance / Declarations. The archive .html
+ * does not have data-label attributes on the <td>, so on phones the table
+ * was breaking. On phones the iframe now keeps a minimum width (see
+ * Race_card.css) and the wrapper scrolls sideways, so the race card always
+ * looks exactly like the desktop version.
+ */
 const ARCHIVE_STYLES_RACECARD = `
 <style>
     * { box-sizing: border-box; }
-    body { font-family: Arial; margin: 0; padding: 12px; background: #ffffff; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; word-wrap: break-word; padding: 12px; background: #ffffff; }
     span, a { display: inline-block; text-decoration: none; color: #c9c9c9; }
-    img { vertical-align: middle; }
+    img { max-width: 100%; height: auto; vertical-align: middle; }
     h3 {
         font-family: 'Roboto Condensed', Arial, sans-serif;
         font-size: 32px;
@@ -55,41 +67,39 @@ const ARCHIVE_STYLES_RACECARD = `
     .table-bordered th, .table-bordered td { border: none; }
 
     /* ---- Race header bar (green) ---- */
-.race_no_data {
-    background: #16a34a !important;
-    border-radius: 4px;
-    margin: 36px 0 18px;
-    overflow: hidden;
-}
+    .race_no_data {
+        background: #16a34a !important;
+        border-radius: 4px;
+        margin: 36px 0 18px;
+        overflow: hidden;
+    }
 
-/* ---- Spacing between horse cards ---- */
-
-td > table.infoTable[style*='box-shadow'] {
-    margin: 18px 0 !important;
-    padding: 24px 28px !important;
-}
+    /* ---- Spacing between horse cards ---- */
+    td > table.infoTable[style*='box-shadow'] {
+        margin: 18px 0 !important;
+        padding: 24px 28px !important;
+    }
 
     .race_no_data th {
-    background: transparent;
-    color: #ffffff !important;
-    text-align: left;
-    padding: 12px 26px;
-    font-size: 14px;
-    line-height: 1.1;
-    vertical-align: top;
-    border: none !important;
-}
-.race_no_data th,
-.race_no_data th span,
-.race_no_data th * {
-    color: #ffffff !important;
-}
+        background: transparent;
+        color: #ffffff !important;
+        text-align: left;
+        padding: 12px 26px;
+        font-size: 14px;
+        line-height: 1.1;
+        vertical-align: top;
+        border: none !important;
+    }
+    .race_no_data th,
+    .race_no_data th span,
+    .race_no_data th * {
+        color: #ffffff !important;
+    }
 
     .darkGrey { color: #ffffff !important; font-weight: bold; }
     .foreign_eligible2 span { display: block; margin: 2px 0; }
 
     /* ---- Horse card (grey box, background comes from inline style) ---- */
-    
     .infoTable { width: 100%; }
     .infoTable td { border: 0; padding: 4px 6px; font-size: 13.5px; color: #222; font-weight: 700; }
     .horse_number_class { color: #111 !important; }
@@ -126,14 +136,14 @@ td > table.infoTable[style*='box-shadow'] {
         border: 1px solid #e2e2e2;
         text-align: center;
     }
-    
+
     .perform_data td {
-    font-size: 12px;
-    padding: 8px;
-    border: 1px solid #e2e2e2;
-    text-align: center;
-    font-weight: 700;
-}
+        font-size: 12px;
+        padding: 8px;
+        border: 1px solid #e2e2e2;
+        text-align: center;
+        font-weight: 700;
+    }
     .perform_data td:nth-child(2),
     .perform_data td:nth-child(2) *,
     .perform_data td:nth-child(2) span,
@@ -141,6 +151,7 @@ td > table.infoTable[style*='box-shadow'] {
     .perform_data td:nth-child(2) a {
         color: #111 !important;
     }
+
     /* ---- Pools table ---- */
     .poolsTable th {
         background: #16a34a;
@@ -153,27 +164,9 @@ td > table.infoTable[style*='box-shadow'] {
         border: 1px solid #e2e2e2;
     }
 
-    @media (min-width: 500px) and (max-width: 2560px) {
-        .show1 { display: none; }
-    }
-
-    @media (max-width: 500px) {
-        td, th { font-size: 11px !important; }
-        .perform_data {
-            display: contents;
-            border: 1px solid #cdced3 !important;
-            border-radius: 12px;
-            background: #cdced3 !important;
-        }
-        .perform_data td:before {
-            content: attr(data-label);
-            float: left;
-            font-size: 10px;
-            text-transform: uppercase;
-            font-weight: bold;
-            width: 45%;
-        }
-    }
+    /* Duplicate/mobile-card "show1" row is hidden on ALL devices.
+       .perform_data is the MAIN data row and must always stay visible. */
+    .show1 { display: none; }
 </style>
 `;
 
@@ -275,6 +268,8 @@ export default function RaceCard() {
                     Download Race Card
                 </button>
 
+                {/* Header block only applies to the structured (DB) view —
+                    the archived HTML already carries its own header markup. */}
                 {!isHtmlMode && (
                     <div className="docHeader">
                         <p className="docClub">ROYAL WESTERN INDIA TURF CLUB.</p>
@@ -306,76 +301,85 @@ export default function RaceCard() {
                     </div>
                 )}
 
+                {/* Archive dates: render the RaceCard_<date>.html markup
+                    returned by the API as-is, inside an iframe so the archive
+                    file's own <style> block stays isolated from the app's
+                    global CSS. The iframe sits in a scroll wrapper so on
+                    phones the layout stays real and scrolls sideways
+                    instead of breaking. */}
                 {!loading && !error && isHtmlMode && !hasNoHtml && (
-                    <iframe
-                        className="docArchiveHtml"
-                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACECARD, rawHtml)}
-                        title="Race Card"
-                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
-                        scrolling="no"
-                        onLoad={(e) => {
-                            handleArchiveIframeLoad(e);
-                            const iframe = e.target;
-                            const doc = iframe.contentWindow?.document;
-                            if (!doc) return;
+                    <div className="docArchiveScroll">
+                        <iframe
+                            className="docArchiveHtml"
+                            srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACECARD, rawHtml)}
+                            title="Race Card"
+                            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                            scrolling="no"
+                            onLoad={(e) => {
+                                handleArchiveIframeLoad(e);
+                                const iframe = e.target;
+                                const doc = iframe.contentWindow?.document;
+                                if (!doc) return;
 
-                            doc.querySelectorAll(".race_no_data").forEach((el) => {
-                                el.querySelectorAll("th").forEach((th) => {
-                                    th.style.setProperty("background", "#16a34a", "important");
-                                });
-
-                                el.querySelectorAll("span[style*='text-align:center']").forEach((span) => {
-                                    span.style.textAlign = "left";
-                                    span.style.display = "block";
-                                    span.style.marginTop = "2px";
-                                });
-
-                                el.querySelectorAll("br").forEach((br) => {
-                                    br.style.display = "none";
-                                });
-                            });
-
-                            const setHeight = () => {
-                                iframe.style.height = doc.documentElement.scrollHeight + "px";
-                            };
-
-                            doc.querySelectorAll(".race_call").forEach((pill) => {
-                                pill.style.cursor = "pointer";
-                                pill.addEventListener("click", () => {
-                                    const raceNo = pill.id;
-
-                                    doc.querySelectorAll(".race_no_data").forEach((block) => {
-                                        const matches = block.classList.contains("race_no_" + raceNo);
-                                        block.style.display = matches ? "" : "none";
+                                doc.querySelectorAll(".race_no_data").forEach((el) => {
+                                    el.querySelectorAll("th").forEach((th) => {
+                                        th.style.setProperty("background", "#16a34a", "important");
                                     });
 
-                                    doc.querySelectorAll(".race_call").forEach((p) => {
-                                        p.style.textDecoration = p.id === raceNo ? "underline" : "none";
+                                    el.querySelectorAll("span[style*='text-align:center']").forEach((span) => {
+                                        span.style.textAlign = "left";
+                                        span.style.display = "block";
+                                        span.style.marginTop = "2px";
                                     });
 
-                                    setHeight();
-                                    requestAnimationFrame(setHeight);
+                                    el.querySelectorAll("br").forEach((br) => {
+                                        br.style.display = "none";
+                                    });
                                 });
-                            });
 
-                            doc.querySelectorAll(".view_perform").forEach((btn) => {
-                                btn.style.cursor = "pointer";
-                                btn.addEventListener("click", () => {
-                                    const performanceRow = doc.getElementById("performance_" + btn.id);
+                                const setHeight = () => {
+                                    iframe.style.height = doc.documentElement.scrollHeight + "px";
+                                };
 
-                                    if (performanceRow) {
-                                        const isHidden = performanceRow.style.display === "none" || performanceRow.style.display === "";
-                                        performanceRow.style.display = isHidden ? "table-row" : "none";
-                                    }
+                                doc.querySelectorAll(".race_call").forEach((pill) => {
+                                    pill.style.cursor = "pointer";
+                                    pill.addEventListener("click", () => {
+                                        const raceNo = pill.id;
 
-                                    setHeight();
-                                    requestAnimationFrame(setHeight);
+                                        doc.querySelectorAll(".race_no_data").forEach((block) => {
+                                            const matches = block.classList.contains("race_no_" + raceNo);
+                                            block.style.display = matches ? "" : "none";
+                                        });
+
+                                        doc.querySelectorAll(".race_call").forEach((p) => {
+                                            p.style.textDecoration = p.id === raceNo ? "underline" : "none";
+                                        });
+
+                                        setHeight();
+                                        requestAnimationFrame(setHeight);
+                                    });
                                 });
-                            });
-                        }}
-                    />
+
+                                doc.querySelectorAll(".view_perform").forEach((btn) => {
+                                    btn.style.cursor = "pointer";
+                                    btn.addEventListener("click", () => {
+                                        const performanceRow = doc.getElementById("performance_" + btn.id);
+
+                                        if (performanceRow) {
+                                            const isHidden = performanceRow.style.display === "none" || performanceRow.style.display === "";
+                                            performanceRow.style.display = isHidden ? "table-row" : "none";
+                                        }
+
+                                        setHeight();
+                                        requestAnimationFrame(setHeight);
+                                    });
+                                });
+                            }}
+                        />
+                    </div>
                 )}
 
+                {/* DB-sourced dates: structured cards. */}
                 {!loading && !error && !isHtmlMode && !hasNoData && races.map((race, idx) => (
 
                     <div className="docRaceBlock" key={race.raceNo ?? idx}>

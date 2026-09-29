@@ -137,10 +137,11 @@ function readHtmlFromS3BucketApi($fileUrl)
         $s3Key = ltrim(rawurldecode($fileUrl), "/");
     }
 
+    // .html and .htm both allowed
     if (
         $s3Key === "" ||
         strpos($s3Key, "run_races/") !== 0 ||
-        !preg_match("/\\.html$/i", $s3Key)
+        !preg_match("/\\.html?$/i", $s3Key)
     ) {
         throw new Exception("Invalid S3 HTML file key");
     }
@@ -198,6 +199,31 @@ function readHtmlFromS3BucketApi($fileUrl)
     }
 
     return (string) $htmlContent;
+}
+
+
+// Legacy .htm files Windows-1252 me hote hain. Browser ko UTF-8 chahiye,
+// isliye content ko UTF-8 me convert karte hain.
+function ensureUtf8Html($content)
+{
+    $content = (string) $content;
+
+    // Agar already valid UTF-8 hai to touch mat karo
+    if (mb_check_encoding($content, "UTF-8")) {
+        return $content;
+    }
+
+    $converted = mb_convert_encoding($content, "UTF-8", "Windows-1252");
+
+    // File ke andar purana charset meta ho to UTF-8 se replace karo
+    $converted = preg_replace(
+        '/<meta[^>]+charset[^>]*>/i',
+        '<meta charset="UTF-8">',
+        $converted,
+        1
+    );
+
+    return $converted;
 }
 
 // --------------------------------------------------
@@ -541,8 +567,12 @@ if ($type === "" || $raceType === "") {
 // When S3 is required, the DB registration supplies the metadata.
 
 // --------------------------------------------------
-// DOWNLOAD MODE
+// DOWNLOAD MODE (.htm ONLY)
 // --------------------------------------------------
+// Source priority:
+//   1) local run_races Acceptance_<date>.htm
+//   2) S3 .htm file (registered .html key ka .htm version)
+// Koi .html fallback nahi hai.
 
 if (
     isset($_GET["download"]) &&
@@ -555,14 +585,14 @@ if (
         $htmlContent = false;
 
         // --------------------------------------------------
-        // FIRST: OLD LOCAL HTML FILE
+        // FIRST: OLD LOCAL .htm FILE
         // --------------------------------------------------
 
         $localFile =
             RUN_RACES_LOCAL_PATH .
             "/Acceptance_" .
             $date .
-            ".html";
+            ".htm";
 
         if (is_file($localFile)) {
 
@@ -579,7 +609,7 @@ if (
         } else {
 
             // --------------------------------------------------
-            // SECOND: NEW S3 FILE
+            // SECOND: NEW S3 .htm FILE
             // --------------------------------------------------
 
             $stmt = $conn->prepare("
@@ -619,10 +649,17 @@ if (
                 $row = $result->fetch_assoc();
                 $stmt->close();
 
+                $registeredUrl = $row["file_url"];
+
+                // DB me .html registered hai, uska .htm version banao
+                $htmUrl = preg_replace(
+                    '/\.html$/i',
+                    '.htm',
+                    $registeredUrl
+                );
+
                 $htmlContent =
-                    readHtmlFromS3BucketApi(
-                        $row["file_url"]
-                    );
+                    readHtmlFromS3BucketApi($htmUrl);
 
             } else {
 
@@ -638,6 +675,9 @@ if (
                 "Acceptance file not found for this date"
             );
         }
+
+        // Legacy Windows-1252 content -> UTF-8
+        $htmlContent = ensureUtf8Html($htmlContent);
 
         // If the stored archive is only a fragment,
         // wrap it as a complete downloadable HTML page.
@@ -688,7 +728,7 @@ CSS;
         header(
             'Content-Disposition: inline; filename="Acceptance_' .
             $date .
-            '.html"'
+            '.htm"'
         );
 
         echo $htmlContent;

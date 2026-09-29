@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { FaPlay } from "react-icons/fa";
 import { getRaceDayStatus } from "../../../services/mediaService";
 import "./RaceDayButtons.css";
 
@@ -60,6 +61,7 @@ export default function RaceDayButtons() {
                         rel="noopener noreferrer"
                         className="raceDayBtn"
                     >
+                        <FaPlay className="videoPlayIcon" />
                         {btn.text}
                     </a>
                 ))}

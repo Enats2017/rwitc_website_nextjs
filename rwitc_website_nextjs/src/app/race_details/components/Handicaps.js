@@ -6,10 +6,24 @@ import { getHandicaps } from "../../../services/handicapsService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./Handicaps.css";
 
+/*
+ * Styles injected INSIDE the archive iframe.
+ *
+ * NOTE: the old "@media (max-width: 500px)" block (display: contents,
+ * td:before data-label, 8-10px fonts) was removed on purpose. It was copied
+ * from the old website's card layout, which needs data-label attributes on
+ * every <td>. The archive .html does not have them, so on phones the table
+ * was breaking. On phones the iframe now keeps a minimum width (see
+ * Handicaps.css) and the wrapper scrolls sideways, so the table always
+ * looks exactly like the desktop version.
+ */
 const ARCHIVE_STYLES = `
 <style>
+* { box-sizing: border-box; }
 span, a { display: inline-block; text-decoration: none; color: #333333; }
-body { font-family: Arial; margin: 0; }
+html, body { margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; word-wrap: break-word; }
+img { max-width: 100%; height: auto; }
 h1 { margin: unset !important; font-size: 26px !important; }
 h3 { font-family: 'Roboto Condensed', Arial, sans-serif; font-size: 32px; color: #c1c1c1; margin: 10px 0; }
 th {
@@ -20,7 +34,7 @@ th {
     border: 1px solid #BCBEC0;
     background: #11a14e;
 }
-    td { text-align: left !important; padding: 4px !important; color: #333333 !important; font-weight: 600; }
+td { text-align: left !important; padding: 4px !important; color: #333333 !important; font-weight: 600; }
 tbody > tr > th { text-align: left !important; }
 tbody tr td:nth-child(2) { text-align: center !important; }
 tbody tr td:nth-child(3) { text-align: center !important; }
@@ -68,32 +82,6 @@ table { border-collapse: collapse; }
 }
 .show1 {
     display: none;
-}
-@media (max-width: 500px) {
-    .text_size { font-size: 8px; }
-    .font12 { font-size: 8px; }
-    .download { float: unset !important; margin-bottom: 10px; }
-    .nm { text-align: left !important; }
-    .perform_data {
-        display: contents;
-        border: 1px solid #cdced3 !important;
-        border-radius: 12px;
-        background: #cdced3 !important;
-        margin-bottom: 5%;
-        padding: 10px !important;
-    }
-    .perform_data td:first-child { padding-left: 10px; }
-    .perform_data td:before {
-        content: attr(data-label);
-        float: left;
-        font-size: 11px;
-        text-transform: uppercase;
-        font-weight: bold;
-        width: 45%;
-    }
-    .perform_data td { font-size: 11px !important; position: relative; border: unset !important; }
-    td, th { font-size: 10px !important; border: unset; }
-    .racehead { padding: 5px !important; font-size: 12px !important; }
 }
 </style>
 `;
@@ -216,18 +204,21 @@ export default function Handicaps() {
 
                 {/* Archive dates (date > 2022-09-25): render the
                     Handicaps_<date>.html markup returned by the API
-                    as-is, same as the live page's server-side include.
-                    Rendered inside an iframe so the archive file's own
-                    <style> block stays isolated and can't clash with the
-                    app's global CSS. */}
+                    as-is. Rendered inside an iframe so the archive file's
+                    own <style> block stays isolated from the app's global
+                    CSS. The iframe sits in a scroll wrapper so on phones
+                    the table keeps its real layout and scrolls sideways
+                    instead of breaking. */}
                 {!loading && !error && isHtmlMode && !hasNoHtml && (
-                    <iframe
-                        className="docArchiveHtml"
-                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES, rawHtml)}
-                        title="Handicaps"
-                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
-                        onLoad={handleArchiveIframeLoad}
-                    />
+                    <div className="docArchiveScroll">
+                        <iframe
+                            className="docArchiveHtml"
+                            srcDoc={formatArchiveHtml(ARCHIVE_STYLES, rawHtml)}
+                            title="Handicaps"
+                            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                            onLoad={handleArchiveIframeLoad}
+                        />
+                    </div>
                 )}
 
                 {/* DB-sourced dates (date <= 2022-09-25): structured table. */}

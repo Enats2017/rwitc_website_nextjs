@@ -109,10 +109,15 @@ function readHtmlFromS3BucketApi($fileUrl)
 {
     $s3Key = raceResultS3Key($fileUrl);
 
+    // .html and .htm both allowed
     if (
         $s3Key === "" ||
         strpos($s3Key, "run_races/") !== 0 ||
-        strtolower(pathinfo($s3Key, PATHINFO_EXTENSION)) !== "html"
+        !in_array(
+            strtolower(pathinfo($s3Key, PATHINFO_EXTENSION)),
+            ["html", "htm"],
+            true
+        )
     ) {
         throw new Exception(
             "Invalid race result S3 file key"
@@ -184,6 +189,30 @@ function readHtmlFromS3BucketApi($fileUrl)
     }
 
     return $content;
+}
+
+// Legacy .htm files Windows-1252 me hote hain. Browser ko UTF-8 chahiye,
+// isliye content ko UTF-8 me convert karte hain.
+function ensureUtf8Html($content)
+{
+    $content = (string) $content;
+
+    // Agar already valid UTF-8 hai to touch mat karo
+    if (mb_check_encoding($content, "UTF-8")) {
+        return $content;
+    }
+
+    $converted = mb_convert_encoding($content, "UTF-8", "Windows-1252");
+
+    // File ke andar purana charset meta ho to UTF-8 se replace karo
+    $converted = preg_replace(
+        '/<meta[^>]+charset[^>]*>/i',
+        '<meta charset="UTF-8">',
+        $converted,
+        1
+    );
+
+    return $converted;
 }
 
 function raceResultInjectCss($html)
@@ -587,9 +616,16 @@ if ($date !== "" && $date > "2022-10-14") {
 
 if ($date !== "" && $date > "2022-10-14") {
 
-    // --------------------------------------------------
-    // DOWNLOAD / OPEN HTML
-    // --------------------------------------------------
+    // ============================================================
+    // >>> DOWNLOAD MODE (same as Handicaps download)
+    // ============================================================
+    // ?date=2026-08-22&type=race_result&race_type=post_race&download=1
+    //
+    // Download me .htm file milti hai.
+    // Source priority:
+    //   1) OLD local run_races Race_results_<date>.htm
+    //   2) NEW S3 .htm file (registered .html key ka .htm version)
+    // ============================================================
 
     if (
         isset($_GET["download"])
@@ -598,23 +634,26 @@ if ($date !== "" && $date > "2022-10-14") {
 
         try {
 
-            $htmlFile = rtrim(
-                RUN_RACES_LOCAL_PATH,
-                "/\\"
-            ) . "/Race_results_" . $date . ".html";
-
             $htmlContent = false;
 
-            if (is_file($htmlFile)) {
-                $htmlContent = file_get_contents($htmlFile);
+            // ---------- 1. OLD LOCAL .htm FILE (pehle yahi check hoga) ----------
+            $localFile = rtrim(
+                RUN_RACES_LOCAL_PATH,
+                "/\\"
+            ) . "/Race_results_" . $date . ".htm";
+
+            if (is_file($localFile)) {
+
+                $htmlContent = file_get_contents($localFile);
 
                 if ($htmlContent === false) {
                     throw new Exception(
-                        "Unable to read local race result HTML file"
+                        "Unable to read local race result HTM file"
                     );
                 }
             } else {
 
+                // ---------- 2. S3 .htm FILE ----------
                 $stmt = $conn->prepare("
                     SELECT file_url
                     FROM run_race_details
@@ -648,29 +687,81 @@ if ($date !== "" && $date > "2022-10-14") {
 
                     http_response_code(404);
                     header("Content-Type: text/plain; charset=UTF-8");
-                    echo "Race result HTML file not found.";
+                    echo "Race result HTM file not found.";
                     exit;
                 }
 
                 $row = $result->fetch_assoc();
                 $stmt->close();
 
-                $htmlContent =
-                    readHtmlFromS3BucketApi(
-                        $row["file_url"] ?? ""
-                    );
+                $registeredUrl = $row["file_url"] ?? "";
+
+                // DB me .html registered hai, uska .htm version banao
+                $htmUrl = preg_replace('/\.html$/i', '.htm', $registeredUrl);
+
+                $htmlContent = readHtmlFromS3BucketApi($htmUrl);
             }
 
-            $downloadContent = raceResultInjectCss($htmlContent);
+            if ($htmlContent === false || $htmlContent === "") {
+                throw new Exception("Race result HTM file not found for this date");
+            }
 
+            $htmlContent = ensureUtf8Html($htmlContent);
+
+            if (stripos($htmlContent, "<html") === false) {
+
+                $downloadCss = <<<'CSS'
+* { box-sizing: border-box; }
+span, a { display: inline-block; text-decoration: none; color: #333333; }
+body { font-family: Arial; margin: 0; padding: 16px; }
+h1 { margin: unset !important; font-size: 26px !important; }
+h3 { font-family: 'Roboto Condensed', Arial, sans-serif; font-size: 32px; color: #c1c1c1; margin: 10px 0; }
+th { color: #ffffff !important; font-size: 14px; text-align: center; padding: 1px; border: 1px solid #BCBEC0; background: #11a14e; }
+td { text-align: left !important; padding: 4px !important; color: #333333 !important; font-weight: 600; }
+tbody > tr > th { text-align: left !important; }
+tbody tr td:nth-child(2) { text-align: center !important; }
+tbody tr td:nth-child(3) { text-align: center !important; }
+table { border-collapse: collapse; }
+.table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+.table th, .table td { padding: 8px; vertical-align: top; border-top: 1px solid #dee2e6; }
+.table-bordered { border: 1px solid #dee2e6; font-weight: bold; width: 100%; border-collapse: collapse; }
+.table-bordered th, .table-bordered td { border: 1px solid #dee2e6; }
+.table-bordered thead th, .table-bordered thead td { border-bottom-width: 2px; }
+.download { display: none !important; }
+.pageHeading { text-align: center; }
+#leftArea .pageHeader .pageHeading .subHeading { clear: both; float: left; width: 100%; color: #000; font-weight: bold; text-align: center; font-size: 12px; margin: 5px 0; padding: 5px 0; }
+.show1 { display: none; }
+@media (max-width: 500px) {
+    .text_size { font-size: 8px; }
+    .font12 { font-size: 8px; }
+    .nm { text-align: left !important; }
+    .perform_data { display: contents; border: 1px solid #cdced3 !important; border-radius: 12px; background: #cdced3 !important; margin-bottom: 5%; padding: 10px !important; }
+    .perform_data td:first-child { padding-left: 10px; }
+    .perform_data td { font-size: 11px !important; position: relative; border: unset !important; }
+    td, th { font-size: 10px !important; border: unset; }
+    .racehead { padding: 5px !important; font-size: 12px !important; }
+}
+CSS;
+
+                $htmlContent =
+                    "<!DOCTYPE html>\n<html>\n<head>\n"
+                    . "<meta charset=\"UTF-8\">\n"
+                    . "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+                    . "<title>Race Results " . $date . "</title>\n"
+                    . "<style>\n" . $downloadCss . "\n</style>\n</head>\n<body>\n"
+                    . $htmlContent
+                    . "\n</body>\n</html>";
+            }
+
+            // Open in browser. Download file ka naam .htm hai.
             header("Content-Type: text/html; charset=UTF-8");
             header(
                 'Content-Disposition: inline; filename="Race_results_' .
                     $date .
-                    '.html"'
+                    '.htm"'
             );
 
-            echo $downloadContent;
+            echo $htmlContent;
             exit;
         } catch (Throwable $error) {
 
@@ -681,10 +772,14 @@ if ($date !== "" && $date > "2022-10-14") {
 
             http_response_code(500);
             header("Content-Type: text/plain; charset=UTF-8");
-            echo "Unable to open race result HTML file.";
+            echo "Unable to open race result HTM file.";
             exit;
         }
     }
+
+    // ============================================================
+    // <<< DOWNLOAD MODE END
+    // ============================================================
 
     // --------------------------------------------------
     // NORMAL HTML RESPONSE

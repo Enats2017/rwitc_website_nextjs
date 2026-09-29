@@ -3,37 +3,16 @@
 /**
  * RWITC S3 <-> run_race_details API
  *
- * FLOW
- * ----
- * ERP Push Website
- *      |
- *      | POST action=sync
- *      | date + html_file + htm_file
- *      v
- * This API
- *      |
- *      | checks the supplied S3 objects
- *      | INSERT / UPDATE run_race_details
- *      v
- * run_race_details
+ * SYNC : POST action=sync   date + html_file [+ htm_file]
+ *        run_race_details.file_url     = .html URL (or .htm if html missing)
+ *        run_race_details.htm_file_url = .htm URL
+ * DELETE: POST action=delete
+ * READ  : GET ?action=check&date=YYYY-MM-DD&type=...&race_type=...
+ *         GET ?action=list
  *
- * DELETE FLOW
- * -----------
- * ERP deletes S3 file(s)
- *      |
- *      | POST action=delete
- *      v
- * This API checks S3 again
- *      |
- *      | if no requested file remains -> DELETE DB row
- *      | if one file remains       -> UPDATE DB row
- *
- * READ FLOW
- * ---------
- * GET ?action=check&date=YYYY-MM-DD&type=...&race_type=...
- *      |
- *      v
- * run_race_details
+ * REQUIRES:
+ *   ALTER TABLE run_race_details
+ *     ADD COLUMN htm_file_url VARCHAR(500) NULL DEFAULT NULL AFTER file_url;
  */
 
 header("Content-Type: application/json; charset=UTF-8");
@@ -41,14 +20,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
-
-// ============================================================
-// CONFIG
-// ============================================================
-
 require_once __DIR__ . "/config/config.php";
-
-// AWS SDK
 require_once __DIR__ . "/../vendor/autoload.php";
 
 use Aws\S3\S3Client;
@@ -59,12 +31,8 @@ use Aws\Exception\AwsException;
 // RESPONSE HELPER
 // ============================================================
 
-function sendResponse(
-    $success,
-    $data = null,
-    $error = null,
-    $statusCode = 200
-) {
+function sendResponse($success, $data = null, $error = null, $statusCode = 200)
+{
     http_response_code($statusCode);
 
     echo json_encode(
@@ -100,7 +68,6 @@ try {
         array(
             "version" => "latest",
             "region"  => AWS_REGION,
-
             "credentials" => array(
                 "key"    => AWS_ACCESS_KEY_ID,
                 "secret" => AWS_SECRET_ACCESS_KEY
@@ -109,16 +76,9 @@ try {
     );
 } catch (Throwable $e) {
 
-    error_log(
-        "S3 CLIENT ERROR: " . $e->getMessage()
-    );
+    error_log("S3 CLIENT ERROR: " . $e->getMessage());
 
-    sendResponse(
-        false,
-        null,
-        "Unable to initialize S3.",
-        500
-    );
+    sendResponse(false, null, "Unable to initialize S3.", 500);
 }
 
 
@@ -126,17 +86,9 @@ try {
 // DATABASE CHECK
 // ============================================================
 
-if (
-    !isset($conn) ||
-    !($conn instanceof mysqli)
-) {
+if (!isset($conn) || !($conn instanceof mysqli)) {
 
-    sendResponse(
-        false,
-        null,
-        "Database connection is not available.",
-        500
-    );
+    sendResponse(false, null, "Database connection is not available.", 500);
 }
 
 $conn->set_charset("utf8mb4");
@@ -155,22 +107,13 @@ $s3Prefix = "run_races/";
 
 function validateDateValue($date)
 {
-    if (
-        !is_string($date) ||
-        !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
-    ) {
+    if (!is_string($date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
         return false;
     }
 
-    $d = DateTime::createFromFormat(
-        "Y-m-d",
-        $date
-    );
+    $d = DateTime::createFromFormat("Y-m-d", $date);
 
-    return (
-        $d !== false &&
-        $d->format("Y-m-d") === $date
-    );
+    return ($d !== false && $d->format("Y-m-d") === $date);
 }
 
 
@@ -180,123 +123,54 @@ function validateDateValue($date)
 
 function getFileInformation($filename)
 {
-    $name = strtolower(
-        basename($filename)
-    );
+    $name = strtolower(basename($filename));
 
-    // HANDICAPS
-    if (
-        strpos($name, "handicaps_") === 0
-    ) {
-        return array(
-            "type"      => "handicaps",
-            "race_type" => "pre_race"
-        );
+    if (strpos($name, "handicaps_") === 0) {
+        return array("type" => "handicaps", "race_type" => "pre_race");
     }
 
-    // ACCEPTANCES
-    if (
-        strpos($name, "acceptance_") === 0 ||
-        strpos($name, "acceptances_") === 0
-    ) {
-        return array(
-            "type"      => "acceptances",
-            "race_type" => "pre_race"
-        );
+    if (strpos($name, "acceptance_") === 0 || strpos($name, "acceptances_") === 0) {
+        return array("type" => "acceptances", "race_type" => "pre_race");
     }
 
-    // DECLARATIONS
-    if (
-        strpos($name, "declarations_") === 0
-    ) {
-        return array(
-            "type"      => "declarations",
-            "race_type" => "pre_race"
-        );
+    if (strpos($name, "declarations_") === 0) {
+        return array("type" => "declarations", "race_type" => "pre_race");
     }
 
-    // RACE CARD
-    if (
-        strpos($name, "race_card_") === 0 ||
-        strpos($name, "race_card_report_") === 0
-    ) {
-        return array(
-            "type"      => "racecard",
-            "race_type" => "pre_race"
-        );
+    if (strpos($name, "race_card_") === 0 || strpos($name, "race_card_report_") === 0) {
+        return array("type" => "racecard", "race_type" => "pre_race");
     }
 
-    // RACE RESULTS
-    if (
-        strpos($name, "race_results_") === 0 ||
-        strpos($name, "race_result_") === 0
-    ) {
-        return array(
-            "type"      => "race_result",
-            "race_type" => "post_race"
-        );
+    if (strpos($name, "race_results_") === 0 || strpos($name, "race_result_") === 0) {
+        return array("type" => "race_result", "race_type" => "post_race");
     }
 
-    // RATING CHANGE
-    if (
-        strpos($name, "rating_change_") === 0
-    ) {
-        return array(
-            "type"      => "rating_change",
-            "race_type" => "post_race"
-        );
+    if (strpos($name, "rating_change_") === 0) {
+        return array("type" => "rating_change", "race_type" => "post_race");
     }
 
-    // MOCK RACE RESULT
-    if (
-        strpos($name, "mock_race_result_") === 0
-    ) {
-        return array(
-            "type"      => "mock_race_result",
-            "race_type" => "post_race"
-        );
+    if (strpos($name, "mock_race_result_") === 0) {
+        return array("type" => "mock_race_result", "race_type" => "post_race");
     }
 
-    // MONEY LEADER - OWNER
-    // Money Leader keeps the original fixed S3 filename: owner.html
+    // MONEY LEADER fixed filenames
     if ($name === "owner.html") {
-        return array(
-            "type"      => "money_owner",
-            "race_type" => "post_race"
-        );
+        return array("type" => "money_owner", "race_type" => "post_race");
     }
 
-    // MONEY LEADER - JOCKEY
-    // Money Leader keeps the original fixed S3 filename: jockey.html
     if ($name === "jockey.html") {
-        return array(
-            "type"      => "money_jockey",
-            "race_type" => "post_race"
-        );
+        return array("type" => "money_jockey", "race_type" => "post_race");
     }
 
-    // MONEY LEADER - HORSE
-    // Money Leader keeps the original fixed S3 filename: horse.html
     if ($name === "horse.html") {
-        return array(
-            "type"      => "money_horse",
-            "race_type" => "post_race"
-        );
+        return array("type" => "money_horse", "race_type" => "post_race");
     }
 
-    // MONEY LEADER - TRAINER
-    // Money Leader keeps the original fixed S3 filename: trainer.html
     if ($name === "trainer.html") {
-        return array(
-            "type"      => "money_trainer",
-            "race_type" => "post_race"
-        );
+        return array("type" => "money_trainer", "race_type" => "post_race");
     }
 
-    return array(
-        "type"      => "other",
-        "race_type" => "other"
-    );
+    return array("type" => "other", "race_type" => "other");
 }
 
 
@@ -306,19 +180,12 @@ function getFileInformation($filename)
 
 function getFileDate($filename)
 {
-    if (
-        preg_match(
-            '/_(\d{4}-\d{2}-\d{2})\.(html|htm)$/i',
-            basename($filename),
-            $matches
-        )
-    ) {
+    if (preg_match('/_(\d{4}-\d{2}-\d{2})\.(html|htm)$/i', basename($filename), $matches)) {
         return $matches[1];
     }
 
-    // MONEY LEADER uses fixed filenames without a date:
-    // owner.html, jockey.html, horse.html, trainer.html
-    // The sync/delete date is supplied separately in POST["date"].
+    // MONEY LEADER uses fixed filenames without a date.
+    // The date is supplied separately in POST["date"].
     $fixedMoneyLeaderFiles = array(
         "owner.html",
         "jockey.html",
@@ -326,16 +193,8 @@ function getFileDate($filename)
         "trainer.html"
     );
 
-    if (
-        in_array(
-            strtolower(basename($filename)),
-            $fixedMoneyLeaderFiles,
-            true
-        )
-    ) {
-        return isset($_POST["date"])
-            ? trim($_POST["date"])
-            : null;
+    if (in_array(strtolower(basename($filename)), $fixedMoneyLeaderFiles, true)) {
+        return isset($_POST["date"]) ? trim($_POST["date"]) : null;
     }
 
     return null;
@@ -343,7 +202,7 @@ function getFileDate($filename)
 
 
 // ============================================================
-// GET PUBLIC S3 URL
+// GET S3 URL
 // ============================================================
 
 function getS3FileUrl($bucket, $region, $key)
@@ -353,11 +212,7 @@ function getS3FileUrl($bucket, $region, $key)
         ".s3." .
         $region .
         ".amazonaws.com/" .
-        str_replace(
-            "%2F",
-            "/",
-            rawurlencode($key)
-        );
+        str_replace("%2F", "/", rawurlencode($key));
 }
 
 
@@ -367,39 +222,23 @@ function getS3FileUrl($bucket, $region, $key)
 
 function normalizeS3Key($key, $expectedPrefix)
 {
-    if (
-        !is_string($key) ||
-        trim($key) === ""
-    ) {
+    if (!is_string($key) || trim($key) === "") {
         return null;
     }
 
     $key = trim($key);
 
-    // Must stay inside run_races/
-    if (
-        strpos($key, $expectedPrefix) !== 0
-    ) {
+    if (strpos($key, $expectedPrefix) !== 0) {
         return null;
     }
 
-    // Only HTML / HTM files are accepted.
-    $extension = strtolower(
-        pathinfo($key, PATHINFO_EXTENSION)
-    );
+    $extension = strtolower(pathinfo($key, PATHINFO_EXTENSION));
 
-    if (
-        $extension !== "html" &&
-        $extension !== "htm"
-    ) {
+    if ($extension !== "html" && $extension !== "htm") {
         return null;
     }
 
-    // Do not allow another directory level.
-    $relative = substr(
-        $key,
-        strlen($expectedPrefix)
-    );
+    $relative = substr($key, strlen($expectedPrefix));
 
     if (
         $relative === "" ||
@@ -463,19 +302,10 @@ if ($method === "GET") {
         ? strtolower(trim($_POST["action"]))
         : "sync";
 }
+
+
 // ============================================================
 // GET ACTION = LIST
-// ============================================================
-//
-// Used by Archives API.
-//
-// Example:
-// ?action=list
-//
-// Returns all S3-backed archive files from run_race_details
-// in the format expected by fetchArchives_get_api.php:
-// data.files[]
-//
 // ============================================================
 
 if ($method === "GET" && $action === "list") {
@@ -487,7 +317,8 @@ if ($method === "GET" && $action === "list") {
             `date`,
             `type`,
             `race_type`,
-            `file_url`
+            `file_url`,
+            `htm_file_url`
         FROM run_race_details
         WHERE file_url IS NOT NULL
           AND file_url <> ''
@@ -497,13 +328,7 @@ if ($method === "GET" && $action === "list") {
     );
 
     if ($stmt === false) {
-
-        sendResponse(
-            false,
-            null,
-            "Unable to prepare archive list query.",
-            500
-        );
+        sendResponse(false, null, "Unable to prepare archive list query.", 500);
     }
 
     if (!$stmt->execute()) {
@@ -511,97 +336,51 @@ if ($method === "GET" && $action === "list") {
         $error = $stmt->error;
         $stmt->close();
 
-        sendResponse(
-            false,
-            null,
-            "Archive list query failed: " . $error,
-            500
-        );
+        sendResponse(false, null, "Archive list query failed: " . $error, 500);
     }
 
     $result = $stmt->get_result();
 
-    $files = [];
+    $files = array();
 
     while ($row = $result->fetch_assoc()) {
 
         $files[] = array(
-            "id"        => (int)$row["id"],
-            "date"      => $row["date"],
-            "type"      => $row["type"],
-            "race_type" => $row["race_type"],
-            "file_url"  => $row["file_url"]
+            "id"           => (int)$row["id"],
+            "date"         => $row["date"],
+            "type"         => $row["type"],
+            "race_type"    => $row["race_type"],
+            "file_url"     => $row["file_url"],
+            "htm_file_url" => $row["htm_file_url"]
         );
     }
 
     $stmt->close();
 
-    sendResponse(
-        true,
-        array(
-            "files" => $files
-        ),
-        null,
-        200
-    );
+    sendResponse(true, array("files" => $files), null, 200);
 }
 
+
 // ============================================================
-// GET ACTION
-// ============================================================
-//
-// GET action=check
-//
-// Example:
-// ?action=check
-// &date=2026-08-22
-// &type=handicaps
-// &race_type=pre_race
-//
+// GET ACTION = CHECK
 // ============================================================
 
 if ($method === "GET") {
 
     if ($action !== "check") {
-
-        sendResponse(
-            false,
-            null,
-            "Invalid GET action.",
-            400
-        );
+        sendResponse(false, null, "Invalid GET action.", 400);
     }
 
-    $date = isset($_GET["date"])
-        ? trim($_GET["date"])
-        : "";
-
-    $type = isset($_GET["type"])
-        ? trim($_GET["type"])
-        : "";
-
-    $raceType = isset($_GET["race_type"])
-        ? trim($_GET["race_type"])
-        : "";
+    $date     = isset($_GET["date"]) ? trim($_GET["date"]) : "";
+    $type     = isset($_GET["type"]) ? trim($_GET["type"]) : "";
+    $raceType = isset($_GET["race_type"]) ? trim($_GET["race_type"]) : "";
 
     if (!validateDateValue($date)) {
-
-        sendResponse(
-            false,
-            null,
-            "Invalid date. Expected YYYY-MM-DD.",
-            400
-        );
+        sendResponse(false, null, "Invalid date. Expected YYYY-MM-DD.", 400);
     }
 
     if ($type === "" || $raceType === "") {
-
-        sendResponse(
-            false,
-            null,
-            "type and race_type are required.",
-            400
-        );
+        sendResponse(false, null, "type and race_type are required.", 400);
     }
 
     $stmt = $conn->prepare(
@@ -611,7 +390,8 @@ if ($method === "GET") {
             `date`,
             `type`,
             `race_type`,
-            `file_url`
+            `file_url`,
+            `htm_file_url`
         FROM run_race_details
         WHERE `date` = ?
           AND `type` = ?
@@ -627,52 +407,34 @@ if ($method === "GET") {
     );
 
     if ($stmt === false) {
-
-        sendResponse(
-            false,
-            null,
-            "Unable to prepare database check query.",
-            500
-        );
+        sendResponse(false, null, "Unable to prepare database check query.", 500);
     }
 
-    $stmt->bind_param(
-        "sss",
-        $date,
-        $type,
-        $raceType
-    );
+    $stmt->bind_param("sss", $date, $type, $raceType);
 
     if (!$stmt->execute()) {
 
         $error = $stmt->error;
         $stmt->close();
 
-        sendResponse(
-            false,
-            null,
-            "Database check failed: " . $error,
-            500
-        );
+        sendResponse(false, null, "Database check failed: " . $error, 500);
     }
 
     $result = $stmt->get_result();
 
-    if (
-        !$result ||
-        $result->num_rows === 0
-    ) {
+    if (!$result || $result->num_rows === 0) {
 
         $stmt->close();
 
         sendResponse(
             true,
             array(
-                "exists"    => false,
-                "date"      => $date,
-                "type"      => $type,
-                "race_type" => $raceType,
-                "file_url"  => null
+                "exists"       => false,
+                "date"         => $date,
+                "type"         => $type,
+                "race_type"    => $raceType,
+                "file_url"     => null,
+                "htm_file_url" => null
             ),
             null,
             200
@@ -686,11 +448,12 @@ if ($method === "GET") {
     sendResponse(
         true,
         array(
-            "exists"    => true,
-            "date"      => $row["date"],
-            "type"      => $row["type"],
-            "race_type" => $row["race_type"],
-            "file_url"  => $row["file_url"]
+            "exists"       => true,
+            "date"         => $row["date"],
+            "type"         => $row["type"],
+            "race_type"    => $row["race_type"],
+            "file_url"     => $row["file_url"],
+            "htm_file_url" => $row["htm_file_url"]
         ),
         null,
         200
@@ -703,13 +466,7 @@ if ($method === "GET") {
 // ============================================================
 
 if ($method !== "POST") {
-
-    sendResponse(
-        false,
-        null,
-        "Only GET and POST methods are allowed.",
-        405
-    );
+    sendResponse(false, null, "Only GET and POST methods are allowed.", 405);
 }
 
 
@@ -717,31 +474,12 @@ if ($method !== "POST") {
 // COMMON POST DATA
 // ============================================================
 
-$date = isset($_POST["date"])
-    ? trim($_POST["date"])
-    : "";
-
-$htmlFile = isset($_POST["html_file"])
-    ? trim($_POST["html_file"])
-    : "";
-
-$htmFile = isset($_POST["htm_file"])
-    ? trim($_POST["htm_file"])
-    : "";
-
-
-// ============================================================
-// VALIDATE DATE
-// ============================================================
+$date     = isset($_POST["date"]) ? trim($_POST["date"]) : "";
+$htmlFile = isset($_POST["html_file"]) ? trim($_POST["html_file"]) : "";
+$htmFile  = isset($_POST["htm_file"]) ? trim($_POST["htm_file"]) : "";
 
 if (!validateDateValue($date)) {
-
-    sendResponse(
-        false,
-        null,
-        "Invalid date. Expected YYYY-MM-DD.",
-        400
-    );
+    sendResponse(false, null, "Invalid date. Expected YYYY-MM-DD.", 400);
 }
 
 
@@ -754,13 +492,9 @@ $htmKey  = null;
 
 if ($htmlFile !== "") {
 
-    $htmlKey = normalizeS3Key(
-        $htmlFile,
-        $s3Prefix
-    );
+    $htmlKey = normalizeS3Key($htmlFile, $s3Prefix);
 
     if ($htmlKey === null) {
-
         sendResponse(
             false,
             null,
@@ -772,13 +506,9 @@ if ($htmlFile !== "") {
 
 if ($htmFile !== "") {
 
-    $htmKey = normalizeS3Key(
-        $htmFile,
-        $s3Prefix
-    );
+    $htmKey = normalizeS3Key($htmFile, $s3Prefix);
 
     if ($htmKey === null) {
-
         sendResponse(
             false,
             null,
@@ -788,17 +518,8 @@ if ($htmFile !== "") {
     }
 }
 
-if (
-    $htmlKey === null &&
-    $htmKey === null
-) {
-
-    sendResponse(
-        false,
-        null,
-        "html_file or htm_file is required.",
-        400
-    );
+if ($htmlKey === null && $htmKey === null) {
+    sendResponse(false, null, "html_file or htm_file is required.", 400);
 }
 
 
@@ -806,22 +527,13 @@ if (
 // CHECK FILE DATE + TYPE
 // ============================================================
 
-$referenceKey =
-    $htmlKey !== null
-    ? $htmlKey
-    : $htmKey;
+$referenceKey = ($htmlKey !== null) ? $htmlKey : $htmKey;
 
-$referenceFilename =
-    basename($referenceKey);
+$referenceFilename = basename($referenceKey);
 
-$fileDate =
-    getFileDate($referenceFilename);
+$fileDate = getFileDate($referenceFilename);
 
-if (
-    $fileDate === null ||
-    $fileDate !== $date
-) {
-
+if ($fileDate === null || $fileDate !== $date) {
     sendResponse(
         false,
         null,
@@ -830,20 +542,12 @@ if (
     );
 }
 
-$fileInfo =
-    getFileInformation($referenceFilename);
+$fileInfo = getFileInformation($referenceFilename);
 
-$type =
-    $fileInfo["type"];
+$type     = $fileInfo["type"];
+$raceType = $fileInfo["race_type"];
 
-$raceType =
-    $fileInfo["race_type"];
-
-if (
-    $type === "other" ||
-    $raceType === "other"
-) {
-
+if ($type === "other" || $raceType === "other") {
     sendResponse(
         false,
         null,
@@ -854,36 +558,23 @@ if (
 
 
 // ============================================================
-// IF BOTH FILES ARE SENT, THEY MUST REPRESENT SAME LOGICAL FILE
+// BOTH FILES MUST BELONG TO THE SAME LOGICAL DOCUMENT
 // ============================================================
 
-foreach (
-    array(
-        $htmlKey,
-        $htmKey
-    ) as $key
-) {
+foreach (array($htmlKey, $htmKey) as $key) {
 
     if ($key === null) {
         continue;
     }
 
-    $info =
-        getFileInformation(
-            basename($key)
-        );
-
-    $keyDate =
-        getFileDate(
-            basename($key)
-        );
+    $info    = getFileInformation(basename($key));
+    $keyDate = getFileDate(basename($key));
 
     if (
         $keyDate !== $date ||
         $info["type"] !== $type ||
         $info["race_type"] !== $raceType
     ) {
-
         sendResponse(
             false,
             null,
@@ -904,72 +595,50 @@ $htmExists  = false;
 try {
 
     if ($htmlKey !== null) {
-
-        $htmlExists =
-            s3ObjectExists(
-                $s3,
-                AWS_BUCKET,
-                $htmlKey
-            );
+        $htmlExists = s3ObjectExists($s3, AWS_BUCKET, $htmlKey);
     }
 
     if ($htmKey !== null) {
-
-        $htmExists =
-            s3ObjectExists(
-                $s3,
-                AWS_BUCKET,
-                $htmKey
-            );
+        $htmExists = s3ObjectExists($s3, AWS_BUCKET, $htmKey);
     }
 } catch (AwsException $e) {
 
-    error_log(
-        "S3 HEAD ERROR: " . $e->getMessage()
-    );
+    error_log("S3 HEAD ERROR: " . $e->getMessage());
 
-    sendResponse(
-        false,
-        null,
-        "Unable to verify S3 file.",
-        500
-    );
+    sendResponse(false, null, "Unable to verify S3 file.", 500);
 }
+
+
+// ============================================================
+// URLS OF THE FILES THAT ACTUALLY EXIST IN S3
+// ============================================================
+
+$htmlUrl = $htmlExists
+    ? getS3FileUrl(AWS_BUCKET, AWS_REGION, $htmlKey)
+    : null;
+
+$htmUrl = $htmExists
+    ? getS3FileUrl(AWS_BUCKET, AWS_REGION, $htmKey)
+    : null;
+
+// file_url = html (preferred), otherwise htm
+$selectedUrl = ($htmlUrl !== null) ? $htmlUrl : $htmUrl;
 
 
 // ============================================================
 // DELETE ACTION
 // ============================================================
 //
-// This action is called AFTER ERP deletes S3 file(s).
+// Called AFTER ERP deletes S3 file(s).
 //
-// If no supplied S3 file remains:
-//     DELETE DB record.
-//
-// If one file still remains:
-//     UPDATE DB record to the remaining S3 URL.
+// If no supplied S3 file remains  -> DELETE DB row.
+// If a supplied file still exists -> UPDATE DB row.
 //
 // ============================================================
 
 if ($action === "delete") {
 
-    if (
-        $htmlExists ||
-        $htmExists
-    ) {
-
-        if ($htmlExists) {
-            $selectedKey = $htmlKey;
-        } else {
-            $selectedKey = $htmKey;
-        }
-
-        $selectedUrl =
-            getS3FileUrl(
-                AWS_BUCKET,
-                AWS_REGION,
-                $selectedKey
-            );
+    if ($htmlExists || $htmExists) {
 
         $selectStmt = $conn->prepare(
             "
@@ -984,77 +653,61 @@ if ($action === "delete") {
         );
 
         if ($selectStmt === false) {
-
-            sendResponse(
-                false,
-                null,
-                "Unable to prepare database query.",
-                500
-            );
+            sendResponse(false, null, "Unable to prepare database query.", 500);
         }
 
-        $selectStmt->bind_param(
-            "sss",
-            $date,
-            $type,
-            $raceType
-        );
-
+        $selectStmt->bind_param("sss", $date, $type, $raceType);
         $selectStmt->execute();
 
-        $result =
-            $selectStmt->get_result();
+        $result = $selectStmt->get_result();
 
-        if (
-            $result &&
-            $result->num_rows > 0
-        ) {
+        if ($result && $result->num_rows > 0) {
 
-            $row =
-                $result->fetch_assoc();
-
-            $id =
-                (int)$row["id"];
+            $row = $result->fetch_assoc();
+            $id  = (int)$row["id"];
 
             $selectStmt->close();
 
-            $updateStmt = $conn->prepare(
-                "
-                UPDATE run_race_details
-                SET file_url = ?
-                WHERE id = ?
-                "
-            );
+            if ($htmKey !== null) {
 
-            if ($updateStmt === false) {
-
-                sendResponse(
-                    false,
-                    null,
-                    "Unable to prepare database update query.",
-                    500
+                // htm_file was part of the request:
+                // keep htm_file_url in sync with what remains in S3.
+                $updateStmt = $conn->prepare(
+                    "
+                    UPDATE run_race_details
+                    SET file_url = ?, htm_file_url = ?
+                    WHERE id = ?
+                    "
                 );
-            }
 
-            $updateStmt->bind_param(
-                "si",
-                $selectedUrl,
-                $id
-            );
+                if ($updateStmt === false) {
+                    sendResponse(false, null, "Unable to prepare database update query.", 500);
+                }
+
+                $updateStmt->bind_param("ssi", $selectedUrl, $htmUrl, $id);
+            } else {
+
+                $updateStmt = $conn->prepare(
+                    "
+                    UPDATE run_race_details
+                    SET file_url = ?
+                    WHERE id = ?
+                    "
+                );
+
+                if ($updateStmt === false) {
+                    sendResponse(false, null, "Unable to prepare database update query.", 500);
+                }
+
+                $updateStmt->bind_param("si", $selectedUrl, $id);
+            }
 
             if (!$updateStmt->execute()) {
 
-                $error =
-                    $updateStmt->error;
-
+                $error = $updateStmt->error;
                 $updateStmt->close();
 
-                sendResponse(
-                    false,
-                    null,
-                    "Database update failed: " . $error,
-                    500
-                );
+                sendResponse(false, null, "Database update failed: " . $error, 500);
             }
 
             $updateStmt->close();
@@ -1062,13 +715,14 @@ if ($action === "delete") {
             sendResponse(
                 true,
                 array(
-                    "action"       => "delete",
-                    "operation"    => "update",
-                    "date"         => $date,
-                    "type"         => $type,
-                    "race_type"    => $raceType,
-                    "remaining_file" => basename($selectedKey),
-                    "file_url"     => $selectedUrl
+                    "action"         => "delete",
+                    "operation"      => "update",
+                    "date"           => $date,
+                    "type"           => $type,
+                    "race_type"      => $raceType,
+                    "remaining_file" => basename(($htmlExists ? $htmlKey : $htmKey)),
+                    "file_url"       => $selectedUrl,
+                    "htm_file_url"   => $htmUrl
                 ),
                 null,
                 200
@@ -1091,9 +745,7 @@ if ($action === "delete") {
         );
     }
 
-
-    // No supplied file exists in S3.
-    // Delete the DB record.
+    // No supplied file exists in S3 -> delete the DB record.
 
     $deleteStmt = $conn->prepare(
         "
@@ -1105,39 +757,20 @@ if ($action === "delete") {
     );
 
     if ($deleteStmt === false) {
-
-        sendResponse(
-            false,
-            null,
-            "Unable to prepare database delete query.",
-            500
-        );
+        sendResponse(false, null, "Unable to prepare database delete query.", 500);
     }
 
-    $deleteStmt->bind_param(
-        "sss",
-        $date,
-        $type,
-        $raceType
-    );
+    $deleteStmt->bind_param("sss", $date, $type, $raceType);
 
     if (!$deleteStmt->execute()) {
 
-        $error =
-            $deleteStmt->error;
-
+        $error = $deleteStmt->error;
         $deleteStmt->close();
 
-        sendResponse(
-            false,
-            null,
-            "Database delete failed: " . $error,
-            500
-        );
+        sendResponse(false, null, "Database delete failed: " . $error, 500);
     }
 
-    $deletedRows =
-        $deleteStmt->affected_rows;
+    $deletedRows = $deleteStmt->affected_rows;
 
     $deleteStmt->close();
 
@@ -1161,39 +794,11 @@ if ($action === "delete") {
 // ONLY SYNC ACTION REMAINS
 // ============================================================
 
-if (
-    $action !== "" &&
-    $action !== "sync"
-) {
-
-    sendResponse(
-        false,
-        null,
-        "Invalid POST action. Use sync or delete.",
-        400
-    );
+if ($action !== "" && $action !== "sync") {
+    sendResponse(false, null, "Invalid POST action. Use sync or delete.", 400);
 }
 
-
-// ============================================================
-// SYNC ACTION
-// ============================================================
-//
-// At this point:
-//     S3 object(s) have already been uploaded by ERP.
-//
-// We verify them again.
-// Then:
-//     existing DB row -> UPDATE
-//     no DB row        -> INSERT
-//
-// HTML is preferred over HTM for file_url.
-// ============================================================
-
-if (
-    !$htmlExists &&
-    !$htmExists
-) {
+if (!$htmlExists && !$htmExists) {
 
     sendResponse(
         false,
@@ -1209,45 +814,13 @@ if (
 
 
 // ============================================================
-// SELECT BEST AVAILABLE FILE
-// ============================================================
-
-if ($htmlExists) {
-
-    $selectedKey =
-        $htmlKey;
-} else {
-
-    $selectedKey =
-        $htmKey;
-}
-
-$selectedUrl =
-    getS3FileUrl(
-        AWS_BUCKET,
-        AWS_REGION,
-        $selectedKey
-    );
-
-
-// ============================================================
 // CHECK EXISTING DATABASE ROW
 // ============================================================
+//
+// Mock Race Result can have many files on one date, so the exact
+// file_url is part of the row identity for that type only.
+// ============================================================
 
-
-/*
- * Mock Race Result can have multiple files on the same date:
- *
- *   Mock_Race_Result_1_YYYY-MM-DD.html
- *   Mock_Race_Result_2_YYYY-MM-DD.html
- *   Mock_Race_Result_3_YYYY-MM-DD.html
- *
- * For this document, date + type + race_type is not enough to identify
- * one file. The exact file_url is also used as the row identity.
- *
- * All other document types retain the existing date + type + race_type
- * upsert behaviour.
- */
 if ($type === "mock_race_result") {
 
     $checkStmt = $conn->prepare(
@@ -1278,110 +851,64 @@ if ($type === "mock_race_result") {
 }
 
 if ($checkStmt === false) {
-
-    sendResponse(
-        false,
-        null,
-        "Unable to prepare database check query.",
-        500
-    );
+    sendResponse(false, null, "Unable to prepare database check query.", 500);
 }
 
 if ($type === "mock_race_result") {
-
-    $checkStmt->bind_param(
-        "ssss",
-        $date,
-        $type,
-        $raceType,
-        $selectedUrl
-    );
+    $checkStmt->bind_param("ssss", $date, $type, $raceType, $selectedUrl);
 } else {
-
-    $checkStmt->bind_param(
-        "sss",
-        $date,
-        $type,
-        $raceType
-    );
+    $checkStmt->bind_param("sss", $date, $type, $raceType);
 }
 
 if (!$checkStmt->execute()) {
 
-    $error =
-        $checkStmt->error;
-
+    $error = $checkStmt->error;
     $checkStmt->close();
 
-    sendResponse(
-        false,
-        null,
-        "Database check failed: " . $error,
-        500
-    );
+    sendResponse(false, null, "Database check failed: " . $error, 500);
 }
 
-$result =
-    $checkStmt->get_result();
+$result = $checkStmt->get_result();
 
 
 // ============================================================
 // UPDATE EXISTING
 // ============================================================
+//
+// htm_file_url = COALESCE(new htm url, existing htm_file_url)
+// -> modules that send only html_file never wipe htm_file_url.
+// ============================================================
 
-if (
-    $result &&
-    $result->num_rows > 0
-) {
+if ($result && $result->num_rows > 0) {
 
-    $row =
-        $result->fetch_assoc();
+    $row = $result->fetch_assoc();
 
-    $id =
-        (int)$row["id"];
-
-    $oldUrl =
-        $row["file_url"];
+    $id     = (int)$row["id"];
+    $oldUrl = $row["file_url"];
 
     $checkStmt->close();
 
     $updateStmt = $conn->prepare(
         "
         UPDATE run_race_details
-        SET file_url = ?
+        SET file_url = ?,
+            htm_file_url = COALESCE(?, htm_file_url)
         WHERE id = ?
         "
     );
 
     if ($updateStmt === false) {
-
-        sendResponse(
-            false,
-            null,
-            "Unable to prepare database update query.",
-            500
-        );
+        sendResponse(false, null, "Unable to prepare database update query.", 500);
     }
 
-    $updateStmt->bind_param(
-        "si",
-        $selectedUrl,
-        $id
-    );
+    $updateStmt->bind_param("ssi", $selectedUrl, $htmUrl, $id);
 
     if (!$updateStmt->execute()) {
 
-        $error =
-            $updateStmt->error;
-
+        $error = $updateStmt->error;
         $updateStmt->close();
 
-        sendResponse(
-            false,
-            null,
-            "Database update failed: " . $error,
-            500
-        );
+        sendResponse(false, null, "Database update failed: " . $error, 500);
     }
 
     $updateStmt->close();
@@ -1389,16 +916,17 @@ if (
     sendResponse(
         true,
         array(
-            "action"         => "sync",
-            "operation"      => "update",
-            "id"             => $id,
-            "date"           => $date,
-            "type"           => $type,
-            "race_type"      => $raceType,
-            "file_url"       => $selectedUrl,
-            "previous_url"   => $oldUrl,
-            "html_exists"    => $htmlExists,
-            "htm_exists"     => $htmExists
+            "action"       => "sync",
+            "operation"    => "update",
+            "id"           => $id,
+            "date"         => $date,
+            "type"         => $type,
+            "race_type"    => $raceType,
+            "file_url"     => $selectedUrl,
+            "htm_file_url" => $htmUrl,
+            "previous_url" => $oldUrl,
+            "html_exists"  => $htmlExists,
+            "htm_exists"   => $htmExists
         ),
         null,
         200
@@ -1419,10 +947,12 @@ $insertStmt = $conn->prepare(
         `date`,
         `type`,
         `race_type`,
-        `file_url`
+        `file_url`,
+        `htm_file_url`
     )
     VALUES
     (
+        ?,
         ?,
         ?,
         ?,
@@ -1432,60 +962,43 @@ $insertStmt = $conn->prepare(
 );
 
 if ($insertStmt === false) {
-
-    sendResponse(
-        false,
-        null,
-        "Unable to prepare database insert query.",
-        500
-    );
+    sendResponse(false, null, "Unable to prepare database insert query.", 500);
 }
 
 $insertStmt->bind_param(
-    "ssss",
+    "sssss",
     $date,
     $type,
     $raceType,
-    $selectedUrl
+    $selectedUrl,
+    $htmUrl
 );
 
 if (!$insertStmt->execute()) {
 
-    $error =
-        $insertStmt->error;
-
+    $error = $insertStmt->error;
     $insertStmt->close();
 
-    sendResponse(
-        false,
-        null,
-        "Database insert failed: " . $error,
-        500
-    );
+    sendResponse(false, null, "Database insert failed: " . $error, 500);
 }
 
-$newId =
-    $insertStmt->insert_id;
+$newId = $insertStmt->insert_id;
 
 $insertStmt->close();
-
-
-// ============================================================
-// FINAL SYNC SUCCESS
-// ============================================================
 
 sendResponse(
     true,
     array(
-        "action"      => "sync",
-        "operation"   => "insert",
-        "id"          => $newId,
-        "date"        => $date,
-        "type"        => $type,
-        "race_type"   => $raceType,
-        "file_url"    => $selectedUrl,
-        "html_exists" => $htmlExists,
-        "htm_exists"  => $htmExists
+        "action"       => "sync",
+        "operation"    => "insert",
+        "id"           => $newId,
+        "date"         => $date,
+        "type"         => $type,
+        "race_type"    => $raceType,
+        "file_url"     => $selectedUrl,
+        "htm_file_url" => $htmUrl,
+        "html_exists"  => $htmlExists,
+        "htm_exists"   => $htmExists
     ),
     null,
     200

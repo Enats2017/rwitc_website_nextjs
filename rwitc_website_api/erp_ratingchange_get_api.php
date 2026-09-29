@@ -131,10 +131,15 @@ function readHtmlFromS3SetUrl($fileUrl)
 {
     $s3Key = ratingChangeS3Key($fileUrl);
 
+    // .html and .htm both allowed
     if (
         $s3Key === "" ||
         strpos($s3Key, "run_races/") !== 0 ||
-        strtolower(pathinfo($s3Key, PATHINFO_EXTENSION)) !== "html"
+        !in_array(
+            strtolower(pathinfo($s3Key, PATHINFO_EXTENSION)),
+            ["html", "htm"],
+            true
+        )
     ) {
         throw new Exception(
             "Invalid rating change S3 file key"
@@ -206,6 +211,30 @@ function readHtmlFromS3SetUrl($fileUrl)
     }
 
     return $content;
+}
+
+// Legacy .htm files Windows-1252 me hote hain. Browser ko UTF-8 chahiye,
+// isliye content ko UTF-8 me convert karte hain.
+function ensureUtf8Html($content)
+{
+    $content = (string) $content;
+
+    // Agar already valid UTF-8 hai to touch mat karo
+    if (mb_check_encoding($content, "UTF-8")) {
+        return $content;
+    }
+
+    $converted = mb_convert_encoding($content, "UTF-8", "Windows-1252");
+
+    // File ke andar purana charset meta ho to UTF-8 se replace karo
+    $converted = preg_replace(
+        '/<meta[^>]+charset[^>]*>/i',
+        '<meta charset="UTF-8">',
+        $converted,
+        1
+    );
+
+    return $converted;
 }
 
 function ratingChangeValidType($type)
@@ -574,7 +603,13 @@ if (!ratingChangeValidRaceType($raceType)) {
 }
 
 // --------------------------------------------------
-// DOWNLOAD MODE
+// DOWNLOAD MODE (.htm file, same as Handicaps download)
+// --------------------------------------------------
+// Source priority:
+//   1) OLD local run_races Rating_change_<date>.htm
+//   2) OLD local run_races Rating_change_<date>.html (fallback)
+//   3) NEW S3 .htm file (registered .html key ka .htm version)
+//   4) NEW S3 registered .html (fallback, .htm na mile to)
 // --------------------------------------------------
 
 if (
@@ -588,16 +623,16 @@ if (
         $source = "";
 
         // --------------------------------------------------
-        // 1. LOCAL HTML
+        // 1. LOCAL .htm (pehle yahi check hoga)
         // --------------------------------------------------
 
-        $htmlFile = RUN_RACES_LOCAL_PATH
-            . "/Rating_change_" . $date . ".html";
+        $htmFile = RUN_RACES_LOCAL_PATH
+            . "/Rating_change_" . $date . ".htm";
 
-        if (is_file($htmlFile)) {
+        if (is_file($htmFile)) {
 
             $htmlContent = file_get_contents(
-                $htmlFile
+                $htmFile
             );
 
             if ($htmlContent === false) {
@@ -606,11 +641,36 @@ if (
                 );
             }
 
-            $source = "LOCAL_RUN_RACES";
+            $source = "LOCAL_RUN_RACES_HTM";
         }
 
         // --------------------------------------------------
-        // 2. DB -> S3
+        // 2. LOCAL .html (fallback, .htm nahi mili to)
+        // --------------------------------------------------
+
+        if ($htmlContent === false) {
+
+            $localHtmlFile = RUN_RACES_LOCAL_PATH
+                . "/Rating_change_" . $date . ".html";
+
+            if (is_file($localHtmlFile)) {
+
+                $htmlContent = file_get_contents(
+                    $localHtmlFile
+                );
+
+                if ($htmlContent === false) {
+                    throw new Exception(
+                        "Unable to read local rating change html file"
+                    );
+                }
+
+                $source = "LOCAL_RUN_RACES_HTML";
+            }
+        }
+
+        // --------------------------------------------------
+        // 3. DB -> S3 .htm, na mile to S3 .html
         // --------------------------------------------------
 
         if ($htmlContent === false) {
@@ -667,12 +727,33 @@ if (
                 );
             }
 
-            $htmlContent = readHtmlFromS3SetUrl(
-                $s3Value
-            );
+            // DB me .html registered hai, uska .htm version banao
+            $htmUrl = preg_replace('/\.html$/i', '.htm', $s3Value);
 
-            $source = "DB_S3";
+            try {
+
+                $htmlContent = readHtmlFromS3SetUrl(
+                    $htmUrl
+                );
+
+                $source = "DB_S3_HTM";
+            } catch (Throwable $htmError) {
+
+                // .htm S3 me nahi mili, registered .html pe fallback
+                $security->logLine(
+                    "RATING_CHANGE_HTM_MISSING_FALLBACK_HTML | date={$date} | "
+                        . $htmError->getMessage()
+                );
+
+                $htmlContent = readHtmlFromS3SetUrl(
+                    $s3Value
+                );
+
+                $source = "DB_S3_HTML";
+            }
         }
+
+        $htmlContent = ensureUtf8Html($htmlContent);
 
         // --------------------------------------------------
         // INLINE CSS FOR OPEN/DOWNLOAD
@@ -797,6 +878,7 @@ CSS;
                 . "\n</body>\n</html>";
         }
 
+        // Open in browser. Download file ka naam .htm hai.
         header(
             "Content-Type: text/html; charset=UTF-8"
         );
@@ -804,7 +886,7 @@ CSS;
         header(
             'Content-Disposition: inline; filename="Rating_change_'
                 . $date
-                . '.html"'
+                . '.htm"'
         );
 
         echo $downloadContent;

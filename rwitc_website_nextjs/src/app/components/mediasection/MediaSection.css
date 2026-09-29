@@ -2,46 +2,50 @@
 .mediaSection {
     position: relative;
     width: 100%;
-    max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
     overflow: hidden;
-    padding: 0 0px 20px;
-    margin-top: 0px;
+    padding: 30px 20px;          /* same side gutters at every size */
+    margin-top: 0;
     background: transparent;
     border-radius: 40px 40px 0 0;
     z-index: 4;
+    box-sizing: border-box;
 }
 
-/* actual content sits above bg + overlay */
+/* ONE shared wrapper controls width + centering for every child */
 .mediaSectionContent {
     position: relative;
     z-index: 2;
     padding-top: 30px;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
-/* CONTAINER (ALL 3 IN ONE ROW) */
+/* CONTAINER (VIDEO + ADS IN ONE ROW) */
 .mediaContainer {
     width: 100%;
     display: flex;
     gap: 19px;
     align-items: stretch;
-    max-width: 1400px;
-    margin: 0 auto;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 /* LEFT VIDEO */
 .videoArea {
-    flex: 1;
+    flex: 0 0 36%;
     min-width: 0;
-    max-width: 500px;
+    max-width: none;
+    height: 320px;               /* same height as ads */
     position: relative;
     overflow: hidden;
     border-radius: 22px;
     background: #000;
     box-shadow: 0 15px 35px rgba(0, 0, 0, .18);
     transition: transform .35s ease, box-shadow .35s ease;
-    aspect-ratio: 16/9;
 }
 
 .videoArea iframe {
@@ -59,11 +63,11 @@
     background: #000;
 }
 
-/* SPONSOR IMAGES (SAME ROW, FULL IMAGE VISIBLE) */
+/* SPONSOR IMAGES (takes all remaining width, no dead space) */
 .adsArea {
-    flex: 1;
+    flex: 1 1 0;
     min-width: 0;
-    max-width: 850px;
+    max-width: none;
     height: 320px;
     position: relative;
     overflow: hidden;
@@ -75,10 +79,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .adsArea.adsAreaFull {
-    max-width: 100%;
     flex: 1 1 100%;
 }
 
@@ -96,7 +100,6 @@
     overflow: hidden;
     border-radius: 14px;
     background: #ffffff;
-    /* border: 3px solid #11582f; */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -107,7 +110,7 @@
     height: 100%;
     object-fit: fill;
     transition: transform .4s ease;
-    padding: 0px;
+    padding: 0;
 }
 
 /* HOVER */
@@ -166,8 +169,7 @@
 /* NEWS TICKER */
 .newsTicker {
     width: 100%;
-    max-width: 1400px;
-    margin: 32px auto 0;
+    margin: 32px 0 20;            /* no auto: wrapper does the centering */
     display: flex;
     align-items: center;
     gap: 16px;
@@ -177,6 +179,7 @@
     padding: 14px 24px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, .25);
     position: relative;
+    box-sizing: border-box;
 }
 
 /* TICKER LOGO */
@@ -200,7 +203,7 @@
 .tickerTrack p {
     display: inline-block;
     color: #ffffff;
-    font-size: 18px;
+    font-size: var(--fs-lg, 20px);
     font-weight: 600;
     letter-spacing: .3px;
     margin: 0;
@@ -224,84 +227,95 @@
     animation-play-state: paused;
 }
 
-/* SINGLE OUTER BOX */
+/* INFO BOXES: three separate cards side by side */
 .infoBoxes {
     width: 100%;
-    max-width: 1400px;
-    margin: 32px auto 0;
+    margin: 32px 0 0;
     display: flex;
-    gap: 0;
+    gap: 16px;
     align-items: stretch;
-    background: #ffffff;
-    border: 2px solid #0b6d2a;
-    border-radius: 16px;
-    overflow: hidden;
     box-sizing: border-box;
 }
 
+/* CARD */
 .infoBox {
     flex: 1;
     min-width: 0;
-    background: #ffffff;
-    padding: 14px 16px 12px;
-    box-shadow: none;
     display: flex;
     flex-direction: column;
+    background: #ffffff;
+    border: 2px solid #0b6d2a;
+    border-radius: 22px;
+    overflow: hidden;
+    padding: 0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
     box-sizing: border-box;
 }
 
-/* Vertical separator between sections */
-.infoBox:not(:last-child) {
-    border-right: 1px solid rgba(8, 80, 31, .18);
-}
-
-.infoBox:hover {
-    background: #ffffff;
-}
-
+/* GREEN HEADER */
 .infoBoxTitle {
-    color: #08501f;
-    font-size: 17px;
+    margin: 0;
+    padding: 16px 12px;
+    background: #0b6d2a;
+    color: #ffffff;
+    font-size: var(--fs-heading, 22px);
     font-weight: 800;
     text-align: center;
-    margin: 0 0 10px;
-    padding-bottom: 8px;
-    border-bottom: none;
+    letter-spacing: .3px;
 }
 
 /* TABLE */
 .infoTable {
     width: 100%;
     border-collapse: collapse;
+    table-layout: auto;
 }
 
-.infoTable th {
+/* date header row (light green) */
+.infoTable thead th {
+    background: #e8f2ea;
     color: #08501f;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: var(--fs-body, 16px);
+    font-weight: 800;
     text-align: center;
-    padding: 8px 4px;
-    border-bottom: 1px solid rgba(8, 80, 31, .20);
+    padding: 12px 6px;
+    border: none;
 }
 
-.infoTable td {
+.infoTable th + th,
+.infoTable td + td {
+    border-left: 1px solid rgba(8, 80, 31, .10);
+}
+
+/* striped rows */
+.infoTable tbody td {
     text-align: center;
-    padding: 9px 4px;
-    border-bottom: 1px solid rgba(8, 80, 31, .12);
+    padding: 14px 6px;
+    border-bottom: none;
+}
+
+.infoTable tbody tr:nth-child(even) td {
+    background: #f1f7f2;
+}
+
+.infoTable tbody tr:nth-child(odd) td {
+    background: #ffffff;
 }
 
 .rowLabel {
     text-align: left !important;
+    padding-left: 22px !important;
     color: #08501f;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: var(--fs-body, 16px);
+    font-weight: 700;
     white-space: nowrap;
 }
 
+/* TRACK WORK dates */
 .trackWorkTable td {
     color: #08501f;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: var(--fs-body, 16px);
+    font-weight: 700;
 }
 
 .trackWorkLink {
@@ -321,54 +335,70 @@
 /* STATUS DOT */
 .statusDot {
     display: inline-block;
-    width: 12px;
-    height: 12px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    background: rgba(8, 80, 31, .20);
+    background: #c9dccf;
+    vertical-align: middle;
 }
 
 .statusDot.active {
-    background: #4aab69;
-    box-shadow: 0 0 6px rgba(11, 109, 42, .35);
+    background: #0b6a2f;
     cursor: pointer;
     transition: .3s ease;
 }
 
 .statusDot.active:hover {
-    background: #08501f;
-    box-shadow: 0 0 10px rgba(8, 80, 31, .35);
+    background: #4aab69;
     transform: scale(1.15);
 }
 
-/* VIEW ARCHIVES */
+/* VIEW ARCHIVES (pill button with chevron) */
 .viewArchives {
     text-align: right;
     margin-top: auto;
-    padding-top: 12px;
+    padding: 18px 18px 18px;
 }
 
 .viewArchives a {
-    color: #08501f;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    border-radius: 999px;
+    background: #0b6d2a;
+    color: #ffffff;
+    font-size: var(--fs-sm, 14px);
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .3s ease, transform .3s ease;
+}
+
+.viewArchives a::after {
+    content: "\203A";
+    font-size: 22px;
+    line-height: 1;
 }
 
 .viewArchives a:hover {
-    opacity: .8;
+    background: #08501f;
+    transform: translateY(-2px);
 }
 
 /* RESPONSIVE */
 @media(max-width:1200px) {
-    .mediaSection {
-        padding: 0px 20px;
+    .infoBoxes {
+        flex-wrap: wrap;
+    }
+
+    .infoBox {
+        flex: 1 1 calc(50% - 8px);
     }
 }
 
 @media(max-width:992px) {
     .mediaSection {
-        margin-top: 0px;
+        margin-top: 0;
         border-radius: 30px 30px 0 0;
     }
 
@@ -379,6 +409,8 @@
     .videoArea {
         flex: 1 1 100%;
         max-width: 100%;
+        height: auto;
+        aspect-ratio: 16/9;
     }
 
     .adsArea {
@@ -387,24 +419,17 @@
         height: 280px;
     }
 
-    .infoBoxes {
-        flex-wrap: wrap;
-    }
-
-    .infoBox {
-        flex: 1 1 calc(50% - 12px);
-    }
 }
 
 @media(max-width:768px) {
     .mediaSection {
-        padding: 0px 20px 15px;
+        padding: 0 20px 15px;
         margin-top: 10px;
         border-radius: 24px 24px 0 0;
     }
 
     .mediaSectionContent {
-        padding-top: 0px;
+        padding-top: 0;
     }
 
     .mediaContainer {
@@ -445,10 +470,6 @@
         height: 22px;
     }
 
-    .tickerTrack p {
-        font-size: 15px;
-    }
-
     .infoBoxes {
         flex-direction: column;
         gap: 16px;
@@ -461,19 +482,18 @@
     }
 
     .infoBoxTitle {
-        font-size: 17px;
+        padding: 13px 12px;
     }
 
-    .infoTable th,
-    .rowLabel,
-    .trackWorkTable td {
-        font-size: 12px;
+    .statusDot {
+        width: 16px;
+        height: 16px;
     }
 }
 
 @media(max-width:480px) {
     .mediaSection {
-        padding: 0px 15px 20px;
+        padding: 0 15px 20px;
         margin-top: 10px;
     }
 
@@ -486,18 +506,16 @@
         height: 18px;
     }
 
-    .infoBox {
-        padding: 16px 14px 12px;
-    }
-
-    .infoTable th,
-    .rowLabel,
-    .trackWorkTable td {
-        font-size: 11px;
+    .rowLabel {
+        padding-left: 12px !important;
     }
 
     .statusDot {
-        width: 7px;
-        height: 7px;
+        width: 13px;
+        height: 13px;
+    }
+
+    .viewArchives {
+        padding: 14px;
     }
 }

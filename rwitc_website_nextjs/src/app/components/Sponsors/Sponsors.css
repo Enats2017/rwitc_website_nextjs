@@ -1,93 +1,92 @@
-/* SPONSORS SECTION */
-.sponsorsSection {
+/* SPONSORS SECTION
+   All class names use the "rwSponsors" prefix so nothing collides
+   with other stylesheets. Requires typography.css (falls back to defaults). */
+.rwSponsorsSection {
     width: 100%;
-    padding: 0px 0 60px;
+    padding: 0 20px 60px;        /* same side gutter as the other sections */
     background: #ffffff;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
-/* CONTAINER */
-.sponsorsContainer {
-    width: calc(100% - 30px);
-    max-width: 1200px;
+/* CONTAINER - same 1400px cap, centered */
+.rwSponsorsContainer {
+    width: 100%;
+    max-width: 1400px;
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
 /* HEADING */
-.sponsorsHeading {
+.rwSponsorsHeading {
     text-align: center;
     margin-bottom: 25px;
 }
 
-.sponsorsHeading span {
+.rwSponsorsBadge {
     display: inline-block;
     padding: 12px 28px;
     border-radius: 999px;
     background: #0b6d2a;
     color: #ffffff;
-    font-size: 14px;
+    font-size: var(--fs-heading, 22px);
     font-weight: 700;
     letter-spacing: 1px;
-}
-
-.sponsorsHeading h2 {
-    margin-top: 18px;
-    font-size: 42px;
-    font-weight: 800;
-    color: #111;
+    line-height: 1.2;
 }
 
 /* SLIDER */
-.sponsorsSlider {
+.rwSponsorsSlider {
     width: 100%;
     overflow: hidden;
     position: relative;
 }
 
 /* TRACK */
-.sponsorsTrack {
+.rwSponsorsTrack {
     display: flex;
     align-items: center;
     width: max-content;
-    animation: sponsorScroll 35s linear infinite;
+    animation: rwSponsorsScroll 35s linear infinite;
 }
 
 /* STOP ON HOVER */
-.sponsorsSlider:hover .sponsorsTrack {
+.rwSponsorsSlider:hover .rwSponsorsTrack {
     animation-play-state: paused;
 }
 
 /* SPONSOR ITEM */
-.sponsorItem {
+.rwSponsorsItem {
     flex-shrink: 0;
-    width: auto;
-    height: auto;
     margin: 0 16px;
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: transform .35s ease;
 }
 
 /* LOGO IMAGE */
-.sponsorItem img {
+.rwSponsorsLogo {
+    display: block;
     width: auto;
     height: 120px;
     max-width: none;
     max-height: none;
     object-fit: contain;
+    transition: transform .35s ease;
 }
 
 /* HOVER EFFECT */
-.sponsorItem:hover {
+.rwSponsorsItem:hover {
     transform: translateY(-8px);
 }
 
-.sponsorItem:hover img {
+.rwSponsorsItem:hover .rwSponsorsLogo {
     transform: scale(1.08);
 }
 
 /* SCROLL ANIMATION */
-@keyframes sponsorScroll {
+@keyframes rwSponsorsScroll {
     0% {
         transform: translateX(0);
     }
@@ -97,83 +96,43 @@
     }
 }
 
-/* RESPONSIVE */
-@media(max-width:1200px) {
-    .sponsorItem {
-        width: 180px;
-        height: 110px;
-        margin: 0 18px;
+/* RESPONSIVE (same gutters as the other sections) */
+@media (max-width: 768px) {
+    .rwSponsorsSection {
+        padding: 30px 20px 40px;
     }
 
-    .sponsorItem img {
-        max-width: 150px;
-        max-height: 80px;
-    }
-}
-
-@media(max-width:768px) {
-    .sponsorsSection {
-        padding: 30px 0 40px;
-    }
-
-    .sponsorsHeading {
+    .rwSponsorsHeading {
         margin-bottom: 20px;
     }
 
-    .sponsorsHeading span {
+    .rwSponsorsBadge {
         padding: 10px 22px;
-        font-size: 12px;
     }
 
-    .sponsorsHeading h2 {
-        font-size: 30px;
-        margin-top: 14px;
-    }
-
-    .sponsorItem {
-        width: auto;
-        height: auto;
+    .rwSponsorsItem {
         margin: 0 10px;
     }
 
-    .sponsorItem img {
+    .rwSponsorsLogo {
         height: 90px;
-        width: auto;
-        max-width: none;
-        max-height: none;
     }
 }
 
-@media(max-width:480px) {
-    .sponsorsSection {
-        padding: 25px 0 35px;
+@media (max-width: 480px) {
+    .rwSponsorsSection {
+        padding: 25px 15px 35px;
     }
 
-    .sponsorsHeading {
+    .rwSponsorsHeading {
         margin-bottom: 16px;
     }
 
-    .sponsorsHeading h2 {
-        font-size: 24px;
-    }
-
-    .sponsorItem {
-        width: auto;
-        height: auto;
+    .rwSponsorsItem {
         margin: 0 6px;
     }
 
-    .sponsorItem img {
+    .rwSponsorsLogo {
         height: 55px;
-        width: auto;
-        max-width: none;
-        max-height: none;
     }
-}
-
-/* SMOOTH EFFECT */
-.sponsorsTrack,
-.sponsorItem,
-.sponsorItem img {
-    transition: all .35s ease;
 }

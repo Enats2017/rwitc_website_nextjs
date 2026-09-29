@@ -73,6 +73,12 @@ const PRE_RACE_LIMIT   = 4;
 const POST_RACE_LIMIT  = 4;
 const TRACK_WORK_LIMIT = 18;
 
+// How long a remote-file-existence check (success OR failure) is trusted
+// before we bother re-checking the remote server. This is the fix for the
+// 504 Gateway Timeout: without this, every missing file triggers a fresh
+// slow curl call on every single request.
+const REMOTE_CHECK_CACHE_TTL = 900; // 15 minutes
+
 /*
  * run_race_details.type  ->  dot mapping
  *
@@ -98,6 +104,12 @@ const DB_TYPE_RATING_CHANGE = "rating_change";
 // --------------------------------------------------
 // CHECK IF REMOTE FILE EXISTS (local run_races folder)
 // --------------------------------------------------
+//
+// FIX: timeouts brought down from 5s/3s to 2s/1s. When many files are
+// missing on the remote server, each check used to be able to block for
+// up to 5 seconds; with 16+ checks per request that alone could add up
+// to 60-80 seconds and trip the server's gateway timeout.
+// --------------------------------------------------
 
 function remoteFileExists($url)
 {
@@ -107,8 +119,8 @@ function remoteFileExists($url)
         CURLOPT_NOBODY         => true,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_TIMEOUT        => 5,
-        CURLOPT_CONNECTTIMEOUT => 3,
+        CURLOPT_TIMEOUT        => 2,
+        CURLOPT_CONNECTTIMEOUT => 1,
         CURLOPT_SSL_VERIFYPEER => true,
         CURLOPT_USERAGENT      => "RWITC-Race-Media-API/1.0"
     ]);
@@ -195,14 +207,68 @@ function fetchRunRaceFilesByDates($conn, array $dates)
 }
 
 // --------------------------------------------------
+// LOCAL DISK CACHE FOR REMOTE FILE CHECKS
+//
+// FIX: previously only the DB lookup was cached (implicitly, by being
+// batched). Whenever the DB didn't know about a file, remoteFileExists()
+// ran again on every request, forever, for files that may never appear.
+// This caches BOTH outcomes (true and false) for REMOTE_CHECK_CACHE_TTL
+// seconds so repeated requests don't re-trigger the slow curl call.
+// --------------------------------------------------
+
+function getCachedRemoteCheck($date, $dbType)
+{
+    $cacheDir = __DIR__ . "/cache/remote_checks";
+
+    if (!is_dir($cacheDir)) {
+        @mkdir($cacheDir, 0750, true);
+    }
+
+    $cacheKey  = md5($date . "_" . $dbType);
+    $cacheFile = $cacheDir . "/" . $cacheKey . ".json";
+
+    if (
+        file_exists($cacheFile) &&
+        (time() - filemtime($cacheFile)) < REMOTE_CHECK_CACHE_TTL
+    ) {
+        $cached = json_decode(file_get_contents($cacheFile), true);
+
+        if (is_array($cached) && array_key_exists("available", $cached)) {
+            return [
+                "hit"       => true,
+                "available" => (bool) $cached["available"]
+            ];
+        }
+    }
+
+    return [
+        "hit"       => false,
+        "cacheFile" => $cacheFile
+    ];
+}
+
+function setCachedRemoteCheck($cacheFile, $available)
+{
+    @file_put_contents(
+        $cacheFile,
+        json_encode([
+            "available"  => $available,
+            "checked_at" => time()
+        ])
+    );
+}
+
+// --------------------------------------------------
 // FILE AVAILABLE?
 //
 // 1. DB (run_race_details) has this date + type  -> YES
 //    (this covers files that live only in S3)
-// 2. Otherwise check the local run_races folder  -> old behaviour
+// 2. Otherwise check a short-lived local cache of past remote checks
+// 3. Otherwise fall back to a live remote curl check, then cache it
 //
-// DB is checked first so we skip the slow curl call
-// whenever the DB already knows about the file.
+// DB is checked first so we skip the slow curl call whenever the DB
+// already knows about the file. The disk cache means a missing file
+// only triggers one slow curl call per TTL window, not one per request.
 // --------------------------------------------------
 
 function isFileAvailable(array $dbFiles, $date, $dbType, $url)
@@ -211,7 +277,17 @@ function isFileAvailable(array $dbFiles, $date, $dbType, $url)
         return true;
     }
 
-    return remoteFileExists($url);
+    $cached = getCachedRemoteCheck($date, $dbType);
+
+    if ($cached["hit"]) {
+        return $cached["available"];
+    }
+
+    $available = remoteFileExists($url);
+
+    setCachedRemoteCheck($cached["cacheFile"], $available);
+
+    return $available;
 }
 
 // --------------------------------------------------

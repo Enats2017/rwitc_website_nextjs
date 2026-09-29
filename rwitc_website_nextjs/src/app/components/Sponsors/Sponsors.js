@@ -6,6 +6,7 @@ import { getSponsors } from "../../../services/sponsorService";
 
 export default function Sponsors() {
     const [sponsors, setSponsors] = useState([]);
+
     useEffect(() => {
         async function loadSponsors() {
             const data = await getSponsors();
@@ -14,38 +15,44 @@ export default function Sponsors() {
         loadSponsors();
     }, []);
 
+    const getSrc = (item) =>
+        item.source.startsWith("http")
+            ? item.source
+            : `${UPLOAD_URL}/sponsors/${item.source}`;
+
     return (
-        <section className="sponsorsSection">
-            <div className="sponsorsContainer">
-                <div className="sponsorsHeading">
-                    <span> SPONSORS </span>
+        <section className="rwSponsorsSection">
+            <div className="rwSponsorsContainer">
+                <div className="rwSponsorsHeading">
+                    <span className="rwSponsorsBadge">SPONSORS</span>
                 </div>
-                <div className="sponsorsSlider">
-                    <div className="sponsorsTrack">
-                        {
-                            sponsors.map((item) => (
-                                <div className="sponsorItem" key={item.id}>
-                                    <img
-                                        // src={`${UPLOAD_URL}/sponsors/${item.source}`}
-                                        src={item.source.startsWith('http') ? item.source : `${UPLOAD_URL}/sponsors/${item.source}`}
-                                        alt={item.title}
-                                        draggable="false"
-                                    />
-                                </div>
-                            ))
-                        }
-                        {
-                            sponsors.map((item) => (
-                                <div className="sponsorItem" key={`duplicate-${item.id}`}>
-                                    <img
-                                        // src={`${UPLOAD_URL}/sponsors/${item.source}`}
-                                        src={item.source.startsWith('http') ? item.source : `${UPLOAD_URL}/sponsors/${item.source}`}
-                                        alt={item.title}
-                                        draggable="false"
-                                    />
-                                </div>
-                            ))
-                        }
+                <div className="rwSponsorsSlider">
+                    <div className="rwSponsorsTrack">
+                        {sponsors.map((item) => (
+                            <div className="rwSponsorsItem" key={item.id}>
+                                <img
+                                    className="rwSponsorsLogo"
+                                    src={getSrc(item)}
+                                    alt={item.title}
+                                    draggable="false"
+                                />
+                            </div>
+                        ))}
+                        {/* duplicate set for the seamless loop */}
+                        {sponsors.map((item) => (
+                            <div
+                                className="rwSponsorsItem"
+                                key={`duplicate-${item.id}`}
+                                aria-hidden="true"
+                            >
+                                <img
+                                    className="rwSponsorsLogo"
+                                    src={getSrc(item)}
+                                    alt=""
+                                    draggable="false"
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

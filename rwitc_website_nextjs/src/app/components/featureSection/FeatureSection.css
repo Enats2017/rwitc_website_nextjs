@@ -1,15 +1,20 @@
 /* FEATURE SECTION */
 .featureSection {
     width: 100%;
-    padding: 30px 40px;
+    padding: 30px 20px;          /* same side gutter as MediaSection / RaceDayButtons / NewsRoom */
     background: #ffffff;
+    box-sizing: border-box;
 }
 
-/* FEATURE GRID */
+/* FEATURE GRID - same 1400px cap, centered */
 .featureGrid {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 24px;
+    box-sizing: border-box;
 }
 
 /* FEATURE CARD */
@@ -17,15 +22,17 @@
     position: relative;
     overflow: hidden;
     border-radius: 18px;
-    height: 120px;
+    height: 140px;                 /* was 120px - taller for bigger text/icons */
     cursor: pointer;
     display: flex;
     align-items: center;
-    padding: 0 20px;
+    padding: 0 22px;
     background-size: cover;
     background-position: center;
     box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
     transition: transform .35s ease, box-shadow .35s ease;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 .featureCard.wide {
@@ -50,22 +57,29 @@
     z-index: 2;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
 }
 
-/* ICON CIRCLE - normal state */
+/* ICON CIRCLE - normal state (bigger) */
 .featureIcon {
     flex-shrink: 0;
-    width: 44px;
-    height: 44px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     background: #ffffff;
     color: #0b6d2a;
-    font-size: 17px;
+    font-size: 26px;
     transition: .35s ease;
+}
+
+.featureIcon svg {
+    width: 1em;
+    height: 1em;
 }
 
 /* ICON CIRCLE - hover state (green) */
@@ -75,14 +89,18 @@
     transform: rotate(8deg) scale(1.05);
 }
 
-/* TITLE */
+/* TITLE (bigger text) */
 .overlay h3 {
+    flex: 1;
+    min-width: 0;
     color: #ffffff;
-    font-size: 15px;
+    font-size: clamp(17px, 1.35vw, 21px);
     font-weight: 700;
-    line-height: 20px;
-    max-width: 75%;
+    line-height: 1.3;
+    margin: 0;
     text-shadow: 0 1px 4px rgba(0, 0, 0, .5);
+    overflow-wrap: anywhere;
+    word-break: normal;
 }
 
 /* CARD HOVER */
@@ -91,7 +109,20 @@
     box-shadow: 0 20px 45px rgba(0, 0, 0, .18);
 }
 
-/* RESPONSIVE */
+/* ---------- LARGE LAPTOPS ---------- */
+@media (max-width: 1400px) {
+    .featureIcon {
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+    }
+
+    .overlay h3 {
+        font-size: 18px;
+    }
+}
+
+/* ---------- TABLETS / SMALL LAPTOPS (2 columns) ---------- */
 @media (max-width: 1200px) {
     .featureGrid {
         grid-template-columns: repeat(2, 1fr);
@@ -100,8 +131,23 @@
     .featureCard.wide {
         grid-column: span 2;
     }
+
+    .featureCard {
+        height: 140px;
+    }
+
+    .featureIcon {
+        width: 60px;
+        height: 60px;
+        font-size: 26px;
+    }
+
+    .overlay h3 {
+        font-size: 20px;
+    }
 }
 
+/* ---------- PHONES / SMALL TABLETS (1 column) ---------- */
 @media (max-width: 768px) {
     .featureSection {
         padding: 30px 20px;
@@ -115,22 +161,67 @@
     .featureCard,
     .featureCard.wide {
         grid-column: span 1;
-        height: 110px;
-    }
-
-    .overlay h3 {
-        font-size: 14px;
+        height: 120px;
+        padding: 0 20px;
     }
 
     .featureIcon {
-        width: 40px;
-        height: 40px;
-        font-size: 15px;
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+    }
+
+    .overlay {
+        gap: 14px;
+    }
+
+    .overlay h3 {
+        font-size: 19px;
     }
 }
 
+/* ---------- SMALL PHONES ---------- */
 @media (max-width: 480px) {
     .featureSection {
         padding: 30px 15px;
+    }
+
+    .featureCard,
+    .featureCard.wide {
+        height: 110px;
+        padding: 0 16px;
+    }
+
+    .featureIcon {
+        width: 52px;
+        height: 52px;
+        font-size: 22px;
+    }
+
+    .overlay h3 {
+        font-size: 18px;
+    }
+}
+
+/* ---------- VERY SMALL PHONES (320px - 360px) ---------- */
+@media (max-width: 360px) {
+    .featureCard,
+    .featureCard.wide {
+        height: 104px;
+        padding: 0 14px;
+    }
+
+    .overlay {
+        gap: 12px;
+    }
+
+    .featureIcon {
+        width: 46px;
+        height: 46px;
+        font-size: 20px;
+    }
+
+    .overlay h3 {
+        font-size: 16px;
     }
 }

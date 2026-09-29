@@ -7,13 +7,22 @@ import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archi
 import { FaHorseHead, FaPlayCircle } from "react-icons/fa";
 import "./RaceResult.css";
 
+/*
+ * Styles injected INSIDE the archive iframe.
+ *
+ * NOTE: the old "html, body { overflow-x: hidden !important; width: 100% }"
+ * rule was removed on purpose. On phones it squashed and clipped the table.
+ * Now the iframe keeps a minimum width (see RaceResult.css) and the wrapper
+ * scrolls sideways, so the table always looks exactly like the desktop
+ * version, same as Handicaps / Acceptance / Declarations / Race Card.
+ */
 const ARCHIVE_STYLES_RACE_RESULT = `
 <style>
     * { box-sizing: border-box; }
-    html, body { overflow-x: hidden !important; width: 100% !important; }
-    body { font-family: Arial; margin: 0; padding: 12px; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; word-wrap: break-word; padding: 12px; }
+    img { max-width: 100%; height: auto; }
     table { width: 100% !important; max-width: 100% !important; table-layout: fixed; border-collapse: collapse; }
-    body { overflow-x: hidden !important; }
     td, th { word-break: break-word; padding: 10px 12px !important; border: 1px solid #cccccc; }
     span, a { display: inline-block; text-decoration: none; color: #333333; font-weight: bold; }
     th { color: #000 !important; font-weight: 700; text-align: center; background: #fff; }
@@ -143,6 +152,8 @@ export default function RaceResult() {
                     Download Race Results
                 </button>
 
+                {/* Header block only applies to the structured (DB) view —
+                    the archived HTML already carries its own header markup. */}
                 {mode !== "html" && (
                     <div className="docHeader">
                         <p className="docClub">
@@ -178,45 +189,53 @@ export default function RaceResult() {
                     </div>
                 )}
 
+                {/* Archive dates: render the Race_results_<date>.html markup
+                    returned by the API as-is, inside an iframe so the archive
+                    file's own <style> block stays isolated from the app's
+                    global CSS. The iframe sits in a scroll wrapper so on
+                    phones the table keeps its real layout and scrolls
+                    sideways instead of breaking. */}
                 {!loading && !error && mode === "html" && rawHtml.trim() && (
-                    <iframe
-                        className="docArchiveHtml"
-                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACE_RESULT, rawHtml)}
-                        title="Race Results"
-                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms allow-popups"
-                        scrolling="no"
-                        style={{ width: "100%", border: "none" }}
-                        onLoad={(e) => {
-                            handleArchiveIframeLoad(e);
-                            const iframe = e.target;
-                            const doc = iframe.contentWindow?.document;
-                            if (!doc) return;
+                    <div className="docArchiveScroll">
+                        <iframe
+                            className="docArchiveHtml"
+                            srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACE_RESULT, rawHtml)}
+                            title="Race Results"
+                            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms allow-popups"
+                            scrolling="no"
+                            style={{ width: "100%", border: "none" }}
+                            onLoad={(e) => {
+                                handleArchiveIframeLoad(e);
+                                const iframe = e.target;
+                                const doc = iframe.contentWindow?.document;
+                                if (!doc) return;
 
-                            doc.querySelectorAll("th").forEach((th) => {
-                                if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
-                                    th.style.whiteSpace = "nowrap";
-                                }
-                            });
+                                doc.querySelectorAll("th").forEach((th) => {
+                                    if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
+                                        th.style.whiteSpace = "nowrap";
+                                    }
+                                });
 
-                            doc.querySelectorAll("a").forEach((link) => {
-                                if (link.textContent.trim().toLowerCase() === "video") {
-                                    link.textContent = "";
-                                    link.innerHTML =
-                                        '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#16a34a"><path d="M8 5v14l11-7z"/></svg>';
-                                    link.setAttribute("target", "_blank");
-                                    link.setAttribute("rel", "noopener noreferrer");
-                                    link.style.display = "inline-flex";
-                                    link.style.alignItems = "center";
-                                    link.style.justifyContent = "center";
+                                doc.querySelectorAll("a").forEach((link) => {
+                                    if (link.textContent.trim().toLowerCase() === "video") {
+                                        link.textContent = "";
+                                        link.innerHTML =
+                                            '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#16a34a"><path d="M8 5v14l11-7z"/></svg>';
+                                        link.setAttribute("target", "_blank");
+                                        link.setAttribute("rel", "noopener noreferrer");
+                                        link.style.display = "inline-flex";
+                                        link.style.alignItems = "center";
+                                        link.style.justifyContent = "center";
 
-                                    link.addEventListener("click", (ev) => {
-                                        ev.preventDefault();
-                                        window.open(link.href, "_blank", "noopener,noreferrer");
-                                    });
-                                }
-                            });
-                        }}
-                    />
+                                        link.addEventListener("click", (ev) => {
+                                            ev.preventDefault();
+                                            window.open(link.href, "_blank", "noopener,noreferrer");
+                                        });
+                                    }
+                                });
+                            }}
+                        />
+                    </div>
                 )}
 
                 {!loading && !error && mode === "json" && hasNoResults && (
@@ -225,23 +244,26 @@ export default function RaceResult() {
                     </div>
                 )}
 
+                {/* DB-sourced dates: structured tables. */}
                 {!loading && !error && !hasNoResults && conditions && (
-                    <table className="docTable" style={{ marginBottom: "20px" }}>
-                        <tbody>
-                            <tr>
-                                <th>Weather</th>
-                                <td className="alignLeft">{conditions.weather}</td>
-                            </tr>
-                            <tr>
-                                <th>Penetrometer Reading</th>
-                                <td className="alignLeft">{conditions.penetrometer}</td>
-                            </tr>
-                            <tr>
-                                <th>False Rails</th>
-                                <td className="alignLeft">{conditions.false_rails}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div className="docTableWrap" style={{ marginBottom: "20px" }}>
+                        <table className="docTable">
+                            <tbody>
+                                <tr>
+                                    <th>Weather</th>
+                                    <td className="alignLeft">{conditions.weather}</td>
+                                </tr>
+                                <tr>
+                                    <th>Penetrometer Reading</th>
+                                    <td className="alignLeft">{conditions.penetrometer}</td>
+                                </tr>
+                                <tr>
+                                    <th>False Rails</th>
+                                    <td className="alignLeft">{conditions.false_rails}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 )}
 
                 {!loading && !error && mode === "json" && !hasNoResults && races.map((race, rIdx) => {
@@ -284,113 +306,115 @@ export default function RaceResult() {
                     }
 
                     return (
-                        <table className="docTable" key={race.race_no_season || rIdx} style={{ marginBottom: "24px" }}>
-                            <tbody>
+                        <div className="docTableWrap" key={race.race_no_season || rIdx} style={{ marginBottom: "24px" }}>
+                            <table className="docTable">
+                                <tbody>
 
-                                <tr>
-                                    <th rowSpan="2" style={{ width: "8%", whiteSpace: "nowrap" }}>No.: {race.race_no_season}</th>
-                                    <th colSpan="6" rowSpan="2">
-                                        {race.race_name} {race.division}
-                                        {race.void && <span className="docVoidTag">&nbsp; VOID</span>}
-                                        <br />
-                                        {race.narrative_entry}
-                                        <br />
-                                        Time: {race.time}
-                                        <br />
-                                        (About) {race.distance} Metres.
-                                    </th>
-                                    <th rowSpan="2" style={{ width: "8%" }}>
-                                        <a href="#" onClick={(e) => e.preventDefault()} title="Video">
-                                            <FaPlayCircle size={22} />
-                                        </a>
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th>{race.race_no}</th>
-                                </tr>
-
-                                {race.cancelled ? (
                                     <tr>
-                                        <td colSpan="8" className="alignLeft" style={{ fontWeight: "bold", fontSize: "14px", textAlign: "center" }}>
-                                            This race was cancelled.
-                                        </td>
+                                        <th rowSpan="2" style={{ width: "8%", whiteSpace: "nowrap" }}>No.: {race.race_no_season}</th>
+                                        <th colSpan="6" rowSpan="2">
+                                            {race.race_name} {race.division}
+                                            {race.void && <span className="docVoidTag">&nbsp; VOID</span>}
+                                            <br />
+                                            {race.narrative_entry}
+                                            <br />
+                                            Time: {race.time}
+                                            <br />
+                                            (About) {race.distance} Metres.
+                                        </th>
+                                        <th rowSpan="2" style={{ width: "8%" }}>
+                                            <a href="#" onClick={(e) => e.preventDefault()} title="Video">
+                                                <FaPlayCircle size={22} />
+                                            </a>
+                                        </th>
                                     </tr>
-                                ) : (
-                                    <>
+                                    <tr>
+                                        <th>{race.race_no}</th>
+                                    </tr>
+
+                                    {race.cancelled ? (
                                         <tr>
-                                            <th>Placing</th>
-                                            <th>Horse</th>
-                                            <th>Wt</th>
-                                            <th>Jockey</th>
-                                            <th>Trainer</th>
-                                            <th>Odds</th>
-                                            <th>Time</th>
-                                            <th>Horse Wt</th>
+                                            <td colSpan="8" className="alignLeft" style={{ fontWeight: "bold", fontSize: "14px", textAlign: "center" }}>
+                                                This race was cancelled.
+                                            </td>
                                         </tr>
-
-                                        {race.results.map((res, idx) => (
-                                            <tr key={res.horseseq || idx}>
-                                                <td>{res.placing}</td>
-                                                <td className="alignLeft docHorseName">
-                                                    {res.horse_name}
-                                                    {res.sire && (
-                                                        <span className="docBreeding">
-                                                            ({res.sire}-{res.dam})
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td>{res.weight ?? "-"}</td>
-                                                <td>
-                                                    {res.jockey}
-                                                    {res.jockey_allowance ? ` - ${res.jockey_allowance}` : ""}
-                                                </td>
-                                                <td>{res.trainer}</td>
-                                                <td>{res.odds ?? "--"}</td>
-                                                <td>{res.time ?? "-"}</td>
-                                                <td>{res.horse_weight}</td>
-                                            </tr>
-                                        ))}
-
-                                        {race.void ? (
+                                    ) : (
+                                        <>
                                             <tr>
-                                                <td colSpan="8" className="alignLeft" style={{ fontWeight: "bold", fontSize: "14px", textAlign: "center" }}>
-                                                    This race has been declared Null &amp; Void
-                                                </td>
+                                                <th>Placing</th>
+                                                <th>Horse</th>
+                                                <th>Wt</th>
+                                                <th>Jockey</th>
+                                                <th>Trainer</th>
+                                                <th>Odds</th>
+                                                <th>Time</th>
+                                                <th>Horse Wt</th>
                                             </tr>
-                                        ) : (
-                                            <>
-                                                <tr>
-                                                    <th colSpan="2">Ownership</th>
-                                                    <td colSpan="6" className="alignLeft">{formatOwnership(race.ownership)}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th colSpan="2">Breeder</th>
-                                                    <td colSpan="6" className="alignLeft">{race.breeder}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th colSpan="2">Distance</th>
-                                                    <td colSpan="6" className="alignLeft">{race.distance_run}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th colSpan="2">Results as per Card Nos</th>
-                                                    <td colSpan="6" className="alignLeft">{race.results_by_card_no}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th colSpan="2">Tote Favourite</th>
-                                                    <td colSpan="6" className="alignLeft">{race.tote_favourite}</td>
-                                                </tr>
-                                            </>
-                                        )}
 
-                                        <tr>
-                                            <th colSpan="2">Tote Dividends</th>
-                                            <td colSpan="6" className="alignLeft">{formatTote(race.tote)}</td>
-                                        </tr>
-                                    </>
-                                )}
+                                            {(race.results || []).map((res, idx) => (
+                                                <tr key={res.horseseq || idx}>
+                                                    <td>{res.placing}</td>
+                                                    <td className="alignLeft docHorseName">
+                                                        {res.horse_name}
+                                                        {res.sire && (
+                                                            <span className="docBreeding">
+                                                                ({res.sire}-{res.dam})
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td>{res.weight ?? "-"}</td>
+                                                    <td>
+                                                        {res.jockey}
+                                                        {res.jockey_allowance ? ` - ${res.jockey_allowance}` : ""}
+                                                    </td>
+                                                    <td>{res.trainer}</td>
+                                                    <td>{res.odds ?? "--"}</td>
+                                                    <td>{res.time ?? "-"}</td>
+                                                    <td>{res.horse_weight}</td>
+                                                </tr>
+                                            ))}
 
-                            </tbody>
-                        </table>
+                                            {race.void ? (
+                                                <tr>
+                                                    <td colSpan="8" className="alignLeft" style={{ fontWeight: "bold", fontSize: "14px", textAlign: "center" }}>
+                                                        This race has been declared Null &amp; Void
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                <>
+                                                    <tr>
+                                                        <th colSpan="2">Ownership</th>
+                                                        <td colSpan="6" className="alignLeft">{formatOwnership(race.ownership)}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th colSpan="2">Breeder</th>
+                                                        <td colSpan="6" className="alignLeft">{race.breeder}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th colSpan="2">Distance</th>
+                                                        <td colSpan="6" className="alignLeft">{race.distance_run}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th colSpan="2">Results as per Card Nos</th>
+                                                        <td colSpan="6" className="alignLeft">{race.results_by_card_no}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th colSpan="2">Tote Favourite</th>
+                                                        <td colSpan="6" className="alignLeft">{race.tote_favourite}</td>
+                                                    </tr>
+                                                </>
+                                            )}
+
+                                            <tr>
+                                                <th colSpan="2">Tote Dividends</th>
+                                                <td colSpan="6" className="alignLeft">{formatTote(race.tote)}</td>
+                                            </tr>
+                                        </>
+                                    )}
+
+                                </tbody>
+                            </table>
+                        </div>
                     );
                 })}
 

@@ -107,10 +107,15 @@ function readHtmlFromS3BucketApi($fileUrl)
 {
     $s3Key = racecardS3Key($fileUrl);
 
+    // .html and .htm both allowed
     if (
         $s3Key === "" ||
         strpos($s3Key, "run_races/") !== 0 ||
-        strtolower(pathinfo($s3Key, PATHINFO_EXTENSION)) !== "html"
+        !in_array(
+            strtolower(pathinfo($s3Key, PATHINFO_EXTENSION)),
+            ["html", "htm"],
+            true
+        )
     ) {
         throw new Exception(
             "Invalid racecard S3 file key"
@@ -182,6 +187,30 @@ function readHtmlFromS3BucketApi($fileUrl)
     }
 
     return $content;
+}
+
+// Legacy .htm files Windows-1252 me hote hain. Browser ko UTF-8 chahiye,
+// isliye content ko UTF-8 me convert karte hain.
+function ensureUtf8Html($content)
+{
+    $content = (string) $content;
+
+    // Agar already valid UTF-8 hai to touch mat karo
+    if (mb_check_encoding($content, "UTF-8")) {
+        return $content;
+    }
+
+    $converted = mb_convert_encoding($content, "UTF-8", "Windows-1252");
+
+    // File ke andar purana charset meta ho to UTF-8 se replace karo
+    $converted = preg_replace(
+        '/<meta[^>]+charset[^>]*>/i',
+        '<meta charset="UTF-8">',
+        $converted,
+        1
+    );
+
+    return $converted;
 }
 
 function racecardWrapDownloadHtml($htmlContent)
@@ -637,7 +666,12 @@ if (
 }
 
 // ------------------------------------------------------------
-// Download endpoint: fetch HTML and open it with CSS.
+// Download endpoint (.htm ONLY): fetch HTML and open it with CSS.
+//
+// Source priority:
+//   1) local run_races Race_Card_Report_<date>.htm
+//   2) S3 .htm file (registered .html key ka .htm version)
+// Koi .html fallback nahi hai.
 // ------------------------------------------------------------
 if (
     isset($_GET["download"])
@@ -649,8 +683,9 @@ if (
         $htmlContent = false;
         $source = "";
 
+        // ---------- 1. LOCAL .htm ----------
         $htmlFile = rtrim(RUN_RACES_LOCAL_PATH, "/\\")
-            . "/Race_Card_" . $date . ".html";
+            . "/Race_Card_Report_" . $date . ".htm";
 
         if (is_file($htmlFile)) {
             $source = "LOCAL_RUN_RACES";
@@ -663,6 +698,7 @@ if (
             }
         }
 
+        // ---------- 2. S3 .htm ----------
         if ($htmlContent === false) {
 
             if ($type === "" || $raceType === "") {
@@ -717,9 +753,14 @@ if (
             $row = $result->fetch_assoc();
             $stmt->close();
 
-            $htmlContent = readHtmlFromS3BucketApi(
-                $row["file_url"] ?? ""
+            // DB me .html registered hai, uska .htm version banao
+            $htmUrl = preg_replace(
+                '/\.html$/i',
+                '.htm',
+                (string) ($row["file_url"] ?? "")
             );
+
+            $htmlContent = readHtmlFromS3BucketApi($htmUrl);
             $source = "DB_S3";
         }
 
@@ -727,11 +768,14 @@ if (
             throw new Exception("Racecard HTML content is empty");
         }
 
+        // Legacy Windows-1252 content -> UTF-8
+        $htmlContent = ensureUtf8Html($htmlContent);
+
         $downloadHtml = racecardWrapDownloadHtml($htmlContent);
 
         header("Content-Type: text/html; charset=UTF-8");
         header(
-            'Content-Disposition: inline; filename="Race_Card_' . $date . '.html"'
+            'Content-Disposition: inline; filename="Race_Card_' . $date . '.htm"'
         );
         header("X-Racecard-Source: " . $source);
 
@@ -1384,7 +1428,7 @@ try {
 
     $pools = [];
 
-    $stmt = $conn->prepare(                                                                    
+    $stmt = $conn->prepare(
         "SELECT FLDSTR1, FLDSTR2, FLDSTR3, FLDSTR4, FLDSTR5, FLDSTR6, FLDSTR7,
                 FLDSTR8, FLDSTR9, FLDSTR10, FLDSTR11, FLDSTR12, FLDSTR13, FLDSTR14, FLDSTR15
          FROM pools
@@ -1414,21 +1458,21 @@ try {
     if (preg_match('/\d\d\d(\d)-(\d\d)-(\d\d)/', $date, $matchDate)) {
         $fileDate = $matchDate[3] . $matchDate[2] . $matchDate[1];
         $downloadBase = defined("DOWNLOADFILE_BASE") ? DOWNLOADFILE_BASE : "";
-        $downloadUrl = "https://rwitc.com/{$downloadBase}/RC{$fileDate}.HTM";  
+        $downloadUrl = "https://rwitc.com/{$downloadBase}/RC{$fileDate}.HTM";
     }
 
 
     $response = [
-    "found"         => true,
-    "date"          => $date,
-    "mode"          => "json", // >>> CHANGE: added so frontend can branch json vs html
-    "day_label"     => date("l jS F Y", strtotime($date)),
-    "day_narrative" => $dayNarr,
-    "club_name"     => defined("CLUB_NAME") ? CLUB_NAME : null,
-    "download_url"  => $downloadUrl,
-    "races"         => $races,
-    "pools"         => $pools,
-];
+        "found"         => true,
+        "date"          => $date,
+        "mode"          => "json", // >>> CHANGE: added so frontend can branch json vs html
+        "day_label"     => date("l jS F Y", strtotime($date)),
+        "day_narrative" => $dayNarr,
+        "club_name"     => defined("CLUB_NAME") ? CLUB_NAME : null,
+        "download_url"  => $downloadUrl,
+        "races"         => $races,
+        "pools"         => $pools,
+    ];
 
     // --------------------------------------------------
     // FINAL RESPONSE (unchanged)

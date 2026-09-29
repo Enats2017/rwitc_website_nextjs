@@ -381,10 +381,11 @@ function readHtmlFromS3BucketApi($fileUrl)
         $s3Key = ltrim(rawurldecode($fileUrl), "/");
     }
 
+    // .html and .htm both allowed
     if (
         $s3Key === "" ||
         strpos($s3Key, "run_races/") !== 0 ||
-        !preg_match("/\\.html$/i", $s3Key)
+        !preg_match("/\\.html?$/i", $s3Key)
     ) {
         throw new Exception("Invalid S3 HTML file key");
     }
@@ -431,17 +432,39 @@ function readHtmlFromS3BucketApi($fileUrl)
 
     return (string) $htmlContent;
 }
+// Legacy .htm files Windows-1252 me hote hain. Browser ko UTF-8 chahiye,
+// isliye content ko UTF-8 me convert karte hain.
+function ensureUtf8Html($content)
+{
+    $content = (string) $content;
 
+    // Agar already valid UTF-8 hai to touch mat karo
+    if (mb_check_encoding($content, "UTF-8")) {
+        return $content;
+    }
+
+    $converted = mb_convert_encoding($content, "UTF-8", "Windows-1252");
+
+    // File ke andar purana charset meta ho to UTF-8 se replace karo
+    $converted = preg_replace(
+        '/<meta[^>]+charset[^>]*>/i',
+        '<meta charset="UTF-8">',
+        $converted,
+        1
+    );
+
+    return $converted;
+}
 // ============================================================
 // >>> DOWNLOAD MODE (date > 2022-09-25)
 // ============================================================
 // ?date=2026-08-22&download=1
 //
+// Download me .htm file milti hai.
 // Source priority:
-//   1) OLD local run_races HTML file
-//   2) NEW S3 file registered in run_race_details
-//
-// Download me .html hi milti hai (koi .htm nahi).
+//   1) OLD local run_races Handicaps_<date>.htm
+//   2) NEW S3 .htm file (registered .html key ka .htm version)
+//   3) Last fallback: S3 registered .html
 // ============================================================
 
 if (
@@ -454,9 +477,8 @@ if (
 
         $htmlContent = false;
 
-        // ---------- 1. OLD LOCAL FILE ----------
-        // LOCAL FILE IS ALWAYS CHECKED FIRST.
-        $localFile = RUN_RACES_LOCAL_PATH . "/Handicaps_" . $date . ".html";
+        // ---------- 1. OLD LOCAL .htm FILE (pehle yahi check hoga) ----------
+        $localFile = RUN_RACES_LOCAL_PATH . "/Handicaps_" . $date . ".htm";
 
         if (is_file($localFile)) {
 
@@ -474,10 +496,7 @@ if (
                 throw new Exception("type and race_type are required when the local handicaps file is not available");
             }
 
-            // ---------- 2. NEW S3 FILE ----------
-            // If the local file does not exist, check run_race_details
-            // and then read the registered S3 file through
-            // the existing s3_set_url.php helper.
+            // ---------- 2. S3 .htm FILE ----------
             $stmt = $conn->prepare("
                 SELECT file_url
                 FROM run_race_details
@@ -507,9 +526,12 @@ if (
                 $row = $result->fetch_assoc();
                 $stmt->close();
 
-                $htmlContent = readHtmlFromS3BucketApi(
-                    $row["file_url"]
-                );
+                $registeredUrl = $row["file_url"];
+
+                // DB me .html registered hai, uska .htm version banao
+                $htmUrl = preg_replace('/\.html$/i', '.htm', $registeredUrl);
+
+                $htmlContent = readHtmlFromS3BucketApi($htmUrl);
 
             } else {
 
@@ -520,7 +542,7 @@ if (
         if ($htmlContent === false || $htmlContent === "") {
             throw new Exception("Handicaps file not found for this date");
         }
-
+        $htmlContent = ensureUtf8Html($htmlContent);
         if (stripos($htmlContent, "<html") === false) {
 
             $downloadCss = <<<'CSS'
@@ -566,9 +588,9 @@ CSS;
                 . "\n</body>\n</html>";
         }
 
-        // Open in browser. No .htm is used.
+        // Open in browser. Download file ka naam .htm hai.
         header("Content-Type: text/html; charset=UTF-8");
-        header('Content-Disposition: inline; filename="Handicaps_' . $date . '.html"');
+        header('Content-Disposition: inline; filename="Handicaps_' . $date . '.htm"');
 
         echo $htmlContent;
 

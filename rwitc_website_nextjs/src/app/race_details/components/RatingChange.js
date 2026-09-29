@@ -7,16 +7,26 @@ import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archi
 import "./RatingChange.css";
 import { FaHorseHead } from "react-icons/fa";
 
+/*
+ * Styles injected INSIDE the archive iframe.
+ *
+ * NOTE: the old "@media (max-width: 500px)" block was removed on purpose.
+ * The iframe now keeps a minimum width (see RatingChange.css) inside a
+ * scroll wrapper, so the content looks exactly like the desktop version
+ * and the user swipes sideways on phones, same as the Race Result page.
+ */
 const ARCHIVE_STYLES_RATING_CHANGE = `
 <style>
     * { box-sizing: border-box; }
 
+    html, body { margin: 0; padding: 0; }
+
     body {
         font-family: Arial, sans-serif;
-        margin: 0;
         padding: 24px 20px 40px;
         color: #333333;
         background: #ffffff;
+        word-wrap: break-word;
     }
 
     span, a {
@@ -52,20 +62,6 @@ const ARCHIVE_STYLES_RATING_CHANGE = `
     img {
         max-width: 100%;
         height: auto;
-    }
-
-    @media (max-width: 500px) {
-        body {
-            padding: 16px;
-        }
-
-        .row > div {
-            width: 100% !important;
-        }
-
-        table {
-            width: 100% !important;
-        }
     }
 </style>
 `;
@@ -163,16 +159,11 @@ export default function RatingChange() {
 
                 {!loading && !error && !hasNoHtml && (
                     <>
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "flex-end",
-                                marginBottom: "12px",
-                            }}
-                        >
-                            {downloadAvailable && downloadFile && (
+                        {downloadAvailable && downloadFile && (
+                            <div className="docActionRow">
                                 <button
                                     type="button"
+                                    className="docOpenBtn"
                                     onClick={() => {
                                         window.open(
                                             downloadFile,
@@ -180,29 +171,42 @@ export default function RatingChange() {
                                             "noopener,noreferrer"
                                         );
                                     }}
-                                    style={{
-                                        padding: "8px 14px",
-                                        border: "1px solid #ccc",
-                                        borderRadius: "4px",
-                                        background: "#fff",
-                                        cursor: "pointer",
-                                    }}
                                 >
                                     Download / Open HTML
                                 </button>
-                            )}
-                        </div>
+                            </div>
+                        )}
 
-                        <iframe
-                            className="docArchiveHtml"
-                            srcDoc={formatArchiveHtml(
-                                ARCHIVE_STYLES_RATING_CHANGE,
-                                rawHtml
-                            )}
-                            title="Rating Change"
-                            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
-                            onLoad={handleArchiveIframeLoad}
-                        />
+                        {/* The iframe sits in a scroll wrapper so on phones the
+                            content keeps its real layout and scrolls sideways
+                            instead of breaking. */}
+                        <div className="docArchiveScroll">
+                            <iframe
+                                className="docArchiveHtml"
+                                srcDoc={formatArchiveHtml(
+                                    ARCHIVE_STYLES_RATING_CHANGE,
+                                    rawHtml
+                                )}
+                                title="Rating Change"
+                                sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                                scrolling="no"
+                                style={{ width: "100%", border: "none" }}
+                                onLoad={(e) => {
+                                    handleArchiveIframeLoad(e);
+                                    const doc = e.target.contentDocument;
+                                    if (!doc) return;
+                                    doc.querySelectorAll("a, button, span").forEach((el) => {
+                                        if (el.textContent.trim().toLowerCase() === "back") {
+                                            el.style.cursor = "pointer";
+                                            el.addEventListener("click", (ev) => {
+                                                ev.preventDefault();
+                                                window.history.back();
+                                            });
+                                        }
+                                    });
+                                }}
+                            />
+                        </div>
                     </>
                 )}
             </div>

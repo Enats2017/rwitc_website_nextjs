@@ -1,5 +1,6 @@
 <?php
-header("Content-Type: text/html; charset=ISO-8859-1");
+ob_start(function ($html) { return mb_convert_encoding($html, 'UTF-8', 'ISO-8859-1');});
+header("Content-Type: text/html; charset=UTF-8");
 require_once("lib/dbTools.php");
 require_once("lib/utils.php");
 require_once("lib/design-white.class.php");
@@ -22,14 +23,14 @@ $base = '/var/www/html/turf-console/';
 // $http_base = 'https://rwitc.com/';
 
 // $http_base = 'http://localhost/rwitc_website/';
-$http_base = 'https://rwitc.com/turf-console/';
+$http_base = 'https://www.rwitc.com/turf-console/';
 
 //define('BASE_HREF',"http://localhost:8012/rwitc_website/"); // rwitcmumbai page ID
 //define('BASE_HREF',"https://rw1.space2let.com/~rwitc/"); // rwitcmumbai page ID
 // define('BASE_HREF',"https://rwitc.com/");
 
 // define('BASE_HREF', "http://localhost/rwitc_website/");
-define('BASE_HREF', "https://rwitc.com/");
+define('BASE_HREF', "https://www.rwitc.com/");
 
 //define('DIR_BASE',"C:/xampp/htdocs/rwitc_website/"); // rwitcmumbai page ID
 //define('DIR_BASE',"https://rw1.space2let.com/~rwitc/"); // rwitcmumbai page ID
