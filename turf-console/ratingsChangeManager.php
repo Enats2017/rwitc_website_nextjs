@@ -5,6 +5,12 @@ require_once('../lib/pagination.class.php');
 require_once("../lib/users.class.php");
 require_once("../lib/userchecks.php");
 
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../rwitc_website_api/config/config.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+
 $q = getParameterString('q', '', $db);
 $pageno = getParameterNumber('pageno', 1);
 session_start();
@@ -20,20 +26,44 @@ if (isAdminlogin()) {
         $rcObj = new RatingsChange($db);
         // all actions POST form submissions go here
         if (isset($_REQUEST['submit'])) {
-
             $date = getParameterString('date', '', $db);
-
-
             // save new dividend     
             if ($q == "add-rating") {
                 try {
-                    if (!$_FILES['ratingFile']['error']) { // error =0  
+                    if (isset($_FILES['ratingFile']) && $_FILES['ratingFile']['error'] === UPLOAD_ERR_OK) {
                         $filename = $_FILES['ratingFile']['name'];
                         $filename = basename($filename, ".HTM") . "_$date.HTM";
-                        if (move_uploaded_file($_FILES['ratingFile']['tmp_name'], $base . RATINGSCHANGE_BASE . "/" . $filename)) {
-                            $id = $rcObj->insertRatingsChange($date, $filename);
-                        }
+
+                        $s3Client = new S3Client([
+                            'version' => 'latest',
+                            'region' => AWS_REGION,
+                            'credentials' => [
+                                'key' => AWS_ACCESS_KEY_ID,
+                                'secret' => AWS_SECRET_ACCESS_KEY,
+                            ],
+                        ]);
+
+                        $tmpFile = $_FILES['ratingFile']['tmp_name'];
+
+                        // S3 path: bucket root/staticpages/ratingschange/
+                        $s3Key = 'staticpages/ratingschange/' . $filename;
+
+                        $s3Client->putObject([
+                            'Bucket' => AWS_BUCKET,
+                            'Key' => $s3Key,
+                            'SourceFile' => $tmpFile,
+                            'ContentType' => mime_content_type($tmpFile),
+                        ]);
+
+                        // Keep the existing database logic
+                        $id = $rcObj->insertRatingsChange($date, $filename);
+
+                        $_SESSION['upload_msg'] = 'Rating Change Uploaded Successfully!';
+                        header("Location: ratingsChangeManager.php");
+                        exit;
                     }
+                } catch (AwsException $e) {
+                    $msg = "S3 Upload Error: " . $e->getMessage();
                 } catch (Exception $err) {
                     $msg = $err->getMessage();
                 }
@@ -42,9 +72,7 @@ if (isAdminlogin()) {
 
         if ($q == "delete-rating") {
             $ratingID = getParameterNumber('id', 0);
-            $ratingDetails = $rcObj->getRatingsChangeById($ratingID);
             try {
-                unlink($base . RATINGSCHANGE_BASE . "/" . $ratingDetails['filename']);
                 $rcObj->deleteRatingsChangeByID($ratingID);
             } catch (Exception $err) {
                 $msg = $err->getMessage();
@@ -66,10 +94,13 @@ if (isAdminlogin()) {
 } else {
     $secmsg = "Please login to access this page";
 }
+
 $pageTitle = 'Ratings Change Manager';
+
 $design = new Design();
+
 $design->js = '
-  <script type="text/javascript" src="js/jquery.ui.core.min.js"></script>    
+    <script type="text/javascript" src="js/jquery.ui.core.min.js"></script>    
     <script type="text/javascript" src="js/jquery.ui.datepicker.min.js"></script>
     <script type="text/javascript">
         function confirmDelete(ratingID) {
@@ -78,11 +109,13 @@ $design->js = '
             }
         }
     </script>
-  ';
+';
+
 $design->css = '
-  <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  ';
+    <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+';
+
 $design->jqueryJs = "
     jQuery.browser = {};
     (function () {
@@ -99,7 +132,7 @@ $design->jqueryJs = "
             buttonImageOnly: true,
             dateFormat : 'yy-mm-dd'
         });
-  ";
+";
 
 $design->startPage("$pageTitle");
 
@@ -329,6 +362,36 @@ $design->openDiv("leftArea", 'col-lg-9');
         font-size: 14px;
     }
 
+    .upload-success-message {
+        position: relative;
+        background: #e6f4ec;
+        border: 1px solid #b7ddc5;
+        color: #0f5c33;
+        padding: 12px 40px 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 14.5px;
+        font-weight: 500;
+    }
+
+    .upload-success-message .close-btn {
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #0f5c33;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .upload-success-message .close-btn:hover {
+        opacity: 0.7;
+    }
+
     @media (max-width: 700px) {
         #leftArea.col-lg-9 {
             padding: 0 16px;
@@ -361,11 +424,37 @@ $design->openDiv("leftArea", 'col-lg-9');
         <?php echo $msg; ?>
     </div>
 <?php } ?>
+
+<?php if (isset($_SESSION['upload_msg'])) { ?>
+    <div class="upload-success-message" id="uploadSuccessMsg">
+        <?php echo $_SESSION['upload_msg'];
+        unset($_SESSION['upload_msg']); ?>
+
+        <button type="button" class="close-btn" onclick="closeUploadSuccessMsg()">
+            &times;
+        </button>
+    </div>
+
+    <script>
+        function closeUploadSuccessMsg() {
+            var msg = document.getElementById('uploadSuccessMsg');
+            if (msg) {
+                msg.style.display = 'none';
+            }
+        }
+
+        setTimeout(function() {
+            closeUploadSuccessMsg();
+        }, 3000);
+    </script>
+<?php } ?>
+
 <?php if (!empty($secmsg)) { ?>
     <div class="message">
         <?php echo $secmsg; ?>
     </div>
 <?php } ?>
+
 <?php if ($_SESSION['rating_change'] == "Y") { ?>
     <div class="ratings-header">
         <a class="add-rating-btn" href="turf-console/ratingsChangeManager.php?q=new-report"><i class="fas fa-plus"></i> Add New Rating Change</a>

@@ -33,15 +33,14 @@ $msg = $secmsg = "";
 $rObj = new Racedata($db);
 
 if (isAdminlogin()) {
-
     // echo $q;exit;
     if ($_SESSION['bannerManager'] == "Y") { // check login
         //if (get_magic_quotes_gpc()) {
-        function stripslashes_deep($value)
-        {
+        function stripslashes_deep($value) {
             $value = is_array($value) ?   array_map('stripslashes_deep', $value) : stripslashes($value);
             return $value;
         }
+
         $_POST = array_map('stripslashes_deep', $_POST);
         $_REQUEST = array_map('stripslashes_deep', $_REQUEST);
         //}
@@ -109,45 +108,54 @@ if (isAdminlogin()) {
                                 }
 
                                 /* ===== Local save disabled for now, testing S3 only =====
-        if ($file != '') {
-            $exist_path = $file_upload_path . $file;
-            if (file_exists($exist_path)) {
-                unlink($exist_path);
-            }
-        }
+                                if ($file != '') {
+                                    $exist_path = $file_upload_path . $file;
+                                    if (file_exists($exist_path)) {
+                                        unlink($exist_path);
+                                    }
+                                }
 
-        if (move_uploaded_file($_FILES['file']['tmp_name'][$key], $file_upload_path . $file)) {
-            $destFile = $file_upload_path . $file;
-            chmod($destFile, 0777);
-        */
+                                if (move_uploaded_file($_FILES['file']['tmp_name'][$key], $file_upload_path . $file)) {
+                                    $destFile = $file_upload_path . $file;
+                                    chmod($destFile, 0777);
+                                */
 
                                 // ===== S3 Upload =====
                                 $s3_url = '';
                                 try {
                                     $s3Client = new S3Client([
-                                        'version'     => 'latest',
-                                        'region'      => AWS_REGION,
+                                        'version' => 'latest',
+                                        'region' => AWS_REGION,
                                         'credentials' => [
-                                            'key'    => AWS_ACCESS_KEY_ID,
+                                            'key' => AWS_ACCESS_KEY_ID,
                                             'secret' => AWS_SECRET_ACCESS_KEY,
                                         ],
                                     ]);
 
                                     $tmpFile = $_FILES['file']['tmp_name'][$key];
-                                    $s3Key   = 'uploads/Images/' . $file;
+                                    $s3Key = 'uploads/Images/' . $file;
 
                                     $result = $s3Client->putObject([
-                                        'Bucket'      => AWS_BUCKET,
-                                        'Key'         => $s3Key,
-                                        'SourceFile'  => $tmpFile,
+                                        'Bucket' => AWS_BUCKET,
+                                        'Key' => $s3Key,
+                                        'SourceFile' => $tmpFile,
                                         // 'ACL'         => 'public-read',
                                         'ContentType' => mime_content_type($tmpFile),
                                     ]);
 
                                     $s3_url = $result['ObjectURL'];
                                 } catch (AwsException $e) {
-                                    $s3_url = '';
-                                    // error_log('S3 Upload Error: ' . $e->getMessage());
+                                    echo '<pre>';
+                                    echo "S3 Upload Error:\n";
+                                    echo $e->getMessage();
+                                    echo "\n\nAWS Error Code: ";
+                                    echo $e->getAwsErrorCode();
+                                    echo "\n\nAWS Error Message: ";
+                                    echo $e->getAwsErrorMessage();
+                                    echo "\n\nRequest ID: ";
+                                    echo $e->getAwsRequestId();
+                                    echo '</pre>';
+                                    exit;
                                 }
                                 // ===== End S3 Upload =====
 
@@ -181,30 +189,40 @@ if (isAdminlogin()) {
                             $file = 'Video_' . $timestamp . '.' . $ext;
 
                             $s3_url = '';
+
                             try {
                                 $s3Client = new S3Client([
-                                    'version'     => 'latest',
-                                    'region'      => AWS_REGION,
+                                    'version' => 'latest',
+                                    'region' => AWS_REGION,
                                     'credentials' => [
-                                        'key'    => AWS_ACCESS_KEY_ID,
+                                        'key' => AWS_ACCESS_KEY_ID,
                                         'secret' => AWS_SECRET_ACCESS_KEY,
                                     ],
                                 ]);
 
                                 $tmpFile = $_FILES['video_file']['tmp_name'][$key];
-                                $s3Key   = 'uploads/Videos/' . $file;
+                                $s3Key = 'uploads/Videos/' . $file;
 
                                 $result = $s3Client->putObject([
-                                    'Bucket'      => AWS_BUCKET,
-                                    'Key'         => $s3Key,
-                                    'SourceFile'  => $tmpFile,
+                                    'Bucket' => AWS_BUCKET,
+                                    'Key' => $s3Key,
+                                    'SourceFile' => $tmpFile,
                                     'ContentType' => mime_content_type($tmpFile),
                                 ]);
 
                                 $s3_url = $result['ObjectURL'];
                             } catch (AwsException $e) {
-                                $s3_url = '';
-                                // error_log('S3 Video Upload Error: ' . $e->getMessage());
+                                echo '<pre>';
+                                echo "S3 Upload Error:\n";
+                                echo $e->getMessage();
+                                echo "\n\nAWS Error Code: ";
+                                echo $e->getAwsErrorCode();
+                                echo "\n\nAWS Error Message: ";
+                                echo $e->getAwsErrorMessage();
+                                echo "\n\nRequest ID: ";
+                                echo $e->getAwsRequestId();
+                                echo '</pre>';
+                                exit;
                             }
 
                             if ($s3_url != '') {
@@ -221,23 +239,10 @@ if (isAdminlogin()) {
             }
             echo "out";
             exit;
-
-
-            // echo "inn2";exit;
-
-            // ... (existing code)
-
         }
-
-        // ... (existing code)
 
         $banner_datas = $rObj->getbanner_datas();
         $banner_datas_count = count($banner_datas) + 1;
-
-        // echo '<pre>';
-        // print_r($banner_datas);
-        // exit;
-
     } else {
         $msg = "You do not have access to this page.";
     }
@@ -247,19 +252,26 @@ if (isAdminlogin()) {
 
 $pageTitle = 'Image Upload';
 // create a template object
+
 $design = new Design();
+
 $design->js = '
-<script type="text/javascript" src="lib/ckeditor/ckeditor.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script type="text/javascript">
-    function confirmDelete(bannerID) {
-        if (confirm ("Are you sure ?")){
-            location.href="turf-console/bannerManager.php?q=delete-banner&id="+bannerID;
+    <script type="text/javascript" src="lib/ckeditor/ckeditor.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script type="text/javascript">
+        function confirmDelete(bannerID) {
+            if (confirm ("Are you sure ?")){
+                location.href="turf-console/bannerManager.php?q=delete-banner&id="+bannerID;
+            }
         }
-    }
-</script>';
-$design->css = '<style type="text/css">
-  #title { color: #000000; font-size: 14px; margin: 10px; margin: auto; text-align: left; display:block; }</style>';
+    </script>
+';
+
+$design->css = '
+    <style type="text/css">
+        #title { color: #000000; font-size: 14px; margin: 10px; margin: auto; text-align: left; display:block; }
+    </style>
+';
 
 $design->jqueryJs = "";
 
@@ -512,7 +524,6 @@ $design->openDiv("leftArea", "col-lg-9");
                 </tr>
             <?php } ?>
 
-
             <!-- Dynamic Video File Inputs -->
             <tr id="text_input_row" style="display:none;">
                 <th>Video Upload</th>
@@ -570,7 +581,6 @@ $design->openDiv("leftArea", "col-lg-9");
         updateInputs();
     };
 </script>
-
 
 
 <?php
