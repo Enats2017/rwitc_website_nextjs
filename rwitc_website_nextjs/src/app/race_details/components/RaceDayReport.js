@@ -6,13 +6,22 @@ import { getRaceDayReport } from "../../../services/raceDayReportService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./RaceDayReport.css";
 
+/*
+ * Styles injected INSIDE the archive iframe.
+ *
+ * Removed on purpose:
+ *  - "html, body { overflow-x: hidden }"  -> it was cropping the report
+ *  - "table { max-width: 100% }"          -> it squashed wide tables
+ *  - the "@media (max-width: 500px)" font shrink
+ * On phones the iframe keeps a minimum width (see RaceDayReport.css) and the
+ * wrapper scrolls sideways, so the report always looks like the desktop one.
+ */
 const ARCHIVE_STYLES_RACEDAY_REPORT = `
 <style>
-    html, body { overflow-x: hidden !important; }
     * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
     body {
         font-family: Arial, sans-serif;
-        margin: 0;
         padding: 24px 20px 40px;
         color: #000000;
         line-height: 1.5;
@@ -23,7 +32,7 @@ const ARCHIVE_STYLES_RACEDAY_REPORT = `
     b, strong { font-weight: 700; }
     u { text-underline-offset: 2px; }
 
-    table { border-collapse: collapse; width: auto; max-width: 100%; margin: 14px 0; }
+    table { border-collapse: collapse; width: auto; margin: 14px 0; }
     th, td {
         padding: 8px 14px;
         border: 1px solid #000000;
@@ -46,11 +55,6 @@ const ARCHIVE_STYLES_RACEDAY_REPORT = `
 
     p.MsoPlainText {
         margin-bottom: 14px;
-    }
-
-    @media (max-width: 500px) {
-        body { padding: 16px; }
-        table, th, td { font-size: 11px; }
     }
 </style>
 `;
@@ -110,6 +114,55 @@ export default function RaceDayReport() {
         loadRaceDayReport();
 
     }, [date]);
+
+    /*
+     * Iframe onLoad:
+     *  - runs the shared helper first
+     *  - sets the iframe HEIGHT from the real content (body.scrollHeight)
+     *  - if the report is wider than the iframe, widens the iframe so nothing
+     *    is cropped (the scroll wrapper then scrolls sideways)
+     *  - re-measures on images / fonts / resize
+     */
+    const handleReportIframeLoad = (e) => {
+        handleArchiveIframeLoad(e);
+
+        const iframe = e.target;
+        const doc = iframe.contentWindow?.document;
+        if (!doc || !doc.body) return;
+
+        const resize = () => {
+            if (!iframe.isConnected || !doc.body) return;
+
+            // width: grow only if the content overflows the iframe
+            const contentWidth = Math.ceil(doc.documentElement.scrollWidth);
+            if (contentWidth > iframe.clientWidth + 1) {
+                iframe.style.width = contentWidth + "px";
+            }
+
+            // height: measure the real content, so it can also shrink
+            const nextHeight = Math.ceil(doc.body.scrollHeight);
+            if (nextHeight !== parseInt(iframe.style.height, 10)) {
+                iframe.style.height = nextHeight + "px";
+            }
+        };
+
+        resize();
+        requestAnimationFrame(resize);
+
+        doc.querySelectorAll("img").forEach((img) => {
+            if (!img.complete) {
+                img.addEventListener("load", resize);
+                img.addEventListener("error", resize);
+            }
+        });
+
+        if (iframe.contentWindow?.ResizeObserver) {
+            new iframe.contentWindow.ResizeObserver(resize).observe(doc.body);
+        }
+        if (doc.fonts && doc.fonts.ready) {
+            doc.fonts.ready.then(resize);
+        }
+    };
 
     const hasNoHtml = !found || !rawHtml.trim();
 
@@ -178,15 +231,20 @@ export default function RaceDayReport() {
                     </div>
                 )}
 
+                {/* Scroll wrapper: on phones the iframe keeps a real minimum
+                    width and the user swipes sideways instead of the report
+                    being cropped. */}
                 {!loading && !error && !hasNoHtml && (
-                    <iframe
-                        className="docArchiveHtml"
-                        srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACEDAY_REPORT, rawHtml)}
-                        title="Raceday Report"
-                        sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
-                        scrolling="no"
-                        onLoad={handleArchiveIframeLoad}
-                    />
+                    <div className="docArchiveScroll">
+                        <iframe
+                            className="docArchiveHtml"
+                            srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACEDAY_REPORT, rawHtml)}
+                            title="Raceday Report"
+                            sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
+                            scrolling="no"
+                            onLoad={handleReportIframeLoad}
+                        />
+                    </div>
                 )}
 
                 {!hasNoHtml && (

@@ -6,17 +6,16 @@ import "./BoardAppeal.css";
 export default function BoardAppeal() {
 
     const members = [
-        "Mr. Shivlal R. Daga, Chairman",
         "Mr. Dilip P. Goculdas",
         "Mr. Asif Lampwala",
         "Ms. Zinia Lawyer",
         "Ms. Manisha Patankar Mhaiskar, I. A. S. (Govt. Nominee)",
+        "Mr. Geoffrey B. Nagpal",
         "Mr. Hoshang J. Nazir",
         "Mr. Gulamhusein A. Vahanvaty",
     ];
 
     return (
-
         <section className="aboutPage">
 
             <div className="aboutContainer">
@@ -42,16 +41,16 @@ export default function BoardAppeal() {
 
                         <p>
                             Its six members are elected by the Club members in accordance
-                            with the Articles of Association of the Club. 1/3rd of the
-                            members, i.e. two members, retire in rotation at each Annual
-                            General Meeting and in their place two new members are elected by
-                            Club members at the Annual General Meeting.
+                            with the Articles of Association of the Club. 1/3rd of the members,
+                            i.e. two members, retire in rotation at each Annual General Meeting
+                            and in their place two new members are elected by Club members at
+                            the Annual General Meeting.
                         </p>
 
                         <p>
-                            In addition, there is a Government nominee on the Board of
-                            Appeal, usually the Additional Chief Secretary, Government of
-                            Maharashtra, Home Department.
+                            In addition, there is a Government nominee on the Board of Appeal,
+                            usually the Additional Chief Secretary, Government of Maharashtra,
+                            Home Department.
                         </p>
 
                         <p className="visionIntroLine">
@@ -71,7 +70,5 @@ export default function BoardAppeal() {
             </div>
 
         </section>
-
     );
-
 }

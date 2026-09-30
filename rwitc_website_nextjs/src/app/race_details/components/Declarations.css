@@ -1,105 +1,241 @@
-/* ================= DECLARATIONS PAGE — PLAIN DOCUMENT STYLE ================= */
+/* =========================================================
+   DECLARATIONS PAGE
+========================================================= */
 
-.declarationsPage .docPage {
+.declarationsPage {
     width: 100%;
-    background: #ffffff;
-    padding: 48px 16px 60px;
+    min-height: 100vh;
+
+    background: #f7f9fb;
+
+    padding: 60px 20px 90px;
 }
 
-/* ---- GREEN PILL BADGE ---- */
-.declarationsPage .docBadgeWrap {
+
+/* =========================================================
+   PAGE HEADER
+   Same style as About RWITC / Handicaps
+========================================================= */
+
+.declarationsPage .docTitleWrap {
     display: flex;
-    justify-content: center;
-    margin-bottom: 24px;
+    flex-direction: column;
+    align-items: center;
+
+    margin-bottom: 44px;
 }
 
-.declarationsPage .docBadge {
-    display: inline-block;
-    padding: 12px 32px;
-    border-radius: 999px;
-    margin-top: 20px;
-    background: #16a34a;
-    color: #ffffff;
-    font-size: 20px;
+.declarationsPage .docHeading {
+    margin: 0;
+
+    padding-bottom: 16px;
+
+    font-size: 40px;
+
     font-weight: 800;
+
+    color: #0d3b1f;
+
+    letter-spacing: .3px;
+
+    text-align: center;
 }
 
-/* ---- CONTAINER (bordered card) ---- */
+
+/* =========================================================
+   SECTION DIVIDER
+========================================================= */
+
+.declarationsPage .docSectionDivider {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 18px;
+
+    width: 100%;
+
+    max-width: 480px;
+
+    margin-top: 0;
+}
+
+.declarationsPage .docDividerLine {
+    flex: 1;
+
+    height: 2px;
+
+    border-radius: 999px;
+}
+
+.declarationsPage .docDividerLineLeft {
+    background:
+        linear-gradient(
+            to right,
+            transparent,
+            #d97706
+        );
+}
+
+.declarationsPage .docDividerLineRight {
+    background:
+        linear-gradient(
+            to left,
+            transparent,
+            #16a34a
+        );
+}
+
+.declarationsPage .docDividerIcon {
+    font-size: 22px;
+
+    color: #0d3b1f;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   DOCUMENT CONTAINER
+========================================================= */
+
 .declarationsPage .docContainer {
     position: relative;
-    width: 100%;
+
+    width: 92%;
+
     max-width: 1140px;
+
     margin: 0 auto;
-    padding: 28px 32px 40px;
+
+    padding: 60px 32px 40px;
+
+    background: #ffffff;
+
     border: 1px solid #e2e2e2;
+
     border-radius: 4px;
+
     box-sizing: border-box;
+
     overflow: hidden;
+
+    box-shadow:
+        0 18px 45px rgba(0, 0, 0, .05);
 }
 
-/* ---- DOWNLOAD BUTTON ---- */
+
+/* =========================================================
+   DOWNLOAD BUTTON
+========================================================= */
+
 .declarationsPage .docDownloadBtn {
     position: absolute;
+
     top: 20px;
+
     right: 24px;
+
     background: #c9c2a8;
+
     color: #1a1a1a;
+
     padding: 6px 14px;
+
     border: none;
+
     border-radius: 4px;
+
     font-size: 12px;
+
     font-weight: 700;
+
     text-decoration: none;
+
     z-index: 2;
+
+    cursor: pointer;
+
+    transition: .2s ease;
 }
 
 .declarationsPage .docDownloadBtn:hover {
     background: #bdb494;
+
     cursor: pointer;
+
     text-decoration: underline;
 }
 
-/* ---- HEADER ---- */
+
+/* =========================================================
+   DOCUMENT HEADER
+========================================================= */
+
 .declarationsPage .docHeader {
     text-align: center;
+
     margin-bottom: 28px;
 }
 
 .declarationsPage .docClub {
     font-size: 15px;
+
     font-weight: 800;
+
     color: #111;
+
     margin: 0 0 10px;
 }
 
 .declarationsPage .docMeeting {
     font-size: 14px;
+
     font-weight: 700;
+
     color: #111;
+
     margin: 0 0 14px;
+
     white-space: pre-line;
 }
 
 .declarationsPage .docWatermark {
     font-size: 32px;
+
     font-weight: 800;
+
     letter-spacing: 4px;
+
     color: #c9c9c9;
+
     margin: 0 0 6px;
 }
 
 .declarationsPage .docHint {
     font-size: 15px;
+
     font-weight: 700;
+
     color: #111;
+
     margin: 0;
 }
 
-/* ---- STATE (loading / error / empty) ---- */
+
+/* =========================================================
+   LOADING / ERROR / EMPTY STATE
+========================================================= */
+
 .declarationsPage .docStateBox {
     text-align: center;
+
     padding: 60px 20px;
+
     color: #555;
+
     font-size: 15px;
 }
 
@@ -109,47 +245,74 @@
 
 .declarationsPage .docLoader {
     width: 34px;
+
     height: 34px;
+
     margin: 0 auto 16px;
+
     border-radius: 50%;
+
     border: 3px solid rgba(11, 109, 42, .15);
+
     border-top-color: #0b6d2a;
-    animation: docSpinDecl .8s linear infinite;
+
+    animation:
+        docSpinDecl
+        .8s
+        linear
+        infinite;
 }
 
 @keyframes docSpinDecl {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-/* ---- RACE BLOCK ---- */
+
+/* =========================================================
+   RACE BLOCK
+========================================================= */
+
 .declarationsPage .docRaceBlock {
     margin-bottom: 28px;
 }
 
 .declarationsPage .docRaceBar {
     background: #16a34a;
+
     color: #ffffff;
+
     padding: 14px 20px;
+
     border-radius: 4px;
+
     margin-bottom: 14px;
 }
 
 .declarationsPage .docRaceName {
     font-size: 15px;
+
     font-weight: 800;
+
     margin: 0 0 4px;
 }
 
 .declarationsPage .docRaceMeta {
     font-size: 13px;
+
     font-weight: 600;
+
     margin: 0;
 }
 
 .declarationsPage .docRaceNarration {
     font-size: 12.5px;
+
     font-weight: 500;
+
     margin: 6px 0 0;
+
     color: rgba(255, 255, 255, .9);
 }
 
@@ -157,141 +320,257 @@
     font-weight: 800;
 }
 
+
+/* =========================================================
+   WEIGHT NOTES
+========================================================= */
+
 .declarationsPage .docWeightNotes p {
     font-size: 13px;
+
     font-weight: 700;
+
     color: #8a5a00;
+
     margin: 0 0 4px;
 }
 
-/* ---- TABLE ---- */
+
+/* =========================================================
+   TABLE
+========================================================= */
+
 .declarationsPage .docTableWrap {
     width: 100%;
+
     overflow-x: auto;
+
     -webkit-overflow-scrolling: touch;
 }
 
 .declarationsPage .docTable {
     width: 100%;
+
     border-collapse: collapse;
+
     min-width: 820px;
 }
 
 .declarationsPage .docTable thead th {
     text-align: left;
+
     font-size: 14px;
+
     font-weight: 700;
+
     color: #111;
+
     padding: 12px 16px;
+
     border: 1px solid #d9d9d9;
+
     background: #ffffff;
 }
 
 .declarationsPage .docTable tbody td {
     padding: 14px 16px;
+
     font-size: 14px;
+
     color: #222;
+
     text-align: left;
+
     border: 1px solid #e2e2e2;
+
     vertical-align: top;
 }
 
 .declarationsPage .docHorseName {
     font-weight: 700;
+
     color: #111;
 }
 
 .declarationsPage .docBreeding {
     display: block;
+
     font-weight: 400;
+
     color: #777;
+
     font-size: 12px;
+
     margin-top: 2px;
 }
 
 .declarationsPage .docAllowance {
     color: #0b6d2a;
+
     font-weight: 700;
+
     font-size: 12px;
 }
 
-/* ---- POOLS ---- */
+
+/* =========================================================
+   POOLS
+========================================================= */
+
 .declarationsPage .docPoolsBlock {
     margin-top: 20px;
+
     border: 1px solid #d9d9d9;
+
     border-radius: 4px;
+
     overflow: hidden;
 }
 
 .declarationsPage .docPoolsTitle {
     font-size: 13px;
+
     font-weight: 800;
+
     color: #111;
+
     margin: 0;
+
     padding: 10px 14px;
+
     background: #e2e2e2;
+
     text-transform: uppercase;
 }
 
 .declarationsPage .docPoolRow {
     display: flex;
+
     justify-content: space-between;
+
     gap: 12px;
+
     padding: 10px 14px;
+
     font-size: 13px;
+
     border-top: 1px solid #e2e2e2;
 }
 
 .declarationsPage .docPoolName {
     color: #333333;
+
     font-weight: 600;
 }
 
 .declarationsPage .docPoolValue {
     color: #333333;
+
     font-weight: 600;
+
     text-align: right;
 }
 
-/* ---- ARCHIVE HTML (raw Declarations_<date>.html passthrough) ----
-   The scroll wrapper lets the iframe keep a real minimum width on
-   phones, so the table never gets squashed or broken; the user just
-   swipes sideways. On desktop the iframe simply fills the container. */
+
+/* =========================================================
+   ARCHIVE HTML
+========================================================= */
+
 .declarationsPage .docArchiveScroll {
     width: 100%;
+
     overflow-x: auto;
+
     overflow-y: hidden;
+
     -webkit-overflow-scrolling: touch;
-    margin-top: 40px;              /* keeps clear of the Download button */
+
+    margin-top: 40px;
 }
 
 .declarationsPage .docArchiveHtml {
     display: block;
+
     width: 100%;
+
     min-width: 720px;
+
     border: none;
+
     min-height: 200px;
 }
 
-/* ---- RESPONSIVE ---- */
-@media (max-width: 768px) {
 
-    .declarationsPage .docBadge {
-        font-size: 16px;
-        padding: 10px 24px;
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 992px) {
+
+    .declarationsPage {
+        padding: 50px 16px 70px;
+    }
+
+    .declarationsPage .docHeading {
+        font-size: 32px;
     }
 
     .declarationsPage .docContainer {
+        width: 94%;
+
+        padding: 60px 24px 35px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .declarationsPage {
+        padding: 40px 14px 70px;
+    }
+
+    .declarationsPage .docTitleWrap {
+        margin-bottom: 30px;
+    }
+
+    .declarationsPage .docHeading {
+        font-size: 26px;
+
+        padding-bottom: 12px;
+    }
+
+    .declarationsPage .docSectionDivider {
+        max-width: 320px;
+
+        gap: 0;
+
+        margin-top: 20px;
+    }
+
+    .declarationsPage .docDividerIcon {
+        font-size: 18px;
+    }
+
+    .declarationsPage .docContainer {
+        width: 100%;
+
         padding: 60px 12px 28px;
     }
 
     .declarationsPage .docDownloadBtn {
         top: 14px;
+
         right: 12px;
     }
 
     .declarationsPage .docWatermark {
         font-size: 24px;
+
         letter-spacing: 2px;
     }
 
@@ -303,19 +582,33 @@
     .declarationsPage .docTable thead th,
     .declarationsPage .docTable tbody td {
         padding: 8px 10px;
+
         font-size: 12.5px;
     }
 
     .declarationsPage .docArchiveScroll {
         margin-top: 0;
     }
+
 }
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
 
 @media (max-width: 480px) {
 
-    .declarationsPage .docBadge {
-        font-size: 15px;
-        padding: 9px 20px;
+    .declarationsPage {
+        padding: 35px 10px 60px;
+    }
+
+    .declarationsPage .docHeading {
+        font-size: 22px;
+    }
+
+    .declarationsPage .docSectionDivider {
+        max-width: 240px;
     }
 
     .declarationsPage .docContainer {
@@ -325,4 +618,36 @@
     .declarationsPage .docRaceBar {
         padding: 12px 14px;
     }
+
+}
+
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+.declarationsPage .docContainer {
+    animation:
+        declarationsFadeUp
+        .6s
+        ease
+        both;
+}
+
+@keyframes declarationsFadeUp {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+
 }

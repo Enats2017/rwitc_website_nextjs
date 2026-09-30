@@ -1,5 +1,12 @@
 /* ================= PERFORMANCE PROFILE PAGE — MODERN MINIMAL PREMIUM ================= */
 
+.performanceProfilePage,
+.performanceProfilePage *,
+.performanceProfilePage *::before,
+.performanceProfilePage *::after {
+    box-sizing: border-box;
+}
+
 .performanceProfilePage {
     --pp-bg: #FFFFFF;
     --pp-green: #1F7A3E;
@@ -43,17 +50,14 @@
 .performanceProfilePage .ppCard::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    border-radius: 20px 20px 0 0;
+    inset: -1px;                 /* cover the card border */
+    border-radius: inherit;      /* same curve as the card (20px / 16px on mobile) */
     background: linear-gradient(90deg, var(--pp-green) 0%, var(--pp-green-dark) 100%);
+    /* show only the top 4px, so the bar follows the rounded corners */
+    -webkit-mask: linear-gradient(#000, #000) top / 100% 4px no-repeat;
+            mask: linear-gradient(#000, #000) top / 100% 4px no-repeat;
+    pointer-events: none;
 }
-
-
-
-
 
 /* ---- HEADER (icon + title) ---- */
 .performanceProfilePage .ppHeader {
@@ -90,7 +94,7 @@
 /* ---- SEARCH ROW ---- */
 .performanceProfilePage .ppSearchRow {
     position: relative;
-    z-index: 1;
+    z-index: 5;
     display: flex;
     align-items: center;
     gap: 20px;
@@ -296,6 +300,7 @@
 .ppTableWrap {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-bottom: 28px;
 }
 
@@ -350,6 +355,7 @@
 /* ---- TOTALS TABLE ---- */
 .ppTotalsWrap {
     width: 100%;
+    overflow-x: auto;
 }
 
 .ppTotalsTitle {
@@ -443,10 +449,21 @@
     color: #6B7280;
 }
 
+/* ================= RESPONSIVE ================= */
 
+/* TABLET */
+@media (max-width: 992px) {
 
+    .performanceProfilePage .ppCard {
+        padding: 32px 28px 36px;
+    }
 
-/* ---- RESPONSIVE ---- */
+    .ppResultsCard {
+        padding: 26px 24px 30px;
+    }
+}
+
+/* MOBILE */
 @media (max-width: 768px) {
 
     .performanceProfilePage {
@@ -458,15 +475,20 @@
         border-radius: 16px;
     }
 
+    .performanceProfilePage .ppHeader {
+        margin-bottom: 24px;
+    }
+
     .performanceProfilePage .ppTitle {
         font-size: 24px;
     }
 
-    
-
+    /* search row stacks vertically */
     .performanceProfilePage .ppSearchRow {
         flex-direction: column;
+        flex-wrap: nowrap;
         align-items: stretch;
+        gap: 14px;
         padding: 18px 18px;
     }
 
@@ -474,8 +496,23 @@
         justify-content: flex-start;
     }
 
+    /* FIX: 320px flex-basis was becoming the HEIGHT in column layout,
+       which pushed the dropdown far below the input */
     .performanceProfilePage .ppInputWrap {
+        flex: 0 0 auto;
+        width: 100%;
+        min-width: 0;
         max-width: none;
+    }
+
+    /* 16px prevents iOS auto-zoom on focus */
+    .performanceProfilePage .ppInput {
+        font-size: 16px;
+    }
+
+    .performanceProfilePage .ppSuggestions {
+        max-height: 220px;
+        -webkit-overflow-scrolling: touch;
     }
 
     .performanceProfilePage .ppSubmitBtn {
@@ -491,6 +528,10 @@
         font-size: 19px;
     }
 
+    .ppRaceResultTitle {
+        font-size: 17px;
+    }
+
     .ppRunsTable thead th,
     .ppRunsTable tbody td {
         padding: 8px 10px;
@@ -501,5 +542,29 @@
     .ppTotalsTable tbody td {
         padding: 8px;
         font-size: 12px;
+    }
+}
+
+/* SMALL MOBILE */
+@media (max-width: 480px) {
+
+    .performanceProfilePage {
+        padding: 24px 10px 32px;
+    }
+
+    .performanceProfilePage .ppCard {
+        padding: 24px 14px 28px;
+    }
+
+    .performanceProfilePage .ppTitle {
+        font-size: 21px;
+    }
+
+    .performanceProfilePage .ppSearchRow {
+        padding: 14px;
+    }
+
+    .ppResultsCard {
+        padding: 16px 12px 20px;
     }
 }

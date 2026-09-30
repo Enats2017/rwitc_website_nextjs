@@ -13,9 +13,19 @@
     z-index: 0;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 500px 260px at 0% 0%, rgba(11, 109, 42, .08), transparent 70%),
-        radial-gradient(ellipse 500px 260px at 100% 0%, rgba(11, 109, 42, .08), transparent 70%);
+        radial-gradient(
+            ellipse 500px 260px at 0% 0%,
+            rgba(11, 109, 42, .08),
+            transparent 70%
+        ),
+        radial-gradient(
+            ellipse 500px 260px at 100% 0%,
+            rgba(11, 109, 42, .08),
+            transparent 70%
+        );
 }
+
+/* ================= HEADER ================= */
 
 .photosHeader {
     position: relative;
@@ -52,11 +62,19 @@
 .dividerLine {
     width: 90px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #0b6d2a);
+    background: linear-gradient(
+        90deg,
+        transparent,
+        #0b6d2a
+    );
 }
 
 .photosDivider .dividerLine:last-child {
-    background: linear-gradient(90deg, #0b6d2a, transparent);
+    background: linear-gradient(
+        90deg,
+        #0b6d2a,
+        transparent
+    );
 }
 
 .horseIcon {
@@ -65,6 +83,8 @@
     margin: 0 16px;
     flex-shrink: 0;
 }
+
+/* ================= SEARCH ================= */
 
 .photosSearchBar {
     display: flex;
@@ -113,7 +133,8 @@
     background: #08501f;
 }
 
-/* ================= PHOTO GRID (big + thumbnails, when > 4 photos) ================= */
+/* ================= PHOTO GRID ================= */
+
 .photosGrid {
     position: relative;
     z-index: 1;
@@ -163,9 +184,8 @@
     opacity: .9;
 }
 
-/* FIX: grid rows now have a real height via minmax + grid-auto-rows,
-   instead of relying on the parent's height (which was 0 on mobile,
-   causing thumbnails to collapse and only the main photo to show) */
+/* ================= THUMBNAIL GRID ================= */
+
 .photoThumbGrid {
     flex: 1 1 58%;
     display: grid;
@@ -183,7 +203,6 @@
     background-repeat: no-repeat;
     cursor: pointer;
     transition: transform .3s ease;
-    /* FIX: guarantees visible height on every screen size */
     aspect-ratio: 1 / 1;
 }
 
@@ -191,10 +210,14 @@
     transform: scale(1.05);
 }
 
-/* ================= UNIFORM GRID (1-4 photos, or extra photos after "View All") ================= */
+/* ================= UNIFORM GRID ================= */
+
 .photosGridUniform {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(220px, 1fr)
+    );
     max-width: 900px;
 }
 
@@ -214,6 +237,8 @@
     transform: scale(1.02);
 }
 
+/* ================= EXTRA PHOTOS ================= */
+
 .extraPhotosGrid {
     margin-top: 24px;
     animation: extraFadeIn .3s ease;
@@ -231,6 +256,8 @@
     }
 }
 
+/* ================= PHOTO HINT ================= */
+
 .photoHint {
     position: relative;
     z-index: 1;
@@ -240,6 +267,8 @@
     font-size: 12.5px;
     font-style: italic;
 }
+
+/* ================= NO PHOTOS ================= */
 
 .noPhotos {
     position: relative;
@@ -251,6 +280,7 @@
 }
 
 /* ================= VIEW ALL BUTTON ================= */
+
 .viewAllWrap {
     position: relative;
     z-index: 1;
@@ -278,16 +308,24 @@
     color: #ffffff;
 }
 
-/* ================= LIGHTBOX (zoom on click) ================= */
+/* =========================================================
+   LIGHTBOX
+   ========================================================= */
+
 .photoLightbox {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, .85);
+
+    background: rgba(0, 0, 0, .88);
+
     z-index: 1000;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     padding: 40px;
+
     animation: lightboxFadeIn .2s ease;
 }
 
@@ -301,12 +339,24 @@
     }
 }
 
+/* ================= FULL SCREEN IMAGE ================= */
+
 .lightboxImg {
-    max-width: 90vw;
+    max-width: 85vw;
     max-height: 88vh;
+
+    width: auto;
+    height: auto;
+
+    object-fit: contain;
+
     border-radius: 10px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, .5);
+
     cursor: default;
+
     animation: lightboxZoomIn .25s ease;
 }
 
@@ -322,31 +372,147 @@
     }
 }
 
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
 .lightboxClose {
     position: absolute;
+
     top: 24px;
     right: 30px;
+
     width: 42px;
     height: 42px;
+
     border: none;
     outline: none;
+
     cursor: pointer;
+
     border-radius: 50%;
+
     background: rgba(255, 255, 255, .15);
+
     color: #ffffff;
+
     font-size: 18px;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     transition: .2s ease;
+
+    z-index: 20;
 }
 
 .lightboxClose:hover {
     background: rgba(255, 255, 255, .3);
+
+    transform: scale(1.05);
+}
+
+/* =========================================================
+   PREVIOUS / NEXT BUTTONS
+   ========================================================= */
+
+.lightboxPrev,
+.lightboxNext {
+    position: absolute;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 52px;
+    height: 52px;
+
+    border: none;
+    outline: none;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, .18);
+
+    color: #ffffff;
+
+    font-size: 28px;
+
+    cursor: pointer;
+
+    z-index: 20;
+
+    transition:
+        background .2s ease,
+        transform .2s ease;
+}
+
+.lightboxPrev {
+    left: 30px;
+}
+
+.lightboxNext {
+    right: 30px;
+}
+
+.lightboxPrev:hover,
+.lightboxNext:hover {
+    background: rgba(255, 255, 255, .35);
+
+    transform:
+        translateY(-50%)
+        scale(1.08);
+}
+
+/* ================= RESPONSIVE LIGHTBOX ================= */
+
+@media (max-width: 768px) {
+
+    .photoLightbox {
+        padding: 20px;
+    }
+
+    .lightboxImg {
+        max-width: 82vw;
+        max-height: 80vh;
+    }
+
+    .lightboxPrev,
+    .lightboxNext {
+        width: 44px;
+        height: 44px;
+
+        font-size: 22px;
+    }
+
+    .lightboxPrev {
+        left: 12px;
+    }
+
+    .lightboxNext {
+        right: 12px;
+    }
+
+    .lightboxClose {
+        top: 15px;
+        right: 15px;
+
+        width: 38px;
+        height: 38px;
+
+        font-size: 16px;
+    }
 }
 
 /* ================= RESPONSIVE ================= */
+
 @media (max-width: 900px) {
+
     .photosGrid {
         flex-direction: column;
     }
@@ -355,8 +521,6 @@
         min-height: 260px;
     }
 
-    /* FIX: 2-column grid on mobile, aspect-ratio on .photoThumb keeps
-       every thumbnail visible instead of just the first one */
     .photoThumbGrid {
         grid-template-columns: repeat(2, 1fr);
         grid-auto-rows: auto;
@@ -364,6 +528,11 @@
 }
 
 @media (max-width: 480px) {
+
+    .photosSection {
+        padding: 45px 15px 60px;
+    }
+
     .photosDate {
         font-size: 30px;
     }
@@ -379,5 +548,26 @@
 
     .photosGridUniform {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .lightboxImg {
+        max-width: 78vw;
+        max-height: 75vh;
+    }
+
+    .lightboxPrev,
+    .lightboxNext {
+        width: 40px;
+        height: 40px;
+
+        font-size: 20px;
+    }
+
+    .lightboxPrev {
+        left: 8px;
+    }
+
+    .lightboxNext {
+        right: 8px;
     }
 }

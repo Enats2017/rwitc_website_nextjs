@@ -1,9 +1,9 @@
 /* ================= RACE CARD PAGE — PLAIN DOCUMENT STYLE ================= */
 
-.racecardPage .docPage {
+.racecardPage.docPage {
     width: 100%;
     background: #ffffff;
-    padding: 48px 16px 60px;
+    padding: 48px 16px 56px;
 }
 
 /* HEADING — same style as "About RWITC" page */
@@ -80,9 +80,10 @@
     width: 100%;
     max-width: 1140px;
     margin: 0 auto;
-    padding: 28px 32px 40px;
+    padding: 28px 32px 32px;
     border: 1px solid #e2e2e2;
-    border-radius: 4px;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -183,20 +184,29 @@
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     margin-top: 40px;              /* keeps clear of the Download button */
+    margin-bottom: 0;
+    padding-bottom: 0;
+    line-height: 0;                /* removes inline-gap under the iframe */
 }
 
 .racecardPage .docArchiveHtml {
-    display: block;
+    display: block;                /* no baseline gap under the iframe */
     width: 100%;
     min-width: 720px;
+    min-height: 0;                 /* height comes from JS, no forced minimum */
+    margin: 0;
+    padding: 0;
     border: none;
-    min-height: 200px;
     overflow: hidden;
 }
 
 /* ---- RACE BLOCK ---- */
 .racecardPage .docRaceBlock {
     margin-bottom: 28px;
+}
+
+.racecardPage .docRaceBlock:last-child {
+    margin-bottom: 0;
 }
 
 .racecardPage .docRaceBar {
@@ -237,6 +247,10 @@
     border-radius: 4px;
     padding: 14px 16px;
     margin-bottom: 12px;
+}
+
+.racecardPage .docHorseCard:last-child {
+    margin-bottom: 0;
 }
 
 .racecardPage .docHorseTop {
@@ -373,6 +387,10 @@
 /* ---- RESPONSIVE ---- */
 @media (max-width: 768px) {
 
+    .racecardPage.docPage {
+        padding: 36px 12px 40px;
+    }
+
     .racecardPage .aboutHeading {
         font-size: 26px;
         padding-bottom: 12px;
@@ -393,7 +411,7 @@
     }
 
     .racecardPage .docContainer {
-        padding: 60px 12px 28px;
+        padding: 60px 12px 22px;
     }
 
     .racecardPage .docDownloadBtn {
@@ -433,6 +451,10 @@
 
 @media (max-width: 480px) {
 
+    .racecardPage.docPage {
+        padding: 28px 10px 32px;
+    }
+
     .racecardPage .aboutHeading {
         font-size: 22px;
     }
@@ -447,7 +469,7 @@
     }
 
     .racecardPage .docContainer {
-        padding: 56px 8px 24px;
+        padding: 56px 8px 18px;
     }
 
     .racecardPage .docRaceBar {
@@ -457,4 +479,16 @@
     .racecardPage .docHorseCard {
         padding: 12px;
     }
+}
+
+/* ---- DIVIDER + SPACE at the bottom of the card ---- */
+.racecardPage .docContainer::after {
+    content: "";
+    display: block;
+    height: 2px;
+    width: 100%;
+    max-width: 480px;
+    margin: 32px auto 0;
+    border-radius: 999px;
+    background: linear-gradient(to right, transparent, #d97706, #16a34a, transparent);
 }

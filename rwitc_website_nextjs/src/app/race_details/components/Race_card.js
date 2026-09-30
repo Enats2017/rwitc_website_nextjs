@@ -236,6 +236,103 @@ export default function RaceCard() {
         setOpenRuns((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
+    /*
+     * Iframe onLoad handler for archive HTML.
+     *
+     * HEIGHT FIX: the old code used documentElement.scrollHeight, which can
+     * never be smaller than the iframe's current height, so the iframe grew
+     * but never shrank (extra white space at the bottom). We now measure
+     * body.scrollHeight (the real content height) and re-measure whenever
+     * the content changes (images, filters, View Runs, resize).
+     */
+    const handleRaceCardIframeLoad = (e) => {
+        handleArchiveIframeLoad(e);
+
+        const iframe = e.target;
+        const doc = iframe.contentWindow?.document;
+        if (!doc || !doc.body) return;
+
+        doc.querySelectorAll(".race_no_data").forEach((el) => {
+            el.querySelectorAll("th").forEach((th) => {
+                th.style.setProperty("background", "#16a34a", "important");
+            });
+
+            el.querySelectorAll("span[style*='text-align:center']").forEach((span) => {
+                span.style.textAlign = "left";
+                span.style.display = "block";
+                span.style.marginTop = "2px";
+            });
+
+            el.querySelectorAll("br").forEach((br) => {
+                br.style.display = "none";
+            });
+        });
+
+        const setHeight = () => {
+            if (!iframe.isConnected || !doc.body) return;
+            const next = Math.ceil(doc.body.scrollHeight);
+            const current = parseInt(iframe.style.height, 10);
+            if (next !== current) {
+                iframe.style.height = next + "px";
+            }
+        };
+
+        // initial sizing
+        setHeight();
+        requestAnimationFrame(setHeight);
+
+        // re-measure when images finish loading
+        doc.querySelectorAll("img").forEach((img) => {
+            if (!img.complete) {
+                img.addEventListener("load", setHeight);
+                img.addEventListener("error", setHeight);
+            }
+        });
+
+        // re-measure when the content reflows (window resize, fonts, etc.)
+        if (iframe.contentWindow?.ResizeObserver) {
+            const ro = new iframe.contentWindow.ResizeObserver(setHeight);
+            ro.observe(doc.body);
+        }
+        if (doc.fonts && doc.fonts.ready) {
+            doc.fonts.ready.then(setHeight);
+        }
+
+        doc.querySelectorAll(".race_call").forEach((pill) => {
+            pill.style.cursor = "pointer";
+            pill.addEventListener("click", () => {
+                const raceNo = pill.id;
+
+                doc.querySelectorAll(".race_no_data").forEach((block) => {
+                    const matches = block.classList.contains("race_no_" + raceNo);
+                    block.style.display = matches ? "" : "none";
+                });
+
+                doc.querySelectorAll(".race_call").forEach((p) => {
+                    p.style.textDecoration = p.id === raceNo ? "underline" : "none";
+                });
+
+                setHeight();
+                requestAnimationFrame(setHeight);
+            });
+        });
+
+        doc.querySelectorAll(".view_perform").forEach((btn) => {
+            btn.style.cursor = "pointer";
+            btn.addEventListener("click", () => {
+                const performanceRow = doc.getElementById("performance_" + btn.id);
+
+                if (performanceRow) {
+                    const isHidden = performanceRow.style.display === "none" || performanceRow.style.display === "";
+                    performanceRow.style.display = isHidden ? "table-row" : "none";
+                }
+
+                setHeight();
+                requestAnimationFrame(setHeight);
+            });
+        });
+    };
+
     const isHtmlMode = mode === "html";
     const hasNoHtml = isHtmlMode && !rawHtml.trim();
     const hasNoData = !isHtmlMode && races.length === 0;
@@ -315,66 +412,7 @@ export default function RaceCard() {
                             title="Race Card"
                             sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
                             scrolling="no"
-                            onLoad={(e) => {
-                                handleArchiveIframeLoad(e);
-                                const iframe = e.target;
-                                const doc = iframe.contentWindow?.document;
-                                if (!doc) return;
-
-                                doc.querySelectorAll(".race_no_data").forEach((el) => {
-                                    el.querySelectorAll("th").forEach((th) => {
-                                        th.style.setProperty("background", "#16a34a", "important");
-                                    });
-
-                                    el.querySelectorAll("span[style*='text-align:center']").forEach((span) => {
-                                        span.style.textAlign = "left";
-                                        span.style.display = "block";
-                                        span.style.marginTop = "2px";
-                                    });
-
-                                    el.querySelectorAll("br").forEach((br) => {
-                                        br.style.display = "none";
-                                    });
-                                });
-
-                                const setHeight = () => {
-                                    iframe.style.height = doc.documentElement.scrollHeight + "px";
-                                };
-
-                                doc.querySelectorAll(".race_call").forEach((pill) => {
-                                    pill.style.cursor = "pointer";
-                                    pill.addEventListener("click", () => {
-                                        const raceNo = pill.id;
-
-                                        doc.querySelectorAll(".race_no_data").forEach((block) => {
-                                            const matches = block.classList.contains("race_no_" + raceNo);
-                                            block.style.display = matches ? "" : "none";
-                                        });
-
-                                        doc.querySelectorAll(".race_call").forEach((p) => {
-                                            p.style.textDecoration = p.id === raceNo ? "underline" : "none";
-                                        });
-
-                                        setHeight();
-                                        requestAnimationFrame(setHeight);
-                                    });
-                                });
-
-                                doc.querySelectorAll(".view_perform").forEach((btn) => {
-                                    btn.style.cursor = "pointer";
-                                    btn.addEventListener("click", () => {
-                                        const performanceRow = doc.getElementById("performance_" + btn.id);
-
-                                        if (performanceRow) {
-                                            const isHidden = performanceRow.style.display === "none" || performanceRow.style.display === "";
-                                            performanceRow.style.display = isHidden ? "table-row" : "none";
-                                        }
-
-                                        setHeight();
-                                        requestAnimationFrame(setHeight);
-                                    });
-                                });
-                            }}
+                            onLoad={handleRaceCardIframeLoad}
                         />
                     </div>
                 )}

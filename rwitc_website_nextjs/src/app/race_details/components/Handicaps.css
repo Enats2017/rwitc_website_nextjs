@@ -1,43 +1,90 @@
-/* ================= HANDICAPS PAGE — PLAIN DOCUMENT STYLE ================= */
+/* =========================================================
+   HANDICAPS PAGE
+========================================================= */
 
-.handicapsPage .docPage {
+.handicapsPage {
     width: 100%;
-    background: #ffffff;
-    padding: 48px 16px 60px;
+    min-height: 100vh;
+    background: #f7f9fb;
+    padding: 60px 20px 90px;
 }
 
-/* ---- GREEN PILL BADGE ---- */
-.handicapsPage .docBadgeWrap {
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+.handicapsPage .docTitleWrap {
     display: flex;
-    justify-content: center;
-    margin-bottom: 24px;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 44px;
 }
 
-.handicapsPage .docBadge {
-    display: inline-block;
-    padding: 12px 32px;
-    border-radius: 999px;
-    margin-top: 20px;
-    background: #16a34a;
-    color: #ffffff;
-    font-size: 20px;
+.handicapsPage .docHeading {
+    margin: 0;
+    padding-bottom: 16px;
+    font-size: 40px;
     font-weight: 800;
+    color: #0d3b1f;
+    letter-spacing: .3px;
+    text-align: center;
 }
 
-/* ---- CONTAINER (bordered card) ---- */
+.handicapsPage .docSectionDivider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    width: 100%;
+    max-width: 480px;
+    margin-top: 0;
+}
+
+.handicapsPage .docDividerLine {
+    flex: 1;
+    height: 2px;
+    border-radius: 999px;
+}
+
+.handicapsPage .docDividerLineLeft {
+    background: linear-gradient(to right, transparent, #d97706);
+}
+
+.handicapsPage .docDividerLineRight {
+    background: linear-gradient(to left, transparent, #16a34a);
+}
+
+.handicapsPage .docDividerIcon {
+    font-size: 22px;
+    color: #0d3b1f;
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   DOCUMENT CONTAINER
+========================================================= */
+
 .handicapsPage .docContainer {
     position: relative;
-    width: 100%;
+    width: 92%;
     max-width: 1140px;
     margin: 0 auto;
-    padding: 28px 32px 40px;
+    padding: 60px 32px 40px;
+    background: #ffffff;
     border: 1px solid #e2e2e2;
     border-radius: 4px;
     box-sizing: border-box;
     overflow: hidden;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .05);
 }
 
-/* ---- DOWNLOAD BUTTON ---- */
+
+/* =========================================================
+   DOWNLOAD BUTTON
+========================================================= */
+
 .handicapsPage .docDownloadBtn {
     position: absolute;
     top: 20px;
@@ -51,15 +98,20 @@
     font-weight: 700;
     text-decoration: none;
     z-index: 2;
+    cursor: pointer;
+    transition: .2s ease;
 }
 
 .handicapsPage .docDownloadBtn:hover {
     background: #bdb494;
-    cursor: pointer;
     text-decoration: underline;
 }
 
-/* ---- HEADER ---- */
+
+/* =========================================================
+   DOCUMENT HEADER (JSON MODE)
+========================================================= */
+
 .handicapsPage .docHeader {
     text-align: center;
     margin-bottom: 28px;
@@ -94,7 +146,11 @@
     margin: 0;
 }
 
-/* ---- STATE (loading / error / empty) ---- */
+
+/* =========================================================
+   LOADING / ERROR / EMPTY STATE
+========================================================= */
+
 .handicapsPage .docStateBox {
     text-align: center;
     padding: 60px 20px;
@@ -117,10 +173,16 @@
 }
 
 @keyframes docSpin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-/* ---- RACE BLOCK ---- */
+
+/* =========================================================
+   RACE BLOCK (JSON MODE)
+========================================================= */
+
 .handicapsPage .docRaceBlock {
     margin-bottom: 28px;
 }
@@ -156,7 +218,11 @@
     margin: 0 0 10px;
 }
 
-/* ---- TABLE ---- */
+
+/* =========================================================
+   TABLE (JSON MODE) - only this wrapper scrolls
+========================================================= */
+
 .handicapsPage .docTableWrap {
     width: 100%;
     overflow-x: auto;
@@ -192,7 +258,11 @@
     color: #111;
 }
 
-/* ---- BAN NOTES ---- */
+
+/* =========================================================
+   BAN NOTES
+========================================================= */
+
 .handicapsPage .docBanNotes {
     margin-top: 10px;
     font-size: 13px;
@@ -204,35 +274,83 @@
     margin: 2px 0;
 }
 
-/* ---- ARCHIVE HTML (raw Handicaps_<date>.html passthrough) ----
-   The scroll wrapper lets the iframe keep a real minimum width on
-   phones, so the table never gets squashed or broken; the user just
-   swipes sideways. On desktop the iframe simply fills the container. */
+
+/* =========================================================
+   ARCHIVE HTML (IFRAME)
+   FIX: iframe always fits the card. The table scroll
+   happens INSIDE the iframe (.tableScroll), not here.
+========================================================= */
+
 .handicapsPage .docArchiveScroll {
     width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    margin-top: 40px;              /* keeps clear of the Download button */
+    max-width: 100%;
+    overflow: visible;
+    margin-top: 40px;
 }
 
 .handicapsPage .docArchiveHtml {
     display: block;
     width: 100%;
-    min-width: 720px;
+    max-width: 100%;
+    min-width: 0;
     border: none;
     min-height: 200px;
 }
 
-/* ---- RESPONSIVE ---- */
-@media (max-width: 768px) {
 
-    .handicapsPage .docBadge {
-        font-size: 16px;
-        padding: 10px 24px;
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 992px) {
+
+    .handicapsPage {
+        padding: 50px 16px 70px;
+    }
+
+    .handicapsPage .docHeading {
+        font-size: 32px;
     }
 
     .handicapsPage .docContainer {
+        width: 94%;
+        padding: 60px 24px 35px;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .handicapsPage {
+        padding: 40px 14px 70px;
+    }
+
+    .handicapsPage .docTitleWrap {
+        margin-bottom: 30px;
+    }
+
+    .handicapsPage .docHeading {
+        font-size: 26px;
+        padding-bottom: 12px;
+    }
+
+    .handicapsPage .docSectionDivider {
+        max-width: 320px;
+        gap: 0;
+        margin-top: 20px;
+    }
+
+    .handicapsPage .docDividerIcon {
+        font-size: 18px;
+    }
+
+    .handicapsPage .docContainer {
+        width: 100%;
         padding: 60px 12px 28px;
     }
 
@@ -260,13 +378,26 @@
     .handicapsPage .docArchiveScroll {
         margin-top: 0;
     }
+
 }
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
 
 @media (max-width: 480px) {
 
-    .handicapsPage .docBadge {
-        font-size: 15px;
-        padding: 9px 20px;
+    .handicapsPage {
+        padding: 35px 10px 60px;
+    }
+
+    .handicapsPage .docHeading {
+        font-size: 22px;
+    }
+
+    .handicapsPage .docSectionDivider {
+        max-width: 240px;
     }
 
     .handicapsPage .docContainer {
@@ -276,4 +407,28 @@
     .handicapsPage .docRaceBar {
         padding: 12px 14px;
     }
+
+}
+
+
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+.handicapsPage .docContainer {
+    animation: handicapsFadeUp .6s ease both;
+}
+
+@keyframes handicapsFadeUp {
+
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
 }

@@ -173,7 +173,7 @@ function readHtmlFromS3BucketApi($fileUrl)
     ) {
         throw new Exception(
             "S3 HTML helper returned HTTP " .
-            $httpCode
+                $httpCode
         );
     }
 
@@ -445,7 +445,6 @@ function resolveRacecardMetadata($conn, $date, $type, $raceType)
         }
 
         $stmt->bind_param("ss", $date, $type);
-
     } elseif ($type === "" && $raceType !== "") {
 
         $stmt = $conn->prepare(
@@ -464,7 +463,6 @@ function resolveRacecardMetadata($conn, $date, $type, $raceType)
         }
 
         $stmt->bind_param("ss", $date, $raceType);
-
     } else {
 
         $stmt = $conn->prepare(
@@ -632,7 +630,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             "race_type" => $postRaceType,
             "file_url"  => $storedFileUrl
         ]);
-
     } catch (Throwable $error) {
 
         $security->logLine(
@@ -712,14 +709,14 @@ if (
             }
 
             $stmt = $conn->prepare(
-                "SELECT file_url
-                 FROM run_race_details
-                 WHERE `date` = ?
-                   AND `type` = ?
-                   AND `race_type` = ?
-                   AND file_url IS NOT NULL
-                   AND file_url <> ''
-                 LIMIT 1"
+                "SELECT file_url, htm_file_url
+     FROM run_race_details
+     WHERE `date` = ?
+       AND `type` = ?
+       AND `race_type` = ?
+       AND htm_file_url IS NOT NULL
+       AND htm_file_url <> ''
+     LIMIT 1"
             );
 
             if ($stmt === false) {
@@ -753,15 +750,14 @@ if (
             $row = $result->fetch_assoc();
             $stmt->close();
 
-            // DB me .html registered hai, uska .htm version banao
-            $htmUrl = preg_replace(
-                '/\.html$/i',
-                '.htm',
-                (string) ($row["file_url"] ?? "")
-            );
+            $htmUrl = trim((string) ($row["htm_file_url"] ?? ""));
+
+            if ($htmUrl === "") {
+                throw new Exception("HTM racecard file URL is empty");
+            }
 
             $htmlContent = readHtmlFromS3BucketApi($htmUrl);
-            $source = "DB_S3";
+            $source = "DB_S3_HTM";
         }
 
         if ($htmlContent === false || trim((string) $htmlContent) === "") {
@@ -781,12 +777,11 @@ if (
 
         echo $downloadHtml;
         exit;
-
     } catch (Throwable $error) {
 
         $security->logLine(
             "RACECARD_DOWNLOAD_ERROR | "
-            . $error->getMessage()
+                . $error->getMessage()
         );
 
         $security->respondError(
@@ -836,14 +831,14 @@ if ($date > "2022-11-08") {
             }
 
             $stmt = $conn->prepare(
-                "SELECT file_url
-                 FROM run_race_details
-                 WHERE `date` = ?
-                   AND `type` = ?
-                   AND `race_type` = ?
-                   AND file_url IS NOT NULL
-                   AND file_url <> ''
-                 LIMIT 1"
+                "SELECT file_url, htm_file_url
+     FROM run_race_details
+     WHERE `date` = ?
+       AND `type` = ?
+       AND `race_type` = ?
+       AND htm_file_url IS NOT NULL
+       AND htm_file_url <> ''
+     LIMIT 1"
             );
 
             if ($stmt === false) {
@@ -913,12 +908,11 @@ if ($date > "2022-11-08") {
         ];
 
         $security->respondSuccess($response);
-
     } catch (Throwable $error) {
 
         $security->logLine(
             "RACECARD_HTML_READ_ERROR | "
-            . $error->getMessage()
+                . $error->getMessage()
         );
 
         $security->respondError(
@@ -1482,13 +1476,12 @@ try {
         $cacheKey,
         $response
     );
-
 } catch (Throwable $error) {
 
     // Log actual database error
     $security->logLine(
         "RACECARD_API_ERROR | "
-        . $error->getMessage()
+            . $error->getMessage()
     );
 
     // Do not expose database error publicly
@@ -1496,7 +1489,6 @@ try {
         "Internal server error",
         500
     );
-
 } finally {
 
     // Close database connection

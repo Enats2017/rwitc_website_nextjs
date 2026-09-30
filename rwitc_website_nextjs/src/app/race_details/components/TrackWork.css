@@ -45,7 +45,10 @@
     font-size: 20px;
     color: #d4a017;
 }
-
+.horseMatchBtn.active {
+    background: #0E663E;
+    color: #ffffff;
+}
 /* ================= SEARCH BARS ================= */
 .searchBarsRow {
     display: flex;

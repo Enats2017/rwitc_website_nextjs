@@ -21,7 +21,7 @@ if (IS_LOCAL) {
     // ----------------------------------------------------
 
     // URL the browser uses to open .htm files directly
-    define("RUN_RACES_BASE_URL", "http://localhost/run_races/");         
+    define("RUN_RACES_BASE_URL", "http://localhost/run_races/");
 
     // Filesystem path PHP uses to check if a file exists
     define("RUN_RACES_LOCAL_PATH", "C:/xampp/htdocs/run_races/");
@@ -32,14 +32,26 @@ if (IS_LOCAL) {
     // Raceday Report .HTM files of public URL (for download link)
     define("RACEDAY_REPORT_PUBLIC_BASE", "http://localhost/racedayreports/");
 
-    // Sweepstake .htm files public URL (for file_url in API response)
+    // Sweepstake .htm files public URL
     define("STATIC_SWEEPSTAKE_URL", "http://localhost/staticpages/sweepstakes/");
 
-    // Dividends .htm files public URL (for API response)
+    // Dividends .htm files public URL
     define("STATIC_DIVIDENDS_URL", "http://localhost/staticpages/dividends/");
+
     define("STATIC_LIVE_URL", "http://localhost/staticpages/live/");
+
+    // Riding Weight
     define("RIDING_WEIGHT_LOCAL_PATH", "C:/xampp/htdocs/rwitc_upload/static/");
+
+    // Record Timings
     define("RECORD_TIMINGS_LOCAL_PATH", "C:/xampp/htdocs/horseracing/");
+
+    // Ratings Change
+    define("RATINGSCHANGE_LOCAL_PATH", "C:/xampp/htdocs/staticpages/ratingschange/");
+
+    // Ratings HTM file
+    define("RATINGS_FILE_URL", "http://localhost/rwitc_upload/static/RATINGS.HTM");
+
 } else {
 
     // ----------------------------------------------------
@@ -50,21 +62,55 @@ if (IS_LOCAL) {
 
     define("RUN_RACES_LOCAL_PATH", realpath(__DIR__ . "/../../run_races"));
 
-    // Raceday Report .HTM files - server filesystem path 
-    //local
-    // define("RACEDAY_REPORT_DIR", realpath(__DIR__ . "/../../../racedayreports"));
-    //live
-    define("RACEDAY_REPORT_DIR", realpath(__DIR__ . "/../../staticpages/racedayreports"));
+    // Raceday Report .HTM files - server filesystem path
+    define(
+        "RACEDAY_REPORT_DIR",
+        realpath(__DIR__ . "/../../staticpages/racedayreports")
+    );
 
-    // Raceday Report .HTM files - public URL (for download link / remote check)
-    define("RACEDAY_REPORT_PUBLIC_BASE", "https://rwitc.com/staticpages/racedayreports/");
+    // Raceday Report .HTM files - public URL
+    define(
+        "RACEDAY_REPORT_PUBLIC_BASE",
+        "https://rwitc.com/staticpages/racedayreports/"
+    );
 
-    // Sweepstake .htm files public URL (production)
-    define("STATIC_SWEEPSTAKE_URL", "https://rwitc.com/staticpages/sweepstakes/");
+    // Sweepstake .htm files public URL
+    define(
+        "STATIC_SWEEPSTAKE_URL",
+        "https://rwitc.com/staticpages/sweepstakes/"
+    );
 
-    // Dividends .htm files public URL (production)
-    define("STATIC_DIVIDENDS_URL", "https://rwitc.com/staticpages/dividends/");
-    define("STATIC_LIVE_URL", "https://rwitc.com/staticpages/live/");
-    define("RIDING_WEIGHT_LOCAL_PATH", realpath(__DIR__ . "/../../rwitc_upload/static"));
-    define("RECORD_TIMINGS_LOCAL_PATH", realpath(__DIR__ . "/../../horseracing"));
+    // Dividends .htm files public URL
+    define(
+        "STATIC_DIVIDENDS_URL",
+        "https://rwitc.com/staticpages/dividends/"
+    );
+
+    define(
+        "RATINGSCHANGE_LOCAL_PATH",
+        realpath(__DIR__ . "/../../staticpages/ratingschange")
+    );
+
+    define(
+        "STATIC_LIVE_URL",
+        "https://rwitc.com/staticpages/live/"
+    );
+
+    define(
+        "RIDING_WEIGHT_LOCAL_PATH",
+        realpath(__DIR__ . "/../../rwitc_upload/static")
+    );
+
+    define(
+        "RECORD_TIMINGS_LOCAL_PATH",
+        realpath(__DIR__ . "/../../horseracing")
+    );
+
+    // Ratings HTM file
+    define(
+        "RATINGS_FILE_URL",
+        "https://rwitc.com/rwitc_upload/static/RATINGS.HTM"
+    );
 }
+
+define("RATINGSCHANGE_S3_PREFIX", "staticpages/ratingschange/");

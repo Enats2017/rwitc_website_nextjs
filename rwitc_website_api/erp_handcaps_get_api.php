@@ -498,7 +498,7 @@ if (
 
             // ---------- 2. S3 .htm FILE ----------
             $stmt = $conn->prepare("
-                SELECT file_url
+                SELECT file_url, htm_file_url
                 FROM run_race_details
                 WHERE `date` = ?
                   AND `type` = ?
