@@ -32,7 +32,7 @@
 
 /* RACE BLOCK (JSON MODE) */
 .declarationsPage .docRaceBlock { margin-bottom: 28px; }
-.declarationsPage .docRaceBar { background: #16a34a; color: #ffffff; padding: 14px 20px; border-radius: 4px; margin-bottom: 14px; }
+.declarationsPage .docRaceBar { background: #16a34a; color: #ffffff; padding: 14px 20px; border-radius: 8px; margin-bottom: 14px; }
 .declarationsPage .docRaceName { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
 .declarationsPage .docRaceMeta { font-size: 13px; font-weight: 600; margin: 0; }
 .declarationsPage .docRaceNarration { font-size: 12.5px; font-weight: 500; margin: 6px 0 0; color: rgba(255, 255, 255, .9); }

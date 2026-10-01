@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json; charset=utf-8");
-header("Access-Control-Allow-Origin: *"); // apni baaki API files mein jo CORS lines hain, wahi rakhna
+header("Access-Control-Allow-Origin: *");
 
 date_default_timezone_set("Asia/Kolkata");
 

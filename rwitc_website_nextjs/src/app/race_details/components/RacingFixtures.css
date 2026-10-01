@@ -149,7 +149,8 @@
 /* ---- WEEKDAY ROW ---- */
 .fixturesWeekdayRow {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
     margin-bottom: 6px;
 }
 
@@ -172,11 +173,12 @@
 
 .fixturesWeek {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
 }
 
 .fixturesDayCell {
+    min-width: 0;
     min-height: 110px;
     background: #fafbfc;
     border-radius: 14px;
@@ -252,22 +254,121 @@
 
 @media (max-width: 992px) {
     .fixturesTitle { font-size: 24px; }
-    .fixturesDayCell { min-height: 90px; }
+    .fixturesDayCell { min-height: 100px; }
 }
 
 @media (max-width: 768px) {
-    .fixturesCard { padding: 20px 16px 26px; }
-    .fixturesMonthTitle { font-size: 21px; }
-    .fixturesDayCell { min-height: 76px; padding: 8px; }
-    .fixturesEventPill { font-size: 11px; padding: 4px 8px; }
-    .fixturesTitle { font-size: 21px; margin-bottom: 18px; }
+
+    .fixturesSection {
+        padding: 24px 10px 50px;
+    }
+
+    .fixturesTitle {
+        font-size: 21px;
+        margin-bottom: 18px;
+    }
+
+    .fixturesCard {
+        padding: 16px 12px 22px;
+        border-radius: 18px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+    }
+
+    .fixturesToolbar,
+    .fixturesLegendRow {
+        position: sticky;
+        left: 0;
+        width: calc(100vw - 64px);
+        max-width: 100%;
+    }
+
+    .fixturesToolbar {
+        gap: 10px;
+    }
+
+    .fixturesMonthTitle {
+        font-size: 21px;
+    }
+
+    .fixturesWeekdayRow,
+    .fixturesGrid {
+        min-width: 780px;
+    }
+
+    .fixturesWeekdayCell {
+        font-size: 12px;
+    }
+
+    .fixturesDayCell {
+        height: 112px;
+        min-height: 112px;
+        padding: 8px;
+        overflow: hidden;
+    }
+
+    .fixturesDayNumber {
+        font-size: 13px;
+    }
+
+    .fixturesEventPill {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    /* Scrollbar styling */
+    .fixturesCard::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .fixturesCard::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+
+    .fixturesCard::-webkit-scrollbar-thumb {
+        background: #16a34a;
+        border-radius: 10px;
+    }
 }
 
 @media (max-width: 480px) {
-    .fixturesWeekdayCell { font-size: 11px; }
-    .fixturesDayCell { min-height: 64px; border-radius: 10px; }
-    .fixturesDayNumber { font-size: 12px; }
-    .fixturesEventPill { font-size: 10px; padding: 3px 6px; border-radius: 6px; }
+
+    .fixturesSection {
+        padding: 20px 8px 40px;
+    }
+
+    .fixturesCard {
+        padding: 12px 8px 18px;
+    }
+
+    .fixturesToolbar,
+    .fixturesLegendRow {
+        width: calc(100vw - 48px);
+    }
+
+    .fixturesLegendRow {
+        gap: 8px;
+    }
+
+    .fixturesLegendItem {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+
+    .fixturesWeekdayRow,
+    .fixturesGrid {
+        min-width: 720px;
+    }
+
+    .fixturesDayCell {
+        height: 104px;
+        min-height: 104px;
+        border-radius: 12px;
+    }
+
     .fixturesNavBtn { height: 38px; width: 38px; }
     .fixturesTodayBtn { height: 38px; width: auto; padding: 0 14px; }
 }

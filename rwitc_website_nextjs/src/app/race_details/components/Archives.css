@@ -192,7 +192,7 @@
 /* ---- WEEKDAY ROW ---- */
 .weekdayRow {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     margin-bottom: 6px;
 }
 
@@ -213,10 +213,11 @@
 
 .calendarWeek {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .dayCell {
+    min-width: 0;
     min-height: 118px;
     background: #ffffff;
     border: 1px solid #eef1f4;
@@ -372,5 +373,95 @@
         height: 38px;
         width: auto;
         padding: 0 14px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .archivesSection {
+        padding: 24px 10px 50px;
+    }
+
+    .archivesCard {
+        padding: 16px 12px 22px;
+        border-radius: 18px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+    }
+
+    .calendarToolbar {
+        position: sticky;
+        left: 0;
+        width: calc(100vw - 64px);
+        max-width: 100%;
+        gap: 10px;
+    }
+
+    .weekdayRow,
+    .calendarGrid {
+        min-width: 760px;
+    }
+
+    .weekdayCell {
+        font-size: 12px;
+    }
+
+    .dayCell {
+        min-height: 110px;
+        padding: 6px;
+    }
+
+    .dayNumber {
+        font-size: 12px;
+    }
+
+    .eventPill {
+        font-size: 10.5px;
+        padding: 4px 6px;
+    }
+
+    /* Scrollbar styling */
+    .archivesCard::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .archivesCard::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+
+    .archivesCard::-webkit-scrollbar-thumb {
+        background: #16a34a;
+        border-radius: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .archivesSection {
+        padding: 20px 8px 40px;
+    }
+
+    .archivesCard {
+        padding: 12px 8px 18px;
+    }
+
+    .calendarToolbar {
+        width: calc(100vw - 48px);
+    }
+
+    .monthTitle {
+        font-size: 20px;
+    }
+
+    .weekdayRow,
+    .calendarGrid {
+        min-width: 700px;
+    }
+
+    .dayCell {
+        min-height: 100px;
     }
 }

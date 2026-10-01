@@ -49,7 +49,11 @@ td > table.infoTable[style*='box-shadow'] { margin: 18px 0 !important; padding: 
 .infoTable { width: 100%; }
 .infoTable td { border: 0; padding: 4px 6px; font-size: 13.5px; color: #222; font-weight: 700; }
 .horse_number_class { color: #111 !important; }
-.infoTable span, .infoTable a { color: #222 !important; }
+.infoTable span, .infoTable a,
+.infoTable font, .infoTable b, .infoTable strong,
+.infoTable td span, .infoTable td a, .infoTable td font,
+.infoTable td *:not(img):not(.view_runs) { color: #111 !important; }
+.infoTable a:hover { text-decoration: underline; }
 .alignLeft { text-align: left !important; }
 .alignRight { text-align: right !important; }
 .infoTable img { border: 2px solid #16a34a !important; border-radius: 2px; }
@@ -202,6 +206,12 @@ export default function RaceCard() {
             el.querySelectorAll("br").forEach((br) => {
                 br.style.display = "none";
             });
+        });
+
+        /* horse name + dam link ko force black karo */
+        doc.querySelectorAll(".infoTable span, .infoTable a, .infoTable font").forEach((el) => {
+            if (el.classList.contains("view_runs")) return;
+            el.style.setProperty("color", "#111", "important");
         });
 
         /* wrap the runs table so ONLY it scrolls sideways (runs here too,

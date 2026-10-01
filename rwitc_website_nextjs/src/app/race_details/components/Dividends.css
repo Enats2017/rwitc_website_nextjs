@@ -149,7 +149,8 @@
 /* ---- WEEKDAY ROW ---- */
 .weekdayRow {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
     margin-bottom: 6px;
 }
 
@@ -172,11 +173,12 @@
 
 .calendarWeek {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 8px;
 }
 
 .dayCell {
+    min-width: 0;
     min-height: 110px;
     background: #fafbfc;
     border-radius: 14px;
@@ -253,22 +255,121 @@
 
 @media (max-width: 992px) {
     .dividendsTitle { font-size: 24px; }
-    .dayCell { min-height: 90px; }
+    .dayCell { min-height: 100px; }
 }
 
 @media (max-width: 768px) {
-    .dividendsCard { padding: 20px 16px 26px; }
-    .monthTitle { font-size: 21px; }
-    .dayCell { min-height: 76px; padding: 8px; }
-    .eventPill { font-size: 11px; padding: 4px 8px; }
-    .dividendsTitle { font-size: 21px; margin-bottom: 18px; }
+
+    .dividendsSection {
+        padding: 24px 10px 50px;
+    }
+
+    .dividendsTitle {
+        font-size: 21px;
+        margin-bottom: 18px;
+    }
+
+    .dividendsCard {
+        padding: 16px 12px 22px;
+        border-radius: 18px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+    }
+
+    .calendarToolbar,
+    .legendRow {
+        position: sticky;
+        left: 0;
+        width: calc(100vw - 64px);
+        max-width: 100%;
+    }
+
+    .calendarToolbar {
+        gap: 10px;
+    }
+
+    .monthTitle {
+        font-size: 21px;
+    }
+
+    .weekdayRow,
+    .calendarGrid {
+        min-width: 780px;
+    }
+
+    .weekdayCell {
+        font-size: 12px;
+    }
+
+    .dayCell {
+        height: 112px;
+        min-height: 112px;
+        padding: 8px;
+        overflow: hidden;
+    }
+
+    .dayNumber {
+        font-size: 13px;
+    }
+
+    .eventPill {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    /* Scrollbar styling */
+    .dividendsCard::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .dividendsCard::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+
+    .dividendsCard::-webkit-scrollbar-thumb {
+        background: #16a34a;
+        border-radius: 10px;
+    }
 }
 
 @media (max-width: 480px) {
-    .weekdayCell { font-size: 11px; }
-    .dayCell { min-height: 64px; border-radius: 10px; }
-    .dayNumber { font-size: 12px; }
-    .eventPill { font-size: 10px; padding: 3px 6px; border-radius: 6px; }
+
+    .dividendsSection {
+        padding: 20px 8px 40px;
+    }
+
+    .dividendsCard {
+        padding: 12px 8px 18px;
+    }
+
+    .calendarToolbar,
+    .legendRow {
+        width: calc(100vw - 48px);
+    }
+
+    .legendRow {
+        gap: 8px;
+    }
+
+    .legendItem {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+
+    .weekdayRow,
+    .calendarGrid {
+        min-width: 720px;
+    }
+
+    .dayCell {
+        height: 104px;
+        min-height: 104px;
+        border-radius: 12px;
+    }
+
     .navBtn { height: 38px; width: 38px; }
     .todayBtn { height: 38px; width: auto; padding: 0 14px; }
 }

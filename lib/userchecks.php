@@ -24,23 +24,13 @@ function islogin(){
 
 
 function isAdminlogin(){
-
-    // fix this check
-    if (count($_SESSION) == 0) {
-        return false;
+    if (session_status() === PHP_SESSION_NONE) { session_start();}
+    if ( !isset($_SESSION['username']) || $_SESSION['username'] === "") {
+        $currentUrl = $_SERVER['REQUEST_URI'] ?? 'dashboard.php';
+        header( "Location: index.php?uri=" . urlencode($currentUrl));
+        exit;
     }
-
-    if (
-        isset($_SESSION['username']) &&
-        $_SESSION['username'] !== ""
-    ) {
-
-        return true;
-
-    } else {
-
-        return false;
-    }
+    return true;
 }
 
 

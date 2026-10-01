@@ -1,7 +1,9 @@
-/* ACCEPTANCE PAGE */
+/* ================= ACCEPTANCE PAGE ================= */
+
 .acceptancePage { width: 100%; min-height: 100vh; background: #f7f9fb; padding: 60px 20px 90px; }
 
-/* PAGE HEADER */
+/* ================= PAGE HEADER ================= */
+
 .acceptancePage .docTitleWrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 44px; }
 .acceptancePage .docHeading { margin: 0; padding-bottom: 16px; font-size: 40px; font-weight: 800; color: #0d3b1f; letter-spacing: .3px; text-align: center; }
 .acceptancePage .docSectionDivider { display: flex; align-items: center; justify-content: center; gap: 18px; width: 100%; max-width: 480px; margin-top: 0; }
@@ -10,29 +12,35 @@
 .acceptancePage .docDividerLineRight { background: linear-gradient(to left, transparent, #16a34a); }
 .acceptancePage .docDividerIcon { font-size: 22px; color: #0d3b1f; flex-shrink: 0; }
 
-/* DOCUMENT CONTAINER */
-.acceptancePage .docContainer { position: relative; width: 92%; max-width: 1140px; margin: 0 auto; padding: 60px 32px 40px; background: #ffffff; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; box-shadow: 0 18px 45px rgba(0, 0, 0, .05); }
+/* ================= DOCUMENT CONTAINER ================= */
 
-/* DOWNLOAD BUTTON */
+.acceptancePage .docContainer { position: relative; width: 92%; max-width: 1140px; margin: 0 auto; padding: 60px 32px 40px; background: #ffffff; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; box-shadow: 0 18px 45px rgba(0, 0, 0, .05); animation: acceptanceFadeUp .6s ease both; }
+
+/* ================= DOWNLOAD BUTTON ================= */
+
 .acceptancePage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
 .acceptancePage .docDownloadBtn:hover { background: #bdb494; text-decoration: underline; }
 
-/* DOCUMENT HEADER (JSON MODE) */
+/* ================= DOCUMENT HEADER (JSON MODE) ================= */
+
 .acceptancePage .docHeader { text-align: center; margin-bottom: 28px; }
 .acceptancePage .docClub { font-size: 15px; font-weight: 800; color: #111; margin: 0 0 10px; }
 .acceptancePage .docMeeting { font-size: 14px; font-weight: 700; color: #111; margin: 0 0 14px; white-space: pre-line; }
 .acceptancePage .docWatermark { font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #c9c9c9; margin: 0 0 6px; }
 .acceptancePage .docHint { font-size: 15px; font-weight: 700; color: #111; margin: 0; }
 
-/* LOADING / ERROR / EMPTY */
+/* ================= LOADING / ERROR / EMPTY ================= */
+
 .acceptancePage .docStateBox { text-align: center; padding: 60px 20px; color: #555; font-size: 15px; }
 .acceptancePage .docStateError { color: #b3261e; }
 .acceptancePage .docLoader { width: 34px; height: 34px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(11, 109, 42, .15); border-top-color: #0b6d2a; animation: docSpinAcc .8s linear infinite; }
+
 @keyframes docSpinAcc { to { transform: rotate(360deg); } }
 
-/* RACE BLOCK (JSON MODE) */
+/* ================= RACE BLOCK (JSON MODE) ================= */
+
 .acceptancePage .docRaceBlock { margin-bottom: 28px; }
-.acceptancePage .docRaceBar { background: #16a34a; color: #ffffff; padding: 14px 20px; border-radius: 4px; margin-bottom: 14px; }
+.acceptancePage .docRaceBar { background: #16a34a; color: #ffffff; padding: 14px 20px; border-radius: 8px; margin-bottom: 14px; }
 .acceptancePage .docRaceName { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
 .acceptancePage .docRaceMeta { font-size: 13px; font-weight: 600; margin: 0; }
 .acceptancePage .docRaceNarration { font-size: 12.5px; font-weight: 500; margin: 6px 0 0; color: rgba(255, 255, 255, .9); }
@@ -40,33 +48,39 @@
 .acceptancePage .docVoidTag { display: inline-block; background: #b3261e; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 800; }
 .acceptancePage .docWeightNotes p { font-size: 13px; font-weight: 700; color: #8a5a00; margin: 0 0 4px; }
 
-/* TABLE (JSON MODE) */
+/* ================= TABLE (JSON MODE) ================= */
+
 .acceptancePage .docTableWrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .acceptancePage .docTable { width: 100%; border-collapse: collapse; min-width: 720px; }
 .acceptancePage .docTable thead th { text-align: left; font-size: 13px; font-weight: 800; color: #111; padding: 10px 14px; border: 1px solid #d9d9d9; background: #f7f7f7; }
 .acceptancePage .docTable tbody td { padding: 10px 14px; font-size: 13.5px; color: #222; border: 1px solid #e2e2e2; vertical-align: top; }
 .acceptancePage .docHorseName { font-weight: 700; color: #111; }
 .acceptancePage .docBreeding { display: block; font-weight: 400; color: #777; font-size: 12px; margin-top: 2px; }
+.acceptancePage .docSubRow { display: none; }
 
-/* POOLS */
+/* ================= POOLS ================= */
+
 .acceptancePage .docPoolsBlock { margin-top: 20px; border: 1px solid #d9d9d9; border-radius: 4px; overflow: hidden; }
 .acceptancePage .docPoolsTitle { font-size: 13px; font-weight: 800; color: #111; margin: 0; padding: 10px 14px; background: #e2e2e2; text-transform: uppercase; }
 .acceptancePage .docPoolRow { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font-size: 13px; border-top: 1px solid #e2e2e2; }
 .acceptancePage .docPoolName { color: #333333; font-weight: 600; }
 .acceptancePage .docPoolValue { color: #333333; font-weight: 600; text-align: right; }
 
-/* ARCHIVE HTML (IFRAME) - fits card, table scrolls inside iframe */
+/* ================= ARCHIVE HTML (IFRAME) ================= */
+
 .acceptancePage .docArchiveScroll { width: 100%; max-width: 100%; overflow: visible; margin-top: 40px; }
 .acceptancePage .docArchiveHtml { display: block; width: 100%; max-width: 100%; min-width: 0; border: none; min-height: 200px; }
 
-/* TABLET */
+/* ================= TABLET ================= */
+
 @media (max-width: 992px) {
     .acceptancePage { padding: 50px 16px 70px; }
     .acceptancePage .docHeading { font-size: 32px; }
     .acceptancePage .docContainer { width: 94%; padding: 60px 24px 35px; }
 }
 
-/* MOBILE */
+/* ================= MOBILE ================= */
+
 @media (max-width: 768px) {
     .acceptancePage { padding: 40px 14px 70px; }
     .acceptancePage .docTitleWrap { margin-bottom: 30px; }
@@ -77,11 +91,29 @@
     .acceptancePage .docDownloadBtn { top: 14px; right: 12px; }
     .acceptancePage .docWatermark { font-size: 24px; letter-spacing: 2px; }
     .acceptancePage .docHint, .acceptancePage .docClub { font-size: 13px; }
-    .acceptancePage .docTable thead th, .acceptancePage .docTable tbody td { padding: 8px 10px; font-size: 12.5px; }
+
+    .acceptancePage .docTableWrap { overflow-x: visible; }
+    .acceptancePage .docTable { table-layout: auto; width: 100%; min-width: 0; border-collapse: separate; border-spacing: 0; }
+    .acceptancePage .docTable thead th { background: #cdcdd2; color: #000; border: none; padding: 12px 6px; font-size: 13px; text-align: center; }
+    .acceptancePage .docTable thead th:first-child { border-top-left-radius: 8px; }
+    .acceptancePage .docTable thead th:nth-child(4) { border-top-right-radius: 8px; }
+    .acceptancePage .docTable tbody td { border: none; padding: 6px; font-size: 12.5px; }
+    .acceptancePage .docTable thead th:nth-child(1), .acceptancePage .docTable tbody td:nth-child(1) { width: 1%; white-space: nowrap; }
+    .acceptancePage .docTable thead th:nth-child(n+3), .acceptancePage .docTable tbody td:nth-child(n+3) { width: 1%; white-space: nowrap; text-align: center; padding-left: 8px; padding-right: 8px; }
+    .acceptancePage .docColBT { display: none; }
+    .acceptancePage .docTable .docBreeding { display: none; }
+    .acceptancePage .docSubRow { display: table-row; }
+    .acceptancePage .docSubCell { background: #cdcdd2; font-weight: 700; font-size: 11px; padding: 5px 10px; white-space: normal; }
+    .acceptancePage .docSubRow:last-child .docSubCell { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+    .acceptancePage .docSubFlex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .acceptancePage .docSubBreeding { flex: 0 1 58%; max-width: 58%; text-align: left; line-height: 1.35; }
+    .acceptancePage .docSubTrainer { flex: 0 0 auto; text-align: right; line-height: 1.35; }
+
     .acceptancePage .docArchiveScroll { margin-top: 0; }
 }
 
-/* SMALL MOBILE */
+/* ================= SMALL MOBILE ================= */
+
 @media (max-width: 480px) {
     .acceptancePage { padding: 35px 10px 60px; }
     .acceptancePage .docHeading { font-size: 22px; }
@@ -90,6 +122,6 @@
     .acceptancePage .docRaceBar { padding: 12px 14px; }
 }
 
-/* ANIMATION */
-.acceptancePage .docContainer { animation: acceptanceFadeUp .6s ease both; }
+/* ================= ANIMATION ================= */
+
 @keyframes acceptanceFadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }

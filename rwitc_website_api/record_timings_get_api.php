@@ -47,12 +47,6 @@ if ($security->serveCache($cacheKey)) {
 
 try {
 
-    // -------------------------------------------------------
-    // horseracing/recordTimings.htm serve karo (old page jaisa).
-    // Is file me Mumbai + Pune dono tables already hote hain,
-    // koi DB fallback nahi hai kyunki original page me bhi
-    // sirf static HTM include ho raha tha.
-    // -------------------------------------------------------
     $localFile = rtrim((string) RECORD_TIMINGS_LOCAL_PATH, "/\\") . "/recordTimings.htm";
 
     if (!is_file($localFile)) {

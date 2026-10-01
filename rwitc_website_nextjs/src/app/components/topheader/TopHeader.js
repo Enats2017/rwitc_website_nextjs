@@ -298,10 +298,10 @@ export default function TopHeader() {
                         <span className="calendarButtonText">Racing Fixtures</span>
                     </Link>
 
-                    <Link href="/race_details?type=photos" className="calendarButton" aria-label="Gallery">
+                    {/* <Link href="/race_details?type=photos" className="calendarButton" aria-label="Gallery">
                         <FaImages />
                         <span className="calendarButtonText">Gallery</span>
-                    </Link>
+                    </Link> */}
 
                     <a href="https://play.rwitc.com/" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
                         <FaPlay className="headerLiveBtnIcon" />

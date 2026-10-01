@@ -93,7 +93,7 @@ if (IS_LOCAL) {
 
     define(
         "STATIC_LIVE_URL",
-        "https://rwitc.com/staticpages/live/"
+        "https://www.rwitc.com/rwitc_upload/static/live/"
     );
 
     define(

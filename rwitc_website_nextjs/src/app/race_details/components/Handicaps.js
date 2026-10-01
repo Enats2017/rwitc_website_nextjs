@@ -14,10 +14,10 @@ import "./Handicaps.css";
 
 /*
  * Styles + script injected INSIDE the archive iframe.
- * Mobile: grey header, rounded table, no vertical lines,
- * Breeding + Trainer on a highlighted second line per horse.
- * Green race bar: no visible border behind rounded corners.
- * Desktop: normal table.
+ * Same as Acceptance: grey header on desktop + mobile, rounded table,
+ * no vertical lines. On mobile, Breeding + Trainer move to a highlighted
+ * second line per horse. Note rows under the table (e.g. "Weights lowered
+ * by 1 kg.") get a bordered, centered box.
  */
 const ARCHIVE_STYLES = `
 <style>
@@ -39,76 +39,206 @@ table { border-collapse: collapse; }
 .table-bordered { border: 1px solid #dee2e6; font-weight: bold; width: 100%; border-collapse: collapse; }
 .table-bordered th, .table-bordered td { border: 1px solid #dee2e6; }
 .table-bordered thead th, .table-bordered thead td { border-bottom-width: 2px; }
-.download { display: none !important; }
+.download, .pageHeader .pageHeading .subHeading .download { display: none !important; }
 .pageHeading { text-align: center; }
 .hclass { text-align: center; display: inline-block; background-color: #11a14e; border-radius: 33px; padding: 11px; vertical-align: middle !important; color: white; margin-top: 25px; }
 #leftArea .pageHeader .pageHeading .subHeading { clear: both; float: left; width: 100%; color: #000; font-weight: bold; text-align: center; font-size: 12px; margin: 5px 0; padding: 5px 0; }
+.darkGrey_old { font-size: 14px; color: black; text-align: center; font-weight: bold; }
+.darkGrey { font-size: 14px; color: white; text-align: center; font-weight: bold; }
+.white { background-color: #ffffff; color: black !important; }
+.block { display: none; }
+.hide { display: block !important; }
+.tbbody { margin: 0 0 16px !important; }
+.padd { padding: 1%; }
+.left, .left1 { text-align: left !important; }
 .show1 { display: none; }
 
 #leftArea, .pageHeader, .pageHeading, .subHeading, h1, h3, p, div { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 
+/* tables that are not horse tables: scroll inside the card */
+.tableScroll { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+.tableScroll table { width: 100%; min-width: 640px; margin: 0 !important; }
+
+/* other tables: smaller text */
+table:not(.horseTable) td, table:not(.horseTable) td * { font-size: 12.5px !important; line-height: 1.4; }
+
 .raceBarClean { border-radius: 8px !important; overflow: hidden; }
 
-.horseTable { width: 100%; table-layout: auto; }
+/* ---------- Horse table: desktop + mobile grey header ---------- */
+.horseTable, .horseTable.table-bordered { width: 100%; table-layout: auto; border-collapse: separate; border-spacing: 0; border: none !important; }
+.horseTable th, .horseTable td, .horseTable.table-bordered th, .horseTable.table-bordered td { border: none !important; }
+.horseTable th, .horseTable thead th, .horseTable tr:first-child th { background: #cdcdd2 !important; color: #000000 !important; font-size: 12.5px; font-weight: 700; padding: 10px 6px !important; text-align: center; }
+.horseTable th:first-child { text-align: left; padding-left: 10px !important; border-top-left-radius: 8px; }
+.horseTable th:last-child { border-top-right-radius: 8px; }
+.horseTable td { font-size: 12px; padding: 6px !important; background: #ffffff; }
 .horseTable tr.subRow { display: none; }
 
+/* note row under the table (e.g. "Weights lowered by 1 kg.") */
+.horseTable tr.noteRow td.noteCell { border: 1px solid #dee2e6 !important; background: #ffffff; text-align: center !important; font-size: 12px; font-weight: 700; padding: 8px 10px !important; white-space: normal; }
+.horseTable tr.noteRow td.noteCell * { text-align: center !important; }
+
 @media (max-width: 768px) {
-    .horseTable, .horseTable.table-bordered { table-layout: auto; width: 100%; border-collapse: separate; border-spacing: 0; border: none !important; }
-    .horseTable th, .horseTable td, .horseTable.table-bordered th, .horseTable.table-bordered td { border: none !important; }
-    .horseTable th { background: #cdcdd2 !important; color: #000000 !important; font-size: 13px; font-weight: 700; padding: 12px 6px !important; text-align: center; }
-    .horseTable th:first-child { text-align: left; padding-left: 10px !important; border-top-left-radius: 8px; }
-    .horseTable th:nth-child(5) { border-top-right-radius: 8px; }
-    .horseTable td { font-size: 12.5px; padding: 6px !important; background: #ffffff; }
+    .horseTable th, .horseTable thead th, .horseTable tr:first-child th { font-size: 11.5px; padding: 10px 5px !important; }
+    .horseTable th:last-child { border-top-right-radius: 0; }
+    .horseTable th.lastVis { border-top-right-radius: 8px; }
+    .horseTable td { font-size: 11px; padding: 5px !important; }
     .horseTable td:first-child { padding-left: 4px !important; }
-    .horseTable th:nth-child(n+2), .horseTable td:nth-child(n+2) { width: 1%; white-space: nowrap; text-align: center !important; padding-left: 8px !important; padding-right: 8px !important; }
-    .horseTable th:nth-child(1), .horseTable td:nth-child(1) { width: auto; white-space: normal; }
+    .horseTable th.colNarrow, .horseTable td.colNarrow { width: 1%; white-space: nowrap; text-align: center !important; padding-left: 6px !important; padding-right: 6px !important; }
+    .horseTable th.colHorse, .horseTable td.colHorse { width: auto; white-space: normal; text-align: left !important; }
+    .horseTable td.colHorse br { display: none !important; }
+    .horseTable td.colHorse * { display: inline !important; margin: 0 !important; padding: 0 !important; float: none !important; width: auto !important; font-size: 11px !important; }
     .horseTable .colBT { display: none !important; }
     .horseTable tr.subRow { display: table-row; }
-    .horseTable tr.subRow td.subCell { background: #cdcdd2; font-size: 11px; font-weight: 700; padding: 5px 10px !important; white-space: normal; width: auto; text-align: left !important; }
+    .horseTable tr.subRow td.subCell { background: #cdcdd2; font-size: 10px; font-weight: 700; padding: 4px 10px !important; white-space: normal; width: auto; text-align: left !important; }
     .horseTable tr.subRow:last-child td.subCell { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
     .horseTable .subFlex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
     .horseTable .subFlex .subB { display: block; flex: 0 1 58%; max-width: 58%; text-align: left; line-height: 1.35; }
     .horseTable .subFlex .subT { display: block; flex: 0 0 auto; text-align: right; line-height: 1.35; }
+    .horseTable tr.noteRow td.noteCell { font-size: 11px; padding: 6px 8px !important; width: auto; }
 }
 </style>
 
 <script>
 (function () {
+    function txt(el) {
+        return ((el && (el.innerText || el.textContent)) || "").trim();
+    }
+
+    /* Sr.no + horse name on the same line */
+    function inlineHorseCell(cell) {
+        if (!cell) return;
+
+        Array.prototype.slice.call(cell.querySelectorAll("br")).forEach(function (br) {
+            br.parentNode.replaceChild(document.createTextNode(" "), br);
+        });
+
+        Array.prototype.slice.call(cell.children).forEach(function (ch) {
+            if (ch.previousSibling) {
+                ch.parentNode.insertBefore(document.createTextNode(" "), ch);
+            }
+        });
+    }
+
     function transformTables() {
         document.querySelectorAll("table").forEach(function (table) {
             if (table.classList.contains("horseTable")) return;
+            if (table.querySelector("table")) return;
 
             var text = table.innerText || table.textContent || "";
-            if (text.indexOf("Horse Name") === -1) return;
+            if (!/horse/i.test(text) || !/trainer/i.test(text)) return;
+
+            var rows = Array.prototype.slice.call(table.querySelectorAll("tr"));
+
+            var headerRow = null;
+            for (var i = 0; i < rows.length; i++) {
+                var ths = rows[i].querySelectorAll("th");
+                if (ths.length >= 4 && /trainer/i.test(rows[i].innerText || rows[i].textContent || "")) {
+                    headerRow = rows[i];
+                    break;
+                }
+            }
+            if (!headerRow) return;
+
+            var headCells = Array.prototype.slice.call(headerRow.children);
+            var n = headCells.length;
+
+            var horseIdx = -1, breedingIdx = -1, trainerIdx = -1;
+            headCells.forEach(function (c, idx) {
+                var t = txt(c);
+                if (horseIdx === -1 && /horse/i.test(t)) horseIdx = idx;
+                if (breedingIdx === -1 && /breeding/i.test(t)) breedingIdx = idx;
+                if (trainerIdx === -1 && /trainer/i.test(t)) trainerIdx = idx;
+            });
+
+            if (trainerIdx === -1) return;
+            if (horseIdx === -1) horseIdx = 0;
+
+            var hidden = [trainerIdx];
+            if (breedingIdx !== -1) hidden.push(breedingIdx);
+
+            var lastVisible = -1;
+            for (var k = n - 1; k >= 0; k--) {
+                if (hidden.indexOf(k) === -1) { lastVisible = k; break; }
+            }
 
             table.classList.add("horseTable");
 
-            Array.prototype.slice.call(table.querySelectorAll("tr")).forEach(function (tr) {
-                var cells = Array.prototype.slice.call(tr.children);
-                if (cells.length < 7) return;
+            var visibleCount = n - hidden.length;
 
-                var breeding = cells[5];
-                var trainer = cells[6];
+            rows.forEach(function (tr) {
+                var cells = Array.prototype.slice.call(tr.children);
+
+                /* note row: fewer cells than the header (usually one colspan cell) */
+                if (cells.length !== n) {
+                    if (
+                        cells.length > 0 &&
+                        cells.length < n &&
+                        !tr.querySelector("th") &&
+                        txt(tr) !== ""
+                    ) {
+                        tr.classList.add("noteRow");
+                        cells.forEach(function (c) {
+                            c.classList.add("noteCell");
+                            if (cells.length === 1) c.colSpan = n;
+                        });
+                    }
+                    return;
+                }
+
                 var isHeader = tr.querySelector("th") !== null;
 
-                breeding.classList.add("colBT");
-                trainer.classList.add("colBT");
+                cells.forEach(function (c, idx) {
+                    if (hidden.indexOf(idx) !== -1) {
+                        c.classList.add("colBT");
+                    } else if (idx === horseIdx) {
+                        c.classList.add("colHorse");
+                    } else {
+                        c.classList.add("colNarrow");
+                    }
+                });
 
-                if (isHeader) return;
+                if (isHeader) {
+                    if (cells[lastVisible]) cells[lastVisible].classList.add("lastVis");
+                    return;
+                }
+
+                inlineHorseCell(cells[horseIdx]);
+
+                var breeding = breedingIdx !== -1 ? cells[breedingIdx] : null;
+                var trainer = cells[trainerIdx];
 
                 var sub = document.createElement("tr");
                 sub.className = "subRow";
 
                 var td = document.createElement("td");
                 td.className = "subCell";
-                td.colSpan = 5;
+                td.colSpan = visibleCount;
                 td.innerHTML =
-                    '<div class="subFlex"><span class="subB">' + breeding.innerHTML +
+                    '<div class="subFlex"><span class="subB">' + (breeding ? breeding.innerHTML : "") +
                     '</span><span class="subT">' + trainer.innerHTML + '</span></div>';
 
                 sub.appendChild(td);
                 tr.parentNode.insertBefore(sub, tr.nextSibling);
             });
+        });
+    }
+
+    function wrapTables() {
+        document.querySelectorAll("table").forEach(function (table) {
+            if (table.classList.contains("horseTable")) return;
+            if (table.parentElement && table.parentElement.classList.contains("tableScroll")) return;
+            if (table.querySelector("table")) return;
+
+            var maxCells = 0;
+            table.querySelectorAll("tr").forEach(function (tr) {
+                if (tr.children.length > maxCells) maxCells = tr.children.length;
+            });
+            if (maxCells < 4) return;
+
+            var wrap = document.createElement("div");
+            wrap.className = "tableScroll";
+            table.parentNode.insertBefore(wrap, table);
+            wrap.appendChild(table);
         });
     }
 
@@ -146,6 +276,7 @@ table { border-collapse: collapse; }
 
     function run() {
         transformTables();
+        wrapTables();
         cleanGreenBars();
     }
 
@@ -197,20 +328,15 @@ export default function Handicaps() {
 
                 setMode(data.mode || "json");
                 setRawHtml(data.html || "");
-                setMeeting(data.meeting);
+                setMeeting(data.meeting || null);
                 setRaces(data.races || []);
-                setDownloadFile(data.downloadFile);
-                setDownloadAvailable(data.downloadAvailable);
+                setDownloadFile(data.downloadFile || null);
+                setDownloadAvailable(!!data.downloadAvailable);
             } catch (err) {
                 console.error("Handicaps Error:", err);
-
-                if (!cancelled) {
-                    setError("Unable to load handicaps for this date.");
-                }
+                if (!cancelled) setError("Unable to load handicaps for this date.");
             } finally {
-                if (!cancelled) {
-                    setLoading(false);
-                }
+                if (!cancelled) setLoading(false);
             }
         }
 
@@ -222,7 +348,6 @@ export default function Handicaps() {
     }, [date, type, raceType]);
 
     const isHtmlMode = mode === "html";
-
     const hasNoData = !isHtmlMode && races.length === 0;
     const hasNoHtml = isHtmlMode && !rawHtml.trim();
 
@@ -248,7 +373,7 @@ export default function Handicaps() {
 
             new ResizeObserver(resize).observe(doc.body);
         } catch (err) {
-            // cross-origin or unavailable: the helper's height is enough
+            /* helper height is enough */
         }
     }
 
@@ -273,15 +398,9 @@ export default function Handicaps() {
                     className="docDownloadBtn"
                     onClick={() => {
                         if (downloadAvailable && downloadFile) {
-                            window.open(
-                                downloadFile,
-                                "_blank",
-                                "noopener,noreferrer"
-                            );
+                            window.open(downloadFile, "_blank", "noopener,noreferrer");
                         } else {
-                            alert(
-                                "No download file found for this date. Showing data below."
-                            );
+                            alert("No download file found for this date. Showing data below.");
                         }
                     }}
                 >
@@ -291,19 +410,14 @@ export default function Handicaps() {
                 {/* HEADER FOR JSON / DB MODE */}
                 {!isHtmlMode && (
                     <div className="docHeader">
-                        <p className="docClub">
-                            ROYAL WESTERN INDIA TURF CLUB.
-                        </p>
+                        <p className="docClub">ROYAL WESTERN INDIA TURF CLUB.</p>
 
-                        {meeting && (
-                            <p className="docMeeting">{meeting}</p>
-                        )}
+                        {meeting && <p className="docMeeting">{meeting}</p>}
 
                         <h1 className="docWatermark">HANDICAPS</h1>
 
                         <p className="docHint">
-                            Click on a horse to know its Performance Profile
-                            @ RWITC
+                            Click on a horse to know its Performance Profile @ RWITC
                         </p>
                     </div>
                 )}
@@ -335,10 +449,7 @@ export default function Handicaps() {
                     <div className="docArchiveScroll">
                         <iframe
                             className="docArchiveHtml"
-                            srcDoc={formatArchiveHtml(
-                                ARCHIVE_STYLES,
-                                rawHtml
-                            )}
+                            srcDoc={formatArchiveHtml(ARCHIVE_STYLES, rawHtml)}
                             title="Handicaps"
                             sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
                             onLoad={onIframeLoad}
@@ -352,31 +463,21 @@ export default function Handicaps() {
                     !isHtmlMode &&
                     !hasNoData &&
                     races.map((race, idx) => (
-                        <div
-                            className="docRaceBlock"
-                            key={race.srno || idx}
-                        >
+                        <div className="docRaceBlock" key={race.srno || idx}>
                             {/* RACE HEADER */}
                             <div className="docRaceBar">
                                 <p className="docRaceName">
                                     {idx + 1}.&nbsp;
                                     {race.race_name}
-                                    {race.grade && (
-                                        <>&nbsp;({race.grade})</>
-                                    )}
+                                    {race.grade && <>&nbsp;({race.grade})</>}
                                 </p>
 
                                 <p className="docRaceMeta">
-                                    {race.distance && (
-                                        <>
-                                            (About) {race.distance} Metres.
-                                        </>
-                                    )}
+                                    {race.distance && <>(About) {race.distance} Metres.</>}
 
                                     {race.foreign_jockeys_eligible && (
                                         <span className="docForeignTag">
-                                            &nbsp;&nbsp;Foreign Jockeys
-                                            Eligible
+                                            &nbsp;&nbsp;Foreign Jockeys Eligible
                                         </span>
                                     )}
                                 </p>
@@ -384,9 +485,7 @@ export default function Handicaps() {
 
                             {/* WEIGHT NOTE */}
                             {race.weight_note && (
-                                <p className="docWeightNote">
-                                    {race.weight_note}
-                                </p>
+                                <p className="docWeightNote">{race.weight_note}</p>
                             )}
 
                             {/* TABLE */}
@@ -408,47 +507,29 @@ export default function Handicaps() {
                                     <tbody>
                                         {race.horses &&
                                             race.horses.map((horse, hIdx) => (
-                                                <Fragment
-                                                    key={
-                                                        horse.horseseq || hIdx
-                                                    }
-                                                >
+                                                <Fragment key={horse.horseseq || hIdx}>
                                                     <tr>
                                                         <td>{horse.order}</td>
 
-                                                        <td className="docHorseName">
-                                                            {horse.name}
-                                                        </td>
+                                                        <td className="docHorseName">{horse.name}</td>
 
                                                         <td>
-                                                            {horse.color}/
-                                                            {horse.sex}
+                                                            {horse.color}/{horse.sex}
                                                         </td>
 
                                                         <td>{horse.age ?? "-"}</td>
 
-                                                        <td>
-                                                            {horse.weight ?? "-"}
-                                                        </td>
+                                                        <td>{horse.weight ?? "-"}</td>
 
-                                                        <td>
-                                                            {horse.rating ?? "NR"}
-                                                        </td>
+                                                        <td>{horse.rating ?? "NR"}</td>
 
-                                                        <td className="docColBT">
-                                                            {horse.breeding}
-                                                        </td>
+                                                        <td className="docColBT">{horse.breeding}</td>
 
-                                                        <td className="docColBT">
-                                                            {horse.trainer}
-                                                        </td>
+                                                        <td className="docColBT">{horse.trainer}</td>
                                                     </tr>
 
                                                     <tr className="docSubRow">
-                                                        <td
-                                                            className="docSubCell"
-                                                            colSpan={6}
-                                                        >
+                                                        <td className="docSubCell" colSpan={6}>
                                                             <div className="docSubFlex">
                                                                 <span className="docSubBreeding">
                                                                     {horse.breeding}
@@ -472,21 +553,15 @@ export default function Handicaps() {
                                 race.mk_ban?.length > 0) && (
                                 <div className="docBanNotes">
                                     {race.ss_ban?.length > 0 && (
-                                        <p>
-                                            SS Ban : {race.ss_ban.join(", ")}
-                                        </p>
+                                        <p>SS Ban : {race.ss_ban.join(", ")}</p>
                                     )}
 
                                     {race.vo_ban?.length > 0 && (
-                                        <p>
-                                            Vet Ban : {race.vo_ban.join(", ")}
-                                        </p>
+                                        <p>Vet Ban : {race.vo_ban.join(", ")}</p>
                                     )}
 
                                     {race.mk_ban?.length > 0 && (
-                                        <p>
-                                            MK Ban : {race.mk_ban.join(", ")}
-                                        </p>
+                                        <p>MK Ban : {race.mk_ban.join(", ")}</p>
                                     )}
                                 </div>
                             )}

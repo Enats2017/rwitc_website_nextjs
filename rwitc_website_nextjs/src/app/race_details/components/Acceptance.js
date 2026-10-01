@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FaHorseHead } from "react-icons/fa";
 
@@ -9,17 +9,23 @@ import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archi
 
 import "./Acceptance.css";
 
-/* Archive iframe styles: identical to Handicaps + mobile table-scroll fix */
+/*
+ * Styles + script injected INSIDE the archive iframe.
+ * Mobile: grey header, rounded table, no vertical lines,
+ * Breeding + Trainer on a highlighted second line per horse.
+ * Green race bar: no visible border behind rounded corners.
+ * Desktop: normal table.
+ */
 const ARCHIVE_STYLES_ACCEPTANCE = `
 <style>
 * { box-sizing: border-box; }
 span, a { display: inline-block; text-decoration: none; color: #333333; }
 html, body { margin: 0; padding: 0; max-width: 100%; overflow-x: hidden; }
-body { font-family: Arial, sans-serif; word-wrap: break-word; }
+body { font-family: Arial, sans-serif; word-wrap: break-word; display: flow-root; }
 img { max-width: 100%; height: auto; }
 h1 { margin: unset !important; font-size: 26px !important; }
 h3 { font-family: 'Roboto Condensed', Arial, sans-serif; font-size: 32px; color: #c1c1c1; margin: 10px 0; }
-th { color: #ffffff !important; font-size: 14px; text-align: center; padding: 1px; border: 1px solid #BCBEC0; background: #11a14e; }
+th { color: #ffffff !important; font-size: 14px; text-align: center; padding: 4px 2px; border: 1px solid #BCBEC0; background: #11a14e; }
 td { text-align: left !important; padding: 4px !important; color: #333333 !important; font-weight: 600; }
 tbody > tr > th { text-align: left !important; }
 tbody tr td:nth-child(2) { text-align: center !important; }
@@ -44,19 +50,158 @@ table { border-collapse: collapse; }
 .left, .left1 { text-align: left !important; }
 .show1 { display: none; }
 
-/* header / race bar wrap inside the card */
 #leftArea, .pageHeader, .pageHeading, .subHeading, h1, h3, p, div { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 
-/* only data tables scroll */
+/* tables that are not horse tables: scroll inside the card */
 .tableScroll { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
 .tableScroll table { width: 100%; min-width: 640px; margin: 0 !important; }
-body { display: flow-root; }
+
+/* other tables (pools etc.): smaller text */
+table:not(.horseTable) td, table:not(.horseTable) td * { font-size: 12.5px !important; line-height: 1.4; }
+
+.raceBarClean { border-radius: 8px !important; overflow: hidden; }
+
+/* ---------- Horse table: desktop + mobile grey header ---------- */
+.horseTable, .horseTable.table-bordered { width: 100%; table-layout: auto; border-collapse: separate; border-spacing: 0; border: none !important; }
+.horseTable th, .horseTable td, .horseTable.table-bordered th, .horseTable.table-bordered td { border: none !important; }
+.horseTable th, .horseTable thead th, .horseTable tr:first-child th { background: #cdcdd2 !important; color: #000000 !important; font-size: 12.5px; font-weight: 700; padding: 10px 6px !important; text-align: center; }
+.horseTable th:first-child { text-align: left; padding-left: 10px !important; border-top-left-radius: 8px; }
+.horseTable th:last-child { border-top-right-radius: 8px; }
+.horseTable td { font-size: 12px; padding: 6px !important; background: #ffffff; }
+.horseTable tr.subRow { display: none; }
+
+@media (max-width: 768px) {
+    .horseTable th, .horseTable thead th, .horseTable tr:first-child th { font-size: 11.5px; padding: 10px 5px !important; }
+    .horseTable th:last-child { border-top-right-radius: 0; }
+    .horseTable th.lastVis { border-top-right-radius: 8px; }
+    .horseTable td { font-size: 11px; padding: 5px !important; }
+    .horseTable td:first-child { padding-left: 4px !important; }
+    .horseTable th.colNarrow, .horseTable td.colNarrow { width: 1%; white-space: nowrap; text-align: center !important; padding-left: 6px !important; padding-right: 6px !important; }
+    .horseTable th.colHorse, .horseTable td.colHorse { width: auto; white-space: normal; text-align: left !important; }
+    .horseTable td.colHorse br { display: none !important; }
+    .horseTable td.colHorse * { display: inline !important; margin: 0 !important; padding: 0 !important; float: none !important; width: auto !important; font-size: 11px !important; }
+    .horseTable .colBT { display: none !important; }
+    .horseTable tr.subRow { display: table-row; }
+    .horseTable tr.subRow td.subCell { background: #cdcdd2; font-size: 10px; font-weight: 700; padding: 4px 10px !important; white-space: normal; width: auto; text-align: left !important; }
+    .horseTable tr.subRow:last-child td.subCell { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+    .horseTable .subFlex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .horseTable .subFlex .subB { display: block; flex: 0 1 58%; max-width: 58%; text-align: left; line-height: 1.35; }
+    .horseTable .subFlex .subT { display: block; flex: 0 0 auto; text-align: right; line-height: 1.35; }
+}
 </style>
 
 <script>
 (function () {
+    function txt(el) {
+        return ((el && (el.innerText || el.textContent)) || "").trim();
+    }
+
+    /* Sr.no + horse name on the same line */
+    function inlineHorseCell(cell) {
+        if (!cell) return;
+
+        Array.prototype.slice.call(cell.querySelectorAll("br")).forEach(function (br) {
+            br.parentNode.replaceChild(document.createTextNode(" "), br);
+        });
+
+        Array.prototype.slice.call(cell.children).forEach(function (ch) {
+            if (ch.previousSibling) {
+                ch.parentNode.insertBefore(document.createTextNode(" "), ch);
+            }
+        });
+    }
+
+    function transformTables() {
+        document.querySelectorAll("table").forEach(function (table) {
+            if (table.classList.contains("horseTable")) return;
+            if (table.querySelector("table")) return;
+
+            var text = table.innerText || table.textContent || "";
+            if (!/horse/i.test(text) || !/trainer/i.test(text)) return;
+
+            var rows = Array.prototype.slice.call(table.querySelectorAll("tr"));
+
+            var headerRow = null;
+            for (var i = 0; i < rows.length; i++) {
+                var ths = rows[i].querySelectorAll("th");
+                if (ths.length >= 4 && /trainer/i.test(rows[i].innerText || rows[i].textContent || "")) {
+                    headerRow = rows[i];
+                    break;
+                }
+            }
+            if (!headerRow) return;
+
+            var headCells = Array.prototype.slice.call(headerRow.children);
+            var n = headCells.length;
+
+            var horseIdx = -1, breedingIdx = -1, trainerIdx = -1;
+            headCells.forEach(function (c, idx) {
+                var t = txt(c);
+                if (horseIdx === -1 && /horse/i.test(t)) horseIdx = idx;
+                if (breedingIdx === -1 && /breeding/i.test(t)) breedingIdx = idx;
+                if (trainerIdx === -1 && /trainer/i.test(t)) trainerIdx = idx;
+            });
+
+            if (trainerIdx === -1) return;
+            if (horseIdx === -1) horseIdx = 0;
+
+            var hidden = [trainerIdx];
+            if (breedingIdx !== -1) hidden.push(breedingIdx);
+
+            var lastVisible = -1;
+            for (var k = n - 1; k >= 0; k--) {
+                if (hidden.indexOf(k) === -1) { lastVisible = k; break; }
+            }
+
+            table.classList.add("horseTable");
+
+            var visibleCount = n - hidden.length;
+
+            rows.forEach(function (tr) {
+                var cells = Array.prototype.slice.call(tr.children);
+                if (cells.length !== n) return;
+
+                var isHeader = tr.querySelector("th") !== null;
+
+                cells.forEach(function (c, idx) {
+                    if (hidden.indexOf(idx) !== -1) {
+                        c.classList.add("colBT");
+                    } else if (idx === horseIdx) {
+                        c.classList.add("colHorse");
+                    } else {
+                        c.classList.add("colNarrow");
+                    }
+                });
+
+                if (isHeader) {
+                    if (cells[lastVisible]) cells[lastVisible].classList.add("lastVis");
+                    return;
+                }
+
+                inlineHorseCell(cells[horseIdx]);
+
+                var breeding = breedingIdx !== -1 ? cells[breedingIdx] : null;
+                var trainer = cells[trainerIdx];
+
+                var sub = document.createElement("tr");
+                sub.className = "subRow";
+
+                var td = document.createElement("td");
+                td.className = "subCell";
+                td.colSpan = visibleCount;
+                td.innerHTML =
+                    '<div class="subFlex"><span class="subB">' + (breeding ? breeding.innerHTML : "") +
+                    '</span><span class="subT">' + trainer.innerHTML + '</span></div>';
+
+                sub.appendChild(td);
+                tr.parentNode.insertBefore(sub, tr.nextSibling);
+            });
+        });
+    }
+
     function wrapTables() {
         document.querySelectorAll("table").forEach(function (table) {
+            if (table.classList.contains("horseTable")) return;
             if (table.parentElement && table.parentElement.classList.contains("tableScroll")) return;
             if (table.querySelector("table")) return;
 
@@ -73,8 +218,49 @@ body { display: flow-root; }
         });
     }
 
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wrapTables);
-    else wrapTables();
+    /* Green race bar: remove any border / outline / shadow on it and its parents
+       so nothing shows behind the rounded corners. */
+    function cleanGreenBars() {
+        document.body.querySelectorAll("*").forEach(function (el) {
+            if (el.closest(".horseTable")) return;
+
+            var bg = window.getComputedStyle(el).backgroundColor || "";
+            var m = bg.match(/\\d+/g);
+            if (!m || m.length < 3) return;
+            if (m.length > 3 && parseFloat(bg.split(",")[3]) === 0) return;
+
+            var r = +m[0], g = +m[1], b = +m[2];
+            if (!(g > r + 40 && g > b + 40)) return;
+
+            el.classList.add("raceBarClean");
+
+            var n = el;
+            while (n && n !== document.body) {
+                n.style.setProperty("border", "none", "important");
+                n.style.setProperty("outline", "none", "important");
+                n.style.setProperty("box-shadow", "none", "important");
+
+                if (n.tagName === "TABLE") {
+                    n.style.setProperty("border-collapse", "separate", "important");
+                    n.style.setProperty("border-spacing", "0", "important");
+                }
+
+                n = n.parentElement;
+            }
+        });
+    }
+
+    function run() {
+        transformTables();
+        wrapTables();
+        cleanGreenBars();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", run);
+    } else {
+        run();
+    }
 })();
 </script>
 `;
@@ -143,7 +329,18 @@ export default function Acceptance() {
     const hasNoData = !isHtmlMode && races.length === 0;
     const hasNoHtml = isHtmlMode && !rawHtml.trim();
 
-    /* keep iframe height in sync after tables get wrapped / resized */
+    /* breeding text used in the mobile second line */
+    function getBreeding(horse) {
+        if (!horse.sire) return "";
+        return `${horse.sire}${horse.dam ? `-${horse.dam}` : ""}${
+            horse.dam_nation ? ` (${horse.dam_nation})` : ""
+        }`;
+    }
+
+    /*
+     * Iframe load: run the existing helper, then keep the iframe height
+     * in sync when the content re-flows.
+     */
     function onIframeLoad(e) {
         handleArchiveIframeLoad(e);
 
@@ -290,30 +487,44 @@ export default function Acceptance() {
                                         <th>Horse</th>
                                         <th>Weight</th>
                                         <th>Rating</th>
-                                        <th>Trainer</th>
+                                        <th className="docColBT">Trainer</th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
                                     {race.horses && race.horses.map((horse, hIdx) => (
-                                        <tr key={horse.horseseq || hIdx}>
-                                            <td>{hIdx + 1}</td>
+                                        <Fragment key={horse.horseseq || hIdx}>
+                                            <tr>
+                                                <td>{hIdx + 1}</td>
 
-                                            <td className="docHorseName">
-                                                {horse.name}
-                                                {horse.sire && (
-                                                    <span className="docBreeding">
-                                                        {horse.sire}
-                                                        {horse.dam ? `-${horse.dam}` : ""}
-                                                        {horse.dam_nation ? ` (${horse.dam_nation})` : ""}
-                                                    </span>
-                                                )}
-                                            </td>
+                                                <td className="docHorseName">
+                                                    {horse.name}
+                                                    {horse.sire && (
+                                                        <span className="docBreeding">
+                                                            {getBreeding(horse)}
+                                                        </span>
+                                                    )}
+                                                </td>
 
-                                            <td>{horse.weight ?? "-"}</td>
-                                            <td>{horse.rating ?? "NR"}</td>
-                                            <td>{horse.trainer}</td>
-                                        </tr>
+                                                <td>{horse.weight ?? "-"}</td>
+                                                <td>{horse.rating ?? "NR"}</td>
+                                                <td className="docColBT">{horse.trainer}</td>
+                                            </tr>
+
+                                            <tr className="docSubRow">
+                                                <td className="docSubCell" colSpan={4}>
+                                                    <div className="docSubFlex">
+                                                        <span className="docSubBreeding">
+                                                            {getBreeding(horse)}
+                                                        </span>
+
+                                                        <span className="docSubTrainer">
+                                                            {horse.trainer}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </Fragment>
                                     ))}
                                 </tbody>
                             </table>
