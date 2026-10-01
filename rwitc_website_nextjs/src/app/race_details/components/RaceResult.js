@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getRaceResult } from "../../../services/raceResultService";
+import { getRaceDayStatus } from "../../../services/mediaService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import { FaHorseHead, FaPlayCircle } from "react-icons/fa";
 import "./RaceResult.css";
@@ -83,10 +84,11 @@ h3 { font-size: 22px; color: #000; margin: 10px 0; font-weight: 700; }
 </script>
 `;
 
-
-/* ============================================================
- * 2) REPLACE the whole handleResultIframeLoad function
- * ============================================================ */
+/*
+ * Iframe onLoad: run helper, tidy archive markup, then keep the
+ * iframe height in sync. Height changes only when the value differs,
+ * so it never loops or vibrates.
+ */
 function handleResultIframeLoad(e) {
     handleArchiveIframeLoad(e);
 
@@ -94,7 +96,7 @@ function handleResultIframeLoad(e) {
     const doc = iframe.contentWindow?.document;
     if (!doc || !doc.body) return;
 
-    // FIX: "No.: 91" cell gets a guaranteed width so text stays inside the column
+    // "No.: 91" cell gets a guaranteed width so text stays inside the column
     doc.querySelectorAll("th").forEach((th) => {
         if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
             th.style.whiteSpace = "nowrap";
@@ -160,6 +162,8 @@ export default function RaceResult() {
     const [races, setRaces] = useState([]);
     const [downloadUrl, setDownloadUrl] = useState(null);
     const [downloadAvailable, setDownloadAvailable] = useState(false);
+    const [mediaTipsUrl, setMediaTipsUrl] = useState(null);
+    const [updatesUrl, setUpdatesUrl] = useState(null);
 
     useEffect(() => {
 
@@ -214,66 +218,27 @@ export default function RaceResult() {
 
     }, [racedate, raceno, type, raceType]);
 
+    // Media Tips / Updates links (always shown on this page)
+    useEffect(() => {
+        let active = true;
+
+        getRaceDayStatus()
+            .then((data) => {
+                if (!active || !data) return;
+                setMediaTipsUrl(data.mediaTipsUrl || null);
+                setUpdatesUrl(data.updatesUrl || null);
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
     const hasNoResults = !found || races.length === 0;
 
     function formatOwnership(str) {
         return (str || "").trim();
-    }
-
-    /*
-     * Iframe onLoad: run helper, tidy archive markup, then keep the
-     * iframe height in sync. Height changes only when the value differs,
-     * so it never loops or vibrates.
-     */
-    function handleResultIframeLoad(e) {
-        handleArchiveIframeLoad(e);
-
-        const iframe = e.target;
-        const doc = iframe.contentWindow?.document;
-        if (!doc || !doc.body) return;
-
-        doc.querySelectorAll("th").forEach((th) => {
-            if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
-                th.style.whiteSpace = "nowrap";
-            }
-        });
-
-        doc.querySelectorAll("a").forEach((link) => {
-            if (link.textContent.trim().toLowerCase() === "video") {
-                link.textContent = "";
-                link.innerHTML =
-                    '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#16a34a"><path d="M8 5v14l11-7z"/></svg>';
-                link.setAttribute("target", "_blank");
-                link.setAttribute("rel", "noopener noreferrer");
-                link.style.display = "inline-flex";
-                link.style.alignItems = "center";
-                link.style.justifyContent = "center";
-
-                link.addEventListener("click", (ev) => {
-                    ev.preventDefault();
-                    window.open(link.href, "_blank", "noopener,noreferrer");
-                });
-            }
-        });
-
-        const setHeight = () => {
-            if (!iframe.isConnected || !doc.body) return;
-            const next = Math.ceil(doc.body.offsetHeight);
-            const current = parseInt(iframe.style.height, 10);
-            if (next !== current) {
-                iframe.style.height = next + "px";
-            }
-        };
-
-        setHeight();
-        requestAnimationFrame(setHeight);
-
-        if (iframe.contentWindow?.ResizeObserver) {
-            new iframe.contentWindow.ResizeObserver(setHeight).observe(doc.body);
-        }
-        if (doc.fonts && doc.fonts.ready) {
-            doc.fonts.ready.then(setHeight);
-        }
     }
 
     return (
@@ -312,6 +277,32 @@ export default function RaceResult() {
                         <h1 className="docWatermark">RACE RESULT</h1>
                         <p className="docHint">Click on a horse to know its Performance Profile @ RWITC</p>
                         <p className="docHint">Click on the Dam to get her progeny details</p>
+                    </div>
+                )}
+
+                {/* MEDIA TIPS + UPDATES buttons */}
+                {(mediaTipsUrl || updatesUrl) && (
+                    <div className="raceResultActions">
+                        {mediaTipsUrl && (
+                            <a
+                                href={mediaTipsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="raceResultActionBtn"
+                            >
+                                Media Tips
+                            </a>
+                        )}
+                        {updatesUrl && (
+                            <a
+                                href={updatesUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="raceResultActionBtn"
+                            >
+                                Updates
+                            </a>
+                        )}
                     </div>
                 )}
 

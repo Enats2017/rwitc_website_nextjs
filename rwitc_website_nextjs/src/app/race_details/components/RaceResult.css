@@ -86,3 +86,12 @@
 
 /* DIVIDER + SPACE at the bottom of the card */
 .raceResultPage .docContainer::after { content: ""; display: block; height: 2px; width: 100%; max-width: 480px; margin: 32px auto 0; border-radius: 999px; background: linear-gradient(to right, transparent, #d97706, #16a34a, transparent); }
+/* MEDIA TIPS / UPDATES buttons on the Race Result page */
+.raceResultPage .raceResultActions { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin: 48px 0 20px; }
+.raceResultPage .raceResultActionBtn { display: inline-block; padding: 10px 26px; border-radius: 999px; background: #16a34a; color: #ffffff !important; font-size: 15px; font-weight: 700; text-decoration: none; }
+.raceResultPage .raceResultActionBtn:hover { background: #0d3b1f; }
+
+@media (max-width: 768px) {
+    .raceResultPage .raceResultActions { margin: 8px 0 16px; }
+    .raceResultPage .raceResultActionBtn { padding: 9px 20px; font-size: 14px; }
+}
