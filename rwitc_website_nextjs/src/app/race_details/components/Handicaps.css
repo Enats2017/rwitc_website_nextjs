@@ -1,434 +1,117 @@
-/* =========================================================
-   HANDICAPS PAGE
-========================================================= */
+/* ================= HANDICAPS PAGE ================= */
 
-.handicapsPage {
-    width: 100%;
-    min-height: 100vh;
-    background: #f7f9fb;
-    padding: 60px 20px 90px;
-}
+.handicapsPage { width: 100%; min-height: 100vh; background: #f7f9fb; padding: 60px 20px 90px; }
 
+/* ================= PAGE HEADER ================= */
 
-/* =========================================================
-   PAGE HEADER
-========================================================= */
+.handicapsPage .docTitleWrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 44px; }
+.handicapsPage .docHeading { margin: 0; padding-bottom: 16px; font-size: 40px; font-weight: 800; color: #0d3b1f; letter-spacing: .3px; text-align: center; }
+.handicapsPage .docSectionDivider { display: flex; align-items: center; justify-content: center; gap: 18px; width: 100%; max-width: 480px; margin-top: 0; }
+.handicapsPage .docDividerLine { flex: 1; height: 2px; border-radius: 999px; }
+.handicapsPage .docDividerLineLeft { background: linear-gradient(to right, transparent, #d97706); }
+.handicapsPage .docDividerLineRight { background: linear-gradient(to left, transparent, #16a34a); }
+.handicapsPage .docDividerIcon { font-size: 22px; color: #0d3b1f; flex-shrink: 0; }
 
-.handicapsPage .docTitleWrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 44px;
-}
+/* ================= DOCUMENT CONTAINER ================= */
 
-.handicapsPage .docHeading {
-    margin: 0;
-    padding-bottom: 16px;
-    font-size: 40px;
-    font-weight: 800;
-    color: #0d3b1f;
-    letter-spacing: .3px;
-    text-align: center;
-}
+.handicapsPage .docContainer { position: relative; width: 92%; max-width: 1140px; margin: 0 auto; padding: 60px 32px 40px; background: #ffffff; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; box-shadow: 0 18px 45px rgba(0, 0, 0, .05); animation: handicapsFadeUp .6s ease both; }
 
-.handicapsPage .docSectionDivider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    width: 100%;
-    max-width: 480px;
-    margin-top: 0;
-}
+/* ================= DOWNLOAD BUTTON ================= */
 
-.handicapsPage .docDividerLine {
-    flex: 1;
-    height: 2px;
-    border-radius: 999px;
-}
+.handicapsPage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
+.handicapsPage .docDownloadBtn:hover { background: #bdb494; text-decoration: underline; }
 
-.handicapsPage .docDividerLineLeft {
-    background: linear-gradient(to right, transparent, #d97706);
-}
+/* ================= DOCUMENT HEADER (JSON MODE) ================= */
 
-.handicapsPage .docDividerLineRight {
-    background: linear-gradient(to left, transparent, #16a34a);
-}
+.handicapsPage .docHeader { text-align: center; margin-bottom: 28px; }
+.handicapsPage .docClub { font-size: 15px; font-weight: 800; color: #111; margin: 0 0 10px; }
+.handicapsPage .docMeeting { font-size: 14px; font-weight: 700; color: #111; margin: 0 0 14px; }
+.handicapsPage .docWatermark { font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #c9c9c9; margin: 0 0 6px; }
+.handicapsPage .docHint { font-size: 15px; font-weight: 700; color: #111; margin: 0; }
 
-.handicapsPage .docDividerIcon {
-    font-size: 22px;
-    color: #0d3b1f;
-    flex-shrink: 0;
-}
+/* ================= LOADING / ERROR / EMPTY ================= */
 
+.handicapsPage .docStateBox { text-align: center; padding: 60px 20px; color: #555; font-size: 15px; }
+.handicapsPage .docStateError { color: #b3261e; }
+.handicapsPage .docLoader { width: 34px; height: 34px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(11, 109, 42, .15); border-top-color: #0b6d2a; animation: docSpin .8s linear infinite; }
 
-/* =========================================================
-   DOCUMENT CONTAINER
-========================================================= */
+@keyframes docSpin { to { transform: rotate(360deg); } }
 
-.handicapsPage .docContainer {
-    position: relative;
-    width: 92%;
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 60px 32px 40px;
-    background: #ffffff;
-    border: 1px solid #e2e2e2;
-    border-radius: 4px;
-    box-sizing: border-box;
-    overflow: hidden;
-    box-shadow: 0 18px 45px rgba(0, 0, 0, .05);
-}
+/* ================= RACE BLOCK (JSON MODE) ================= */
 
+.handicapsPage .docRaceBlock { margin-bottom: 28px; }
+.handicapsPage .docRaceBar { background: #16a34a; color: #ffffff; padding: 14px 20px; border-radius: 8px; margin-bottom: 14px; }
+.handicapsPage .docRaceName { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+.handicapsPage .docRaceMeta { font-size: 13px; font-weight: 600; margin: 0; }
+.handicapsPage .docForeignTag { font-weight: 800; }
+.handicapsPage .docWeightNote { font-size: 13px; font-weight: 700; color: #8a5a00; margin: 0 0 10px; }
 
-/* =========================================================
-   DOWNLOAD BUTTON
-========================================================= */
+/* ================= TABLE (JSON MODE) ================= */
 
-.handicapsPage .docDownloadBtn {
-    position: absolute;
-    top: 20px;
-    right: 24px;
-    background: #c9c2a8;
-    color: #1a1a1a;
-    padding: 6px 14px;
-    border: none;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    z-index: 2;
-    cursor: pointer;
-    transition: .2s ease;
-}
+.handicapsPage .docTableWrap { width: 100%; }
+.handicapsPage .docTable { width: 100%; border-collapse: collapse; }
+.handicapsPage .docTable thead th { text-align: left; font-size: 13px; font-weight: 800; color: #111; padding: 10px 14px; border: 1px solid #d9d9d9; background: #f7f7f7; }
+.handicapsPage .docTable tbody td { padding: 10px 14px; font-size: 13.5px; color: #222; border: 1px solid #e2e2e2; vertical-align: top; }
+.handicapsPage .docHorseName { font-weight: 700; color: #111; }
+.handicapsPage .docSubRow { display: none; }
 
-.handicapsPage .docDownloadBtn:hover {
-    background: #bdb494;
-    text-decoration: underline;
-}
+/* ================= BAN NOTES ================= */
 
+.handicapsPage .docBanNotes { margin-top: 10px; font-size: 13px; color: #b3261e; font-weight: 700; }
+.handicapsPage .docBanNotes p { margin: 2px 0; }
 
-/* =========================================================
-   DOCUMENT HEADER (JSON MODE)
-========================================================= */
+/* ================= ARCHIVE HTML (IFRAME) ================= */
 
-.handicapsPage .docHeader {
-    text-align: center;
-    margin-bottom: 28px;
-}
+.handicapsPage .docArchiveScroll { width: 100%; max-width: 100%; overflow: visible; margin-top: 40px; }
+.handicapsPage .docArchiveHtml { display: block; width: 100%; max-width: 100%; min-width: 0; border: none; min-height: 200px; }
 
-.handicapsPage .docClub {
-    font-size: 15px;
-    font-weight: 800;
-    color: #111;
-    margin: 0 0 10px;
-}
-
-.handicapsPage .docMeeting {
-    font-size: 14px;
-    font-weight: 700;
-    color: #111;
-    margin: 0 0 14px;
-}
-
-.handicapsPage .docWatermark {
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    color: #c9c9c9;
-    margin: 0 0 6px;
-}
-
-.handicapsPage .docHint {
-    font-size: 15px;
-    font-weight: 700;
-    color: #111;
-    margin: 0;
-}
-
-
-/* =========================================================
-   LOADING / ERROR / EMPTY STATE
-========================================================= */
-
-.handicapsPage .docStateBox {
-    text-align: center;
-    padding: 60px 20px;
-    color: #555;
-    font-size: 15px;
-}
-
-.handicapsPage .docStateError {
-    color: #b3261e;
-}
-
-.handicapsPage .docLoader {
-    width: 34px;
-    height: 34px;
-    margin: 0 auto 16px;
-    border-radius: 50%;
-    border: 3px solid rgba(11, 109, 42, .15);
-    border-top-color: #0b6d2a;
-    animation: docSpin .8s linear infinite;
-}
-
-@keyframes docSpin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-
-/* =========================================================
-   RACE BLOCK (JSON MODE)
-========================================================= */
-
-.handicapsPage .docRaceBlock {
-    margin-bottom: 28px;
-}
-
-.handicapsPage .docRaceBar {
-    background: #16a34a;
-    color: #ffffff;
-    padding: 14px 20px;
-    border-radius: 4px;
-    margin-bottom: 14px;
-}
-
-.handicapsPage .docRaceName {
-    font-size: 15px;
-    font-weight: 800;
-    margin: 0 0 4px;
-}
-
-.handicapsPage .docRaceMeta {
-    font-size: 13px;
-    font-weight: 600;
-    margin: 0;
-}
-
-.handicapsPage .docForeignTag {
-    font-weight: 800;
-}
-
-.handicapsPage .docWeightNote {
-    font-size: 13px;
-    font-weight: 700;
-    color: #8a5a00;
-    margin: 0 0 10px;
-}
-
-
-/* =========================================================
-   TABLE (JSON MODE) - only this wrapper scrolls
-========================================================= */
-
-.handicapsPage .docTableWrap {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.handicapsPage .docTable {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 720px;
-}
-
-.handicapsPage .docTable thead th {
-    text-align: left;
-    font-size: 13px;
-    font-weight: 800;
-    color: #111;
-    padding: 10px 14px;
-    border: 1px solid #d9d9d9;
-    background: #f7f7f7;
-}
-
-.handicapsPage .docTable tbody td {
-    padding: 10px 14px;
-    font-size: 13.5px;
-    color: #222;
-    border: 1px solid #e2e2e2;
-    vertical-align: top;
-}
-
-.handicapsPage .docHorseName {
-    font-weight: 700;
-    color: #111;
-}
-
-
-/* =========================================================
-   BAN NOTES
-========================================================= */
-
-.handicapsPage .docBanNotes {
-    margin-top: 10px;
-    font-size: 13px;
-    color: #b3261e;
-    font-weight: 700;
-}
-
-.handicapsPage .docBanNotes p {
-    margin: 2px 0;
-}
-
-
-/* =========================================================
-   ARCHIVE HTML (IFRAME)
-   FIX: iframe always fits the card. The table scroll
-   happens INSIDE the iframe (.tableScroll), not here.
-========================================================= */
-
-.handicapsPage .docArchiveScroll {
-    width: 100%;
-    max-width: 100%;
-    overflow: visible;
-    margin-top: 40px;
-}
-
-.handicapsPage .docArchiveHtml {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    border: none;
-    min-height: 200px;
-}
-
-
-/* =========================================================
-   TABLET
-========================================================= */
+/* ================= TABLET ================= */
 
 @media (max-width: 992px) {
-
-    .handicapsPage {
-        padding: 50px 16px 70px;
-    }
-
-    .handicapsPage .docHeading {
-        font-size: 32px;
-    }
-
-    .handicapsPage .docContainer {
-        width: 94%;
-        padding: 60px 24px 35px;
-    }
-
+    .handicapsPage { padding: 50px 16px 70px; }
+    .handicapsPage .docHeading { font-size: 32px; }
+    .handicapsPage .docContainer { width: 94%; padding: 60px 24px 35px; }
 }
 
-
-/* =========================================================
-   MOBILE
-========================================================= */
+/* ================= MOBILE ================= */
 
 @media (max-width: 768px) {
-
-    .handicapsPage {
-        padding: 40px 14px 70px;
-    }
-
-    .handicapsPage .docTitleWrap {
-        margin-bottom: 30px;
-    }
-
-    .handicapsPage .docHeading {
-        font-size: 26px;
-        padding-bottom: 12px;
-    }
-
-    .handicapsPage .docSectionDivider {
-        max-width: 320px;
-        gap: 0;
-        margin-top: 20px;
-    }
-
-    .handicapsPage .docDividerIcon {
-        font-size: 18px;
-    }
-
-    .handicapsPage .docContainer {
-        width: 100%;
-        padding: 60px 12px 28px;
-    }
-
-    .handicapsPage .docDownloadBtn {
-        top: 14px;
-        right: 12px;
-    }
-
-    .handicapsPage .docWatermark {
-        font-size: 24px;
-        letter-spacing: 2px;
-    }
-
-    .handicapsPage .docHint,
-    .handicapsPage .docClub {
-        font-size: 13px;
-    }
-
-    .handicapsPage .docTable thead th,
-    .handicapsPage .docTable tbody td {
-        padding: 8px 10px;
-        font-size: 12.5px;
-    }
-
-    .handicapsPage .docArchiveScroll {
-        margin-top: 0;
-    }
-
+    .handicapsPage { padding: 40px 14px 70px; }
+    .handicapsPage .docTitleWrap { margin-bottom: 30px; }
+    .handicapsPage .docHeading { font-size: 26px; padding-bottom: 12px; }
+    .handicapsPage .docSectionDivider { max-width: 320px; gap: 0; margin-top: 20px; }
+    .handicapsPage .docDividerIcon { font-size: 18px; }
+    .handicapsPage .docContainer { width: 100%; padding: 60px 12px 28px; }
+    .handicapsPage .docDownloadBtn { top: 14px; right: 12px; }
+    .handicapsPage .docWatermark { font-size: 24px; letter-spacing: 2px; }
+    .handicapsPage .docHint, .handicapsPage .docClub { font-size: 13px; }
+    .handicapsPage .docTable { table-layout: auto; width: 100%; border-collapse: separate; border-spacing: 0; }
+    .handicapsPage .docTable thead th { background: #cdcdd2; color: #000; border: none; padding: 12px 6px; font-size: 13px; text-align: center; }
+    .handicapsPage .docTable thead th:first-child { border-top-left-radius: 8px; }
+    .handicapsPage .docTable thead th:nth-child(6) { border-top-right-radius: 8px; }
+    .handicapsPage .docTable tbody td { border: none; padding: 6px; font-size: 12.5px; }
+    .handicapsPage .docTable thead th:nth-child(1), .handicapsPage .docTable tbody td:nth-child(1) { width: 1%; white-space: nowrap; }
+    .handicapsPage .docTable thead th:nth-child(n+3), .handicapsPage .docTable tbody td:nth-child(n+3) { width: 1%; white-space: nowrap; text-align: center; padding-left: 8px; padding-right: 8px; }
+    .handicapsPage .docColBT { display: none; }
+    .handicapsPage .docSubRow { display: table-row; }
+    .handicapsPage .docSubCell { background: #cdcdd2; font-weight: 700; font-size: 11px; padding: 5px 10px; white-space: normal; }
+    .handicapsPage .docSubRow:last-child .docSubCell { border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+    .handicapsPage .docSubFlex { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .handicapsPage .docSubBreeding { flex: 0 1 58%; max-width: 58%; text-align: left; line-height: 1.35; }
+    .handicapsPage .docSubTrainer { flex: 0 0 auto; text-align: right; line-height: 1.35; }
+    .handicapsPage .docArchiveScroll { margin-top: 0; }
 }
 
-
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
+/* ================= SMALL MOBILE ================= */
 
 @media (max-width: 480px) {
-
-    .handicapsPage {
-        padding: 35px 10px 60px;
-    }
-
-    .handicapsPage .docHeading {
-        font-size: 22px;
-    }
-
-    .handicapsPage .docSectionDivider {
-        max-width: 240px;
-    }
-
-    .handicapsPage .docContainer {
-        padding: 56px 8px 24px;
-    }
-
-    .handicapsPage .docRaceBar {
-        padding: 12px 14px;
-    }
-
+    .handicapsPage { padding: 35px 10px 60px; }
+    .handicapsPage .docHeading { font-size: 22px; }
+    .handicapsPage .docSectionDivider { max-width: 240px; }
+    .handicapsPage .docContainer { padding: 56px 8px 24px; }
+    .handicapsPage .docRaceBar { padding: 12px 14px; }
 }
 
+/* ================= ANIMATION ================= */
 
-/* =========================================================
-   ANIMATION
-========================================================= */
-
-.handicapsPage .docContainer {
-    animation: handicapsFadeUp .6s ease both;
-}
-
-@keyframes handicapsFadeUp {
-
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-}
+@keyframes handicapsFadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }

@@ -656,6 +656,60 @@ OR
     }
 
     // --------------------------------------------------
+    // POST-CUTOFF: Race Day Report availability (raceday_report table)
+    //
+    // DB row + filename hona chahiye.
+    //   - filename "http..." se shuru ho  -> S3 report, available
+    //   - warna local file RACEDAY_REPORT_DIR me honi chahiye
+    // --------------------------------------------------
+
+    $raceDayPostDates = [];
+
+    if (!empty($postCutoffDates)) {
+
+        $rdPlaceholders = implode(',', array_fill(0, count($postCutoffDates), '?'));
+        $rdTypes        = str_repeat('s', count($postCutoffDates));
+
+        $rdStmt = $conn->prepare(
+            "SELECT racedate, filename FROM raceday_report WHERE racedate IN ({$rdPlaceholders})"
+        );
+
+        if ($rdStmt === false) {
+            throw new Exception($conn->error);
+        }
+
+        $rdStmt->bind_param($rdTypes, ...$postCutoffDates);
+        $rdStmt->execute();
+        $rdResult = $rdStmt->get_result();
+
+        while ($row = $rdResult->fetch_assoc()) {
+
+            $rdDate = substr((string) $row['racedate'], 0, 10);
+            $rdFile = trim((string) $row['filename']);
+
+            if ($rdFile === '') {
+                continue;
+            }
+
+            if (stripos($rdFile, 'http') === 0) {
+
+                // New S3-hosted report
+                $raceDayPostDates[$rdDate] = true;
+            } elseif (defined('RACEDAY_REPORT_DIR')) {
+
+                // Old local report
+                $rdPath = rtrim(RACEDAY_REPORT_DIR, '/\\') . '/' . $rdFile;
+
+                if (is_file($rdPath)) {
+                    $raceDayPostDates[$rdDate] = true;
+                }
+            }
+        }
+
+        $rdStmt->close();
+    }
+
+    // --------------------------------------------------
     // Build events
     // --------------------------------------------------
 
@@ -706,25 +760,8 @@ OR
             $racecard =
                 !empty($resolved['racecard']);
 
-            /*
-             * RACE DAY REPORT - existing logic preserved.
-             */
-            $filename = isset($reportFilenames[$date])
-                ? $reportFilenames[$date]
-                : '';
-
-            if ($filename !== '') {
-
-                $raceDayUrl =
-                    RACEDAY_REPORT_BASE_URL . $filename;
-
-                $raceDayCheck =
-                    isset($remoteStatusCache[$raceDayUrl])
-                    && $remoteStatusCache[$raceDayUrl];
-            } else {
-
-                $raceDayCheck = false;
-            }
+            // RACE DAY REPORT
+            $raceDayCheck = isset($raceDayPostDates[$date]);
         }
 
         if ($handicap) {

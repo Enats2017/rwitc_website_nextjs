@@ -8,33 +8,138 @@ import { FaHorseHead, FaPlayCircle } from "react-icons/fa";
 import "./RaceResult.css";
 
 /*
- * Styles injected INSIDE the archive iframe.
- *
- * NOTE: the old "html, body { overflow-x: hidden !important; width: 100% }"
- * rule was removed on purpose. On phones it squashed and clipped the table.
- * Now the iframe keeps a minimum width (see RaceResult.css) and the wrapper
- * scrolls sideways, so the table always looks exactly like the desktop
- * version, same as Handicaps / Acceptance / Declarations / Race Card.
+ * Styles + script injected INSIDE the archive iframe.
+ * Iframe always fits the card width. Only each race table
+ * scrolls sideways (wrapped in .tableScroll).
  */
 const ARCHIVE_STYLES_RACE_RESULT = `
 <style>
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; word-wrap: break-word; padding: 12px; }
-    img { max-width: 100%; height: auto; }
-    table { width: 100% !important; max-width: 100% !important; table-layout: fixed; border-collapse: collapse; }
-    td, th { word-break: break-word; padding: 10px 12px !important; border: 1px solid #cccccc; }
-    span, a { display: inline-block; text-decoration: none; color: #333333; font-weight: bold; }
-    th { color: #000 !important; font-weight: 700; text-align: center; background: #fff; }
-    td { text-align: center; color: #222 !important; font-weight: 400; background: #fff; }
-    .alignLeft, td.alignLeft { text-align: left !important; }
-    .darkGrey { font-size: 14px; color: #000; text-align: center; font-weight: bold; }
-    .download { display: none !important; }
-    h3 { font-size: 22px; color: #000; margin: 10px 0; font-weight: 700; }
-    .pageHeader, .pageHeading { text-align: center; width: 100%; }
-    .subHeading { font-size: 14px; font-weight: 700; color: #000; margin-left: 2% !important; display: block; width: 100%; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; max-width: 100%; overflow-x: hidden; }
+body { font-family: Arial, sans-serif; padding: 12px; display: flow-root; }
+img { max-width: 100%; height: auto; }
+
+/* FIX: auto layout so columns size to their content (was: fixed) */
+table { width: 100% !important; max-width: 100% !important; table-layout: auto; border-collapse: collapse; }
+
+/* FIX: words no longer break letter-by-letter (was: word-break: break-word) */
+td, th { word-break: normal; overflow-wrap: break-word; padding: 10px 12px !important; border: 1px solid #cccccc; }
+
+span, a { display: inline-block; text-decoration: none; color: #333333; font-weight: bold; }
+th { color: #000 !important; font-weight: 700; text-align: center; background: #fff; }
+td { text-align: center; color: #222 !important; font-weight: 400; background: #fff; }
+.alignLeft, td.alignLeft { text-align: left !important; }
+.darkGrey { font-size: 14px; color: #000; text-align: center; font-weight: bold; }
+.download { display: none !important; }
+h3 { font-size: 22px; color: #000; margin: 10px 0; font-weight: 700; }
+.pageHeader, .pageHeading { text-align: center; width: 100%; }
+.subHeading { font-size: 14px; font-weight: 700; color: #000; margin-left: 2% !important; display: block; width: 100%; }
+
+/* MOBILE: header wraps inside the card */
+.pageHeader, .pageHeading, .subHeading, h3, p { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+
+/* MOBILE: ONLY the race tables scroll sideways */
+.tableScroll { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; margin-bottom: 16px; }
+.tableScroll table { width: 100% !important; min-width: 720px; margin: 0 !important; table-layout: auto; }
+
+/* FIX: first column (No.: 91 / Placing) is never narrower than its content */
+.tableScroll th:first-child,
+.tableScroll td:first-child { min-width: 84px; white-space: nowrap; }
+
+/* FIX: short header labels (Placing, Wt, Jockey...) stay on one line */
+.tableScroll th { white-space: nowrap; }
+
+/* Long text cells and label cells (Ownership, Results as per Card Nos...) may wrap */
+.tableScroll td.alignLeft,
+.tableScroll th[colspan] { white-space: normal; }
+
+/* Race title cell (name, time, distance) reads left-to-right, not cut off */
+.tableScroll th[colspan] { text-align: left; }
 </style>
+
+<script>
+(function () {
+    function wrapTables() {
+        document.querySelectorAll("table").forEach(function (table) {
+            if (table.parentElement && table.parentElement.classList.contains("tableScroll")) return;
+            if (table.querySelector("table")) return;
+
+            var maxCells = 0;
+            table.querySelectorAll("tr").forEach(function (tr) {
+                if (tr.children.length > maxCells) maxCells = tr.children.length;
+            });
+            if (maxCells < 4) return;
+
+            var wrap = document.createElement("div");
+            wrap.className = "tableScroll";
+            table.parentNode.insertBefore(wrap, table);
+            wrap.appendChild(table);
+        });
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wrapTables);
+    else wrapTables();
+})();
+</script>
 `;
+
+
+/* ============================================================
+ * 2) REPLACE the whole handleResultIframeLoad function
+ * ============================================================ */
+function handleResultIframeLoad(e) {
+    handleArchiveIframeLoad(e);
+
+    const iframe = e.target;
+    const doc = iframe.contentWindow?.document;
+    if (!doc || !doc.body) return;
+
+    // FIX: "No.: 91" cell gets a guaranteed width so text stays inside the column
+    doc.querySelectorAll("th").forEach((th) => {
+        if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
+            th.style.whiteSpace = "nowrap";
+            th.style.minWidth = "84px";
+            th.style.width = "84px";
+        }
+    });
+
+    doc.querySelectorAll("a").forEach((link) => {
+        if (link.textContent.trim().toLowerCase() === "video") {
+            link.textContent = "";
+            link.innerHTML =
+                '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#16a34a"><path d="M8 5v14l11-7z"/></svg>';
+            link.setAttribute("target", "_blank");
+            link.setAttribute("rel", "noopener noreferrer");
+            link.style.display = "inline-flex";
+            link.style.alignItems = "center";
+            link.style.justifyContent = "center";
+
+            link.addEventListener("click", (ev) => {
+                ev.preventDefault();
+                window.open(link.href, "_blank", "noopener,noreferrer");
+            });
+        }
+    });
+
+    const setHeight = () => {
+        if (!iframe.isConnected || !doc.body) return;
+        const next = Math.ceil(doc.body.offsetHeight);
+        const current = parseInt(iframe.style.height, 10);
+        if (next !== current) {
+            iframe.style.height = next + "px";
+        }
+    };
+
+    setHeight();
+    requestAnimationFrame(setHeight);
+
+    if (iframe.contentWindow?.ResizeObserver) {
+        new iframe.contentWindow.ResizeObserver(setHeight).observe(doc.body);
+    }
+    if (doc.fonts && doc.fonts.ready) {
+        doc.fonts.ready.then(setHeight);
+    }
+}
 
 export default function RaceResult() {
 
@@ -71,12 +176,7 @@ export default function RaceResult() {
                 setLoading(true);
                 setError(null);
 
-                const data = await getRaceResult(
-                    racedate,
-                    raceno,
-                    type,
-                    raceType
-                );
+                const data = await getRaceResult(racedate, raceno, type, raceType);
 
                 setMode(data.mode || "json");
 
@@ -120,6 +220,62 @@ export default function RaceResult() {
         return (str || "").trim();
     }
 
+    /*
+     * Iframe onLoad: run helper, tidy archive markup, then keep the
+     * iframe height in sync. Height changes only when the value differs,
+     * so it never loops or vibrates.
+     */
+    function handleResultIframeLoad(e) {
+        handleArchiveIframeLoad(e);
+
+        const iframe = e.target;
+        const doc = iframe.contentWindow?.document;
+        if (!doc || !doc.body) return;
+
+        doc.querySelectorAll("th").forEach((th) => {
+            if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
+                th.style.whiteSpace = "nowrap";
+            }
+        });
+
+        doc.querySelectorAll("a").forEach((link) => {
+            if (link.textContent.trim().toLowerCase() === "video") {
+                link.textContent = "";
+                link.innerHTML =
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#16a34a"><path d="M8 5v14l11-7z"/></svg>';
+                link.setAttribute("target", "_blank");
+                link.setAttribute("rel", "noopener noreferrer");
+                link.style.display = "inline-flex";
+                link.style.alignItems = "center";
+                link.style.justifyContent = "center";
+
+                link.addEventListener("click", (ev) => {
+                    ev.preventDefault();
+                    window.open(link.href, "_blank", "noopener,noreferrer");
+                });
+            }
+        });
+
+        const setHeight = () => {
+            if (!iframe.isConnected || !doc.body) return;
+            const next = Math.ceil(doc.body.offsetHeight);
+            const current = parseInt(iframe.style.height, 10);
+            if (next !== current) {
+                iframe.style.height = next + "px";
+            }
+        };
+
+        setHeight();
+        requestAnimationFrame(setHeight);
+
+        if (iframe.contentWindow?.ResizeObserver) {
+            new iframe.contentWindow.ResizeObserver(setHeight).observe(doc.body);
+        }
+        if (doc.fonts && doc.fonts.ready) {
+            doc.fonts.ready.then(setHeight);
+        }
+    }
+
     return (
         <section className="raceResultPage docPage">
 
@@ -139,11 +295,7 @@ export default function RaceResult() {
                     className="docDownloadBtn"
                     onClick={() => {
                         if (downloadUrl) {
-                            window.open(
-                                downloadUrl,
-                                "_blank",
-                                "noopener,noreferrer"
-                            );
+                            window.open(downloadUrl, "_blank", "noopener,noreferrer");
                         } else {
                             alert("No race result HTML found for this date.");
                         }
@@ -152,21 +304,14 @@ export default function RaceResult() {
                     Download Race Results
                 </button>
 
-                {/* Header block only applies to the structured (DB) view —
-                    the archived HTML already carries its own header markup. */}
+                {/* Header block only applies to the structured (DB) view */}
                 {mode !== "html" && (
                     <div className="docHeader">
-                        <p className="docClub">
-                            ROYAL WESTERN INDIA TURF CLUB.
-                        </p>
+                        <p className="docClub">ROYAL WESTERN INDIA TURF CLUB.</p>
                         {dayLabel && <p className="docClub">{dayLabel}</p>}
                         <h1 className="docWatermark">RACE RESULT</h1>
-                        <p className="docHint">
-                            Click on a horse to know its Performance Profile @ RWITC
-                        </p>
-                        <p className="docHint">
-                            Click on the Dam to get her progeny details
-                        </p>
+                        <p className="docHint">Click on a horse to know its Performance Profile @ RWITC</p>
+                        <p className="docHint">Click on the Dam to get her progeny details</p>
                     </div>
                 )}
 
@@ -189,12 +334,7 @@ export default function RaceResult() {
                     </div>
                 )}
 
-                {/* Archive dates: render the Race_results_<date>.html markup
-                    returned by the API as-is, inside an iframe so the archive
-                    file's own <style> block stays isolated from the app's
-                    global CSS. The iframe sits in a scroll wrapper so on
-                    phones the table keeps its real layout and scrolls
-                    sideways instead of breaking. */}
+                {/* Archive dates: iframe fits the card, only race tables scroll */}
                 {!loading && !error && mode === "html" && rawHtml.trim() && (
                     <div className="docArchiveScroll">
                         <iframe
@@ -204,36 +344,7 @@ export default function RaceResult() {
                             sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms allow-popups"
                             scrolling="no"
                             style={{ width: "100%", border: "none" }}
-                            onLoad={(e) => {
-                                handleArchiveIframeLoad(e);
-                                const iframe = e.target;
-                                const doc = iframe.contentWindow?.document;
-                                if (!doc) return;
-
-                                doc.querySelectorAll("th").forEach((th) => {
-                                    if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
-                                        th.style.whiteSpace = "nowrap";
-                                    }
-                                });
-
-                                doc.querySelectorAll("a").forEach((link) => {
-                                    if (link.textContent.trim().toLowerCase() === "video") {
-                                        link.textContent = "";
-                                        link.innerHTML =
-                                            '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#16a34a"><path d="M8 5v14l11-7z"/></svg>';
-                                        link.setAttribute("target", "_blank");
-                                        link.setAttribute("rel", "noopener noreferrer");
-                                        link.style.display = "inline-flex";
-                                        link.style.alignItems = "center";
-                                        link.style.justifyContent = "center";
-
-                                        link.addEventListener("click", (ev) => {
-                                            ev.preventDefault();
-                                            window.open(link.href, "_blank", "noopener,noreferrer");
-                                        });
-                                    }
-                                });
-                            }}
+                            onLoad={handleResultIframeLoad}
                         />
                     </div>
                 )}
@@ -244,7 +355,7 @@ export default function RaceResult() {
                     </div>
                 )}
 
-                {/* DB-sourced dates: structured tables. */}
+                {/* DB-sourced dates: structured tables */}
                 {!loading && !error && !hasNoResults && conditions && (
                     <div className="docTableWrap" style={{ marginBottom: "20px" }}>
                         <table className="docTable">

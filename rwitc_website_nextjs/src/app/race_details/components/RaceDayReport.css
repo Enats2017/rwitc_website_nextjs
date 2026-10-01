@@ -1,274 +1,69 @@
-/* ================= RACE DAY REPORT PAGE — PLAIN DOCUMENT STYLE =================
-   NOTE: the <section> has BOTH classes on the same element
-   (className="raceDayReportPage docPage"), so selectors use
-   .raceDayReportPage.docPage (no space) for the section itself.
-   Inner elements use the normal descendant form.
-=============================================================================== */
+/* RACE DAY REPORT PAGE - PLAIN DOCUMENT STYLE
+   The <section> has BOTH classes on the same element, so the section itself
+   uses .raceDayReportPage.docPage (no space). Inner elements use descendant form. */
 
-.raceDayReportPage.docPage {
-    width: 100%;
-    background: #ffffff;
-    padding: 48px 16px 56px;          /* top space under site header + space above footer */
-}
+.raceDayReportPage.docPage { width: 100%; background: #ffffff; padding: 48px 16px 70px; }
+.raceDayReportPage.docPage, .raceDayReportPage.docPage *, .raceDayReportPage.docPage *::before, .raceDayReportPage.docPage *::after { box-sizing: border-box; }
 
-.raceDayReportPage.docPage,
-.raceDayReportPage.docPage *,
-.raceDayReportPage.docPage *::before,
-.raceDayReportPage.docPage *::after {
-    box-sizing: border-box;
-}
+/* HEADING - same style as "Rating Change" / "About RWITC" page */
+.raceDayReportPage .aboutTitleWrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 44px; }
+.raceDayReportPage .aboutHeading { font-size: 40px; font-weight: 800; color: #0d3b1f; letter-spacing: .3px; position: relative; padding-bottom: 16px; text-align: center; margin: 0; }
+.raceDayReportPage .sectionDivider { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 0; width: 100%; max-width: 480px; margin-left: auto; margin-right: auto; }
+.raceDayReportPage .dividerLine { flex: 1; height: 2px; border-radius: 999px; }
+.raceDayReportPage .dividerLineLeft { background: linear-gradient(to right, transparent, #d97706); }
+.raceDayReportPage .dividerLineRight { background: linear-gradient(to left, transparent, #16a34a); }
+.raceDayReportPage .dividerIcon { font-size: 22px; color: #0d3b1f; flex-shrink: 0; }
 
-/* ---- GREEN PILL BADGE ---- */
-.raceDayReportPage .docBadgeWrap {
-    display: flex;
-    justify-content: center;
-    margin: 0 0 24px;
-}
+/* CONTAINER (bordered card) */
+.raceDayReportPage .docContainer { position: relative; width: 100%; max-width: 1140px; height: auto; min-height: 0; margin: 0 auto; padding: 28px 32px 32px; border: 1px solid #e2e2e2; border-radius: 12px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05); overflow: hidden; }
 
-.raceDayReportPage .docBadge {
-    display: inline-block;
-    padding: 12px 32px;
-    border-radius: 999px;
-    margin: 0;
-    background: #16a34a;
-    color: #ffffff;
-    font-size: 20px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .3px;
-    text-align: center;
-}
+/* DOWNLOAD BUTTON */
+.raceDayReportPage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border: none; border-radius: 4px; font-family: inherit; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; z-index: 2; }
+.raceDayReportPage .docDownloadBtn:hover { background: #bdb494; text-decoration: underline; }
 
-/* ---- CONTAINER (bordered card) ---- */
-.raceDayReportPage .docContainer {
-    position: relative;
-    width: 100%;
-    max-width: 1140px;
-    height: auto;
-    min-height: 0;
-    margin: 0 auto;
-    padding: 28px 32px 32px;
-    border: 1px solid #e2e2e2;
-    border-radius: 12px;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-}
+/* BACK LINK */
+.raceDayReportPage .docBackLink { display: inline-block; margin-top: 20px; padding: 8px 18px; border: 1px solid #16a34a; border-radius: 999px; background: #ffffff; color: #16a34a; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; transition: background .2s ease, color .2s ease; }
+.raceDayReportPage .docBackLink:hover { background: #16a34a; color: #ffffff; }
+.raceDayReportPage .docBackLink:empty { display: none; }
 
-/* ---- DOWNLOAD BUTTON ---- */
-.raceDayReportPage .docDownloadBtn {
-    position: absolute;
-    top: 20px;
-    right: 24px;
-    background: #c9c2a8;
-    color: #1a1a1a;
-    padding: 6px 14px;
-    border: none;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-    z-index: 2;
-}
+/* HEADER */
+.raceDayReportPage .docHeader { text-align: center; margin: 36px 0 28px; }
+.raceDayReportPage .docClub { font-size: 15px; font-weight: 800; color: #111; margin: 0 0 10px; }
+.raceDayReportPage .docWatermark { font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #c9c9c9; margin: 6px 0; }
+.raceDayReportPage .docHint { font-size: 13px; font-weight: 700; color: #111; margin: 0; }
 
-.raceDayReportPage .docDownloadBtn:hover {
-    background: #bdb494;
-    text-decoration: underline;
-}
+/* STATE (loading / error / empty) */
+.raceDayReportPage .docStateBox { text-align: center; padding: 60px 20px; color: #555; font-size: 15px; }
+.raceDayReportPage .docStateError { color: #b3261e; }
+.raceDayReportPage .docLoader { width: 34px; height: 34px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(11, 109, 42, .15); border-top-color: #0b6d2a; animation: docSpinRDR .8s linear infinite; }
+@keyframes docSpinRDR { to { transform: rotate(360deg); } }
 
-/* ---- BACK LINK ---- */
-.raceDayReportPage .docBackLink {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 8px 18px;
-    border: 1px solid #16a34a;
-    border-radius: 999px;
-    background: #ffffff;
-    color: #16a34a;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background .2s ease, color .2s ease;
-}
+/* ARCHIVE HTML (iframe) - fits the card; tables scroll INSIDE the iframe.
+   Iframe height is set from JS (body.offsetHeight) in RaceDayReport.js. */
+.raceDayReportPage .docArchiveScroll { width: 100%; max-width: 100%; overflow: visible; margin: 0; padding: 0; line-height: 0; }
+.raceDayReportPage .docArchiveHtml { display: block; width: 100%; min-width: 0; max-width: 100%; min-height: 0; margin: 0; padding: 0; border: none; overflow: hidden; }
 
-.raceDayReportPage .docBackLink:hover {
-    background: #16a34a;
-    color: #ffffff;
-}
+/* DIVIDER at the bottom of the card */
+.raceDayReportPage .docContainer::after { content: ""; display: block; height: 2px; width: 100%; max-width: 480px; margin: 28px auto 0; border-radius: 999px; background: linear-gradient(to right, transparent, #d97706, #16a34a, transparent); }
 
-/* the first (top) back link renders empty — keep it invisible */
-.raceDayReportPage .docBackLink:empty {
-    display: none;
-}
-
-/* ---- HEADER ---- */
-.raceDayReportPage .docHeader {
-    text-align: center;
-    margin: 36px 0 28px;
-}
-
-.raceDayReportPage .docClub {
-    font-size: 15px;
-    font-weight: 800;
-    color: #111;
-    margin: 0 0 10px;
-}
-
-.raceDayReportPage .docWatermark {
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    color: #c9c9c9;
-    margin: 6px 0;
-}
-
-.raceDayReportPage .docHint {
-    font-size: 13px;
-    font-weight: 700;
-    color: #111;
-    margin: 0;
-}
-
-/* ---- STATE (loading / error / empty) ---- */
-.raceDayReportPage .docStateBox {
-    text-align: center;
-    padding: 60px 20px;
-    color: #555;
-    font-size: 15px;
-}
-
-.raceDayReportPage .docStateError {
-    color: #b3261e;
-}
-
-.raceDayReportPage .docLoader {
-    width: 34px;
-    height: 34px;
-    margin: 0 auto 16px;
-    border-radius: 50%;
-    border: 3px solid rgba(11, 109, 42, .15);
-    border-top-color: #0b6d2a;
-    animation: docSpinRDR .8s linear infinite;
-}
-
-@keyframes docSpinRDR {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ---- ARCHIVE HTML (raw report passthrough inside iframe) ----
-   The scroll wrapper lets the iframe keep a real minimum width on phones,
-   so the report is never cropped or squashed: the user swipes sideways. */
-.raceDayReportPage .docArchiveScroll {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-    margin: 0;
-    padding: 0;
-    line-height: 0;                   /* removes inline gap under the iframe */
-}
-
-.raceDayReportPage .docArchiveHtml {
-    display: block;                   /* no baseline gap under the iframe */
-    width: 100%;
-    min-width: 720px;                 /* keeps report layout intact on phones */
-    min-height: 0;                    /* height is set from JS */
-    margin: 0;
-    padding: 0;
-    border: none;
-    overflow: hidden;
-}
-
-/* visible sideways scrollbar on touch/desktop small screens */
-.raceDayReportPage .docArchiveScroll::-webkit-scrollbar {
-    height: 6px;
-}
-
-.raceDayReportPage .docArchiveScroll::-webkit-scrollbar-track {
-    background: #f1f5f9;
-}
-
-.raceDayReportPage .docArchiveScroll::-webkit-scrollbar-thumb {
-    background: #16a34a;
-    border-radius: 10px;
-}
-
-/* ---- DIVIDER at the bottom of the card ---- */
-.raceDayReportPage .docContainer::after {
-    content: "";
-    display: block;
-    height: 2px;
-    width: 100%;
-    max-width: 480px;
-    margin: 28px auto 0;
-    border-radius: 999px;
-    background: linear-gradient(to right, transparent, #d97706, #16a34a, transparent);
-}
-
-/* ================= RESPONSIVE ================= */
-
+/* RESPONSIVE */
 @media (max-width: 768px) {
-
-    .raceDayReportPage.docPage {
-        padding: 36px 12px 40px;
-    }
-
-    .raceDayReportPage .docBadgeWrap {
-        margin-bottom: 18px;
-    }
-
-    .raceDayReportPage .docBadge {
-        font-size: 16px;
-        padding: 10px 24px;
-    }
-
-    .raceDayReportPage .docContainer {
-        padding: 56px 12px 22px;
-        border-radius: 10px;
-    }
-
-    .raceDayReportPage .docDownloadBtn {
-        top: 14px;
-        right: 12px;
-    }
-
-    .raceDayReportPage .docHeader {
-        margin: 12px 0 20px;
-    }
-
-    .raceDayReportPage .docWatermark {
-        font-size: 24px;
-        letter-spacing: 2px;
-    }
-
-    .raceDayReportPage .docClub,
-    .raceDayReportPage .docHint {
-        font-size: 13px;
-    }
+    .raceDayReportPage.docPage { padding: 36px 12px 56px; }
+    .raceDayReportPage .aboutTitleWrap { margin-bottom: 28px; }
+    .raceDayReportPage .aboutHeading { font-size: 26px; padding-bottom: 12px; }
+    .raceDayReportPage .sectionDivider { max-width: 320px; gap: 12px; }
+    .raceDayReportPage .dividerIcon { font-size: 18px; }
+    .raceDayReportPage .docContainer { padding: 56px 12px 22px; border-radius: 10px; }
+    .raceDayReportPage .docDownloadBtn { top: 14px; right: 12px; }
+    .raceDayReportPage .docHeader { margin: 12px 0 20px; }
+    .raceDayReportPage .docWatermark { font-size: 24px; letter-spacing: 2px; }
+    .raceDayReportPage .docClub, .raceDayReportPage .docHint { font-size: 13px; }
 }
 
 @media (max-width: 480px) {
-
-    .raceDayReportPage.docPage {
-        padding: 28px 10px 32px;
-    }
-
-    .raceDayReportPage .docBadge {
-        font-size: 15px;
-        padding: 9px 20px;
-    }
-
-    .raceDayReportPage .docContainer {
-        padding: 52px 8px 18px;
-    }
-
-    .raceDayReportPage .docWatermark {
-        font-size: 20px;
-        letter-spacing: 1px;
-    }
+    .raceDayReportPage.docPage { padding: 28px 10px 48px; }
+    .raceDayReportPage .aboutHeading { font-size: 22px; }
+    .raceDayReportPage .sectionDivider { max-width: 240px; }
+    .raceDayReportPage .docContainer { padding: 52px 8px 18px; }
+    .raceDayReportPage .docWatermark { font-size: 20px; letter-spacing: 1px; }
 }

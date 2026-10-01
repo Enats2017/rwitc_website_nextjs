@@ -8,62 +8,57 @@ import "./RatingChange.css";
 import { FaHorseHead } from "react-icons/fa";
 
 /*
- * Styles injected INSIDE the archive iframe.
- *
- * NOTE: the old "@media (max-width: 500px)" block was removed on purpose.
- * The iframe now keeps a minimum width (see RatingChange.css) inside a
- * scroll wrapper, so the content looks exactly like the desktop version
- * and the user swipes sideways on phones, same as the Race Result page.
+ * Styles + script injected INSIDE the archive iframe.
+ * Iframe always fits the card width; text wraps; only wide
+ * tables (if any) scroll sideways (wrapped in .tableScroll).
  */
 const ARCHIVE_STYLES_RATING_CHANGE = `
 <style>
-    * { box-sizing: border-box; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; max-width: 100%; overflow-x: hidden; }
+body { font-family: Arial, sans-serif; padding: 24px 20px 40px; color: #333333; background: #ffffff; word-wrap: break-word; display: flow-root; }
+span, a { text-decoration: none; color: #333333; }
+.row { display: flex; flex-wrap: wrap; row-gap: 6px; }
+.row > div { padding: 2px 10px 2px 0; line-height: 1.7; font-size: 12.5px !important; }
+.MsoPlainText { margin: 0 0 10px; line-height: 1.6; }
+p.MsoPlainText { margin-bottom: 14px; }
+table { max-width: 100%; }
+img { max-width: 100%; height: auto; }
 
-    html, body { margin: 0; padding: 0; }
+/* MOBILE FIX: text wraps inside the card */
+p, div, span, pre, .MsoPlainText { max-width: 100%; overflow-wrap: anywhere; }
+pre { white-space: pre-wrap; }
+@media (max-width: 600px) { body { padding: 12px 8px 24px; } }
 
-    body {
-        font-family: Arial, sans-serif;
-        padding: 24px 20px 40px;
-        color: #333333;
-        background: #ffffff;
-        word-wrap: break-word;
-    }
-
-    span, a {
-        text-decoration: none;
-        color: #333333;
-    }
-
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-        row-gap: 6px;
-    }
-
-    .row > div {
-        padding: 2px 10px 2px 0;
-        line-height: 1.7;
-        font-size: 12.5px !important;
-    }
-
-    .MsoPlainText {
-        margin: 0 0 10px;
-        line-height: 1.6;
-    }
-
-    p.MsoPlainText {
-        margin-bottom: 14px;
-    }
-
-    table {
-        max-width: 100%;
-    }
-
-    img {
-        max-width: 100%;
-        height: auto;
-    }
+/* MOBILE FIX: ONLY wide tables scroll */
+.tableScroll { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; margin-bottom: 12px; }
+.tableScroll table { min-width: 640px; margin: 0 !important; }
 </style>
+
+<script>
+(function () {
+    function wrapTables() {
+        document.querySelectorAll("table").forEach(function (table) {
+            if (table.parentElement && table.parentElement.classList.contains("tableScroll")) return;
+            if (table.querySelector("table")) return;
+
+            var maxCells = 0;
+            table.querySelectorAll("tr").forEach(function (tr) {
+                if (tr.children.length > maxCells) maxCells = tr.children.length;
+            });
+            if (maxCells < 3) return;
+
+            var wrap = document.createElement("div");
+            wrap.className = "tableScroll";
+            table.parentNode.insertBefore(wrap, table);
+            wrap.appendChild(table);
+        });
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wrapTables);
+    else wrapTables();
+})();
+</script>
 `;
 
 export default function RatingChange() {
@@ -94,24 +89,16 @@ export default function RatingChange() {
                 setLoading(true);
                 setError(null);
 
-                const data = await getRatingChange(
-                    date,
-                    type,
-                    raceType
-                );
+                const data = await getRatingChange(date, type, raceType);
 
                 setFound(data.found);
                 setMessage(data.message);
                 setRawHtml(data.html || "");
                 setDownloadFile(data.downloadFile || null);
-                setDownloadAvailable(
-                    data.downloadAvailable || false
-                );
+                setDownloadAvailable(data.downloadAvailable || false);
             } catch (err) {
                 console.error("Rating Change Error:", err);
-                setError(
-                    "Unable to load rating change for this date."
-                );
+                setError("Unable to load rating change for this date.");
             } finally {
                 setLoading(false);
             }
@@ -121,6 +108,48 @@ export default function RatingChange() {
     }, [date, type, raceType]);
 
     const hasNoHtml = !found || !rawHtml.trim();
+
+    /*
+     * Iframe onLoad: run helper, wire the Back link, then keep the iframe
+     * height in sync. Height changes only when the value differs, so it
+     * never loops or vibrates.
+     */
+    function handleRatingIframeLoad(e) {
+        handleArchiveIframeLoad(e);
+
+        const iframe = e.target;
+        const doc = iframe.contentDocument;
+        if (!doc || !doc.body) return;
+
+        doc.querySelectorAll("a, button, span").forEach((el) => {
+            if (el.textContent.trim().toLowerCase() === "back") {
+                el.style.cursor = "pointer";
+                el.addEventListener("click", (ev) => {
+                    ev.preventDefault();
+                    window.history.back();
+                });
+            }
+        });
+
+        const setHeight = () => {
+            if (!iframe.isConnected || !doc.body) return;
+            const next = Math.ceil(doc.body.offsetHeight);
+            const current = parseInt(iframe.style.height, 10);
+            if (next !== current) {
+                iframe.style.height = next + "px";
+            }
+        };
+
+        setHeight();
+        requestAnimationFrame(setHeight);
+
+        if (iframe.contentWindow?.ResizeObserver) {
+            new iframe.contentWindow.ResizeObserver(setHeight).observe(doc.body);
+        }
+        if (doc.fonts && doc.fonts.ready) {
+            doc.fonts.ready.then(setHeight);
+        }
+    }
 
     return (
         <section className="ratingChangePage docPage">
@@ -150,10 +179,7 @@ export default function RatingChange() {
 
                 {!loading && !error && hasNoHtml && (
                     <div className="docStateBox">
-                        <p>
-                            {message ||
-                                "No rating change found for this date."}
-                        </p>
+                        <p>{message || "No rating change found for this date."}</p>
                     </div>
                 )}
 
@@ -165,11 +191,7 @@ export default function RatingChange() {
                                     type="button"
                                     className="docOpenBtn"
                                     onClick={() => {
-                                        window.open(
-                                            downloadFile,
-                                            "_blank",
-                                            "noopener,noreferrer"
-                                        );
+                                        window.open(downloadFile, "_blank", "noopener,noreferrer");
                                     }}
                                 >
                                     Download / Open HTML
@@ -177,34 +199,16 @@ export default function RatingChange() {
                             </div>
                         )}
 
-                        {/* The iframe sits in a scroll wrapper so on phones the
-                            content keeps its real layout and scrolls sideways
-                            instead of breaking. */}
+                        {/* Iframe fits the card; only wide tables scroll inside it */}
                         <div className="docArchiveScroll">
                             <iframe
                                 className="docArchiveHtml"
-                                srcDoc={formatArchiveHtml(
-                                    ARCHIVE_STYLES_RATING_CHANGE,
-                                    rawHtml
-                                )}
+                                srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RATING_CHANGE, rawHtml)}
                                 title="Rating Change"
                                 sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
                                 scrolling="no"
                                 style={{ width: "100%", border: "none" }}
-                                onLoad={(e) => {
-                                    handleArchiveIframeLoad(e);
-                                    const doc = e.target.contentDocument;
-                                    if (!doc) return;
-                                    doc.querySelectorAll("a, button, span").forEach((el) => {
-                                        if (el.textContent.trim().toLowerCase() === "back") {
-                                            el.style.cursor = "pointer";
-                                            el.addEventListener("click", (ev) => {
-                                                ev.preventDefault();
-                                                window.history.back();
-                                            });
-                                        }
-                                    });
-                                }}
+                                onLoad={handleRatingIframeLoad}
                             />
                         </div>
                     </>

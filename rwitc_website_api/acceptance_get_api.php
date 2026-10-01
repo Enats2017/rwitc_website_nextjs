@@ -499,67 +499,188 @@ if (
 // For dates after 2022-09-25 the HTML source priority remains:
 // 1) local run_races file
 // 2) S3 file registered in run_race_details
-
 if ($type === "" || $raceType === "") {
 
-    $metaStmt = $conn->prepare("
-        SELECT `type`, `race_type`
-        FROM run_race_details
-        WHERE `date` = ?
-          AND file_url IS NOT NULL
-          AND file_url <> ''
-        ORDER BY id DESC
-        LIMIT 1
-    ");
+    // --------------------------------------------------
+    // CASE 1:
+    // type already came from frontend
+    // Example:
+    // ?type=acceptances
+    //
+    // In this case race_type MUST be resolved
+    // for the SAME type.
+    // --------------------------------------------------
 
-    if ($metaStmt === false) {
-        $security->respondError(
-            "Unable to resolve acceptance metadata",
-            500
+    if ($type !== "" && $raceType === "") {
+
+        $metaStmt = $conn->prepare("
+            SELECT `race_type`
+            FROM run_race_details
+            WHERE `date` = ?
+              AND `type` = ?
+              AND file_url IS NOT NULL
+              AND file_url <> ''
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+
+        if ($metaStmt === false) {
+            throw new Exception(
+                "Unable to resolve acceptance race_type: " .
+                $conn->error
+            );
+        }
+
+        $metaStmt->bind_param(
+            "ss",
+            $date,
+            $type
         );
 
-        exit;
-    }
+        if (!$metaStmt->execute()) {
+            $metaStmt->close();
 
-    $metaStmt->bind_param(
-        "s",
-        $date
-    );
+            throw new Exception(
+                "Unable to resolve acceptance race_type: " .
+                $conn->error
+            );
+        }
 
-    if (!$metaStmt->execute()) {
+        $metaResult = $metaStmt->get_result();
+
+        if (
+            $metaResult &&
+            $metaResult->num_rows > 0
+        ) {
+
+            $metaRow = $metaResult->fetch_assoc();
+
+            $raceType = trim(
+                (string) $metaRow["race_type"]
+            );
+        }
+
         $metaStmt->close();
 
-        $security->respondError(
-            "Unable to resolve acceptance metadata",
-            500
-        );
-
-        exit;
     }
 
-    $metaResult = $metaStmt->get_result();
+    // --------------------------------------------------
+    // CASE 2:
+    // type is missing but race_type is available
+    // --------------------------------------------------
 
-    if (
-        $metaResult &&
-        $metaResult->num_rows > 0
-    ) {
+    elseif ($type === "" && $raceType !== "") {
 
-        $metaRow = $metaResult->fetch_assoc();
+        $metaStmt = $conn->prepare("
+            SELECT `type`
+            FROM run_race_details
+            WHERE `date` = ?
+              AND `race_type` = ?
+              AND file_url IS NOT NULL
+              AND file_url <> ''
+            ORDER BY id DESC
+            LIMIT 1
+        ");
 
-        if ($type === "") {
+        if ($metaStmt === false) {
+            throw new Exception(
+                "Unable to resolve acceptance type: " .
+                $conn->error
+            );
+        }
+
+        $metaStmt->bind_param(
+            "ss",
+            $date,
+            $raceType
+        );
+
+        if (!$metaStmt->execute()) {
+            $metaStmt->close();
+
+            throw new Exception(
+                "Unable to resolve acceptance type: " .
+                $conn->error
+            );
+        }
+
+        $metaResult = $metaStmt->get_result();
+
+        if (
+            $metaResult &&
+            $metaResult->num_rows > 0
+        ) {
+
+            $metaRow = $metaResult->fetch_assoc();
+
             $type = trim(
                 (string) $metaRow["type"]
             );
         }
 
-        if ($raceType === "") {
+        $metaStmt->close();
+
+    }
+
+    // --------------------------------------------------
+    // CASE 3:
+    // both type and race_type are missing
+    // fallback for backward compatibility
+    // --------------------------------------------------
+
+    elseif ($type === "" && $raceType === "") {
+
+        $metaStmt = $conn->prepare("
+            SELECT `type`, `race_type`
+            FROM run_race_details
+            WHERE `date` = ?
+              AND file_url IS NOT NULL
+              AND file_url <> ''
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+
+        if ($metaStmt === false) {
+            throw new Exception(
+                "Unable to resolve acceptance metadata: " .
+                $conn->error
+            );
+        }
+
+        $metaStmt->bind_param(
+            "s",
+            $date
+        );
+
+        if (!$metaStmt->execute()) {
+            $metaStmt->close();
+
+            throw new Exception(
+                "Unable to resolve acceptance metadata: " .
+                $conn->error
+            );
+        }
+
+        $metaResult = $metaStmt->get_result();
+
+        if (
+            $metaResult &&
+            $metaResult->num_rows > 0
+        ) {
+
+            $metaRow = $metaResult->fetch_assoc();
+
+            $type = trim(
+                (string) $metaRow["type"]
+            );
+
             $raceType = trim(
                 (string) $metaRow["race_type"]
             );
         }
-    }
 
-    $metaStmt->close();
+        $metaStmt->close();
+    }
 }
 
 // Do not add an acceptance/pre_race default here.

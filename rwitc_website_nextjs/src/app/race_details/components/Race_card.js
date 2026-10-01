@@ -8,166 +8,105 @@ import { FaHorseHead } from "react-icons/fa";
 import "./Race_card.css";
 
 /*
- * Styles injected INSIDE the archive iframe.
- *
- * NOTE: the old "@media (max-width: 500px)" card layout block
- * (display: contents, td:before data-label, 10-11px fonts) was removed on
- * purpose, same as Handicaps / Acceptance / Declarations. The archive .html
- * does not have data-label attributes on the <td>, so on phones the table
- * was breaking. On phones the iframe now keeps a minimum width (see
- * Race_card.css) and the wrapper scrolls sideways, so the race card always
- * looks exactly like the desktop version.
+ * Styles + script injected INSIDE the archive iframe.
+ * Iframe always fits the card width. Only the performance-history
+ * table (View Runs) scrolls sideways (wrapped in .tableScroll).
  */
 const ARCHIVE_STYLES_RACECARD = `
 <style>
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; word-wrap: break-word; padding: 12px; background: #ffffff; }
-    span, a { display: inline-block; text-decoration: none; color: #c9c9c9; }
-    img { max-width: 100%; height: auto; vertical-align: middle; }
-    h3 {
-        font-family: 'Roboto Condensed', Arial, sans-serif;
-        font-size: 32px;
-        letter-spacing: 3px;
-        color: #c9c9c9;
-        text-align: center;
-        margin: 10px 0;
-    }
-    .pageHeading { text-align: center; margin-bottom: 24px; }
-    .subHeading {
-        text-align: center;
-        font-size: 13px;
-        font-weight: bold;
-        color: #111;
-        margin: 4px 0;
-    }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; max-width: 100%; overflow-x: hidden; }
+body { font-family: Arial, sans-serif; word-wrap: break-word; padding: 12px; background: #ffffff; display: flow-root; }
+span, a { display: inline-block; text-decoration: none; color: #c9c9c9; }
+img { max-width: 100%; height: auto; vertical-align: middle; }
+h3 { font-family: 'Roboto Condensed', Arial, sans-serif; font-size: 32px; letter-spacing: 3px; color: #c9c9c9; text-align: center; margin: 10px 0; }
+.pageHeading { text-align: center; margin-bottom: 24px; }
+.subHeading { text-align: center; font-size: 13px; font-weight: bold; color: #111; margin: 4px 0; }
 
-    /* Legacy "download" link — hidden, page already renders its own button. */
-    .download { display: none !important; }
+/* Legacy "download" link - hidden, page already renders its own button. */
+.download { display: none !important; }
 
-    /* Race-number quick-nav pills */
-    .slider { text-align: center; margin: 20px 0; }
-    .slider a.race_call {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        margin: 0 4px;
-        border-radius: 50%;
-        background: #16a34a;
-        color: #ffffff !important;
-        font-weight: 700;
-        font-size: 14px;
-    }
+/* Race-number quick-nav pills */
+.slider { text-align: center; margin: 20px 0; }
+.slider a.race_call { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin: 0 4px; border-radius: 50%; background: #16a34a; color: #ffffff !important; font-weight: 700; font-size: 14px; }
 
-    table { border-collapse: collapse; width: 100%; }
-    .table { max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
-    .table-bordered { border: 1px solid #e2e2e2; }
-    .table-bordered th, .table-bordered td { border: none; }
+table { border-collapse: collapse; width: 100%; }
+.table { max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+.table-bordered { border: 1px solid #e2e2e2; }
+.table-bordered th, .table-bordered td { border: none; }
 
-    /* ---- Race header bar (green) ---- */
-    .race_no_data {
-        background: #16a34a !important;
-        border-radius: 4px;
-        margin: 36px 0 18px;
-        overflow: hidden;
-    }
+/* Race header bar (green) */
+.race_no_data { background: #16a34a !important; border-radius: 4px; margin: 36px 0 18px; overflow: hidden; }
+.race_no_data th { background: transparent; color: #ffffff !important; text-align: left; padding: 12px 26px; font-size: 14px; line-height: 1.1; vertical-align: top; border: none !important; }
+.race_no_data th, .race_no_data th span, .race_no_data th * { color: #ffffff !important; }
+.darkGrey { color: #ffffff !important; font-weight: bold; }
+.foreign_eligible2 span { display: block; margin: 2px 0; }
 
-    /* ---- Spacing between horse cards ---- */
-    td > table.infoTable[style*='box-shadow'] {
-        margin: 18px 0 !important;
-        padding: 24px 28px !important;
-    }
+/* Spacing between horse cards */
+td > table.infoTable[style*='box-shadow'] { margin: 18px 0 !important; padding: 24px 28px !important; }
 
-    .race_no_data th {
-        background: transparent;
-        color: #ffffff !important;
-        text-align: left;
-        padding: 12px 26px;
-        font-size: 14px;
-        line-height: 1.1;
-        vertical-align: top;
-        border: none !important;
-    }
-    .race_no_data th,
-    .race_no_data th span,
-    .race_no_data th * {
-        color: #ffffff !important;
-    }
+/* Horse card (grey box, background comes from inline style) */
+.infoTable { width: 100%; }
+.infoTable td { border: 0; padding: 4px 6px; font-size: 13.5px; color: #222; font-weight: 700; }
+.horse_number_class { color: #111 !important; }
+.infoTable span, .infoTable a { color: #222 !important; }
+.alignLeft { text-align: left !important; }
+.alignRight { text-align: right !important; }
+.infoTable img { border: 2px solid #16a34a !important; border-radius: 2px; }
+.infoTable td:has(> img) { text-align: right !important; }
 
-    .darkGrey { color: #ffffff !important; font-weight: bold; }
-    .foreign_eligible2 span { display: block; margin: 2px 0; }
+/* "View Runs" button */
+.view_perform { cursor: pointer; }
+.view_runs { display: inline-block; background: #16a34a; color: #ffffff !important; font-weight: 700; font-size: 12px; padding: 6px 16px; border-radius: 4px; cursor: pointer; }
+.view_runs:hover { background: #12833b; }
 
-    /* ---- Horse card (grey box, background comes from inline style) ---- */
-    .infoTable { width: 100%; }
-    .infoTable td { border: 0; padding: 4px 6px; font-size: 13.5px; color: #222; font-weight: 700; }
-    .horse_number_class { color: #111 !important; }
-    .infoTable span,
-    .infoTable a {
-        color: #222 !important;
-    }
-    .alignLeft { text-align: left !important; }
-    .alignRight { text-align: right !important; }
+/* Performance history table */
+.perform_head td { background: #f7f7f7; font-weight: bold; font-size: 12px; padding: 8px; border: 1px solid #e2e2e2; text-align: center; }
+.perform_data td { font-size: 12px; padding: 8px; border: 1px solid #e2e2e2; text-align: center; font-weight: 700; }
+.perform_data td:nth-child(2), .perform_data td:nth-child(2) *, .perform_data td:nth-child(2) span, .perform_data td:nth-child(2) font, .perform_data td:nth-child(2) a { color: #111 !important; }
 
-    .infoTable img { border: 2px solid #16a34a !important; border-radius: 2px; }
-    .infoTable td:has(> img) { text-align: right !important; }
+/* Pools table */
+.poolsTable th { background: #16a34a; color: #ffffff !important; padding: 10px; text-align: left; }
+.poolsTable td { padding: 10px; border: 1px solid #e2e2e2; }
 
-    /* "View Runs" button */
-    .view_perform { cursor: pointer; }
-    .view_runs {
-        display: inline-block;
-        background: #16a34a;
-        color: #ffffff !important;
-        font-weight: 700;
-        font-size: 12px;
-        padding: 6px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    .view_runs:hover { background: #12833b; }
+/* Duplicate "show1" row hidden on ALL devices. .perform_data stays visible. */
+.show1 { display: none; }
 
-    /* ---- Performance history table ---- */
-    .perform_head td {
-        background: #f7f7f7;
-        font-weight: bold;
-        font-size: 12px;
-        padding: 8px;
-        border: 1px solid #e2e2e2;
-        text-align: center;
-    }
+/* MOBILE FIX: header / cards wrap inside the card */
+.pageHeading, .subHeading, h3, p, .race_no_data th { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+    h3 { font-size: 24px; letter-spacing: 2px; }
+    .race_no_data th { padding: 10px 14px; }
+    td > table.infoTable[style*='box-shadow'] { padding: 14px !important; }
+}
 
-    .perform_data td {
-        font-size: 12px;
-        padding: 8px;
-        border: 1px solid #e2e2e2;
-        text-align: center;
-        font-weight: 700;
-    }
-    .perform_data td:nth-child(2),
-    .perform_data td:nth-child(2) *,
-    .perform_data td:nth-child(2) span,
-    .perform_data td:nth-child(2) font,
-    .perform_data td:nth-child(2) a {
-        color: #111 !important;
-    }
-
-    /* ---- Pools table ---- */
-    .poolsTable th {
-        background: #16a34a;
-        color: #ffffff !important;
-        padding: 10px;
-        text-align: left;
-    }
-    .poolsTable td {
-        padding: 10px;
-        border: 1px solid #e2e2e2;
-    }
-
-    /* Duplicate/mobile-card "show1" row is hidden on ALL devices.
-       .perform_data is the MAIN data row and must always stay visible. */
-    .show1 { display: none; }
+/* MOBILE FIX: ONLY the performance table scrolls */
+.tableScroll { width: 0; min-width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; padding-bottom: 6px; }
+.tableScroll table { width: 100% !important; min-width: 640px !important; margin: 0 !important; }
+.tableScroll::-webkit-scrollbar { height: 6px; }
+.tableScroll::-webkit-scrollbar-track { background: #f1f5f9; }
+.tableScroll::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 10px; }
 </style>
+
+<script>
+(function () {
+    function wrapTables() {
+        document.querySelectorAll(".perform_head").forEach(function (head) {
+            var table = head.closest("table");
+            if (!table) return;
+            if (table.parentElement && table.parentElement.classList.contains("tableScroll")) return;
+
+            var wrap = document.createElement("div");
+            wrap.className = "tableScroll";
+            table.parentNode.insertBefore(wrap, table);
+            wrap.appendChild(table);
+        });
+    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", wrapTables);
+    else wrapTables();
+})();
+</script>
 `;
 
 export default function RaceCard() {
@@ -238,12 +177,9 @@ export default function RaceCard() {
 
     /*
      * Iframe onLoad handler for archive HTML.
-     *
-     * HEIGHT FIX: the old code used documentElement.scrollHeight, which can
-     * never be smaller than the iframe's current height, so the iframe grew
-     * but never shrank (extra white space at the bottom). We now measure
-     * body.scrollHeight (the real content height) and re-measure whenever
-     * the content changes (images, filters, View Runs, resize).
+     * Height = body.scrollHeight (real content height), re-measured on
+     * images / fonts / resize / View Runs / race filter. Only updates
+     * when the value changes, so it never loops or vibrates.
      */
     const handleRaceCardIframeLoad = (e) => {
         handleArchiveIframeLoad(e);
@@ -268,6 +204,18 @@ export default function RaceCard() {
             });
         });
 
+        /* wrap the runs table so ONLY it scrolls sideways (runs here too,
+           so it works even if the inline script did not run) */
+        doc.querySelectorAll(".perform_head").forEach((head) => {
+            const table = head.closest("table");
+            if (!table || table.parentElement?.classList.contains("tableScroll")) return;
+
+            const wrap = doc.createElement("div");
+            wrap.className = "tableScroll";
+            table.parentNode.insertBefore(wrap, table);
+            wrap.appendChild(table);
+        });
+
         const setHeight = () => {
             if (!iframe.isConnected || !doc.body) return;
             const next = Math.ceil(doc.body.scrollHeight);
@@ -277,11 +225,9 @@ export default function RaceCard() {
             }
         };
 
-        // initial sizing
         setHeight();
         requestAnimationFrame(setHeight);
 
-        // re-measure when images finish loading
         doc.querySelectorAll("img").forEach((img) => {
             if (!img.complete) {
                 img.addEventListener("load", setHeight);
@@ -289,7 +235,6 @@ export default function RaceCard() {
             }
         });
 
-        // re-measure when the content reflows (window resize, fonts, etc.)
         if (iframe.contentWindow?.ResizeObserver) {
             const ro = new iframe.contentWindow.ResizeObserver(setHeight);
             ro.observe(doc.body);
@@ -365,17 +310,14 @@ export default function RaceCard() {
                     Download Race Card
                 </button>
 
-                {/* Header block only applies to the structured (DB) view —
-                    the archived HTML already carries its own header markup. */}
+                {/* Header block only applies to the structured (DB) view */}
                 {!isHtmlMode && (
                     <div className="docHeader">
                         <p className="docClub">ROYAL WESTERN INDIA TURF CLUB.</p>
                         {dayLabel && <p className="docMeeting">{dayLabel}</p>}
                         {dayNarrative && <p className="docMeeting">{dayNarrative}</p>}
                         <h1 className="docWatermark">RACE CARD</h1>
-                        <p className="docHint">
-                            Click on a horse to know its Performance Profile @ RWITC
-                        </p>
+                        <p className="docHint">Click on a horse to know its Performance Profile @ RWITC</p>
                     </div>
                 )}
 
@@ -398,12 +340,7 @@ export default function RaceCard() {
                     </div>
                 )}
 
-                {/* Archive dates: render the RaceCard_<date>.html markup
-                    returned by the API as-is, inside an iframe so the archive
-                    file's own <style> block stays isolated from the app's
-                    global CSS. The iframe sits in a scroll wrapper so on
-                    phones the layout stays real and scrolls sideways
-                    instead of breaking. */}
+                {/* Archive dates: iframe fits the card, only the runs table scrolls */}
                 {!loading && !error && isHtmlMode && !hasNoHtml && (
                     <div className="docArchiveScroll">
                         <iframe
@@ -417,7 +354,7 @@ export default function RaceCard() {
                     </div>
                 )}
 
-                {/* DB-sourced dates: structured cards. */}
+                {/* DB-sourced dates: structured cards */}
                 {!loading && !error && !isHtmlMode && !hasNoData && races.map((race, idx) => (
 
                     <div className="docRaceBlock" key={race.raceNo ?? idx}>
@@ -431,14 +368,10 @@ export default function RaceCard() {
                                 {race.distance && <>(About) {race.distance} Metres.</>}
                                 {race.time && <>&nbsp;&nbsp;Time: {race.time}</>}
                                 {race.foreignJockeysEligible && (
-                                    <span className="docForeignTag">
-                                        &nbsp;&nbsp;Foreign Jockeys Eligible
-                                    </span>
+                                    <span className="docForeignTag">&nbsp;&nbsp;Foreign Jockeys Eligible</span>
                                 )}
                             </p>
-                            {race.narrativeEntry && (
-                                <p className="docRaceNarration">{race.narrativeEntry}</p>
-                            )}
+                            {race.narrativeEntry && <p className="docRaceNarration">{race.narrativeEntry}</p>}
                         </div>
 
                         {race.horses && race.horses.map((horse, hIdx) => {
@@ -476,9 +409,7 @@ export default function RaceCard() {
                                         {horse.hraRating && <> (HRA {horse.hraRating})</>}
                                     </div>
 
-                                    {horse.distanceWon && (
-                                        <div className="docHorseRow">DW: {horse.distanceWon}</div>
-                                    )}
+                                    {horse.distanceWon && <div className="docHorseRow">DW: {horse.distanceWon}</div>}
 
                                     <div className="docHorseRow docHorseOwnership">
                                         <span>
@@ -491,11 +422,7 @@ export default function RaceCard() {
                                     {horse.runsData && <div className="docHorseRow">{horse.runsData}</div>}
                                     {horse.colours && <div className="docHorseRow docHorseColours">{horse.colours}</div>}
 
-                                    <button
-                                        type="button"
-                                        className="docViewRunsBtn"
-                                        onClick={() => toggleRuns(runKey)}
-                                    >
+                                    <button type="button" className="docViewRunsBtn" onClick={() => toggleRuns(runKey)}>
                                         {isOpen ? "Hide Runs" : "View Runs"}
                                     </button>
 

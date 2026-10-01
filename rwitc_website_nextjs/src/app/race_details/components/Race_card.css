@@ -1,494 +1,106 @@
-/* ================= RACE CARD PAGE — PLAIN DOCUMENT STYLE ================= */
+/* RACE CARD PAGE - PLAIN DOCUMENT STYLE */
+.racecardPage.docPage { width: 100%; background: #ffffff; padding: 48px 16px 56px; }
 
-.racecardPage.docPage {
-    width: 100%;
-    background: #ffffff;
-    padding: 48px 16px 56px;
-}
+/* HEADING - same style as "About RWITC" page */
+.racecardPage .aboutTitleWrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 44px; }
+.racecardPage .aboutHeading { font-size: 40px; font-weight: 800; color: #0d3b1f; letter-spacing: .3px; position: relative; padding-bottom: 16px; text-align: center; }
+.racecardPage .sectionDivider { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 0; width: 100%; max-width: 480px; margin-left: auto; margin-right: auto; }
+.racecardPage .dividerLine { flex: 1; height: 2px; border-radius: 999px; }
+.racecardPage .dividerLineLeft { background: linear-gradient(to right, transparent, #d97706); }
+.racecardPage .dividerLineRight { background: linear-gradient(to left, transparent, #16a34a); }
+.racecardPage .dividerIcon { font-size: 22px; color: #0d3b1f; flex-shrink: 0; }
 
-/* HEADING — same style as "About RWITC" page */
-.racecardPage .aboutTitleWrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 44px;
-}
+/* GREEN PILL BADGE */
+.racecardPage .docBadgeWrap { display: flex; justify-content: center; margin-bottom: 24px; }
+.racecardPage .docBadge { display: inline-block; padding: 12px 32px; border-radius: 999px; margin-top: 20px; background: #16a34a; color: #ffffff; font-size: 20px; font-weight: 800; }
 
-.racecardPage .aboutHeading {
-    font-size: 40px;
-    font-weight: 800;
-    color: #0d3b1f;
-    letter-spacing: .3px;
-    position: relative;
-    padding-bottom: 16px;
-    text-align: center;
-}
+/* CONTAINER (bordered card) */
+.racecardPage .docContainer { position: relative; width: 100%; max-width: 1140px; margin: 0 auto; padding: 28px 32px 32px; border: 1px solid #e2e2e2; border-radius: 12px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05); box-sizing: border-box; overflow: hidden; }
 
-.racecardPage .sectionDivider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    margin-top: 0px;
-    width: 100%;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-}
+/* DOWNLOAD BUTTON */
+.racecardPage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; text-decoration: none; z-index: 2; }
+.racecardPage .docDownloadBtn:hover { background: #bdb494; cursor: pointer; text-decoration: underline; }
 
-.racecardPage .dividerLine {
-    flex: 1;
-    height: 2px;
-    border-radius: 999px;
-}
+/* HEADER */
+.racecardPage .docHeader { text-align: center; margin-bottom: 28px; }
+.racecardPage .docClub { font-size: 15px; font-weight: 800; color: #111; margin: 0 0 10px; }
+.racecardPage .docMeeting { font-size: 14px; font-weight: 700; color: #111; margin: 0 0 8px; }
+.racecardPage .docWatermark { font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #c9c9c9; margin: 6px 0; }
+.racecardPage .docHint { font-size: 13px; font-weight: 700; color: #111; margin: 0; }
 
-.racecardPage .dividerLineLeft {
-    background: linear-gradient(to right, transparent, #d97706);
-}
+/* STATE (loading / error / empty) */
+.racecardPage .docStateBox { text-align: center; padding: 60px 20px; color: #555; font-size: 15px; }
+.racecardPage .docStateError { color: #b3261e; }
+.racecardPage .docLoader { width: 34px; height: 34px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(11, 109, 42, .15); border-top-color: #0b6d2a; animation: docSpinRC .8s linear infinite; }
+@keyframes docSpinRC { to { transform: rotate(360deg); } }
 
-.racecardPage .dividerLineRight {
-    background: linear-gradient(to left, transparent, #16a34a);
-}
+/* ARCHIVE HTML (iframe) - fits the card; the runs table scrolls INSIDE the iframe.
+   Iframe height is set from JS (body.scrollHeight) in Race_card.js. */
+.racecardPage .docArchiveScroll { width: 100%; max-width: 100%; overflow: visible; margin-top: 40px; margin-bottom: 0; padding-bottom: 0; line-height: 0; }
+.racecardPage .docArchiveHtml { display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 0; margin: 0; padding: 0; border: none; overflow: hidden; }
 
-.racecardPage .dividerIcon {
-    font-size: 22px;
-    color: #0d3b1f;
-    flex-shrink: 0;
-}
+/* RACE BLOCK */
+.racecardPage .docRaceBlock { margin-bottom: 28px; }
+.racecardPage .docRaceBlock:last-child { margin-bottom: 0; }
+.racecardPage .docRaceBar { background: #16a34a; color: #ffffff; padding: 14px 20px; border-radius: 4px; margin-bottom: 14px; }
+.racecardPage .docRaceName { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+.racecardPage .docRaceMeta { font-size: 13px; font-weight: 600; margin: 0; }
+.racecardPage .docRaceNarration { font-size: 12.5px; font-weight: 500; margin: 6px 0 0; color: rgba(255, 255, 255, .9); }
+.racecardPage .docForeignTag { font-weight: 800; }
 
-/* ---- GREEN PILL BADGE ---- */
-.racecardPage .docBadgeWrap {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 24px;
-}
+/* HORSE CARD */
+.racecardPage .docHorseCard { background: #f4f4f4; border: 1px solid #e2e2e2; border-radius: 4px; padding: 14px 16px; margin-bottom: 12px; }
+.racecardPage .docHorseCard:last-child { margin-bottom: 0; }
+.racecardPage .docHorseTop { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.racecardPage .docHorseNo { font-weight: 800; color: #111; }
+.racecardPage .docHorseName { font-weight: 800; color: #111; flex: 1; }
+.racecardPage .docHorseWeight, .racecardPage .docHorseJockey { font-size: 13px; font-weight: 600; color: #333; }
+.racecardPage .docHorseRow { display: flex; justify-content: space-between; font-size: 13px; color: #333; margin: 3px 0; gap: 12px; }
+.racecardPage .docHorseDraw { white-space: nowrap; }
+.racecardPage .docHorseTrainer { font-weight: 700; white-space: nowrap; }
+.racecardPage .docHorseColours { font-style: italic; }
+.racecardPage .docViewRunsBtn { margin-top: 10px; background: #16a34a; color: #ffffff; border: none; padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.racecardPage .docViewRunsBtn:hover { background: #12833b; }
 
-.racecardPage .docBadge {
-    display: inline-block;
-    padding: 12px 32px;
-    border-radius: 999px;
-    margin-top: 20px;
-    background: #16a34a;
-    color: #ffffff;
-    font-size: 20px;
-    font-weight: 800;
-}
+/* PERFORMANCE TABLE (JSON mode) - only this wrapper scrolls */
+.racecardPage .docTableWrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 12px; }
+.racecardPage .docTable { width: 100%; border-collapse: collapse; min-width: 720px; }
+.racecardPage .docTable thead th { text-align: left; font-size: 12px; font-weight: 800; color: #111; padding: 8px 10px; border: 1px solid #d9d9d9; background: #f7f7f7; }
+.racecardPage .docTable tbody td { padding: 8px 10px; font-size: 12.5px; color: #222; border: 1px solid #e2e2e2; }
 
-/* ---- CONTAINER (bordered card) ---- */
-.racecardPage .docContainer {
-    position: relative;
-    width: 100%;
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 28px 32px 32px;
-    border: 1px solid #e2e2e2;
-    border-radius: 12px;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
-    box-sizing: border-box;
-    overflow: hidden;
-}
+/* POOLS */
+.racecardPage .docPoolsBlock { margin-top: 20px; border: 1px solid #d9d9d9; border-radius: 4px; overflow: hidden; }
+.racecardPage .docPoolsTitle { font-size: 13px; font-weight: 800; color: #111; margin: 0; padding: 10px 14px; background: #e2e2e2; text-transform: uppercase; }
+.racecardPage .docPoolRow { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font-size: 13px; border-top: 1px solid #e2e2e2; }
+.racecardPage .docPoolName, .racecardPage .docPoolValue { color: #333333; font-weight: 600; }
+.racecardPage .docPoolValue { text-align: right; }
 
-/* ---- DOWNLOAD BUTTON ---- */
-.racecardPage .docDownloadBtn {
-    position: absolute;
-    top: 20px;
-    right: 24px;
-    background: #c9c2a8;
-    color: #1a1a1a;
-    padding: 6px 14px;
-    border: none;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 700;
-    text-decoration: none;
-    z-index: 2;
-}
-
-.racecardPage .docDownloadBtn:hover {
-    background: #bdb494;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
-/* ---- HEADER ---- */
-.racecardPage .docHeader {
-    text-align: center;
-    margin-bottom: 28px;
-}
-
-.racecardPage .docClub {
-    font-size: 15px;
-    font-weight: 800;
-    color: #111;
-    margin: 0 0 10px;
-}
-
-.racecardPage .docMeeting {
-    font-size: 14px;
-    font-weight: 700;
-    color: #111;
-    margin: 0 0 8px;
-}
-
-.racecardPage .docWatermark {
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    color: #c9c9c9;
-    margin: 6px 0;
-}
-
-.racecardPage .docHint {
-    font-size: 13px;
-    font-weight: 700;
-    color: #111;
-    margin: 0;
-}
-
-/* ---- STATE (loading / error / empty) ---- */
-.racecardPage .docStateBox {
-    text-align: center;
-    padding: 60px 20px;
-    color: #555;
-    font-size: 15px;
-}
-
-.racecardPage .docStateError {
-    color: #b3261e;
-}
-
-.racecardPage .docLoader {
-    width: 34px;
-    height: 34px;
-    margin: 0 auto 16px;
-    border-radius: 50%;
-    border: 3px solid rgba(11, 109, 42, .15);
-    border-top-color: #0b6d2a;
-    animation: docSpinRC .8s linear infinite;
-}
-
-@keyframes docSpinRC {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ---- ARCHIVE HTML (raw RaceCard_<date>.html passthrough) ----
-   The scroll wrapper lets the iframe keep a real minimum width on
-   phones, so the race card never gets squashed or broken; the user just
-   swipes sideways. On desktop the iframe simply fills the container.
-   Iframe height is set from JS (scrollHeight) in Race_card.js. */
-.racecardPage .docArchiveScroll {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    margin-top: 40px;              /* keeps clear of the Download button */
-    margin-bottom: 0;
-    padding-bottom: 0;
-    line-height: 0;                /* removes inline-gap under the iframe */
-}
-
-.racecardPage .docArchiveHtml {
-    display: block;                /* no baseline gap under the iframe */
-    width: 100%;
-    min-width: 720px;
-    min-height: 0;                 /* height comes from JS, no forced minimum */
-    margin: 0;
-    padding: 0;
-    border: none;
-    overflow: hidden;
-}
-
-/* ---- RACE BLOCK ---- */
-.racecardPage .docRaceBlock {
-    margin-bottom: 28px;
-}
-
-.racecardPage .docRaceBlock:last-child {
-    margin-bottom: 0;
-}
-
-.racecardPage .docRaceBar {
-    background: #16a34a;
-    color: #ffffff;
-    padding: 14px 20px;
-    border-radius: 4px;
-    margin-bottom: 14px;
-}
-
-.racecardPage .docRaceName {
-    font-size: 15px;
-    font-weight: 800;
-    margin: 0 0 4px;
-}
-
-.racecardPage .docRaceMeta {
-    font-size: 13px;
-    font-weight: 600;
-    margin: 0;
-}
-
-.racecardPage .docRaceNarration {
-    font-size: 12.5px;
-    font-weight: 500;
-    margin: 6px 0 0;
-    color: rgba(255, 255, 255, .9);
-}
-
-.racecardPage .docForeignTag {
-    font-weight: 800;
-}
-
-/* ---- HORSE CARD ---- */
-.racecardPage .docHorseCard {
-    background: #f4f4f4;
-    border: 1px solid #e2e2e2;
-    border-radius: 4px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
-}
-
-.racecardPage .docHorseCard:last-child {
-    margin-bottom: 0;
-}
-
-.racecardPage .docHorseTop {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 6px;
-}
-
-.racecardPage .docHorseNo {
-    font-weight: 800;
-    color: #111;
-}
-
-.racecardPage .docHorseName {
-    font-weight: 800;
-    color: #111;
-    flex: 1;
-}
-
-.racecardPage .docHorseWeight,
-.racecardPage .docHorseJockey {
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
-}
-
-.racecardPage .docHorseRow {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    color: #333;
-    margin: 3px 0;
-    gap: 12px;
-}
-
-.racecardPage .docHorseDraw {
-    white-space: nowrap;
-}
-
-.racecardPage .docHorseTrainer {
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.racecardPage .docHorseColours {
-    font-style: italic;
-}
-
-.racecardPage .docViewRunsBtn {
-    margin-top: 10px;
-    background: #16a34a;
-    color: #ffffff;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.racecardPage .docViewRunsBtn:hover {
-    background: #12833b;
-}
-
-/* ---- PERFORMANCE TABLE ---- */
-.racecardPage .docTableWrap {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin-top: 12px;
-}
-
-.racecardPage .docTable {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 720px;
-}
-
-.racecardPage .docTable thead th {
-    text-align: left;
-    font-size: 12px;
-    font-weight: 800;
-    color: #111;
-    padding: 8px 10px;
-    border: 1px solid #d9d9d9;
-    background: #f7f7f7;
-}
-
-.racecardPage .docTable tbody td {
-    padding: 8px 10px;
-    font-size: 12.5px;
-    color: #222;
-    border: 1px solid #e2e2e2;
-}
-
-/* ---- POOLS ---- */
-.racecardPage .docPoolsBlock {
-    margin-top: 20px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.racecardPage .docPoolsTitle {
-    font-size: 13px;
-    font-weight: 800;
-    color: #111;
-    margin: 0;
-    padding: 10px 14px;
-    background: #e2e2e2;
-    text-transform: uppercase;
-}
-
-.racecardPage .docPoolRow {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 14px;
-    font-size: 13px;
-    border-top: 1px solid #e2e2e2;
-}
-
-.racecardPage .docPoolName,
-.racecardPage .docPoolValue {
-    color: #333333;
-    font-weight: 600;
-}
-
-.racecardPage .docPoolValue {
-    text-align: right;
-}
-
-/* ---- RESPONSIVE ---- */
+/* RESPONSIVE */
 @media (max-width: 768px) {
-
-    .racecardPage.docPage {
-        padding: 36px 12px 40px;
-    }
-
-    .racecardPage .aboutHeading {
-        font-size: 26px;
-        padding-bottom: 12px;
-    }
-
-    .racecardPage .sectionDivider {
-        max-width: 320px;
-        gap: 12px;
-    }
-
-    .racecardPage .dividerIcon {
-        font-size: 18px;
-    }
-
-    .racecardPage .docBadge {
-        font-size: 16px;
-        padding: 10px 24px;
-    }
-
-    .racecardPage .docContainer {
-        padding: 60px 12px 22px;
-    }
-
-    .racecardPage .docDownloadBtn {
-        top: 14px;
-        right: 12px;
-    }
-
-    .racecardPage .docWatermark {
-        font-size: 24px;
-        letter-spacing: 2px;
-    }
-
-    .racecardPage .docHint,
-    .racecardPage .docClub {
-        font-size: 13px;
-    }
-
-    .racecardPage .docHorseTop {
-        flex-wrap: wrap;
-    }
-
-    .racecardPage .docHorseRow {
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .racecardPage .docTable thead th,
-    .racecardPage .docTable tbody td {
-        padding: 6px 8px;
-        font-size: 11.5px;
-    }
-
-    .racecardPage .docArchiveScroll {
-        margin-top: 0;
-    }
+    .racecardPage.docPage { padding: 36px 12px 40px; }
+    .racecardPage .aboutHeading { font-size: 26px; padding-bottom: 12px; }
+    .racecardPage .sectionDivider { max-width: 320px; gap: 12px; }
+    .racecardPage .dividerIcon { font-size: 18px; }
+    .racecardPage .docBadge { font-size: 16px; padding: 10px 24px; }
+    .racecardPage .docContainer { padding: 60px 12px 22px; }
+    .racecardPage .docDownloadBtn { top: 14px; right: 12px; }
+    .racecardPage .docWatermark { font-size: 24px; letter-spacing: 2px; }
+    .racecardPage .docHint, .racecardPage .docClub { font-size: 13px; }
+    .racecardPage .docHorseTop { flex-wrap: wrap; }
+    .racecardPage .docHorseRow { flex-direction: column; gap: 2px; }
+    .racecardPage .docTable thead th, .racecardPage .docTable tbody td { padding: 6px 8px; font-size: 11.5px; }
+    .racecardPage .docArchiveScroll { margin-top: 0; }
 }
 
 @media (max-width: 480px) {
-
-    .racecardPage.docPage {
-        padding: 28px 10px 32px;
-    }
-
-    .racecardPage .aboutHeading {
-        font-size: 22px;
-    }
-
-    .racecardPage .sectionDivider {
-        max-width: 240px;
-    }
-
-    .racecardPage .docBadge {
-        font-size: 15px;
-        padding: 9px 20px;
-    }
-
-    .racecardPage .docContainer {
-        padding: 56px 8px 18px;
-    }
-
-    .racecardPage .docRaceBar {
-        padding: 12px 14px;
-    }
-
-    .racecardPage .docHorseCard {
-        padding: 12px;
-    }
+    .racecardPage.docPage { padding: 28px 10px 32px; }
+    .racecardPage .aboutHeading { font-size: 22px; }
+    .racecardPage .sectionDivider { max-width: 240px; }
+    .racecardPage .docBadge { font-size: 15px; padding: 9px 20px; }
+    .racecardPage .docContainer { padding: 56px 8px 18px; }
+    .racecardPage .docRaceBar { padding: 12px 14px; }
+    .racecardPage .docHorseCard { padding: 12px; }
 }
 
-/* ---- DIVIDER + SPACE at the bottom of the card ---- */
-.racecardPage .docContainer::after {
-    content: "";
-    display: block;
-    height: 2px;
-    width: 100%;
-    max-width: 480px;
-    margin: 32px auto 0;
-    border-radius: 999px;
-    background: linear-gradient(to right, transparent, #d97706, #16a34a, transparent);
-}
+/* DIVIDER + SPACE at the bottom of the card */
+.racecardPage .docContainer::after { content: ""; display: block; height: 2px; width: 100%; max-width: 480px; margin: 32px auto 0; border-radius: 999px; background: linear-gradient(to right, transparent, #d97706, #16a34a, transparent); }

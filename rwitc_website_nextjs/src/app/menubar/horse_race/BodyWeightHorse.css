@@ -4,12 +4,24 @@
 
 .aboutPage {
     width: 100%;
-    background: #f7f9fb;
     min-height: 100vh;
+    background: #f7f9fb;
     padding: 60px 20px 90px;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
-/* HEADING */
+.aboutContainer {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   HEADING
+========================================================= */
+
 .aboutTitleWrap {
     display: flex;
     flex-direction: column;
@@ -18,24 +30,26 @@
 }
 
 .aboutHeading {
+    margin: 0;
+    padding-bottom: 16px;
     font-size: 40px;
     font-weight: 800;
     color: #0d3b1f;
-    letter-spacing: .3px;
-    position: relative;
-    padding-bottom: 16px;
+    letter-spacing: 0.3px;
     text-align: center;
 }
 
-/* SECTION DIVIDER */
+/* =========================================================
+   SECTION DIVIDER
+========================================================= */
+
 .sectionDivider {
+    width: 100%;
+    max-width: 480px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 18px;
-    margin-top: 0px;
-    width: 100%;
-    max-width: 480px;
 }
 
 .dividerLine {
@@ -45,29 +59,42 @@
 }
 
 .dividerLineLeft {
-    background: linear-gradient(to right, transparent, #d97706);
+    background: linear-gradient(
+        to right,
+        transparent,
+        #d97706
+    );
 }
 
 .dividerLineRight {
-    background: linear-gradient(to left, transparent, #16a34a);
+    background: linear-gradient(
+        to left,
+        transparent,
+        #16a34a
+    );
 }
 
 .dividerIcon {
+    flex-shrink: 0;
     font-size: 22px;
     color: #0d3b1f;
-    flex-shrink: 0;
 }
 
-/* CONTENT CARD */
+/* =========================================================
+   CONTENT CARD
+========================================================= */
+
 .aboutCard {
-    width: 96%;
-    max-width: 1400px;
+    width: 100%;
+    max-width: 1500px;
     margin: 0 auto;
-    background: #ffffff;
-    border-radius: 28px;
     padding: 44px;
-    box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
+    background: #ffffff;
     border: 1px solid #eef1f4;
+    border-radius: 28px;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.07);
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 /* =========================================================
@@ -83,6 +110,7 @@
 }
 
 .horseSearchLabel {
+    flex-shrink: 0;
     font-size: 15px;
     font-weight: 700;
     color: #14532d;
@@ -90,24 +118,27 @@
 }
 
 .horseSearchInputWrap {
-    display: flex;
-    flex: 1;
-    min-width: 220px;
+    width: 100%;
     max-width: 520px;
+    min-width: 220px;
+    display: flex;
+    border: 1px solid #d7dee2;
     border-radius: 10px;
     overflow: hidden;
-    border: 1px solid #d7dee2;
+    box-sizing: border-box;
 }
 
 .horseSearchInputWrap input {
     flex: 1;
     min-width: 0;
+    height: 46px;
+    padding: 0 16px;
     border: none;
     outline: none;
-    padding: 12px 16px;
-    font-size: 14px;
-    color: #374151;
     background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    box-sizing: border-box;
 }
 
 .horseSearchInputWrap input::placeholder {
@@ -115,15 +146,16 @@
 }
 
 .horseSearchInputWrap button {
+    flex-shrink: 0;
+    height: 46px;
+    padding: 0 24px;
     border: none;
     background: #14532d;
     color: #ffffff;
     font-size: 14px;
     font-weight: 700;
-    padding: 12px 24px;
     cursor: pointer;
-    transition: .2s;
-    flex-shrink: 0;
+    transition: background 0.2s ease;
 }
 
 .horseSearchInputWrap button:hover {
@@ -135,11 +167,11 @@
 ========================================================= */
 
 .weightNote {
+    margin: 0 0 20px;
     text-align: center;
     font-size: 14px;
     font-weight: 700;
     color: #374151;
-    margin: 0 0 20px;
 }
 
 .weightNoteRed {
@@ -148,112 +180,217 @@
 }
 
 /* =========================================================
-   TABLE
-   DESKTOP/LAPTOP: fixed layout, width 100% — fits inside the
-   card, NO horizontal scroll.
-   MOBILE (see @media below): switches to a min-width table so
-   it scrolls horizontally instead of squeezing text.
+   TABLE WRAPPER
+   Horizontal scrolling is intentional.
 ========================================================= */
 
 .statsTableWrap {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
-    border-radius: 16px;
+    overflow-y: hidden;
     border: 1px solid #e5e9ec;
+    border-radius: 16px;
     -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
 }
 
+/* =========================================================
+   TABLE
+========================================================= */
+
 .statsTable {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
 }
 
+/* =========================================================
+   TABLE HEADER
+========================================================= */
+
 .statsTable thead th {
+    width: 110px;
+    min-width: 110px;
+    height: 62px;
+    padding: 12px 10px;
     background: #d9ead9;
     color: #14532d;
     font-size: 13px;
     font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .3px;
-    padding: 14px 8px;
     text-align: center;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-right: 1px solid #cfe4cf;
     border-bottom: 1px solid #cfe4cf;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
+/* =========================================================
+   HORSE COLUMN
+========================================================= */
+
 .statsTable thead th.colHorse {
-    width: 15%;
-    text-align: left;
+    width: 210px;
+    min-width: 210px;
+    max-width: 210px;
     padding-left: 18px;
+    text-align: left;
     border-right: 1px solid #b9d6b9;
 }
 
+/* =========================================================
+   TABLE BODY
+========================================================= */
+
 .statsTable tbody td {
-    padding: 12px 8px;
+    width: 110px;
+    min-width: 110px;
+    height: 70px;
+    padding: 12px 10px;
     text-align: center;
-    font-size: 13px;
-    color: #374151;
-    border-bottom: 1px solid #eef1f4;
     vertical-align: middle;
-    word-break: break-word;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    border-right: 1px solid #eef1f4;
+    border-bottom: 1px solid #eef1f4;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
+/* =========================================================
+   HORSE NAME COLUMN
+========================================================= */
+
 .statsTable tbody td.colHorse {
+    width: 210px;
+    min-width: 210px;
+    max-width: 210px;
+    padding-left: 18px;
+    padding-right: 18px;
+    text-align: left;
     font-weight: 700;
     color: #111827;
-    text-align: left;
-    padding-left: 18px;
+    white-space: normal;
+    word-break: normal;
     border-right: 1px solid #e2e8ec;
 }
 
-.statsTable tbody tr:last-child td {
-    border-bottom: none;
+/* =========================================================
+   BODY WEIGHT VALUE
+   Normal color — NOT RED.
+   Value always stays in one line.
+========================================================= */
+
+.statsTable tbody td.weightValue {
+    color: #374151;
+    font-weight: 500;
+    white-space: nowrap;
+    word-break: normal;
+    overflow: visible;
+}
+
+/* =========================================================
+   ROW
+========================================================= */
+
+.statsTable tbody tr:nth-child(even) {
+    background: #fbfcfc;
 }
 
 .statsTable tbody tr:hover {
     background: #f7faf7;
 }
 
-.weightExtra {
-    display: block;
-    color: #dc2626;
-    font-size: 11px;
-    font-weight: 700;
-    margin-top: 2px;
+.statsTable tbody tr:last-child td {
+    border-bottom: none;
 }
 
-.noResults {
+/* =========================================================
+   NO RESULTS
+========================================================= */
+
+.statsTable tbody td.noResults {
+    width: auto;
+    min-width: 0;
     padding: 30px 10px !important;
     text-align: center !important;
     color: #9aa4ab;
     font-weight: 600;
+    white-space: normal;
 }
 
-/* TABLET — still fits, just tighter */
+/* =========================================================
+   TABLE SCROLLBAR
+========================================================= */
+
+.statsTableWrap::-webkit-scrollbar {
+    height: 8px;
+}
+
+.statsTableWrap::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.statsTableWrap::-webkit-scrollbar-thumb {
+    background: #16a34a;
+    border-radius: 10px;
+}
+
+.statsTableWrap::-webkit-scrollbar-thumb:hover {
+    background: #15803d;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
 @media (max-width: 992px) {
+
+    .aboutPage {
+        padding: 45px 16px 70px;
+    }
+
+    .aboutCard {
+        padding: 30px;
+        border-radius: 22px;
+    }
 
     .aboutHeading {
         font-size: 32px;
     }
 
-    .aboutCard {
-        padding: 32px;
+    .statsTable thead th {
+        width: 110px;
+        min-width: 110px;
     }
 
-    .statsTable thead th,
     .statsTable tbody td {
-        font-size: 12px;
-        padding: 11px 6px;
+        width: 110px;
+        min-width: 110px;
     }
 
+    .statsTable thead th.colHorse,
+    .statsTable tbody td.colHorse {
+        width: 190px;
+        min-width: 190px;
+        max-width: 190px;
+    }
 }
 
-/* MOBILE — ONLY here the table switches to a min-width and
-   scrolls horizontally, keeping text at a readable size. */
+/* =========================================================
+   MOBILE
+========================================================= */
+
 @media (max-width: 768px) {
 
     .aboutPage {
-        padding: 40px 14px 70px;
+        padding: 35px 12px 60px;
     }
 
     .aboutTitleWrap {
@@ -268,7 +405,6 @@
     .sectionDivider {
         max-width: 320px;
         gap: 12px;
-        margin-top: 20px;
     }
 
     .dividerIcon {
@@ -276,13 +412,21 @@
     }
 
     .aboutCard {
-        padding: 22px 16px;
-        border-radius: 20px;
+        width: 100%;
+        padding: 22px 14px;
+        border-radius: 18px;
     }
+
+    /* SEARCH */
 
     .horseSearchBar {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .horseSearchLabel {
+        font-size: 14px;
     }
 
     .horseSearchInputWrap {
@@ -290,43 +434,72 @@
         max-width: none;
     }
 
-    .weightNote {
+    .horseSearchInputWrap input {
+        height: 44px;
         font-size: 13px;
     }
 
+    .horseSearchInputWrap button {
+        height: 44px;
+        padding: 0 20px;
+        font-size: 13px;
+    }
+
+    /* NOTE */
+
+    .weightNote {
+        margin-bottom: 18px;
+        font-size: 13px;
+    }
+
+    /* TABLE */
+
     .statsTable {
-        table-layout: auto;
-        min-width: 1100px;
+        width: max-content;
+        min-width: 2410px;
+        table-layout: fixed;
     }
 
-    .statsTable thead th.colHorse {
-        width: 160px;
-    }
-
-    .statsTableWrap::-webkit-scrollbar {
-        height: 6px;
-    }
-
-    .statsTableWrap::-webkit-scrollbar-track {
-        background: #f1f5f9;
-    }
-
-    .statsTableWrap::-webkit-scrollbar-thumb {
-        background: #16a34a;
-        border-radius: 10px;
-    }
-
-    .statsTable thead th,
-    .statsTable tbody td {
+    .statsTable thead th {
+        width: 110px;
+        min-width: 110px;
+        height: 58px;
+        padding: 10px;
         font-size: 12px;
-        padding: 10px 8px;
         white-space: nowrap;
     }
 
+    .statsTable tbody td {
+        width: 110px;
+        min-width: 110px;
+        height: 65px;
+        padding: 10px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .statsTable thead th.colHorse,
+    .statsTable tbody td.colHorse {
+        width: 190px;
+        min-width: 190px;
+        max-width: 190px;
+    }
+
+    .statsTable tbody td.weightValue {
+        white-space: nowrap;
+        word-break: normal;
+    }
 }
 
-/* SMALL MOBILE */
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
 @media (max-width: 480px) {
+
+    .aboutPage {
+        padding: 28px 8px 50px;
+    }
 
     .aboutHeading {
         font-size: 22px;
@@ -337,31 +510,66 @@
     }
 
     .aboutCard {
-        padding: 16px 12px;
+        padding: 18px 10px;
+        border-radius: 16px;
     }
+
+    .horseSearchLabel {
+        font-size: 13px;
+    }
+
+    .horseSearchInputWrap input {
+        font-size: 12px;
+    }
+
+    .horseSearchInputWrap button {
+        padding: 0 17px;
+        font-size: 12px;
+    }
+
+    /* TABLE */
 
     .statsTable {
-        min-width: 950px;
+        width: max-content;
+        min-width: 2310px;
     }
 
-    .statsTable thead th.colHorse {
-        width: 140px;
+    .statsTable thead th {
+        width: 110px;
+        min-width: 110px;
+        height: 56px;
+        font-size: 12px;
     }
 
-    .statsTable thead th,
     .statsTable tbody td {
-        font-size: 11px;
-        padding: 9px 6px;
+        width: 110px;
+        min-width: 110px;
+        font-size: 12px;
     }
 
+    .statsTable thead th.colHorse,
+    .statsTable tbody td.colHorse {
+        width: 180px;
+        min-width: 180px;
+        max-width: 180px;
+    }
+
+    .statsTable tbody td.weightValue {
+        white-space: nowrap;
+        word-break: normal;
+    }
 }
 
-/* SCROLL ANIMATION */
+/* =========================================================
+   ANIMATION
+========================================================= */
+
 .aboutCard {
-    animation: fadeUp .6s ease both;
+    animation: fadeUp 0.6s ease both;
 }
 
 @keyframes fadeUp {
+
     from {
         opacity: 0;
         transform: translateY(30px);
@@ -373,7 +581,10 @@
     }
 }
 
-/* CUSTOM SCROLLBAR (page-level, unrelated to table) */
+/* =========================================================
+   PAGE SCROLLBAR
+========================================================= */
+
 ::-webkit-scrollbar {
     width: 10px;
 }
