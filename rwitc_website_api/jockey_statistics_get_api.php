@@ -8,6 +8,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 require_once __DIR__ . "/config/config.php";
 require_once __DIR__ . "/config/run_races_config.php";
 require_once __DIR__ . "/ApiSecurity.php";
+require_once __DIR__ . "/s3_html_helper.php";
 
 $logDir = __DIR__ . "/logs";
 if (!is_dir($logDir)) {
@@ -48,13 +49,24 @@ if ($security->serveCache($cacheKey)) {
 try {
 
     // -------------------------------------------------------
-    // 1) Pehle run_races/jockey_statistics.html (old page jaisa)
-    //    Is file me heading + table dono already hote hain,
-    //    isliye as_on null bhejte hain.
+    // 1) S3 (run_race_details ki latest row) - ERP ab yahin push karta hai
+    // 2) run_races/jockey_statistics.html (purana local file)
+    // 3) DB fallback
+    // Heading + table dono HTML me hote hain, isliye as_on null.
     // -------------------------------------------------------
+    $s3Html    = getLatestS3Html($conn, "jockey_statistics");
     $localFile = rtrim((string) RUN_RACES_LOCAL_PATH, "/\\") . "/jockey_statistics.html";
 
-    if (is_file($localFile)) {
+    if ($s3Html !== null) {
+
+        $security->respondAndCache($cacheKey, [
+            "mode"  => "html",
+            "as_on" => null,
+            "html"  => $s3Html["html"],
+            "rows"  => []
+        ]);
+
+    } elseif (is_file($localFile)) {
 
         $html = file_get_contents($localFile);
 
@@ -70,10 +82,6 @@ try {
         ]);
 
     } else {
-
-        // ---------------------------------------------------
-        // 2) Fallback: DB (old getMaxDate + getJockeyStats)
-        // ---------------------------------------------------
 
         // getMaxDate("RACEDATE", "fhorse5")
         $asOn = null;

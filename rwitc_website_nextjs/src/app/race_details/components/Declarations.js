@@ -94,7 +94,7 @@ table:not(.horseTable) td, table:not(.horseTable) td * { font-size: 12.5px !impo
     .horseTable th, .horseTable td, .horseTable.table-bordered th, .horseTable.table-bordered td { border: none !important; }
 
     .horseTable th { background: #cdcdd2 !important; color: #000000 !important; font-size: 12px; font-weight: 700; padding: 10px 3px !important; text-align: center; white-space: normal; line-height: 1.2; }
-    .horseTable td { font-size: 12px; padding: 6px 3px !important; background: #ffffff; white-space: normal; overflow-wrap: anywhere; }
+    .horseTable td { font-size: 10px; padding: 6px 3px !important; background: #ffffff; white-space: normal; overflow-wrap: anywhere; }
 
     .horseTable th.colHorse { text-align: left !important; padding-left: 10px !important; }
 

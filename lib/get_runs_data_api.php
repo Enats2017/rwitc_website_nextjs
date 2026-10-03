@@ -14,7 +14,7 @@ class Itemapi {
 	public $conn;
 	public function __construct() {
 	    // Create connection
-	    $this->conn = new mysqli('127.0.0.1', 'rwitc_erp', 'S4Y@3tAZ@GvLJ1', 'rwitc_website');
+	    $this->conn = new mysqli('localhost', 'app_user', 'ho{HslC)jWaky${L', 'rwitc_website');
 	    // $this->conn = new mysqli('localhost', 'root', '', 'db_rwitc_erp');
 	    // Check connection
 	    if ($this->conn->connect_error) {

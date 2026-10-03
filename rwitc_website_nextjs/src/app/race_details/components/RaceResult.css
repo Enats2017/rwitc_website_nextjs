@@ -39,8 +39,7 @@
 .raceResultPage .docLoader { width: 34px; height: 34px; margin: 0 auto 16px; border-radius: 50%; border: 3px solid rgba(11, 109, 42, .15); border-top-color: #0b6d2a; animation: docSpinResult .8s linear infinite; }
 @keyframes docSpinResult { to { transform: rotate(360deg); } }
 
-/* ARCHIVE HTML (iframe) - fits the card; race tables scroll INSIDE the iframe.
-   Iframe height is set from JS (body.offsetHeight) in RaceResult.js. */
+/* ARCHIVE HTML (iframe) - fits the card. Height is set from JS (RaceResult.js). */
 .raceResultPage .docArchiveScroll { width: 100%; max-width: 100%; overflow: visible; margin-top: 40px; }
 .raceResultPage .docArchiveHtml { display: block; width: 100%; min-width: 0; max-width: 100%; border: none; min-height: 0; overflow: hidden; }
 
@@ -51,7 +50,7 @@
 .raceResultPage .docRaceMeta { font-size: 13px; font-weight: 600; margin: 0; }
 .raceResultPage .docVoidTag { background: #b3261e; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 800; }
 
-/* TABLE (JSON mode) - only this wrapper scrolls */
+/* TABLE (JSON mode) */
 .raceResultPage .docTableWrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .raceResultPage .docTable { width: 100%; border-collapse: collapse; min-width: 760px; }
 .raceResultPage .docTable thead th { text-align: left; font-size: 13px; font-weight: 800; color: #111; padding: 10px 14px; border: 1px solid #d9d9d9; background: #f7f7f7; }
@@ -59,33 +58,54 @@
 .raceResultPage .docTable tbody td a { color: #222 !important; text-decoration: none; }
 .raceResultPage .docHorseName { font-weight: 700; color: #111; }
 .raceResultPage .docBreeding { display: block; font-weight: 400; color: #777; font-size: 12px; margin-top: 2px; }
+.raceResultPage .docNoCell { width: 8%; white-space: nowrap; }
+.raceResultPage .docVideoCell { width: 8%; }
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
-    .raceResultPage.docPage { padding: 36px 12px 56px; }
+    .raceResultPage.docPage { padding: 36px 8px 56px; }
     .raceResultPage .aboutHeading { font-size: 26px; padding-bottom: 12px; }
     .raceResultPage .sectionDivider { max-width: 320px; gap: 12px; }
     .raceResultPage .dividerIcon { font-size: 18px; }
     .raceResultPage .docBadge { font-size: 16px; padding: 10px 24px; }
-    .raceResultPage .docContainer { padding: 60px 12px 28px; }
+    .raceResultPage .docContainer { padding: 56px 4px 24px; }
     .raceResultPage .docDownloadBtn { top: 14px; right: 12px; }
     .raceResultPage .docWatermark { font-size: 24px; letter-spacing: 2px; }
     .raceResultPage .docHint, .raceResultPage .docClub { font-size: 13px; }
-    .raceResultPage .docTable thead th, .raceResultPage .docTable tbody td { padding: 8px 10px; font-size: 12.5px; }
     .raceResultPage .docArchiveScroll { margin-top: 0; }
+
+    /* JSON mode: fit full table, no sideways scroll */
+    .raceResultPage .docTableWrap { overflow-x: visible; }
+    .raceResultPage .docTable { min-width: 0; width: 100%; }
+    .raceResultPage .docTable thead th,
+    .raceResultPage .docTable tbody td,
+    .raceResultPage .docTable tbody th {
+        padding: 4px 3px !important;
+        font-size: 10px;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+    .raceResultPage .docNoCell { white-space: normal; width: auto; }
+    .raceResultPage .docVideoCell { width: auto; }
+    .raceResultPage .docBreeding { font-size: 9px; }
 }
 
 @media (max-width: 480px) {
-    .raceResultPage.docPage { padding: 28px 10px 48px; }
+    .raceResultPage.docPage { padding: 28px 6px 48px; }
     .raceResultPage .aboutHeading { font-size: 22px; }
     .raceResultPage .sectionDivider { max-width: 240px; }
     .raceResultPage .docBadge { font-size: 15px; padding: 9px 20px; }
-    .raceResultPage .docContainer { padding: 56px 8px 24px; }
+    .raceResultPage .docContainer { padding: 52px 3px 24px; }
     .raceResultPage .docRaceBar { padding: 12px 14px; }
+    .raceResultPage .docTable thead th,
+    .raceResultPage .docTable tbody td,
+    .raceResultPage .docTable tbody th { padding: 3px 2px !important; font-size: 9px; }
+    .raceResultPage .docBreeding { font-size: 8.5px; }
 }
 
 /* DIVIDER + SPACE at the bottom of the card */
 .raceResultPage .docContainer::after { content: ""; display: block; height: 2px; width: 100%; max-width: 480px; margin: 32px auto 0; border-radius: 999px; background: linear-gradient(to right, transparent, #d97706, #16a34a, transparent); }
+
 /* MEDIA TIPS / UPDATES buttons on the Race Result page */
 .raceResultPage .raceResultActions { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin: 48px 0 20px; }
 .raceResultPage .raceResultActionBtn { display: inline-block; padding: 10px 26px; border-radius: 999px; background: #16a34a; color: #ffffff !important; font-size: 15px; font-weight: 700; text-decoration: none; }

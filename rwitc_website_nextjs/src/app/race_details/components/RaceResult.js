@@ -10,8 +10,8 @@ import "./RaceResult.css";
 
 /*
  * Styles + script injected INSIDE the archive iframe.
- * Iframe always fits the card width. Only each race table
- * scrolls sideways (wrapped in .tableScroll).
+ * The iframe always fits the card width. On mobile the full race table
+ * is shrunk (smaller font + padding) so NOTHING scrolls sideways.
  */
 const ARCHIVE_STYLES_RACE_RESULT = `
 <style>
@@ -20,10 +20,7 @@ html, body { margin: 0; padding: 0; max-width: 100%; overflow-x: hidden; }
 body { font-family: Arial, sans-serif; padding: 12px; display: flow-root; }
 img { max-width: 100%; height: auto; }
 
-/* FIX: auto layout so columns size to their content (was: fixed) */
 table { width: 100% !important; max-width: 100% !important; table-layout: auto; border-collapse: collapse; }
-
-/* FIX: words no longer break letter-by-letter (was: word-break: break-word) */
 td, th { word-break: normal; overflow-wrap: break-word; padding: 10px 12px !important; border: 1px solid #cccccc; }
 
 span, a { display: inline-block; text-decoration: none; color: #333333; font-weight: bold; }
@@ -35,27 +32,36 @@ td { text-align: center; color: #222 !important; font-weight: 400; background: #
 h3 { font-size: 22px; color: #000; margin: 10px 0; font-weight: 700; }
 .pageHeader, .pageHeading { text-align: center; width: 100%; }
 .subHeading { font-size: 14px; font-weight: 700; color: #000; margin-left: 2% !important; display: block; width: 100%; }
-
-/* MOBILE: header wraps inside the card */
 .pageHeader, .pageHeading, .subHeading, h3, p { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 
-/* MOBILE: ONLY the race tables scroll sideways */
-.tableScroll { width: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; margin-bottom: 16px; }
-.tableScroll table { width: 100% !important; min-width: 720px; margin: 0 !important; table-layout: auto; }
+/* Wrapper added by script. No scrolling: table always fits the width. */
+.tableScroll { width: 100%; max-width: 100%; margin-bottom: 16px; overflow: visible; }
+.tableScroll table { width: 100% !important; min-width: 0 !important; margin: 0 !important; table-layout: auto; }
+.tableScroll th { white-space: normal; }
+.tableScroll th[colspan] { text-align: center; }
 
-/* FIX: first column (No.: 91 / Placing) is never narrower than its content */
-.tableScroll th:first-child,
-.tableScroll td:first-child { min-width: 84px; white-space: nowrap; }
+/* ===== MOBILE: fit the full table, smaller text, no sideways scroll ===== */
+@media (max-width: 768px) {
+  body { padding: 4px; font-size: 11px; }
+  h3 { font-size: 15px; margin: 6px 0; }
+  .subHeading, .darkGrey { font-size: 11px; }
 
-/* FIX: short header labels (Placing, Wt, Jockey...) stay on one line */
-.tableScroll th { white-space: nowrap; }
+  .tableScroll { margin-bottom: 12px; }
 
-/* Long text cells and label cells (Ownership, Results as per Card Nos...) may wrap */
-.tableScroll td.alignLeft,
-.tableScroll th[colspan] { white-space: normal; }
+  td, th {
+    padding: 4px 3px !important;
+    font-size: 10px !important;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+  .tableScroll th:first-child,
+  .tableScroll td:first-child { min-width: 0 !important; width: auto !important; white-space: normal; }
+}
 
-/* Race title cell (name, time, distance) reads left-to-right, not cut off */
-.tableScroll th[colspan] { text-align: left; }
+@media (max-width: 400px) {
+  td, th { padding: 3px 2px !important; font-size: 9px !important; }
+}
 </style>
 
 <script>
@@ -96,20 +102,19 @@ function handleResultIframeLoad(e) {
     const doc = iframe.contentWindow?.document;
     if (!doc || !doc.body) return;
 
-    // "No.: 91" cell gets a guaranteed width so text stays inside the column
+    // "No.: 91" cell may wrap on mobile so the table can shrink
     doc.querySelectorAll("th").forEach((th) => {
         if (th.textContent.trim().toLowerCase().startsWith("no.:")) {
-            th.style.whiteSpace = "nowrap";
-            th.style.minWidth = "84px";
-            th.style.width = "84px";
+            th.style.whiteSpace = "normal";
         }
     });
 
+    // Video link -> small play icon
     doc.querySelectorAll("a").forEach((link) => {
         if (link.textContent.trim().toLowerCase() === "video") {
             link.textContent = "";
             link.innerHTML =
-                '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#16a34a"><path d="M8 5v14l11-7z"/></svg>';
+                '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#16a34a"><path d="M8 5v14l11-7z"/></svg>';
             link.setAttribute("target", "_blank");
             link.setAttribute("rel", "noopener noreferrer");
             link.style.display = "inline-flex";
@@ -218,17 +223,27 @@ export default function RaceResult() {
 
     }, [racedate, raceno, type, raceType]);
 
-    // Media Tips / Updates links (always shown on this page)
     useEffect(() => {
         let active = true;
 
         getRaceDayStatus()
             .then((data) => {
                 if (!active || !data) return;
-                setMediaTipsUrl(data.mediaTipsUrl || null);
-                setUpdatesUrl(data.updatesUrl || null);
+
+                if (data.raceDay) {
+                    setMediaTipsUrl(data.mediaTipsUrl || null);
+                    setUpdatesUrl(data.updatesUrl || null);
+                } else {
+                    setMediaTipsUrl(null);
+                    setUpdatesUrl(null);
+                }
             })
-            .catch(() => {});
+            .catch(() => {
+                if (active) {
+                    setMediaTipsUrl(null);
+                    setUpdatesUrl(null);
+                }
+            });
 
         return () => {
             active = false;
@@ -325,7 +340,7 @@ export default function RaceResult() {
                     </div>
                 )}
 
-                {/* Archive dates: iframe fits the card, only race tables scroll */}
+                {/* Archive dates: iframe fits the card, tables fit the width */}
                 {!loading && !error && mode === "html" && rawHtml.trim() && (
                     <div className="docArchiveScroll">
                         <iframe
@@ -413,7 +428,7 @@ export default function RaceResult() {
                                 <tbody>
 
                                     <tr>
-                                        <th rowSpan="2" style={{ width: "8%", whiteSpace: "nowrap" }}>No.: {race.race_no_season}</th>
+                                        <th rowSpan="2" className="docNoCell">No.: {race.race_no_season}</th>
                                         <th colSpan="6" rowSpan="2">
                                             {race.race_name} {race.division}
                                             {race.void && <span className="docVoidTag">&nbsp; VOID</span>}
@@ -424,7 +439,7 @@ export default function RaceResult() {
                                             <br />
                                             (About) {race.distance} Metres.
                                         </th>
-                                        <th rowSpan="2" style={{ width: "8%" }}>
+                                        <th rowSpan="2" className="docVideoCell">
                                             <a href="#" onClick={(e) => e.preventDefault()} title="Video">
                                                 <FaPlayCircle size={22} />
                                             </a>

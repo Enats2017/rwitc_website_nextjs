@@ -111,7 +111,7 @@ export default function FoalRecords() {
                                 </table>
                             </div>
 
-                            <p style={{ fontSize: "13px", marginTop: "16px" }}>
+                            <p style={{ fontSize: "13px", marginTop: "16px", color: "black" }}>
                                 The above data has been collated from the records maintained by the Stud Book Authority of India and is as on 31st July 2026. It does not include details of siblings abroad or Indian horses&apos; performances abroad.
                             </p>
                         </>

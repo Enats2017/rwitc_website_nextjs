@@ -21,7 +21,6 @@ if (
 
 $db = new dbTool();
 
-// Module list Design::moduleCatalog() se aati hai (single source of truth)
 $modules = array();
 $moduleIcons = array();
 foreach (Design::moduleCatalog() as $mKey => $mInfo) {
@@ -29,7 +28,6 @@ foreach (Design::moduleCatalog() as $mKey => $mInfo) {
     $moduleIcons[$mKey] = $mInfo[2];
 }
 
-// Group icons (sidebar dropdown ke liye)
 $gIcons = array(
     'fa-folder-open'   => 'Folder',
     'fa-horse-head'    => 'Horse',
@@ -85,7 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
     if (!isset($gIcons[$icon])) {
         $icon = 'fa-folder-open';
     }
-    // whitelist modules (POST keys pe bharosa nahi)
     $mods = array_values(array_intersect($mods, array_keys($modules)));
 
     if ($name === '') {
@@ -96,7 +93,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
         $form_error = "Please select at least one module.";
     } else {
         try {
-            // Duplicate naam check (case-insensitive)
             $dupSql = "SELECT user_group_id FROM user_group WHERE LOWER(name) = '" . $db->escape(mb_strtolower($name)) . "'";
             if ($gid) {
                 $dupSql .= " AND user_group_id != $gid";
@@ -106,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
             if ($dup) {
                 $form_error = "A group named \"" . $name . "\" already exists. Please use a different name.";
             } else {
-                // modify = access (ab sirf ek hi Include checkbox hai)
                 $permission_serialized = serialize(array(
                     'access' => $mods,
                     'modify' => $mods,
@@ -173,7 +168,6 @@ if ($action == 'form' && $_SERVER['REQUEST_METHOD'] !== 'POST' && isset($_GET['u
         $edit_group = $row;
     }
 }
-// Error ke baad form dobara bharo
 if ($form_error && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
     $edit_group = array(
         'user_group_id' => isset($_POST['user_group_id']) ? $_POST['user_group_id'] : null,
@@ -370,7 +364,7 @@ $design->openDiv("leftArea", 'col-lg-9');
             <div>
                 <p class="eyebrow">Access Control</p>
                 <h1>User Groups</h1>
-                <p>Har group ek sidebar dropdown banta hai aur uske modules ka access deta hai.</p>
+                <p>Each group becomes a sidebar dropdown and grants access to its modules.</p>
             </div>
             <a href="turf-console/userGroup.php?action=form" class="btn btn-primary"><i class="fa fa-plus"></i> Add User Group</a>
         </div>
@@ -484,7 +478,7 @@ $design->openDiv("leftArea", 'col-lg-9');
             <div>
                 <p class="eyebrow"><?php echo ($edit_group && !empty($edit_group['user_group_id'])) ? 'Edit Group' : 'New Group'; ?></p>
                 <h1><?php echo ($edit_group && !empty($edit_group['name'])) ? htmlspecialchars($edit_group['name']) : 'Add User Group'; ?></h1>
-                <p>Group ka naam, icon aur modules choose karo.</p>
+                <p>Group name, icon and modules.</p>
             </div>
             <a href="turf-console/userGroup.php" class="btn btn-ghost"><i class="fa fa-arrow-left"></i> Back to list</a>
         </div>
@@ -498,7 +492,7 @@ $design->openDiv("leftArea", 'col-lg-9');
 
                 <div class="form-section">
                     <h3 class="section-title">Group Details</h3>
-                    <p class="section-desc">Naam unique hona chahiye. Ye naam sidebar mein dropdown ke roop mein dikhega.</p>
+                    <p class="section-desc">The name must be unique. It will appear as a dropdown in the sidebar.</p>
 
                     <div class="field">
                         <label>Group Name <span class="req">*</span></label>
@@ -517,7 +511,7 @@ $design->openDiv("leftArea", 'col-lg-9');
 
                 <div class="form-section">
                     <h3 class="section-title">Modules</h3>
-                    <p class="section-desc">Jin modules ko is group mein rakhna hai unke saamne Include tick karo.</p>
+                    <p class="section-desc">Tick Include next to each module you want in this group.</p>
 
                     <div class="perm-toolbar">
                         <button type="button" onclick="toggleAll(true)">Select all</button>
