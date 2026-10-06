@@ -6,24 +6,59 @@
     z-index: 4;
     width: 100%;
     margin: 0 auto;
-    padding: 30px 20px 0;        /* same side gutter as .mediaSection */
+    padding: 30px 20px 0;
     box-sizing: border-box;
 }
 
 .raceDayRow {
     width: 100%;
-    max-width: 1400px;           /* same as .mediaSectionContent */
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 0;                  /* gutter now comes from the wrapper */
+    padding: 0;
     display: flex;
-    gap: 19px;                   /* same gap as .mediaContainer */
+    gap: 19px;
     align-items: stretch;
     box-sizing: border-box;
 }
 
-/* reserves space while loading */
 .raceDayLoading {
     height: 70px;
+}
+
+.videoModal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.videoModalContent {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    background: #000;
+}
+
+.videoModalContent video {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.videoModalClose {
+    position: absolute;
+    top: -45px;
+    right: 0;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 2;
 }
 
 .raceDayBtn {
@@ -53,7 +88,6 @@
     box-shadow: 0 16px 32px rgba(0, 0, 0, .25);
 }
 
-/* RESPONSIVE (same breakpoints and gutters as MediaSection) */
 @media (max-width: 768px) {
     .raceDayWrap {
         padding: 20px 20px 0;

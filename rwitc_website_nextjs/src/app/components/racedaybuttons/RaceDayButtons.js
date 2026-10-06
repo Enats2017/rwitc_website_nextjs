@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FaPlay } from "react-icons/fa";
+import { FaPlay, FaTimes } from "react-icons/fa";
 import { getRaceDayStatus } from "../../../services/mediaService";
 import "./RaceDayButtons.css";
 
@@ -23,20 +23,21 @@ const NOTICE_BUTTONS = [
 
     {
         text: "Proceedings of 111th AGM",
-        href: `${SITE_URL}/2026_AGM.mp4`,
+        href: "https://erpuat.rwitc.com/rwitc_website/MEDIA/AGM2026-720p.mp4",
         video: true,
     },
 
-    {
-        text: "Block your weekend in Pune",
-        href: `${SITE_URL}/Block_your_weekend_in_Pune.mp4`,
-        video: true,
-    },
+    // {
+    //     text: "Block your weekend in Pune",
+    //     href: `${SITE_URL}/Block_your_weekend_in_Pune.mp4`,
+    //     video: true,
+    // },
 ];
 
 export default function RaceDayButtons() {
     const [status, setStatus] = useState(null);
     const [failed, setFailed] = useState(false);
+    const [selectedVideo, setSelectedVideo] = useState(null);
 
     useEffect(() => {
         let active = true;
@@ -44,8 +45,12 @@ export default function RaceDayButtons() {
         getRaceDayStatus()
             .then((data) => {
                 if (!active) return;
-                if (data) setStatus(data);
-                else setFailed(true);
+
+                if (data) {
+                    setStatus(data);
+                } else {
+                    setFailed(true);
+                }
             })
             .catch(() => {
                 if (active) setFailed(true);
@@ -92,21 +97,62 @@ export default function RaceDayButtons() {
     if (buttons.length === 0) return null;
 
     return (
-        <section className="raceDayWrap">
-            <div className="raceDayRow">
-                {buttons.map((btn) => (
-                    <a
-                        key={btn.text}
-                        href={btn.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="raceDayBtn"
+        <>
+            <section className="raceDayWrap">
+                <div className="raceDayRow">
+                    {buttons.map((btn) =>
+                        btn.video ? (
+                            <button
+                                key={btn.text}
+                                type="button"
+                                className="raceDayBtn"
+                                onClick={() => setSelectedVideo(btn.href)}
+                            >
+                                <FaPlay className="videoPlayIcon" />
+                                {btn.text}
+                            </button>
+                        ) : (
+                            <a
+                                key={btn.text}
+                                href={btn.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="raceDayBtn"
+                            >
+                                {btn.text}
+                            </a>
+                        )
+                    )}
+                </div>
+            </section>
+
+            {selectedVideo && (
+                <div
+                    className="videoModal"
+                    onClick={() => setSelectedVideo(null)}
+                >
+                    <div
+                        className="videoModalContent"
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        {btn.video && <FaPlay className="videoPlayIcon" />}
-                        {btn.text}
-                    </a>
-                ))}
-            </div>
-        </section>
+                        <button
+                            type="button"
+                            className="videoModalClose"
+                            onClick={() => setSelectedVideo(null)}
+                            aria-label="Close video"
+                        >
+                            <FaTimes />
+                        </button>
+
+                        <video
+                            controls
+                            playsInline
+                            width="100%"
+                            src={selectedVideo}
+                        />
+                    </div>
+                </div>
+            )}
+        </>
     );
 }

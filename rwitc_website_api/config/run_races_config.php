@@ -114,3 +114,7 @@ if (IS_LOCAL) {
 }
 
 define("RATINGSCHANGE_S3_PREFIX", "staticpages/ratingschange/");
+// Ratings HTM (All Horse Rating) -> S3 key + run_race_details row identity
+define("RATINGS_S3_KEY",       "rwitc_upload/static/RATINGS.HTM");
+define("RATINGS_TYPE",         "horse");
+define("RATINGS_RACE_TYPE",    "all_horse_rating");

@@ -622,7 +622,120 @@ if ($action === "sync_website_data") {
     sendResponse(true, array("action" => "sync_website_data", "date" => $date, "results" => $results), null, 200);
 }
 
+// ============================================================
+// SYNC RATINGS  (action = sync_ratings)
+// POST: action=sync_ratings & date=YYYY-MM-DD & htm_file=<RATINGS_S3_KEY>
+// ============================================================
 
+if ($action === "sync_ratings") {
+
+    $ratingsKey = RATINGS_S3_KEY;
+    $type       = RATINGS_TYPE;
+    $raceType   = RATINGS_RACE_TYPE;
+
+    $date    = isset($_POST["date"]) ? trim($_POST["date"]) : "";
+    $htmFile = isset($_POST["htm_file"]) ? trim($_POST["htm_file"]) : "";
+
+    if (!validateDateValue($date)) {
+        sendResponse(false, null, "Invalid date. Expected YYYY-MM-DD.", 400);
+    }
+
+    if ($htmFile !== $ratingsKey) {
+        sendResponse(false, null, "Invalid htm_file.", 400);
+    }
+
+    try {
+        if (!s3ObjectExists($s3, AWS_BUCKET, $ratingsKey)) {
+            sendResponse(false, null, "File not found in S3: " . $ratingsKey, 404);
+        }
+    } catch (Throwable $e) {
+        error_log("sync_ratings S3 HEAD failed: " . $e->getMessage());
+        sendResponse(false, null, "Unable to verify S3 file.", 500);
+    }
+
+    $url = getS3FileUrl(AWS_BUCKET, AWS_REGION, $ratingsKey);
+
+    try {
+        $sel = $conn->prepare(
+            "SELECT id FROM run_race_details
+             WHERE `type` = ? AND `race_type` = ?
+             ORDER BY id ASC LIMIT 1"
+        );
+        if ($sel === false) {
+            throw new RuntimeException("Prepare failed: " . $conn->error);
+        }
+        $sel->bind_param("ss", $type, $raceType);
+        if (!$sel->execute()) {
+            throw new RuntimeException("Select failed: " . $sel->error);
+        }
+        $res = $sel->get_result();
+        $row = ($res && $res->num_rows > 0) ? $res->fetch_assoc() : null;
+        $sel->close();
+
+        if ($row !== null) {
+
+            $id = (int)$row["id"];
+
+            $upd = $conn->prepare(
+                "UPDATE run_race_details
+                 SET `date` = ?, file_url = ?, htm_file_url = ?
+                 WHERE id = ?"
+            );
+            if ($upd === false) {
+                throw new RuntimeException("Prepare failed: " . $conn->error);
+            }
+            $upd->bind_param("sssi", $date, $url, $url, $id);
+            if (!$upd->execute()) {
+                throw new RuntimeException("Update failed: " . $upd->error);
+            }
+            $upd->close();
+
+            $del = $conn->prepare(
+                "DELETE FROM run_race_details
+                 WHERE `type` = ? AND `race_type` = ? AND id <> ?"
+            );
+            if ($del !== false) {
+                $del->bind_param("ssi", $type, $raceType, $id);
+                $del->execute();
+                $del->close();
+            }
+
+            $operation = "update";
+
+        } else {
+
+            $ins = $conn->prepare(
+                "INSERT INTO run_race_details (`date`, `type`, `race_type`, `file_url`, `htm_file_url`)
+                 VALUES (?, ?, ?, ?, ?)"
+            );
+            if ($ins === false) {
+                throw new RuntimeException("Prepare failed: " . $conn->error);
+            }
+            $ins->bind_param("sssss", $date, $type, $raceType, $url, $url);
+            if (!$ins->execute()) {
+                throw new RuntimeException("Insert failed: " . $ins->error);
+            }
+            $id = $ins->insert_id;
+            $ins->close();
+
+            $operation = "insert";
+        }
+    } catch (Throwable $e) {
+        error_log("sync_ratings DB failed: " . $e->getMessage());
+        sendResponse(false, null, "Database sync failed: " . $e->getMessage(), 500);
+    }
+
+    sendResponse(true, array(
+        "action"       => "sync_ratings",
+        "operation"    => $operation,
+        "id"           => $id,
+        "date"         => $date,
+        "type"         => $type,
+        "race_type"    => $raceType,
+        "file_url"     => $url,
+        "htm_file_url" => $url
+    ), null, 200);
+}
 // ============================================================
 // COMMON POST DATA
 // ============================================================
