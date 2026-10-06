@@ -26,6 +26,53 @@ if (!isAdminlogin()) {
 
 /*
 |--------------------------------------------------------------------------
+| SELECTED USER GROUP (sidebar se ?grp=ID aaye toh)
+|--------------------------------------------------------------------------
+*/
+
+$groupCards = array();
+$groupName  = '';
+$isGroupView = false;
+
+if (empty($secmsg) && isset($_GET['grp']) && (int)$_GET['grp'] > 0) {
+
+    $grpId    = (int)$_GET['grp'];
+    $adminUid = isset($_SESSION['uid']) ? (int)$_SESSION['uid'] : 0;
+    $grpRow   = null;
+
+    if ($adminUid === 19) {
+        $grpRow = $db->getSingleRowAssoc(
+            "SELECT name, permission FROM user_group WHERE user_group_id = $grpId"
+        );
+    } else {
+        foreach (Design::getAdminGroupRows($db, $adminUid) as $gr) {
+            if ((int)$gr['user_group_id'] === $grpId) {
+                $grpRow = $gr;
+                break;
+            }
+        }
+    }
+
+    if ($grpRow) {
+        $isGroupView = true;
+        $groupName   = $grpRow['name'];
+        $gPerm       = @unserialize($grpRow['permission']);
+        $gAccess     = (is_array($gPerm) && !empty($gPerm['access']) && is_array($gPerm['access'])) ? $gPerm['access'] : array();
+        $gCatalog    = Design::moduleCatalog();
+
+        foreach ($gAccess as $k) {
+            if (isset($gCatalog[$k])) {
+                $groupCards[] = $gCatalog[$k];
+            }
+        }
+    } else {
+        $secmsg = "You do not have access to this group.";
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | PAGE TITLE
 |--------------------------------------------------------------------------
 */
@@ -149,17 +196,33 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                 <div>
 
                     <h1 class="dashboard-title">
-                        ADMIN DASHBOARD
+                        <?php echo $isGroupView ? htmlspecialchars(strtoupper($groupName)) : 'ADMIN DASHBOARD'; ?>
                     </h1>
 
                     <p class="dashboard-subtitle">
-                        Manage all club activities
+                        <?php echo $isGroupView ? 'Modules in this group' : 'Manage all club activities'; ?>
                     </p>
 
                 </div>
 
             </div>
 
+
+            <?php if ($isGroupView) { ?>
+
+            <div class="cards-grid">
+
+                <?php foreach ($groupCards as $c) { ?>
+                    <a class="card-item" href="<?php echo htmlspecialchars($c[1]); ?>">
+                        <span class="card-icon"><i class="<?php echo htmlspecialchars($c[2]); ?>"></i></span>
+                        <span class="card-title"><?php echo htmlspecialchars($c[0]); ?></span>
+                        <i class="fas fa-chevron-right card-arrow"></i>
+                    </a>
+                <?php } ?>
+
+            </div>
+
+            <?php } else { ?>
 
             <div class="cards-grid">
 
@@ -381,6 +444,29 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                 <?php } ?>
 
+                <!-- SWEEPSTAKES -->
+
+                <?php if (hasModuleAccess('sweepstakes')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/sweepstakesManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-trophy"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Sweepstakes Manager
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
 
                 <!-- RACE DAY REPORT -->
 
@@ -397,6 +483,30 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                         <span class="card-title">
                             Race Day Reports Manager
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- RACE RESULTS -->
+
+                <?php if (hasModuleAccess('race_results')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/raceResultsManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-flag-checkered"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Media Tips & updates Manager
                         </span>
 
                         <i class="fas fa-chevron-right card-arrow"></i>
@@ -1004,7 +1114,57 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                 <?php } ?>
 
 
+                <!-- NOTICE FOR THE AGM -->
+
+                <?php if (hasModuleAccess('notice_agm')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/noticeAgmManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-bullhorn"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Notice for the AGM
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- ANNUAL REPORT -->
+
+                <?php if (hasModuleAccess('annual_report')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/annualReportManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-file-invoice"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Annual Report
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
             </div>
+
+            <?php } /* end else (normal dashboard) */ ?>
 
         </div>
 

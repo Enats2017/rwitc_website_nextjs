@@ -11,11 +11,11 @@
   $pageno = getParameterNumber('pageno',1);
 
 //   $user = "rwitc_erp";
-//   $user = 'app_user';
-    $user = 'root';
+  $user = 'app_user';
+    // $user = 'root';
     // $pass = "S4Y@3tAZ@GvLJ1";
-    // $pass = 'ho{HslC)jWaky${L';
-    $pass = '';
+    $pass = 'ho{HslC)jWaky${L';
+    // $pass = '';
     $schema = 'rwitc_website';
     $conn = mysqli_connect('localhost',$user,$pass,$schema);
     // Check connection
@@ -213,9 +213,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
       <td><?php echo $res3['date'];  ?></td>
       <td><?php echo $res3['text'];  ?></td>
       <!-- <td><button onclick="delete_feedback(<?php echo $res3['id'];  ?>)">Delete</button></td> -->
-      <td><a href="turf-console/email_to_chairman_list.php?type=delete&id=<?php echo $res3['id'];  ?>"><button class="feedback-action-btn delete"><i class="fas fa-trash-alt"></i> Delete</button></a></td>
+      <td><a href="turf-console/suggestion_feedback_list.php?type=delete&id=<?php echo $res3['id'];  ?>"><button class="feedback-action-btn delete"><i class="fas fa-trash-alt"></i> Delete</button></a></td>
    
-      <td><a href="turf-console/email_to_chairman_form.php?type1=edit&id=<?php echo $res3['id'];?>"><button class="feedback-action-btn edit"><i class="fas fa-edit"></i> Edit</button></a></td>
+      <td><a href="turf-console/suggestion_feedback_form.php?type1=edit&id=<?php echo $res3['id'];?>"><button class="feedback-action-btn edit"><i class="fas fa-edit"></i> Edit</button></a></td>
     </tr>
    <?php }} ?>
   </tbody>

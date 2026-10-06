@@ -11,11 +11,11 @@
   $pageno = getParameterNumber('pageno',1);
 
 //   $user = "rwitc_erp";
-  $user = 'root';
-//   $user = 'app_user';
+//   $user = 'root';
+  $user = 'app_user';
     // $pass = "S4Y@3tAZ@GvLJ1";
-    $pass = '';
-    // $pass = 'ho{HslC)jWaky${L';
+    // $pass = '';
+    $pass = 'ho{HslC)jWaky${L';
     $schema = 'rwitc_website';
     $conn = mysqli_connect('localhost',$user,$pass,$schema);
     // Check connection

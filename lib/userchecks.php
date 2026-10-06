@@ -118,8 +118,12 @@ function hasPermission($permissionKey)
 
 
     /*
-     * Normal group permission
+     * Normal admin: DB based 
      */
+    if (function_exists('hasModuleAccess')) {
+        return hasModuleAccess($permissionKey);
+    }
+
     if (
         !isset($_SESSION['permissions']) ||
         !isset($_SESSION['permissions']['access']) ||

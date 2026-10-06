@@ -1308,6 +1308,7 @@ MENU;
             'video'                  => array('Videos Manager',                          'turf-console/manageVideos.php',              'fas fa-video'),
             'dividends'              => array('Dividends Manager',                       'turf-console/dividendsManager.php',          'fas fa-chart-line'),
             'stewards_report'        => array('Stewards Report Manager',                 'turf-console/stewardsReportManager.php',     'fas fa-shield-alt'),
+            'sweepstakes'            => array('Sweepstakes Manager',                     'turf-console/sweepstakesManager.php',        'fas fa-trophy'),
             'race_day_report'        => array('Race Day Reports Manager',               'turf-console/racedayReportsManager.php',     'fas fa-clipboard-list'),
             'calendar'               => array('Calendar Manager',                        'turf-console/calendarManager.php',           'fas fa-calendar-alt'),
             'availability_calendar'  => array('Racecourse Availability Calendar Manager', 'turf-console/availibilityManager.php',       'fas fa-calendar-check'),
@@ -1332,37 +1333,39 @@ MENU;
             'youtube_upload'         => array('YouTube Upload',                          'turf-console/youtube_videos_upload.php',     'fab fa-youtube'),
             'chairman_email'         => array('Chairman Email List',                     'turf-console/email_to_chairman_list.php',    'fas fa-envelope'),
             'image_upload'           => array('Image Upload',                            'turf-console/image_upload.php',              'fas fa-cloud-upload-alt'),
+            'media_tips'             => array('Media Tips & updates Manager',            'turf-console/raceResultsManager.php',          'fas fa-flag-checkered'),
+            'notice_agm'             => array('Notice for the AGM',                      'turf-console/noticeAgmManager.php',          'fas fa-bullhorn'),
+            'annual_report'          => array('Annual Report',                           'turf-console/annualReportManager.php',       'fas fa-file-invoice'),
         );
     }
 
-    /**
-     * Ek admin ki saari groups ka union nikalta hai.
-     * Login ke time $_SESSION['permissions'] set karne ke liye use karo.
-     * modify = access (ab sirf ek hi "Include" checkbox hai)
-     */
+   
     public static function getAdminPermissions($db, $adminId)
     {
         $access = array();
-        $rows = $db->getMultiDimensionalArray(
-            "SELECT ug.permission
-             FROM admin_user_group aug
-             INNER JOIN user_group ug ON ug.user_group_id = aug.user_group_id
-             WHERE aug.admin_id = " . (int)$adminId
-        );
-        if (is_array($rows)) {
-            foreach ($rows as $r) {
-                $perm = @unserialize($r['permission']);
-                if (is_array($perm) && !empty($perm['access']) && is_array($perm['access'])) {
-                    $access = array_merge($access, $perm['access']);
-                }
+        foreach (self::getAdminGroupRows($db, $adminId) as $row) {
+            $perm = @unserialize($row['permission']);
+            if (is_array($perm) && !empty($perm['access']) && is_array($perm['access'])) {
+                $access = array_merge($access, $perm['access']);
             }
         }
         $access = array_values(array_unique($access));
         return array('access' => $access, 'modify' => $access);
     }
 
-    function writeLeftPanel()
+    /**
+     * Admin ke groups + uske allowed modules.
+     * Logic ab lib/permissions.php ke getAdminGroupRowsDb() mein hai
+     * (login aur sidebar dono ek hi code use karenge).
+     */
+    public static function getAdminGroupRows($db, $adminId)
     {
+        require_once(__DIR__ . '/permissions.php');
+        return getAdminGroupRowsDb($db, $adminId);
+    }
+
+    function writeLeftPanel()
+    {   
         $sessionUser = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'ADMIN';
         $currentPage = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
         $shareUrl = 'https://' . $_SERVER['HTTP_HOST'] . '' . $_SERVER['REQUEST_URI'];
@@ -1414,13 +1417,7 @@ MENU;
                     "SELECT user_group_id, name, permission FROM user_group ORDER BY name ASC"
                 );
             } else {
-                $sgRows = $sgDb->getMultiDimensionalArray(
-                    "SELECT ug.user_group_id, ug.name, ug.permission
-                     FROM user_group ug
-                     INNER JOIN admin_user_group aug ON aug.user_group_id = ug.user_group_id
-                     WHERE aug.admin_id = " . $adminId . "
-                     ORDER BY ug.name ASC"
-                );
+                $sgRows = self::getAdminGroupRows($sgDb, $adminId);
             }
         } catch (Exception $e) {
             $sgRows = array();
@@ -1462,14 +1459,13 @@ MENU;
             $gName = htmlspecialchars($sg['name']);
             $gIcon = (isset($perm['icon']) && preg_match('/^fa-[a-z0-9-]+$/', (string)$perm['icon'])) ? $perm['icon'] : 'fa-folder-open';
 
+            $isActiveGroup = ($currentPage === 'dashboard.php' && isset($_GET['grp']) && (int)$_GET['grp'] === $gid);
+
             $sidebarGroupsHtml .= '
-    <li class="sidebar-user-dropdown' . ($groupIsOpen ? ' open' : '') . '" id="navSg' . $gid . '">
-        <a href="#" onclick="toggleSidebarGroup(event, \'navSg' . $gid . '\');">
-            <i class="fas ' . $gIcon . '"></i>
-            ' . $gName . '
-            <i class="fas fa-chevron-down sidebar-user-arrow"></i>
+    <li class="' . ($isActiveGroup ? 'active' : '') . '" id="navSg' . $gid . '">
+        <a href="turf-console/dashboard.php?grp=' . $gid . '">
+            <i class="fas ' . $gIcon . '"></i> ' . $gName . '
         </a>
-        <ul class="sidebar-submenu">' . $itemsHtml . '</ul>
     </li>';
         }
 

@@ -8,10 +8,10 @@
 
 //   $user = "rwitc_erp";
 //     $pass = "S4Y@3tAZ@GvLJ1";
-    $user = "root";
-    // $user = "app_user";
-    // $pass = 'ho{HslC)jWaky${L';
-    $pass = '';
+    // $user = "root";
+    $user = "app_user";
+    $pass = 'ho{HslC)jWaky${L';
+    // $pass = '';
     $schema = 'rwitc_website';
     $conn = mysqli_connect('localhost',$user,$pass,$schema);
     // Check connection
@@ -75,9 +75,55 @@ if(isset($_GET['submit'])){
 
   $design->js='';
 
-  $design->css ='';
+  $design->css ='
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style type="text/css">
+#infoWrapper.col-lg-12 {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    max-width: 1500px;
+    margin: 30px auto;
+    float: none;
+}
+#leftArea.col-lg-9 {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0 30px;
+    box-sizing: border-box;
+    float: none;
+    width: auto;
+    display: block;
+}
+#infoWrapper.col-lg-12 #rightArea.col-lg-3 { padding-top: 0 !important; }
 
-  $design->jqueryJs = ""; 
+.feedback-title { font-size: 24px; color: #2b332f; margin: 0 0 20px 0; }
+.feedback-form-wrap { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); max-width: 700px; box-sizing: border-box; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 14px; font-weight: 600; color: #2b332f; margin-bottom: 8px; }
+.form-control { width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit; }
+.form-control:focus { outline: none; border-color: #1a7a45; }
+
+html, body { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+@media (max-width: 900px) {
+    #infoWrapper.col-lg-12 { flex-direction: column; margin: 16px auto; }
+    #leftArea.col-lg-9 { flex: 1 1 100%; max-width: 100%; padding: 28px 24px; }
+}
+@media (max-width: 700px) {
+    #leftArea.col-lg-9 { padding: 0 16px; }
+}
+@media (max-width: 520px) {
+    .feedback-form-wrap { padding: 16px; }
+    .form-control { font-size: 13.5px; }
+}
+</style>
+  ';
+
+  $design->jqueryJs = "";
 
   $design->startPage("$pageTitle");  
 
@@ -85,25 +131,15 @@ if(isset($_GET['submit'])){
 
   $design->openDiv("contentWrapper");
 
-  $design->openDiv("infoWrapper");
+  $design->openDiv("infoWrapper","col-lg-12");
 
-  $design->openDiv("leftArea");
+  $design->openDiv("leftArea","col-lg-9");
 
 ?>
 
 <body>
-     <div class="container-fluid">
-                <div class="hclass">
-                    <h1 class="h1class" style="text-align:center;"><b>Email to Chairman</b></h1>
-
-                </div>
-    </div>
-    <div class="row" style="width:95%;margin: auto;margin-top: 3%;">
-        <div class="container form-top">
-                <div class="row">   
-                    <div class="col-md-12  col-sm-12 col-xs-12">
-                        <div class="panel panel-danger">
-                            <div class="panel-body">
+<h1 class="feedback-title">Email to Chairman</h1>
+<div class="feedback-form-wrap">
                                 <form action="" id="reused_form" method="_GET">
                                     <div class="form-group">
                                         <label><i class="fa fa-user" aria-hidden="true"></i> Name</label>
@@ -125,12 +161,7 @@ if(isset($_GET['submit'])){
                                         <button type="submit" name="submit" formmethod="get" class="btn btn-raised btn-block btn-success" style="display: none;">Submit</button>
                                     </div>
                                 </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-    </div>
+</div>
 </body>
 
 
@@ -138,9 +169,9 @@ if(isset($_GET['submit'])){
 
   $design->closeDiv();
 
-  //$design->rightArea();  
+  $design->writeLeftPanel();
 
-  //$design->closeDiv();
+  $design->closeDiv();
 
   $design->closeDiv();
 

@@ -45,6 +45,7 @@ if ($action == 'delete' && isset($_GET['id'])) {
 
     try {
 
+        $db->query("DELETE FROM admin_group_modules WHERE admin_id = $id");
         $db->query(
             "DELETE FROM admins
              WHERE id = $id"
@@ -82,6 +83,7 @@ if (
 
         try {
 
+            $db->query("DELETE FROM admin_group_modules WHERE admin_id IN (" . implode(',', $ids) . ")");
             $db->query(
                 "DELETE FROM admins
                  WHERE id IN (" .
@@ -160,9 +162,14 @@ if (
             : ''
     );
 
-    $group_id = isset($_POST['user_group_id'])
-        ? (int)$_POST['user_group_id']
-        : 0;
+    $gm = (isset($_POST['gm']) && is_array($_POST['gm'])) ? $_POST['gm'] : array();
+    $group_id = 0;
+    foreach ($gm as $gk => $gv) {
+        if (is_array($gv) && count($gv) > 0) {
+            $group_id = (int)$gk;
+            break;
+        }
+    }
 
     $active =
         (
@@ -358,6 +365,7 @@ if (
 
                         $db->update($sql);
 
+                        saveAdminGroupModules($db, $edit_id, $gm);
 
                         header(
                             "Location: users.php?msg=updated"
@@ -436,6 +444,12 @@ if (
 
                         $db->insert($sql);
 
+                        $newRow = $db->getSingleRowAssoc(
+                            "SELECT id FROM admins WHERE username = '" . $db->escape($username) . "' LIMIT 1"
+                        );
+                        if ($newRow) {
+                            saveAdminGroupModules($db, (int)$newRow['id'], $gm);
+                        }
 
                         header(
                             "Location: users.php?msg=added"
@@ -734,10 +748,88 @@ if (
     );
 }
 
+/* ================================================================
+   GROUPS + MODULES FOR FORM
+   ================================================================ */
+
+$catalogMods = Design::moduleCatalog();
+$groupsForForm = array();
+$grows = $db->getMultiDimensionalArray(
+    "SELECT user_group_id, name, permission FROM user_group ORDER BY name ASC"
+);
+if (is_array($grows)) {
+    foreach ($grows as $gr) {
+        $p = @unserialize($gr['permission']);
+        $acc = (is_array($p) && !empty($p['access']) && is_array($p['access'])) ? $p['access'] : array();
+        $mods = array();
+        foreach ($acc as $k) {
+            if (isset($catalogMods[$k])) {
+                $mods[$k] = $catalogMods[$k][0];
+            }
+        }
+        if (!empty($mods)) {
+            $groupsForForm[(int)$gr['user_group_id']] = array('name' => $gr['name'], 'mods' => $mods);
+        }
+    }
+}
+
+$selectedGM = array();
+if ($form_error && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['gm']) && is_array($_POST['gm'])) {
+    foreach ($_POST['gm'] as $gk => $gv) {
+        $selectedGM[(int)$gk] = is_array($gv) ? $gv : array();
+    }
+} elseif ($edit_user && !empty($edit_user['id'])) {
+    $eid = (int)$edit_user['id'];
+    $srows = $db->getMultiDimensionalArray(
+        "SELECT user_group_id, module_key FROM admin_group_modules WHERE admin_id = $eid"
+    );
+    if (is_array($srows) && count($srows) > 0) {
+        foreach ($srows as $sr) {
+            $selectedGM[(int)$sr['user_group_id']][] = $sr['module_key'];
+        }
+    } elseif (!empty($edit_user['user_group_id']) && isset($groupsForForm[(int)$edit_user['user_group_id']])) {
+        $selectedGM[(int)$edit_user['user_group_id']] = array_keys($groupsForForm[(int)$edit_user['user_group_id']]['mods']);
+    }
+}
+
 
 /* ================================================================
    HELPERS
    ================================================================ */
+
+function saveAdminGroupModules($db, $adminId, $gm)
+{
+    $adminId = (int)$adminId;
+    if ($adminId <= 0) {
+        return;
+    }
+
+    $catalog = Design::moduleCatalog();
+    $db->query("DELETE FROM admin_group_modules WHERE admin_id = $adminId");
+
+    foreach ($gm as $gid => $mods) {
+        $gid = (int)$gid;
+        if ($gid <= 0 || !is_array($mods)) {
+            continue;
+        }
+
+        $g = $db->getSingleRowAssoc("SELECT permission FROM user_group WHERE user_group_id = $gid");
+        if (!$g) {
+            continue;
+        }
+        $p = @unserialize($g['permission']);
+        $allowed = (is_array($p) && !empty($p['access']) && is_array($p['access'])) ? $p['access'] : array();
+
+        foreach (array_unique($mods) as $m) {
+            if (in_array($m, $allowed, true) && isset($catalog[$m])) {
+                $db->query(
+                    "INSERT IGNORE INTO admin_group_modules (admin_id, user_group_id, module_key)
+                     VALUES ($adminId, $gid, '" . $db->escape($m) . "')"
+                );
+            }
+        }
+    }
+}
 
 function initials($first, $last)
 {
@@ -2327,63 +2419,12 @@ $design->writeLogoTickerMenu();
                     </h3>
 
                     <p class="section-desc">
-                        Select the user group for this administrator.
-                        The group controls module permissions.
+                        Module access is handled by group selection below.
+                        This admin can be assigned permissions from one or more groups.
                     </p>
 
 
                     <div class="grid-2">
-
-
-                        <div class="field">
-
-                            <label>
-                                User Group
-                            </label>
-
-                            <select name="user_group_id">
-
-                                <option value="">
-                                    - No group -
-                                </option>
-
-
-                                <?php foreach (
-                                    $user_groups as $ug
-                                ): ?>
-
-                                    <option
-                                        value="<?php
-                                                echo (int)
-                                                $ug['user_group_id'];
-                                                ?>"
-                                        <?php
-
-                                        echo (
-                                            isset(
-                                                $edit_user['user_group_id']
-                                            ) &&
-                                            $edit_user['user_group_id'] ==
-                                            $ug['user_group_id']
-                                        )
-                                            ? 'selected'
-                                            : '';
-
-                                        ?>>
-
-                                        <?php
-                                        echo htmlspecialchars(
-                                            $ug['name']
-                                        );
-                                        ?>
-
-                                    </option>
-
-                                <?php endforeach; ?>
-
-                            </select>
-
-                        </div>
 
 
                         <div class="field">
@@ -2435,6 +2476,38 @@ $design->writeLogoTickerMenu();
 
 
                     </div>
+
+                </div>
+
+
+                <div class="form-section">
+
+                    <h3 class="section-title">Group Modules</h3>
+                    <p class="section-desc">
+                        Jis group ke jo modules is admin ko dene hain unhe tick karo. Ek group ke modules alag-alag admins mein baant sakte ho.
+                    </p>
+
+                    <?php if (empty($groupsForForm)): ?>
+                        <p class="section-desc">No user groups with modules found.</p>
+                    <?php endif; ?>
+
+                    <?php foreach ($groupsForForm as $gId => $g): ?>
+                        <div style="border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin-bottom:12px;">
+                            <div style="font-weight:600;margin-bottom:8px;">
+                                <i class="fa fa-folder-open"></i>
+                                <?php echo htmlspecialchars($g['name']); ?>
+                            </div>
+                            <?php foreach ($g['mods'] as $mKey => $mLabel): ?>
+                                <label style="display:inline-flex;align-items:center;gap:6px;margin:0 18px 8px 0;font-weight:500;">
+                                    <input type="checkbox" class="checkbox"
+                                        name="gm[<?php echo (int)$gId; ?>][]"
+                                        value="<?php echo htmlspecialchars($mKey); ?>"
+                                        <?php echo (isset($selectedGM[$gId]) && in_array($mKey, $selectedGM[$gId], true)) ? 'checked' : ''; ?>>
+                                    <?php echo htmlspecialchars($mLabel); ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endforeach; ?>
 
                 </div>
 
