@@ -45,12 +45,12 @@ if (empty($secmsg) && isset($_GET['grp']) && (int)$_GET['grp'] > 0) {
             "SELECT name, permission FROM user_group WHERE user_group_id = $grpId"
         );
     } else {
-        foreach (Design::getAdminGroupRows($db, $adminUid) as $gr) {
-            if ((int)$gr['user_group_id'] === $grpId) {
-                $grpRow = $gr;
-                break;
-            }
-        }
+        $grpRow = $db->getSingleRowAssoc(
+            "SELECT ug.name, ug.permission
+             FROM user_group ug
+             INNER JOIN admin_user_group aug ON aug.user_group_id = ug.user_group_id
+             WHERE ug.user_group_id = $grpId AND aug.admin_id = $adminUid"
+        );
     }
 
     if ($grpRow) {
@@ -67,6 +67,52 @@ if (empty($secmsg) && isset($_GET['grp']) && (int)$_GET['grp'] > 0) {
         }
     } else {
         $secmsg = "You do not have access to this group.";
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| HARDCODED MENU (?menu=KEY )
+|--------------------------------------------------------------------------
+*/
+
+if (empty($secmsg) && !$isGroupView && isset($_GET['menu'])) {
+
+    $menuKey  = $_GET['menu'];
+    $fixedMap = Design::fixedMenuModules();
+
+    $menuTitles = array(
+        'photo'   => 'Photo Manager - Banners',
+        'notice'  => 'Notice & Annual Report Manager',
+        'stories' => 'Stories & News Article Manager',
+        'prerace'  => 'Pre Race Manager',
+        'postrace'  => 'Post Race Manager',
+        'trackwork' => 'Track Work Manager',
+        'liverace'  => 'Live Race Manager - Updates',
+        'sponsor'   => 'Sponsor Manager',
+        'mailer'    => 'Mailer Manager',
+        'calendar'  => 'Calender Manager',
+        'dividends' => 'Dividends Manager',
+        'others'    => 'Others/Miscellaneous',
+
+    );
+
+    if (isset($fixedMap[$menuKey])) {
+
+        $mCatalog = Design::moduleCatalog();
+
+        foreach ($fixedMap[$menuKey] as $mk) {
+            if (isset($mCatalog[$mk]) && hasModuleAccess($mk)) {
+                $groupCards[] = $mCatalog[$mk];
+            }
+        }
+
+        $isGroupView = true;
+        $groupName   = isset($menuTitles[$menuKey]) ? $menuTitles[$menuKey] : $menuKey;
+
+    } else {
+        $secmsg = "Invalid menu.";
     }
 }
 

@@ -1340,28 +1340,54 @@ MENU;
     }
 
    
+    public static function fixedMenuModules()
+    {
+        return array(
+            'photo'   => array('bannerManager'),
+            'notice'  => array('notice_agm', 'annual_report'),
+            'stories' => array('articles', 'csr_articles', 'prakash_gosavi', 'shiven_surendranath', 'tickerManager'),
+            'prerace'  => array('erp_prerace', 'racedataManager'),
+            'postrace'  => array('erp_postrace', 'racedataManager', 'video'),
+            'trackwork' => array('trackworkManager'),
+            'liverace'  => array('media_tips'),
+            'sponsor'   => array('sponsorManager', 'sponsorofthedayManager'),
+            'mailer'    => array('send_mailer', 'mailManager'),
+            'calendar'  => array('calendar', 'availability_calendar'),
+            'dividends' => array('dividends'),
+            'others'    => array(
+                'stewards_report',
+                'race_history',
+                'polls',
+                'workingManager',
+                'horseweightManager',
+                'homepopup',
+                'suggestion_feedback',
+                'youtube_upload',
+                'chairman_email',
+                'image_upload',
+            ),
+        );
+    }
+
     public static function getAdminPermissions($db, $adminId)
     {
         $access = array();
-        foreach (self::getAdminGroupRows($db, $adminId) as $row) {
-            $perm = @unserialize($row['permission']);
-            if (is_array($perm) && !empty($perm['access']) && is_array($perm['access'])) {
-                $access = array_merge($access, $perm['access']);
+        $rows = $db->getMultiDimensionalArray(
+            "SELECT ug.permission
+             FROM admin_user_group aug
+             INNER JOIN user_group ug ON ug.user_group_id = aug.user_group_id
+             WHERE aug.admin_id = " . (int)$adminId
+        );
+        if (is_array($rows)) {
+            foreach ($rows as $r) {
+                $perm = @unserialize($r['permission']);
+                if (is_array($perm) && !empty($perm['access']) && is_array($perm['access'])) {
+                    $access = array_merge($access, $perm['access']);
+                }
             }
         }
         $access = array_values(array_unique($access));
         return array('access' => $access, 'modify' => $access);
-    }
-
-    /**
-     * Admin ke groups + uske allowed modules.
-     * Logic ab lib/permissions.php ke getAdminGroupRowsDb() mein hai
-     * (login aur sidebar dono ek hi code use karenge).
-     */
-    public static function getAdminGroupRows($db, $adminId)
-    {
-        require_once(__DIR__ . '/permissions.php');
-        return getAdminGroupRowsDb($db, $adminId);
     }
 
     function writeLeftPanel()
@@ -1417,7 +1443,13 @@ MENU;
                     "SELECT user_group_id, name, permission FROM user_group ORDER BY name ASC"
                 );
             } else {
-                $sgRows = self::getAdminGroupRows($sgDb, $adminId);
+                $sgRows = $sgDb->getMultiDimensionalArray(
+                    "SELECT ug.user_group_id, ug.name, ug.permission
+                     FROM user_group ug
+                     INNER JOIN admin_user_group aug ON aug.user_group_id = ug.user_group_id
+                     WHERE aug.admin_id = " . $adminId . "
+                     ORDER BY ug.name ASC"
+                );
             }
         } catch (Exception $e) {
             $sgRows = array();
@@ -1465,6 +1497,33 @@ MENU;
     <li class="' . ($isActiveGroup ? 'active' : '') . '" id="navSg' . $gid . '">
         <a href="turf-console/dashboard.php?grp=' . $gid . '">
             <i class="fas ' . $gIcon . '"></i> ' . $gName . '
+        </a>
+    </li>';
+        }
+
+        // ---------------- Hardcoded menus (All Modules ke niche) ----------------
+        $fixedMenus = array(
+            'photo'      => array('Photo Manager - Banners',        'fa-images'),
+            'notice'     => array('Notice & Annual Report Manager', 'fa-bullhorn'),
+            'stories'    => array('Stories & News Article Manager', 'fa-newspaper'),
+            'prerace'    => array('Pre Race Manager',               'fa-horse-head'),
+            'postrace'   => array('Post Race Manager',              'fa-horse-head'),
+            'trackwork'  => array('Track Work Manager',             'fa-running'),
+            'liverace'   => array('Live Race Manager - Updates',    'fa-bullhorn'),
+            'sponsor'    => array('Sponsor Manager',                'fa-handshake'),
+            'mailer'     => array('Mailer Manager',                 'fa-envelope'),
+            'calendar'   => array('Calender Manager',               'fa-calendar-alt'),
+            'dividends'  => array('Dividends Manager',              'fa-chart-line'),
+            'others'     => array('Others/Miscellaneous',           'fa-folder-open'),
+        );
+
+        $fixedMenuHtml = '';
+        foreach ($fixedMenus as $fKey => $fInfo) {
+            $isActiveFixed = ($currentPage === 'dashboard.php' && isset($_GET['menu']) && $_GET['menu'] === $fKey);
+            $fixedMenuHtml .= '
+    <li class="' . ($isActiveFixed ? 'active' : '') . '" id="navFixed_' . $fKey . '">
+        <a href="turf-console/dashboard.php?menu=' . $fKey . '">
+            <i class="fas ' . $fInfo[1] . '"></i> ' . htmlspecialchars($fInfo[0]) . '
         </a>
     </li>';
         }
@@ -1584,6 +1643,7 @@ function toggleSidebarGroup(event, id) {
                 <li class="{$activeAllModules}" id="navAllModules">
                     <a href="turf-console/allModules.php"><i class="fas fa-th-large"></i> All Modules</a>
                 </li>
+                {$fixedMenuHtml}
                 {$sidebarGroupsHtml}
             </ul>
 

@@ -54,127 +54,6 @@ function loadUserPermissions($db, $userId)
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN GROUP ROWS (admin_group_modules based,)
-|--------------------------------------------------------------------------
-*/
-
-function getAdminGroupRowsDb($db, $adminId)
-{
-    $adminId = (int)$adminId;
-    $out = array();
-
-    $rows = $db->getMultiDimensionalArray(
-        "SELECT agm.user_group_id, agm.module_key, ug.name, ug.permission
-         FROM admin_group_modules agm
-         INNER JOIN user_group ug ON ug.user_group_id = agm.user_group_id
-         WHERE agm.admin_id = $adminId
-         ORDER BY ug.name ASC"
-    );
-
-    if (is_array($rows) && count($rows) > 0) {
-        $tmp = array();
-        foreach ($rows as $r) {
-            $gid  = (int)$r['user_group_id'];
-            $perm = @unserialize($r['permission']);
-            if (!is_array($perm)) {
-                $perm = array();
-            }
-            $groupAccess = (!empty($perm['access']) && is_array($perm['access'])) ? $perm['access'] : array();
-            if (!isset($tmp[$gid])) {
-                $tmp[$gid] = array(
-                    'name' => $r['name'],
-                    'icon' => isset($perm['icon']) ? $perm['icon'] : 'fa-folder-open',
-                    'mods' => array()
-                );
-            }
-            if (in_array($r['module_key'], $groupAccess, true)) {
-                $tmp[$gid]['mods'][] = $r['module_key'];
-            }
-        }
-        foreach ($tmp as $gid => $g) {
-            if (empty($g['mods'])) {
-                continue;
-            }
-            $out[] = array(
-                'user_group_id' => $gid,
-                'name'          => $g['name'],
-                'permission'    => serialize(array('access' => $g['mods'], 'modify' => $g['mods'], 'icon' => $g['icon']))
-            );
-        }
-        return $out;
-    }
-
-
-    $legacy = $db->getMultiDimensionalArray(
-        "SELECT ug.user_group_id, ug.name, ug.permission
-         FROM user_group ug
-         WHERE ug.user_group_id = (SELECT user_group_id FROM admins WHERE id = $adminId)
-            OR ug.user_group_id IN (SELECT user_group_id FROM admin_user_group WHERE admin_id = $adminId)
-         ORDER BY ug.name ASC"
-    );
-    return is_array($legacy) ? $legacy : array();
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| ALIASES: catalog keys to module keys
-|--------------------------------------------------------------------------
-*/
-
-function expandModuleAliases($access)
-{
-    $aliases = array(
-        'csr_articles'          => 'articles',
-        'availability_calendar' => 'calendar',
-        'media_tips'            => 'race_results',
-    );
-
-    foreach ($aliases as $from => $to) {
-        if (in_array($from, $access, true) && !in_array($to, $access, true)) {
-            $access[] = $to;
-        }
-    }
-    return array_values(array_unique($access));
-}
-
-
-/*
-|--------------------------------------------------------------------------
-|SESSION FLAGS ($_SESSION['articles'] = 'Y' / 'N')
-|--------------------------------------------------------------------------
-*/
-
-function applyLegacySessionFlags($access, $isSuper = false)
-{
-    $legacyKeys = array(
-        'articles', 'race_history', 'send_mailer', 'rating_change',
-        'gallery', 'video', 'dividends', 'stewards_report',
-        'race_day_report', 'race_results', 'calendar', 'prakash_gosavi',
-        'shiven_surendranath', 'polls', 'adminusers', 'workingManager',
-        'bannerManager', 'tickerManager', 'sponsorManager',
-        'sponsorofthedayManager', 'horseweightManager', 'racedataManager',
-        'configManager', 'mailManager', 'homepopup', 'erp_prerace',
-        'erp_postrace', 'trackworkManager', 'suggestion_feedback',
-        'youtube_upload', 'chairman_email', 'image_upload',
-        'notice_agm', 'annual_report'
-    );
-
-    //
-    foreach ($legacyKeys as $k) {
-        $_SESSION[$k] = $isSuper ? 'Y' : 'N';
-    }
-
-    foreach ($access as $k) {
-        if (is_string($k) && preg_match('/^[A-Za-z0-9_]+$/', $k) && $k !== 'uid' && $k !== 'role' && $k !== 'username') {
-            $_SESSION[$k] = 'Y';
-        }
-    }
-}
-
-
-/*
-|--------------------------------------------------------------------------
 | LOAD ADMIN PERMISSIONS
 |--------------------------------------------------------------------------
 */
@@ -233,7 +112,7 @@ function loadAdminPermissions($db, $userId)
      *
      * Admin table ID 1 = Super Admin
      *
-     * user_group_id 
+     * user_group_id ka yahan koi role nahi hai.
      */
 
     if ($userId === 19) {
@@ -242,8 +121,6 @@ function loadAdminPermissions($db, $userId)
             'access' => array('*'),
             'modify' => array('*')
         );
-
-        applyLegacySessionFlags(array(), true);
 
         return;
     }
@@ -254,19 +131,14 @@ function loadAdminPermissions($db, $userId)
      * NORMAL ADMIN
      * ---------------------------------------------------------------
      *
-     * Normal admin 
+     * Normal admin ka access selected user group se aayega.
      */
 
-    $acc = array();
-    foreach (getAdminGroupRowsDb($db, $userId) as $gr) {
-        $p = parseGroupPermissions($gr['permission']);
-        $acc = array_merge($acc, $p['access']);
-    }
-    $acc = expandModuleAliases(array_values(array_unique($acc)));
-
-    $_SESSION['permissions'] = array('access' => $acc, 'modify' => $acc);
-
-    applyLegacySessionFlags($acc, false);
+    $_SESSION['permissions'] = parseGroupPermissions(
+        isset($row['permission'])
+            ? $row['permission']
+            : ''
+    );
 }
 
 
@@ -363,9 +235,21 @@ function hasModuleModify($module)
 
 
     /*
-     * Normal admin: modify = access (same rule)
+     * Normal admin
      */
-    return hasModuleAccess($module);
+    if (
+        !isset($_SESSION['permissions']) ||
+        !isset($_SESSION['permissions']['modify']) ||
+        !is_array($_SESSION['permissions']['modify'])
+    ) {
+        return false;
+    }
+
+    return in_array(
+        $module,
+        $_SESSION['permissions']['modify'],
+        true
+    );
 }
 
 
