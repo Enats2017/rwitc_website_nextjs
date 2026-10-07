@@ -1432,6 +1432,22 @@ MENU;
     </li>';
         }
 
+        // ---------------- Hardcoded menus (All Modules) ----------------
+        $fixedMenus = array(
+            'photo'      => array('Photo Manager - Banners',        'fa-images'),
+            'notice'     => array('Notice & Annual Report Manager', 'fa-bullhorn'),
+            'stories'    => array('Stories & News Article Manager', 'fa-newspaper'),
+            'prerace'    => array('Pre Race Manager',               'fa-horse-head'),
+            'postrace'   => array('Post Race Manager',              'fa-horse-head'),
+            'trackwork'  => array('Track Work Manager',             'fa-running'),
+            'liverace'   => array('Live Race Manager - Updates',    'fa-bullhorn'),
+            'sponsor'    => array('Sponsor Manager',                'fa-handshake'),
+            'mailer'     => array('Mailer Manager',                 'fa-envelope'),
+            'calendar'   => array('Calender Manager',               'fa-calendar-alt'),
+            'dividends'  => array('Dividends Manager',              'fa-chart-line'),
+            'others'     => array('Others/Miscellaneous',           'fa-folder-open'),
+        );
+
         // ---------------- User groups as sidebar dropdowns ----------------
         $sidebarGroupsHtml = '';
         $sgRows = array();
@@ -1461,6 +1477,11 @@ MENU;
         $catalog = self::moduleCatalog();
 
         foreach ($sgRows as $sg) {
+            
+            if (in_array($sg['name'], array_column($fixedMenus, 0), true)) {
+                continue;
+            }
+
             $perm = @unserialize($sg['permission']);
             if (!is_array($perm) || empty($perm['access']) || !is_array($perm['access'])) {
                 continue;
@@ -1950,7 +1971,7 @@ FINAL_CONTENT;
 
                     </a>
 
-                    </div>
+                    </div>                                  
 
                 </li>
 
@@ -1970,7 +1991,7 @@ FINAL_CONTENT;
 
                 </li>
 
-                <li>       <div class="col-lg-12 rightspo9">
+                <li><div class="col-lg-12 rightspo9">
 
                     <a href="calendar.php" class="colour3">
 

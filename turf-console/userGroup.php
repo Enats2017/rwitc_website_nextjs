@@ -43,6 +43,31 @@ $gIcons = array(
     'fa-gear'          => 'Settings',
 );
 
+// Hardcoded groups (sidebar has 12). New group add in Design::fixedMenuModules() .
+$fixedTitles = array(
+    'photo'     => 'Photo Manager - Banners',
+    'notice'    => 'Notice & Annual Report Manager',
+    'stories'   => 'Stories & News Article Manager',
+    'prerace'   => 'Pre Race Manager',
+    'postrace'  => 'Post Race Manager',
+    'trackwork' => 'Track Work Manager',
+    'liverace'  => 'Live Race Manager - Updates',
+    'sponsor'   => 'Sponsor Manager',
+    'mailer'    => 'Mailer Manager',
+    'calendar'  => 'Calender Manager',
+    'dividends' => 'Dividends Manager',
+    'others'    => 'Others/Miscellaneous',
+);
+$fixedModules = Design::fixedMenuModules();
+
+// module key => menus 
+$moduleMenus = array();
+foreach ($fixedModules as $fmKey => $fmMods) {
+    foreach ($fmMods as $fm) {
+        $moduleMenus[$fm][] = $fmKey;
+    }
+}
+
 $allowedActions = array('list', 'form', 'delete');
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 if (!in_array($action, $allowedActions)) {
@@ -74,9 +99,14 @@ if ($action == 'delete' && isset($_GET['user_group_id'])) {
    SAVE (INSERT / UPDATE)
    ===================================================================== */
 $form_error = null;
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
-    $name = trim($_POST['name']);
-    $icon = isset($_POST['icon']) ? $_POST['icon'] : 'fa-folder-open';
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['menu_key'])) {
+    $menuKey = $_POST['menu_key'];
+    if (isset($fixedTitles[$menuKey])) {
+        $name = $fixedTitles[$menuKey];
+    } else {
+        $name = trim(isset($_POST['legacy_name']) ? $_POST['legacy_name'] : '');
+    }
+    $icon = 'fa-folder-open';
     $mods = isset($_POST['modules']) && is_array($_POST['modules']) ? $_POST['modules'] : array();
     $gid  = !empty($_POST['user_group_id']) ? (int)$_POST['user_group_id'] : 0;
 
@@ -84,9 +114,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
         $icon = 'fa-folder-open';
     }
     $mods = array_values(array_intersect($mods, array_keys($modules)));
+    if (isset($fixedModules[$menuKey])) {
+        $mods = array_values(array_intersect($mods, $fixedModules[$menuKey]));
+    }
 
     if ($name === '') {
-        $form_error = "Group name is required.";
+        $form_error = "Please select a group.";
     } elseif (mb_strlen($name) > 100) {
         $form_error = "Group name is too long (max 100 characters).";
     } elseif (empty($mods)) {
@@ -98,6 +131,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
                 $dupSql .= " AND user_group_id != $gid";
             }
             $dup = $db->getSingleRowAssoc($dupSql);
+
+            if ($dup && !$gid) {
+                $gid = (int)$dup['user_group_id'];
+                $dup = null;
+            }
 
             if ($dup) {
                 $form_error = "A group named \"" . $name . "\" already exists. Please use a different name.";
@@ -168,13 +206,24 @@ if ($action == 'form' && $_SERVER['REQUEST_METHOD'] !== 'POST' && isset($_GET['u
         $edit_group = $row;
     }
 }
-if ($form_error && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
+if ($form_error && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['menu_key'])) {
     $edit_group = array(
         'user_group_id' => isset($_POST['user_group_id']) ? $_POST['user_group_id'] : null,
-        'name'          => $_POST['name'],
+        'menu_key'      => $_POST['menu_key'],
+        'name'          => isset($fixedTitles[$_POST['menu_key']]) ? $fixedTitles[$_POST['menu_key']] : (isset($_POST['legacy_name']) ? $_POST['legacy_name'] : ''),
         'icon'          => (isset($_POST['icon']) && isset($gIcons[$_POST['icon']])) ? $_POST['icon'] : 'fa-folder-open',
         'selected'      => isset($_POST['modules']) && is_array($_POST['modules']) ? $_POST['modules'] : array(),
     );
+}
+
+$selectedMenu = '';
+if ($edit_group) {
+    if (!empty($edit_group['menu_key'])) {
+        $selectedMenu = $edit_group['menu_key'];
+    } else {
+        $found = array_search(isset($edit_group['name']) ? $edit_group['name'] : '', $fixedTitles);
+        $selectedMenu = ($found !== false) ? $found : '__legacy';
+    }
 }
 
 $total_groups = count($user_groups);
@@ -495,17 +544,17 @@ $design->openDiv("leftArea", 'col-lg-9');
                     <p class="section-desc">The name must be unique. It will appear as a dropdown in the sidebar.</p>
 
                     <div class="field">
-                        <label>Group Name <span class="req">*</span></label>
-                        <input type="text" name="name" maxlength="100" placeholder="e.g. Race Management" value="<?php echo htmlspecialchars($edit_group && isset($edit_group['name']) ? $edit_group['name'] : ''); ?>">
-                    </div>
-
-                    <div class="field">
-                        <label>Icon</label>
-                        <select name="icon">
-                            <?php foreach ($gIcons as $ic => $icLabel): ?>
-                                <option value="<?php echo $ic; ?>" <?php echo $curIcon === $ic ? 'selected' : ''; ?>><?php echo $icLabel; ?></option>
+                        <label>Select Group <span class="req">*</span></label>
+                        <select name="menu_key" id="menuSelect" onchange="filterModules()">
+                            <option value="">- Select Group -</option>
+                            <?php foreach ($fixedTitles as $fk => $ft): ?>
+                                <option value="<?php echo $fk; ?>" <?php echo $selectedMenu === $fk ? 'selected' : ''; ?>><?php echo htmlspecialchars($ft); ?></option>
                             <?php endforeach; ?>
+                            <?php if ($selectedMenu === '__legacy'): ?>
+                                <option value="__legacy" selected><?php echo htmlspecialchars($edit_group['name']); ?></option>
+                            <?php endif; ?>
                         </select>
+                        <input type="hidden" name="legacy_name" value="<?php echo htmlspecialchars($selectedMenu === '__legacy' ? $edit_group['name'] : ''); ?>">
                     </div>
                 </div>
 
@@ -527,7 +576,7 @@ $design->openDiv("leftArea", 'col-lg-9');
                         </thead>
                         <tbody>
                             <?php foreach ($modules as $key => $label): ?>
-                                <tr>
+                                <tr class="mod-row" data-menus="<?php echo isset($moduleMenus[$key]) ? implode(',', $moduleMenus[$key]) : ''; ?>">
                                     <td class="module-name"><i class="<?php echo $moduleIcons[$key]; ?>"></i> <?php echo htmlspecialchars($label); ?></td>
                                     <td class="center">
                                         <input type="checkbox" class="perm-check inc-check" name="modules[]" value="<?php echo $key; ?>"
@@ -548,10 +597,24 @@ $design->openDiv("leftArea", 'col-lg-9');
 
         <script>
             function toggleAll(state) {
-                document.querySelectorAll('.inc-check').forEach(function(c) {
+                document.querySelectorAll('.inc-check:not(:disabled)').forEach(function(c) {
                     c.checked = state;
                 });
             }
+
+            function filterModules() {
+                var sel = document.getElementById('menuSelect').value;
+                document.querySelectorAll('.mod-row').forEach(function(r) {
+                    var menus = r.getAttribute('data-menus');
+                    var list = menus ? menus.split(',') : [];
+                    var show = (sel === '__legacy') || (sel !== '' && list.indexOf(sel) !== -1);
+                    r.style.display = show ? '' : 'none';
+                    var cb = r.querySelector('.inc-check');
+                    cb.disabled = !show;
+                    if (!show) { cb.checked = false; }
+                });
+            }
+            filterModules();
         </script>
 
     <?php endif; ?>
