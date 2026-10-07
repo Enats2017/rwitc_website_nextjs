@@ -91,7 +91,7 @@ export default function PerformanceProfile() {
 
                 setSubmitting(false);
             })();
-        }else {
+        } else {
             setProfileData(null);
             setProfileError(null);
             setRaceResultData(null);
@@ -171,28 +171,18 @@ export default function PerformanceProfile() {
 
         // Update URL after data is loaded — avoids remounting mid-fetch
         const params = new URLSearchParams(searchParams.toString());
+
+        // Remove race result params, otherwise the useEffect keeps showing the race result view
+        params.delete("race_no");
+        params.delete("race_date");
+        params.delete("view");
+
         params.set("horsename", horseName.trim());
         router.push(`?${params.toString()}`, { scroll: false });
     }
 
-    // RACENO click — swaps the profile card for the race result card,
-    // same as the live site's ?q=result view.
+    // RACENO click — opens the race result view in a new tab
     async function handleRaceNoClick(raceno, racedate) {
-        // setView("raceResult");
-        // setLoadingRaceResult(true);
-        // setRaceResultError(null);
-        // setRaceResultData(null);
-
-        // const data = await getRaceResult(raceno, racedate);
-
-        // if (data.found) {
-        //     setRaceResultData(data);
-        // } else {
-        //     setRaceResultData(null);
-        //     setRaceResultError(data.message || "No results found for this race.");
-        // }
-
-        // setLoadingRaceResult(false);
 
         const url = new URL(window.location.href);
 
@@ -247,28 +237,17 @@ export default function PerformanceProfile() {
 
                 <div className="ppCard">
 
-                    <div className="ppHeader">
-                        <span className="ppHorseIcon" aria-hidden="true">
-                            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M509.8 332.5l-69.9-164.3c-14.9-41.2-50.4-71-93-79.2 18-10.6 46.3-35.9 34.2-82.3-1.3-5-7.1-7.9-12-6.1L166.9 76.3C35.9 123.4 0 238.9 0 398.8V480c0 17.7 14.3 32 32 32h236.2c23.8 0 39.3-25 28.6-46.3L256 384v-.7c-45.6-3.5-84.6-30.7-104.3-69.6-1.6-3.1-.9-6.9 1.6-9.3l12.1-12.1c3.9-3.9 10.6-2.7 12.9 2.4 14.8 33.7 48.2 57.4 87.4 57.4 17.2 0 33-5.1 46.8-13.2l46 63.9c6 8.4 15.7 13.3 26 13.3h50.3c8.5 0 16.6-3.4 22.6-9.4l45.3-39.8c8.9-9.1 11.7-22.6 7.1-34.4zM328 224c-13.3 0-24-10.7-24-24s10.7-24 24-24 24 10.7 24 24-10.7 24-24 24z"/>
-                            </svg>
-                        </span>
-                        <h1 className="ppTitle">Performance Profile @ RWITC</h1>
-                    </div>
-
                     <div className="ppSearchRow">
 
-                        <div className="ppLabelGroup">
+                        <div className="ppInputWrap" ref={wrapRef}>
+
                             <span className="ppSearchIconWrap" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="11" cy="11" r="7" strokeWidth="2"/>
                                     <line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth="2" strokeLinecap="round"/>
                                 </svg>
                             </span>
-                            <span className="ppLabel">Search Horse</span>
-                        </div>
 
-                        <div className="ppInputWrap" ref={wrapRef}>
                             <input
                                 type="text"
                                 className="ppInput"
@@ -313,6 +292,15 @@ export default function PerformanceProfile() {
                             Submit
                         </button>
 
+                    </div>
+
+                    <div className="ppHeader">
+                        <span className="ppHorseIcon" aria-hidden="true">
+                            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M509.8 332.5l-69.9-164.3c-14.9-41.2-50.4-71-93-79.2 18-10.6 46.3-35.9 34.2-82.3-1.3-5-7.1-7.9-12-6.1L166.9 76.3C35.9 123.4 0 238.9 0 398.8V480c0 17.7 14.3 32 32 32h236.2c23.8 0 39.3-25 28.6-46.3L256 384v-.7c-45.6-3.5-84.6-30.7-104.3-69.6-1.6-3.1-.9-6.9 1.6-9.3l12.1-12.1c3.9-3.9 10.6-2.7 12.9 2.4 14.8 33.7 48.2 57.4 87.4 57.4 17.2 0 33-5.1 46.8-13.2l46 63.9c6 8.4 15.7 13.3 26 13.3h50.3c8.5 0 16.6-3.4 22.6-9.4l45.3-39.8c8.9-9.1 11.7-22.6 7.1-34.4zM328 224c-13.3 0-24-10.7-24-24s10.7-24 24-24 24 10.7 24 24-10.7 24-24 24z"/>
+                            </svg>
+                        </span>
+                        <h1 className="ppTitle">Performance Profile @ RWITC</h1>
                     </div>
 
                 </div>
@@ -431,14 +419,6 @@ export default function PerformanceProfile() {
                 {/* ---------------- RACE RESULT VIEW ---------------- */}
                 {view === "raceResult" && (
                     <div className="ppResultsCard">
-
-                        {/* <button
-                            type="button"
-                            className="ppBackBtn"
-                            onClick={handleBackToProfile}
-                        >
-                            ← Back to Horse Profile
-                        </button> */}
 
                         {loadingRaceResult && (
                             <p className="ppResultsLoading">Loading race result…</p>

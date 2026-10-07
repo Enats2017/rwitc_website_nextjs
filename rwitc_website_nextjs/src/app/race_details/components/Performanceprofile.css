@@ -18,7 +18,7 @@
     width: 100%;
     background: var(--pp-bg);
     font-family: 'Inter', 'Manrope', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-    padding: 56px 16px 64px;
+    padding: 32px 16px 48px;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -33,116 +33,74 @@
     gap: 24px;
 }
 
-/* ---- CARD CONTAINER ---- */
+/* ---- TOP CONTAINER (no card look, only the green top line) ---- */
 .performanceProfilePage .ppCard {
     position: relative;
     width: 100%;
     max-width: 1100px;
-    background: var(--pp-bg);
-    border: 1px solid var(--pp-border);
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(19, 78, 42, 0.04), 0 16px 40px rgba(19, 78, 42, 0.06);
-    padding: 40px 40px 44px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 28px 0 8px;
     overflow: visible;
 }
 
-/* Top accent bar */
+/* Top green line */
 .performanceProfilePage .ppCard::before {
     content: "";
     position: absolute;
-    inset: -1px;                 /* cover the card border */
-    border-radius: inherit;      /* same curve as the card (20px / 16px on mobile) */
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 4px;
     background: linear-gradient(90deg, var(--pp-green) 0%, var(--pp-green-dark) 100%);
-    /* show only the top 4px, so the bar follows the rounded corners */
-    -webkit-mask: linear-gradient(#000, #000) top / 100% 4px no-repeat;
-            mask: linear-gradient(#000, #000) top / 100% 4px no-repeat;
     pointer-events: none;
 }
 
-/* ---- HEADER (icon + title) ---- */
-.performanceProfilePage .ppHeader {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    margin-bottom: 36px;
-}
-
-.performanceProfilePage .ppHorseIcon {
-    width: 40px;
-    height: 40px;
-    margin: 0 auto 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.performanceProfilePage .ppHorseIcon svg {
-    width: 100%;
-    height: 100%;
-    fill: var(--pp-green);
-}
-
-.performanceProfilePage .ppTitle {
-    font-family: 'Poppins', 'Inter', sans-serif;
-    font-size: 34px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--pp-green-dark);
-    margin: 0;
-}
-
-/* ---- SEARCH ROW ---- */
+/* ---- SEARCH ROW (input + button, side by side) ---- */
 .performanceProfilePage .ppSearchRow {
     position: relative;
     z-index: 5;
     display: flex;
     align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    background: var(--pp-gray-light);
-    border: 1px solid var(--pp-border);
-    border-radius: 16px;
-    padding: 22px 28px;
-}
-
-.performanceProfilePage .ppLabelGroup {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-}
-
-.performanceProfilePage .ppSearchIconWrap {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background: #FFFFFF;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    flex-shrink: 0;
-}
-
-.performanceProfilePage .ppSearchIconWrap svg {
-    width: 16px;
-    height: 16px;
-    stroke: var(--pp-green);
-}
-
-.performanceProfilePage .ppLabel {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--pp-text);
-    white-space: nowrap;
+    gap: 14px;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    background: transparent;
+    border: none;
+    padding: 0;
 }
 
 /* ---- INPUT WRAPPER (autocomplete anchor) ---- */
 .performanceProfilePage .ppInputWrap {
     position: relative;
-    flex: 1 1 320px;
-    min-width: 260px;
-    max-width: 500px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Search icon sits inside the input */
+.performanceProfilePage .ppSearchIconWrap {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.performanceProfilePage .ppSearchIconWrap svg {
+    width: 100%;
+    height: 100%;
+    stroke: var(--pp-green);
 }
 
 .performanceProfilePage .ppInput {
@@ -152,9 +110,10 @@
     color: var(--pp-text);
     background: #FFFFFF;
     border: 1px solid var(--pp-border);
-    border-radius: 12px;
-    padding: 14px 18px;
+    border-radius: 10px;
+    padding: 12px 16px 12px 46px;
     outline: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -215,8 +174,8 @@
     color: #FFFFFF;
     background: var(--pp-green);
     border: none;
-    border-radius: 12px;
-    padding: 14px 32px;
+    border-radius: 10px;
+    padding: 12px 28px;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(31, 122, 62, 0.25);
     transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
@@ -236,6 +195,43 @@
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+}
+
+/* ---- HEADER (icon + title in one line, below the search row) ---- */
+.performanceProfilePage .ppHeader {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 28px;
+    margin-bottom: 0;
+}
+
+.performanceProfilePage .ppHorseIcon {
+    width: 38px;
+    height: 38px;
+    margin: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.performanceProfilePage .ppHorseIcon svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--pp-green);
+}
+
+.performanceProfilePage .ppTitle {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--pp-green-dark);
+    margin: 0;
 }
 
 /* ---- RESULTS AREA (placeholder, styled to match) ---- */
@@ -454,8 +450,8 @@
 /* TABLET */
 @media (max-width: 992px) {
 
-    .performanceProfilePage .ppCard {
-        padding: 32px 28px 36px;
+    .performanceProfilePage .ppTitle {
+        font-size: 26px;
     }
 
     .ppResultsCard {
@@ -467,47 +463,33 @@
 @media (max-width: 768px) {
 
     .performanceProfilePage {
-        padding: 32px 12px 40px;
+        padding: 24px 12px 36px;
     }
 
     .performanceProfilePage .ppCard {
-        padding: 28px 20px 32px;
-        border-radius: 16px;
+        padding: 22px 0 4px;
     }
 
-    .performanceProfilePage .ppHeader {
-        margin-bottom: 24px;
-    }
-
-    .performanceProfilePage .ppTitle {
-        font-size: 24px;
-    }
-
-    /* search row stacks vertically */
+    /* input + button stay side by side */
     .performanceProfilePage .ppSearchRow {
-        flex-direction: column;
-        flex-wrap: nowrap;
-        align-items: stretch;
-        gap: 14px;
-        padding: 18px 18px;
-    }
-
-    .performanceProfilePage .ppLabelGroup {
-        justify-content: flex-start;
-    }
-
-    /* FIX: 320px flex-basis was becoming the HEIGHT in column layout,
-       which pushed the dropdown far below the input */
-    .performanceProfilePage .ppInputWrap {
-        flex: 0 0 auto;
-        width: 100%;
-        min-width: 0;
-        max-width: none;
+        gap: 10px;
     }
 
     /* 16px prevents iOS auto-zoom on focus */
     .performanceProfilePage .ppInput {
         font-size: 16px;
+        padding: 11px 12px 11px 42px;
+    }
+
+    .performanceProfilePage .ppSearchIconWrap {
+        left: 13px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .performanceProfilePage .ppSubmitBtn {
+        padding: 11px 20px;
+        font-size: 14px;
     }
 
     .performanceProfilePage .ppSuggestions {
@@ -515,8 +497,18 @@
         -webkit-overflow-scrolling: touch;
     }
 
-    .performanceProfilePage .ppSubmitBtn {
-        width: 100%;
+    .performanceProfilePage .ppHeader {
+        margin-top: 22px;
+        gap: 10px;
+    }
+
+    .performanceProfilePage .ppHorseIcon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .performanceProfilePage .ppTitle {
+        font-size: 22px;
     }
 
     .ppResultsCard {
@@ -549,19 +541,20 @@
 @media (max-width: 480px) {
 
     .performanceProfilePage {
-        padding: 24px 10px 32px;
+        padding: 20px 10px 28px;
     }
 
-    .performanceProfilePage .ppCard {
-        padding: 24px 14px 28px;
+    .performanceProfilePage .ppSubmitBtn {
+        padding: 11px 16px;
+    }
+
+    .performanceProfilePage .ppHorseIcon {
+        width: 26px;
+        height: 26px;
     }
 
     .performanceProfilePage .ppTitle {
-        font-size: 21px;
-    }
-
-    .performanceProfilePage .ppSearchRow {
-        padding: 14px;
+        font-size: 18px;
     }
 
     .ppResultsCard {

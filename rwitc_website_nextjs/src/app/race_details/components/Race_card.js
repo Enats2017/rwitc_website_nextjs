@@ -6,7 +6,58 @@ import { getRaceCard } from "../../../services/racecardService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import { FaHorseHead } from "react-icons/fa";
 import "./Race_card.css";
+const MONTHS = {
+    jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
+    jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12"
+};
 
+/* Koi bhi date format -> YYYY-MM-DD */
+function toIsoDate(raw) {
+    const s = String(raw || "").trim();
+    if (!s) return "";
+    let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
+    if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+    m = s.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3})[A-Za-z]*[-\/ ,]*(\d{4})/);
+    if (m && MONTHS[m[2].toLowerCase()]) {
+        return `${m[3]}-${MONTHS[m[2].toLowerCase()]}-${m[1].padStart(2, "0")}`;
+    }
+    return "";
+}
+
+/* Performance profile page ke race result jaisa hi URL banata hai:
+   /race_details?type=performanceProfile&horsename=..&race_no=..&race_date=..&view=raceResult */
+function openRaceResult(raceNo, isoDate, horseName) {
+    if (!raceNo || !isoDate) return;
+
+    const params = new URLSearchParams();
+    params.set("type", "performanceProfile");
+    if (horseName) params.set("horsename", horseName);
+    params.set("race_no", raceNo);
+    params.set("race_date", isoDate);
+    params.set("view", "raceResult");
+
+    window.open(
+        `${window.location.origin}/race_details?${params.toString()}`,
+        "_blank"
+    );
+}
+
+/* Archive iframe me us run row ke horse ka naam nikalta hai */
+function getHorseNameFromRow(row) {
+    const perfRow = row.closest("tr[id^='performance_']");
+    let scope = null;
+
+    if (perfRow) {
+        const btn = row.ownerDocument.getElementById(perfRow.id.replace("performance_", ""));
+        scope = btn ? btn.closest("table.infoTable") : null;
+    }
+    if (!scope) scope = row.closest("table.infoTable");
+
+    const el = scope ? scope.querySelector("a, span") : null;
+    return el ? el.textContent.trim() : "";
+}
 /*
  * Styles + script injected INSIDE the archive iframe.
  * Iframe always fits the card width. Only the performance-history
@@ -286,6 +337,43 @@ export default function RaceCard() {
                 requestAnimationFrame(setHeight);
             });
         });
+        /* Run table me Race No click -> sahi Race Result URL kholo */
+        doc.addEventListener(
+            "click",
+            (ev) => {
+                const row = ev.target.closest("tr.perform_data");
+                if (!row) return;
+
+                const cells = row.querySelectorAll("td");
+                const raceCell = cells[1];                   // 2nd column = Race No
+                if (!raceCell) return;
+
+                const clickedCell = ev.target.closest("td");
+                if (clickedCell !== raceCell) return;        // sirf Race No pe click
+
+                const raceNo = raceCell.textContent.trim();
+                let raceDate = toIsoDate(cells[0].textContent);
+
+                if (!raceDate) {
+                    const a = row.querySelector("a[href]");
+                    if (a) {
+                        try {
+                            const u = new URL(a.getAttribute("href"), "https://rwitc.com");
+                            raceDate = toIsoDate(
+                                u.searchParams.get("racedate") || u.searchParams.get("race_date") || ""
+                            );
+                        } catch (e) { }
+                    }
+                }
+
+                const horseName = getHorseNameFromRow(row);
+
+                ev.preventDefault();      // legacy link ka purana navigation band
+                ev.stopPropagation();
+                openRaceResult(raceNo, raceDate, horseName);
+            },
+            true   // capture: legacy link se pehle chalega
+        );
     };
 
     const isHtmlMode = mode === "html";
@@ -456,7 +544,15 @@ export default function RaceCard() {
                                                     {horse.performanceHistory && horse.performanceHistory.map((perf, pIdx) => (
                                                         <tr key={pIdx}>
                                                             <td>{perf.raceDate}</td>
-                                                            <td>{perf.raceNo}</td>
+                                                            <td>
+                                                                <button
+                                                                    type="button"
+                                                                    style={{ background: "none", border: "none", color: "#16a34a", fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+                                                                    onClick={() => openRaceResult(perf.raceNo, toIsoDate(perf.raceDate), horse.name)}
+                                                                >
+                                                                    {perf.raceNo}
+                                                                </button>
+                                                            </td>
                                                             <td>{perf.jockey}</td>
                                                             <td>{perf.raceClass}</td>
                                                             <td>{perf.distance}</td>
