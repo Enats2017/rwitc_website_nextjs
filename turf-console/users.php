@@ -900,7 +900,7 @@ function buildPageUrl(
 
 
     return
-        'users.php?' .
+        'turf-console/users.php?' .
         http_build_query($params);
 }
 
@@ -1706,7 +1706,7 @@ $design->writeLogoTickerMenu();
 
         <form
             method="post"
-            action="users.php"
+            action="turf-console/users.php"
             id="bulk-form">
 
             <div

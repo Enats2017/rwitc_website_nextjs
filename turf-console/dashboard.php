@@ -1213,6 +1213,30 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                 <?php } ?>
 
 
+                <!-- ABOUT RWITC -->
+
+                <?php if (hasModuleAccess('about_rwitc')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/aboutRwitcManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-landmark"></i>
+                        </span>
+
+                        <span class="card-title">
+                            About RWITC
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
             </div>
 
             <?php } /* end else (normal dashboard) */ ?>

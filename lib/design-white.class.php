@@ -1336,6 +1336,7 @@ MENU;
             'media_tips'             => array('Media Tips & updates Manager',            'turf-console/raceResultsManager.php',          'fas fa-flag-checkered'),
             'notice_agm'             => array('Notice for the AGM',                      'turf-console/noticeAgmManager.php',          'fas fa-bullhorn'),
             'annual_report'          => array('Annual Report',                           'turf-console/annualReportManager.php',       'fas fa-file-invoice'),
+            'about_rwitc'            => array('About RWITC',                             'turf-console/aboutRwitcManager.php',         'fas fa-landmark'),
         );
     }
 
@@ -1354,7 +1355,7 @@ MENU;
             'mailer'    => array('send_mailer', 'mailManager'),
             'calendar'  => array('calendar', 'availability_calendar'),
             'dividends' => array('dividends'),
-            'others'    => array(
+            'others'    => array( 
                 'stewards_report',
                 'race_history',
                 'polls',

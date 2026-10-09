@@ -61,6 +61,7 @@ if ($action == 'delete' && isset($_GET['user_group_id'])) {
             exit;
         }
         $db->query("UPDATE admins SET user_group_id = NULL WHERE user_group_id = $gid");
+        $db->query("DELETE FROM admin_group_modules WHERE user_group_id = $gid");
         $db->query("DELETE FROM user_group WHERE user_group_id = $gid");
         header("Location: userGroup.php?msg=deleted");
         exit;
