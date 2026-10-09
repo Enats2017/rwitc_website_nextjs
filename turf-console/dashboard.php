@@ -1261,6 +1261,54 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                 <?php } ?>
 
 
+                <!-- ORGANISATION & MANAGEMENT -->
+
+                <?php if (hasModuleAccess('organisation_management')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/organisationManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-sitemap"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Organisation &amp; Management
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- HISTORY -->
+
+                <?php if (hasModuleAccess('history_timeline')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/historyTimelineManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-history"></i>
+                        </span>
+
+                        <span class="card-title">
+                            History
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
             </div>
 
             <?php } /* end else (normal dashboard) */ ?>
