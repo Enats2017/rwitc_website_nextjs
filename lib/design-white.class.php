@@ -1340,6 +1340,17 @@ MENU;
             'vision_mission'         => array('Vision & Mission',                        'turf-console/visionMissionManager.php',      'fas fa-bullseye'),
             'organisation_management' => array('Organisation & Management',              'turf-console/organisationManager.php',       'fas fa-sitemap'),
             'history_timeline'       => array('History - Timeline / Major Events',       'turf-console/historyTimelineManager.php',    'fas fa-history'),
+            'scrutinizer_report'     => array('Scrutinizer Report',                      'turf-console/ScrutinizerReport.php',         'fas fa-file-signature'),
+            'proceeding'             => array('Proceeding',                              'turf-console/Proceeding.php',                'fas fa-gavel'),
+            'egm'                    => array('EGM',                                     'turf-console/egm.php',                       'fas fa-users'),
+            'scrutinizer_report_agm' => array('Scrutinizer Report AGM',                   'turf-console/ScrutinizerReportAgm.php',      'fas fa-file-signature'),
+            'charity_race_days'      => array('Charities - Charity Race Days',           'turf-console/charityRaceDaysManager.php',    'fas fa-hand-holding-heart'),
+            'community_contribution' => array('Contribution to the Communities',         'turf-console/communityContributionManager.php', 'fas fa-people-group'),
+            'responsible_gambling'   => array('Responsible Gambling',                    'turf-console/responsibleGamblingManager.php', 'fas fa-scale-balanced'),
+            'careers'                => array('Careers',                                 'turf-console/careersManager.php',            'fas fa-briefcase'),
+            'mgt_7'                  => array('MGT-7',                                   'turf-console/mgt7Manager.php',               'fas fa-file-contract'),
+            'register_of_directors'  => array('Register of Directors',                   'turf-console/registerOfDirectorsManager.php', 'fas fa-user-tie'),
+            'register_of_contracts'  => array('Register of Contracts',                   'turf-console/registerOfContractsManager.php', 'fas fa-file-signature'),
         );
     }
 

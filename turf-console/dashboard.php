@@ -20,7 +20,6 @@ $userObj = new Users($db);
 if (!isAdminlogin()) {
 
     $secmsg = "You do not have access to this page.";
-
 }
 
 
@@ -69,7 +68,6 @@ if (empty($secmsg) && isset($_GET['grp']) && (int)$_GET['grp'] > 0) {
         } else {
             $secmsg = "You do not have access to this group.";
         }
-
     } else {
         $secmsg = "Invalid group.";
     }
@@ -115,7 +113,6 @@ if (empty($secmsg) && !$isGroupView && isset($_GET['menu'])) {
 
         $isGroupView = true;
         $groupName   = isset($menuTitles[$menuKey]) ? $menuTitles[$menuKey] : $menuKey;
-
     } else {
         $secmsg = "Invalid menu.";
     }
@@ -149,49 +146,214 @@ $design->writeLogoTickerMenu();
 
 $design->openDiv("contentWrapper");
 
-$design->openDiv("infoWrapper","col-lg-12");
+$design->openDiv("infoWrapper", "col-lg-12");
 
-$design->openDiv("leftArea",'col-lg-9');
+$design->openDiv("leftArea", 'col-lg-9');
 
 $design->writeContentPageStyles();
 
 ?>
 
 <style type="text/css">
-.message { background: #fff3cd; border: 1px solid #ffe08a; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; }
-.submenu { display: none; }
-.dashboard-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-.dashboard-header > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; }
-.dashboard-title { font-size: 24px; font-weight: 700; color: #2b332f; margin-top: 0; }
-.dashboard-subtitle { font-size: 14px; color: #7a8c84; margin: 0; }
-.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.card-item { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 16px 16px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #2b332f; box-shadow: 0 1px 2px rgba(0,0,0,0.03); transition: box-shadow .15s ease, transform .15s ease; }
-.card-item:not(.card-static):hover { box-shadow: 0 4px 10px rgba(0,0,0,0.08); transform: translateY(-1px); border-color: #1a7a45; }
-.card-static { cursor: default; color: #7a8c84; }
-.card-icon { width: 36px; height: 36px; border-radius: 9px; background: #0f5c33; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
-.card-static .card-icon { background: #7a8c84; }
-.card-title { font-size: 15px; font-weight: 500; line-height: 1.3; flex: 1; }
-.card-arrow { color: #7a8c84; font-size: 13px; }
-@media (min-width: 1920px) { .cards-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; } .dashboard-title { font-size: 30px; } }
-@media (max-width: 1200px) { .cards-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); } }
-@media (max-width: 900px) { .cards-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); } }
-@media (max-width: 700px) { .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } .dashboard-title { font-size: 20px; } }
-@media (max-width: 560px) {
-    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .dashboard-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 4px; }
-    .dashboard-subtitle { font-size: 13px; }
-    .card-item { padding: 11px 10px; gap: 8px; border-radius: 10px; }
-    .card-icon { width: 32px; height: 32px; font-size: 13px; border-radius: 8px; }
-    .card-title { font-size: 12.5px; line-height: 1.25; font-weight: 500; }
-    .card-arrow { font-size: 11px; }
-}
-@media (max-width: 360px) {
-    .cards-grid { grid-template-columns: 1fr; }
-    .card-icon { width: 30px; height: 30px; font-size: 12px; }
-}
-html, body { scrollbar-width: none; -ms-overflow-style: none; }
-html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+    .message {
+        background: #fff3cd;
+        border: 1px solid #ffe08a;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
 
+    .submenu {
+        display: none;
+    }
+
+    .dashboard-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .dashboard-header>div {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .dashboard-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2b332f;
+        margin-top: 0;
+    }
+
+    .dashboard-subtitle {
+        font-size: 14px;
+        color: #7a8c84;
+        margin: 0;
+    }
+
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
+    }
+
+    .card-item {
+        background: #fff;
+        border: 1px solid #e2e6e4;
+        border-radius: 12px;
+        padding: 16px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: #2b332f;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        transition: box-shadow .15s ease, transform .15s ease;
+    }
+
+    .card-item:not(.card-static):hover {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
+        border-color: #1a7a45;
+    }
+
+    .card-static {
+        cursor: default;
+        color: #7a8c84;
+    }
+
+    .card-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        background: #0f5c33;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .card-static .card-icon {
+        background: #7a8c84;
+    }
+
+    .card-title {
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 1.3;
+        flex: 1;
+    }
+
+    .card-arrow {
+        color: #7a8c84;
+        font-size: 13px;
+    }
+
+    @media (min-width: 1920px) {
+        .cards-grid {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 22px;
+        }
+
+        .dashboard-title {
+            font-size: 30px;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .cards-grid {
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        }
+    }
+
+    @media (max-width: 900px) {
+        .cards-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+    }
+
+    @media (max-width: 700px) {
+        .cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .dashboard-title {
+            font-size: 20px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            gap: 4px;
+        }
+
+        .dashboard-subtitle {
+            font-size: 13px;
+        }
+
+        .card-item {
+            padding: 11px 10px;
+            gap: 8px;
+            border-radius: 10px;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            font-size: 13px;
+            border-radius: 8px;
+        }
+
+        .card-title {
+            font-size: 12.5px;
+            line-height: 1.25;
+            font-weight: 500;
+        }
+
+        .card-arrow {
+            font-size: 11px;
+        }
+    }
+
+    @media (max-width: 360px) {
+        .cards-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-icon {
+            width: 30px;
+            height: 30px;
+            font-size: 12px;
+        }
+    }
+
+    html,
+    body {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+    }
 </style>
 
 
@@ -222,15 +384,13 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
             <a
                 style="float:left;"
-                href="dashboard.php"
-            >
+                href="dashboard.php">
                 Dashboard
             </a>
 
             <a
                 style="float:left; margin-left:5px;"
-                href="index.php?q=logout"
-            >
+                href="index.php?q=logout">
                 Logout
             </a>
 
@@ -239,27 +399,27 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     </div>
 
 
-        <div class="main-content">
+    <div class="main-content">
 
 
-            <div class="dashboard-header">
+        <div class="dashboard-header">
 
-                <div>
+            <div>
 
-                    <h1 class="dashboard-title">
-                        <?php echo $isGroupView ? htmlspecialchars(strtoupper($groupName)) : 'ADMIN DASHBOARD'; ?>
-                    </h1>
+                <h1 class="dashboard-title">
+                    <?php echo $isGroupView ? htmlspecialchars(strtoupper($groupName)) : 'ADMIN DASHBOARD'; ?>
+                </h1>
 
-                    <p class="dashboard-subtitle">
-                        <?php echo $isGroupView ? 'Modules in this group' : 'Manage all club activities'; ?>
-                    </p>
-
-                </div>
+                <p class="dashboard-subtitle">
+                    <?php echo $isGroupView ? 'Modules in this group' : 'Manage all club activities'; ?>
+                </p>
 
             </div>
 
+        </div>
 
-            <?php if ($isGroupView) { ?>
+
+        <?php if ($isGroupView) { ?>
 
             <div class="cards-grid">
 
@@ -273,7 +433,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
             </div>
 
-            <?php } else { ?>
+        <?php } else { ?>
 
             <div class="cards-grid">
 
@@ -286,8 +446,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/articlesManager.php"
-                    >
+                        href="turf-console/articlesManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-file-alt"></i>
@@ -310,8 +469,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/csrArticlesManager.php"
-                    >
+                        href="turf-console/csrArticlesManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-heart"></i>
@@ -334,8 +492,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/raceHistoryManager.php"
-                    >
+                        href="turf-console/raceHistoryManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-horse-head"></i>
@@ -358,8 +515,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/sendMailers.php"
-                    >
+                        href="turf-console/sendMailers.php">
 
                         <span class="card-icon">
                             <i class="fas fa-envelope"></i>
@@ -382,8 +538,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/ratingsChangeManager.php"
-                    >
+                        href="turf-console/ratingsChangeManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-chart-bar"></i>
@@ -406,8 +561,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/galleryManager.php"
-                    >
+                        href="turf-console/galleryManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-images"></i>
@@ -430,8 +584,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/manageVideos.php"
-                    >
+                        href="turf-console/manageVideos.php">
 
                         <span class="card-icon">
                             <i class="fas fa-video"></i>
@@ -454,8 +607,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/dividendsManager.php"
-                    >
+                        href="turf-console/dividendsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-chart-line"></i>
@@ -478,8 +630,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/stewardsReportManager.php"
-                    >
+                        href="turf-console/stewardsReportManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-shield-alt"></i>
@@ -501,8 +652,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/sweepstakesManager.php"
-                    >
+                        href="turf-console/sweepstakesManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-trophy"></i>
@@ -525,8 +675,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/racedayReportsManager.php"
-                    >
+                        href="turf-console/racedayReportsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-clipboard-list"></i>
@@ -549,8 +698,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/raceResultsManager.php"
-                    >
+                        href="turf-console/raceResultsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-flag-checkered"></i>
@@ -573,8 +721,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/calendarManager.php"
-                    >
+                        href="turf-console/calendarManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-calendar-alt"></i>
@@ -591,8 +738,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/availibilityManager.php"
-                    >
+                        href="turf-console/availibilityManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-calendar-check"></i>
@@ -615,8 +761,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/pgArticlesManager.php"
-                    >
+                        href="turf-console/pgArticlesManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-pen-nib"></i>
@@ -639,8 +784,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/ssArticlesManager.php"
-                    >
+                        href="turf-console/ssArticlesManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-feather-alt"></i>
@@ -663,8 +807,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/managePolls.php"
-                    >
+                        href="turf-console/managePolls.php">
 
                         <span class="card-icon">
                             <i class="fas fa-poll"></i>
@@ -687,8 +830,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/manageUser.php"
-                    >
+                        href="turf-console/manageUser.php">
 
                         <span class="card-icon">
                             <i class="fas fa-users-cog"></i>
@@ -711,8 +853,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/workingManager.php"
-                    >
+                        href="turf-console/workingManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-cloud-upload-alt"></i>
@@ -735,8 +876,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/bannerManager.php"
-                    >
+                        href="turf-console/bannerManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-image"></i>
@@ -759,8 +899,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/tickerManager.php"
-                    >
+                        href="turf-console/tickerManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-stream"></i>
@@ -783,8 +922,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/sponsorManager.php"
-                    >
+                        href="turf-console/sponsorManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-handshake"></i>
@@ -807,8 +945,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/sponsorofthedayManager.php"
-                    >
+                        href="turf-console/sponsorofthedayManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-star"></i>
@@ -831,8 +968,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/configManager.php"
-                    >
+                        href="turf-console/configManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-cogs"></i>
@@ -855,8 +991,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/horseweightManager.php"
-                    >
+                        href="turf-console/horseweightManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-weight"></i>
@@ -879,8 +1014,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/racedataManager.php"
-                    >
+                        href="turf-console/racedataManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-database"></i>
@@ -903,8 +1037,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/mailManager.php"
-                    >
+                        href="turf-console/mailManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-envelope-open-text"></i>
@@ -927,8 +1060,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/homepopup.php"
-                    >
+                        href="turf-console/homepopup.php">
 
                         <span class="card-icon">
                             <i class="fas fa-window-restore"></i>
@@ -964,8 +1096,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/erp_prerace.php"
-                    >
+                        href="turf-console/erp_prerace.php">
 
                         <span class="card-icon">
                             <i class="fas fa-calendar-plus"></i>
@@ -1001,8 +1132,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/erp_postrace.php"
-                    >
+                        href="turf-console/erp_postrace.php">
 
                         <span class="card-icon">
                             <i class="fas fa-calendar-check"></i>
@@ -1025,8 +1155,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/trackworkManager.php"
-                    >
+                        href="turf-console/trackworkManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-running"></i>
@@ -1062,8 +1191,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/suggestion_feedback_list.php"
-                    >
+                        href="turf-console/suggestion_feedback_list.php">
 
                         <span class="card-icon">
                             <i class="fas fa-comments"></i>
@@ -1086,8 +1214,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/youtube_videos_upload.php"
-                    >
+                        href="turf-console/youtube_videos_upload.php">
 
                         <span class="card-icon">
                             <i class="fab fa-youtube"></i>
@@ -1123,8 +1250,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/email_to_chairman_list.php"
-                    >
+                        href="turf-console/email_to_chairman_list.php">
 
                         <span class="card-icon">
                             <i class="fas fa-envelope"></i>
@@ -1147,8 +1273,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/image_upload.php"
-                    >
+                        href="turf-console/image_upload.php">
 
                         <span class="card-icon">
                             <i class="fas fa-cloud-upload-alt"></i>
@@ -1171,8 +1296,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/noticeAgmManager.php"
-                    >
+                        href="turf-console/noticeAgmManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-bullhorn"></i>
@@ -1195,8 +1319,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/annualReportManager.php"
-                    >
+                        href="turf-console/annualReportManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-file-invoice"></i>
@@ -1219,8 +1342,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/aboutRwitcManager.php"
-                    >
+                        href="turf-console/aboutRwitcManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-landmark"></i>
@@ -1243,8 +1365,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/visionMissionManager.php"
-                    >
+                        href="turf-console/visionMissionManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-bullseye"></i>
@@ -1267,8 +1388,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/organisationManager.php"
-                    >
+                        href="turf-console/organisationManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-sitemap"></i>
@@ -1291,8 +1411,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
                     <a
                         class="card-item"
-                        href="turf-console/historyTimelineManager.php"
-                    >
+                        href="turf-console/historyTimelineManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-history"></i>
@@ -1307,13 +1426,253 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                     </a>
 
                 <?php } ?>
+                <!-- SCRUTINIZER REPORT -->
+
+                <?php if (hasModuleAccess('scrutinizer_report')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/ScrutinizerReport.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-file-signature"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Scrutinizer Report
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+                <!-- PROCEEDING -->
+
+                <?php if (hasModuleAccess('proceeding')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/Proceeding.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-gavel"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Proceeding
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+                <!-- EGM -->
+
+                <?php if (hasModuleAccess('egm')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/egm.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </span>
+
+                        <span class="card-title">
+                            EGM
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+                <!-- SCRUTINIZER REPORT AGM -->
+
+                <?php if (hasModuleAccess('scrutinizer_report_agm')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/ScrutinizerReportAgm.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-file-signature"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Scrutinizer Report AGM
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+                <!-- CHARITIES - CHARITY RACE DAYS -->
+
+                <?php if (hasModuleAccess('charity_race_days')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/charityRaceDaysManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Charities - Charity Race Days
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
 
 
+                <!-- CONTRIBUTION TO THE COMMUNITIES -->
+
+                <?php if (hasModuleAccess('community_contribution')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/communityContributionManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-people-group"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Contribution to the Communities
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- RESPONSIBLE GAMBLING -->
+
+                <?php if (hasModuleAccess('responsible_gambling')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/responsibleGamblingManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-scale-balanced"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Responsible Gambling
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- CAREERS -->
+
+                <?php if (hasModuleAccess('careers')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/careersManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Careers
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+                <!-- MGT-7 -->
+
+                <?php if (hasModuleAccess('mgt_7')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/mgt7Manager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-file-contract"></i>
+                        </span>
+
+                        <span class="card-title">
+                            MGT-7
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- REGISTER OF DIRECTORS -->
+
+                <?php if (hasModuleAccess('register_of_directors')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/registerOfDirectorsManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Register of Directors
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- REGISTER OF CONTRACTS -->
+
+                <?php if (hasModuleAccess('register_of_contracts')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/registerOfContractsManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-file-signature"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Register of Contracts
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
             </div>
 
-            <?php } /* end else (normal dashboard) */ ?>
+        <?php } /* end else (normal dashboard) */ ?>
 
-        </div>
+    </div>
 
 
 <?php } ?>
