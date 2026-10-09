@@ -126,22 +126,94 @@ function loadAdminPermissions($db, $userId)
     }
 
 
+//     /*
+//      * ---------------------------------------------------------------
+//      * NORMAL ADMIN
+//      * ---------------------------------------------------------------
+//      *
+//      * Normal admin ka access selected user group se aayega.
+//      */
+
+//     $_SESSION['permissions'] = parseGroupPermissions(
+//         isset($row['permission'])
+//             ? $row['permission']
+//             : ''
+//     );
+// }
     /*
      * ---------------------------------------------------------------
      * NORMAL ADMIN
      * ---------------------------------------------------------------
      *
-     * Normal admin ka access selected user group se aayega.
+     * Access comes from admin_group_modules (modules ticked per group).
+     * Legacy fallback: if the admin has no rows there, use the old single group.
      */
 
-    $_SESSION['permissions'] = parseGroupPermissions(
-        isset($row['permission'])
-            ? $row['permission']
-            : ''
+    $access = array();
+
+    $agmRows = $db->getMultiDimensionalArray(
+        "SELECT agm.user_group_id, agm.module_key, ug.permission
+         FROM admin_group_modules agm
+         INNER JOIN user_group ug ON ug.user_group_id = agm.user_group_id
+         WHERE agm.admin_id = $userId"
     );
+
+    if (is_array($agmRows) && count($agmRows) > 0) {
+
+        foreach ($agmRows as $r) {
+
+            $groupPerm = parseGroupPermissions($r['permission']);
+
+            // Only count the module if the group really contains it
+            if (in_array($r['module_key'], $groupPerm['access'], true)) {
+                $access[] = $r['module_key'];
+            }
+        }
+    } else {
+
+        $legacy = parseGroupPermissions(
+            isset($row['permission']) ? $row['permission'] : ''
+        );
+        $access = $legacy['access'];
+    }
+
+    $access = array_values(array_unique($access));
+
+    $_SESSION['permissions'] = array(
+        'access' => $access,
+        'modify' => $access
+    );
+
+    // Old pages still check $_SESSION['bannerManager'] == "Y" etc.
+    syncLegacyModuleSessionFlags($access);
 }
+/*
+|--------------------------------------------------------------------------
+| SYNC OLD SESSION FLAGS
+|--------------------------------------------------------------------------
+| Sets $_SESSION['<module_key>'] = 'Y' / 'N' from the permission list.
+*/
 
+function syncLegacyModuleSessionFlags($access)
+{
+    $keys = array(
+        'articles', 'race_history', 'send_mailer', 'rating_change', 'gallery',
+        'video', 'dividends', 'stewards_report', 'race_day_report', 'calendar',
+        'prakash_gosavi', 'shiven_surendranath', 'polls', 'adminusers',
+        'workingManager', 'bannerManager', 'tickerManager', 'sponsorManager',
+        'sponsorofthedayManager', 'horseweightManager', 'racedataManager',
+        'configManager', 'mailManager', 'homepopup'
+    );
 
+    // Also include every key from the module catalog, if Design class is loaded
+    if (class_exists('Design')) {
+        $keys = array_unique(array_merge($keys, array_keys(Design::moduleCatalog())));
+    }
+
+    foreach ($keys as $k) {
+        $_SESSION[$k] = in_array($k, $access, true) ? 'Y' : 'N';
+    }
+}
 /*
 |--------------------------------------------------------------------------
 | PARSE GROUP PERMISSIONS

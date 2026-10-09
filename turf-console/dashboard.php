@@ -38,35 +38,40 @@ if (empty($secmsg) && isset($_GET['grp']) && (int)$_GET['grp'] > 0) {
 
     $grpId    = (int)$_GET['grp'];
     $adminUid = isset($_SESSION['uid']) ? (int)$_SESSION['uid'] : 0;
-    $grpRow   = null;
 
-    if ($adminUid === 19) {
-        $grpRow = $db->getSingleRowAssoc(
-            "SELECT name, permission FROM user_group WHERE user_group_id = $grpId"
-        );
-    } else {
-        $grpRow = $db->getSingleRowAssoc(
-            "SELECT ug.name, ug.permission
-             FROM user_group ug
-             INNER JOIN admin_user_group aug ON aug.user_group_id = ug.user_group_id
-             WHERE ug.user_group_id = $grpId AND aug.admin_id = $adminUid"
-        );
-    }
+    $grpRow = $db->getSingleRowAssoc(
+        "SELECT name, permission FROM user_group WHERE user_group_id = $grpId"
+    );
 
     if ($grpRow) {
-        $isGroupView = true;
-        $groupName   = $grpRow['name'];
-        $gPerm       = @unserialize($grpRow['permission']);
-        $gAccess     = (is_array($gPerm) && !empty($gPerm['access']) && is_array($gPerm['access'])) ? $gPerm['access'] : array();
-        $gCatalog    = Design::moduleCatalog();
+
+        $gCatalog = Design::moduleCatalog();
+        $gAccess  = array();
+
+        if ($adminUid === 19) {
+            // Super admin: all modules of the group
+            $gPerm   = @unserialize($grpRow['permission']);
+            $gAccess = (is_array($gPerm) && !empty($gPerm['access']) && is_array($gPerm['access'])) ? $gPerm['access'] : array();
+        } else {
+            // Normal admin: only the modules ticked for this admin in this group
+            $gAccess = Design::getAdminGroupModules($db, $adminUid, $grpId);
+        }
 
         foreach ($gAccess as $k) {
             if (isset($gCatalog[$k])) {
                 $groupCards[] = $gCatalog[$k];
             }
         }
+
+        if (!empty($groupCards)) {
+            $isGroupView = true;
+            $groupName   = $grpRow['name'];
+        } else {
+            $secmsg = "You do not have access to this group.";
+        }
+
     } else {
-        $secmsg = "You do not have access to this group.";
+        $secmsg = "Invalid group.";
     }
 }
 

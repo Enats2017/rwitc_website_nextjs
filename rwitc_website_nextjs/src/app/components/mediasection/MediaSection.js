@@ -14,7 +14,10 @@ import { getMedia, getRaceMedia } from "../../../services/mediaService";
 // "2026-07-20 00:00:00", or an ISO string) into a clean "YYYY-MM-DD"
 // string, so the URL never ends up with a raw space/time part in it.
 function toDateOnly(dateStr) { if (!dateStr) return ""; return String(dateStr).split(" ")[0].split("T")[0]; }
+
 const HARD_VIDEO_URL = "https://erpuat.rwitc.com/rwitc_website/MEDIA/Club-House-720p.mp4";
+const HARD_VIDEO_THUMBNAIL = "https://erpuat.rwitc.com/rwitc_website/MEDIA/video_thumbnail.jpg";
+
 export default function MediaSection() {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(true);
@@ -114,7 +117,7 @@ export default function MediaSection() {
                     {
                         hasVideo && (
                             <div className="videoArea" id="live-video">
-                                <video controls playsInline width="100%" height="100%">
+                                <video controls playsInline width="100%" height="100%" poster={HARD_VIDEO_THUMBNAIL}>
                                     <source src={HARD_VIDEO_URL} type="video/mp4" />
                                 </video>
                             </div>

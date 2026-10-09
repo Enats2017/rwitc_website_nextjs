@@ -2480,34 +2480,115 @@ $design->writeLogoTickerMenu();
                 </div>
 
 
-                <div class="form-section">
+                             <div class="form-section">
 
                     <h3 class="section-title">Group Modules</h3>
                     <p class="section-desc">
-                        Jis group ke jo modules is admin ko dene hain unhe tick karo. Ek group ke modules alag-alag admins mein baant sakte ho.
+                        Select a group, then tick the modules this admin should get from that group.
+                        You can switch between groups; selections made in every group are saved.
                     </p>
 
                     <?php if (empty($groupsForForm)): ?>
-                        <p class="section-desc">No user groups with modules found.</p>
-                    <?php endif; ?>
 
-                    <?php foreach ($groupsForForm as $gId => $g): ?>
-                        <div style="border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin-bottom:12px;">
-                            <div style="font-weight:600;margin-bottom:8px;">
-                                <i class="fa fa-folder-open"></i>
-                                <?php echo htmlspecialchars($g['name']); ?>
-                            </div>
-                            <?php foreach ($g['mods'] as $mKey => $mLabel): ?>
-                                <label style="display:inline-flex;align-items:center;gap:6px;margin:0 18px 8px 0;font-weight:500;">
-                                    <input type="checkbox" class="checkbox"
-                                        name="gm[<?php echo (int)$gId; ?>][]"
-                                        value="<?php echo htmlspecialchars($mKey); ?>"
-                                        <?php echo (isset($selectedGM[$gId]) && in_array($mKey, $selectedGM[$gId], true)) ? 'checked' : ''; ?>>
-                                    <?php echo htmlspecialchars($mLabel); ?>
-                                </label>
-                            <?php endforeach; ?>
+                        <p class="section-desc">No user groups with modules found.</p>
+
+                    <?php else: ?>
+
+                        <div class="field" style="max-width:420px;">
+                            <label for="groupSelect">User Group</label>
+                            <select id="groupSelect">
+                                <option value="">-- Select Group --</option>
+                                <?php foreach ($groupsForForm as $gId => $g): ?>
+                                    <option value="<?php echo (int)$gId; ?>"
+                                        data-name="<?php echo htmlspecialchars($g['name']); ?>">
+                                        <?php echo htmlspecialchars($g['name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
-                    <?php endforeach; ?>
+
+                        <?php foreach ($groupsForForm as $gId => $g): ?>
+                            <div class="gm-panel"
+                                id="gmPanel_<?php echo (int)$gId; ?>"
+                                style="display:none;border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-top:6px;">
+
+                                <div style="font-weight:600;margin-bottom:10px;">
+                                    <i class="fa fa-folder-open"></i>
+                                    <?php echo htmlspecialchars($g['name']); ?>
+                                    <span style="font-weight:400;color:var(--ink-400);font-size:12.5px;">
+                                        &mdash; modules
+                                    </span>
+                                </div>
+
+                                <?php foreach ($g['mods'] as $mKey => $mLabel): ?>
+                                    <label style="display:inline-flex;align-items:center;gap:6px;margin:0 18px 8px 0;font-weight:500;">
+                                        <input type="checkbox" class="checkbox gm-check"
+                                            data-group="<?php echo (int)$gId; ?>"
+                                            name="gm[<?php echo (int)$gId; ?>][]"
+                                            value="<?php echo htmlspecialchars($mKey); ?>"
+                                            <?php echo (isset($selectedGM[$gId]) && in_array($mKey, $selectedGM[$gId], true)) ? 'checked' : ''; ?>>
+                                        <?php echo htmlspecialchars($mLabel); ?>
+                                    </label>
+                                <?php endforeach; ?>
+
+                            </div>
+                        <?php endforeach; ?>
+
+                        <script>
+                            (function() {
+                                var select = document.getElementById('groupSelect');
+                                if (!select) {
+                                    return;
+                                }
+
+                                // Show only the panel of the selected group
+                                function showPanel() {
+                                    var panels = document.querySelectorAll('.gm-panel');
+                                    for (var i = 0; i < panels.length; i++) {
+                                        panels[i].style.display = 'none';
+                                    }
+                                    if (select.value !== '') {
+                                        var active = document.getElementById('gmPanel_' + select.value);
+                                        if (active) {
+                                            active.style.display = 'block';
+                                        }
+                                    }
+                                }
+
+                                // Show how many modules are ticked in each group, inside the dropdown
+                                function updateCounts() {
+                                    for (var i = 0; i < select.options.length; i++) {
+                                        var opt = select.options[i];
+                                        if (opt.value === '') {
+                                            continue;
+                                        }
+                                        var count = document.querySelectorAll(
+                                            '.gm-check[data-group="' + opt.value + '"]:checked'
+                                        ).length;
+                                        var name = opt.getAttribute('data-name');
+                                        opt.text = count > 0 ? name + ' (' + count + ' selected)' : name;
+                                    }
+                                }
+
+                                select.addEventListener('change', showPanel);
+
+                                var checks = document.querySelectorAll('.gm-check');
+                                for (var j = 0; j < checks.length; j++) {
+                                    checks[j].addEventListener('change', updateCounts);
+                                }
+
+                                // On load (edit mode): auto-select the first group that already has ticked modules
+                                var firstChecked = document.querySelector('.gm-check:checked');
+                                if (firstChecked) {
+                                    select.value = firstChecked.getAttribute('data-group');
+                                }
+
+                                updateCounts();
+                                showPanel();
+                            })();
+                        </script>
+
+                    <?php endif; ?>
 
                 </div>
 

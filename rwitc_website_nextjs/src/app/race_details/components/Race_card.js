@@ -68,7 +68,7 @@ const ARCHIVE_STYLES_RACECARD = `
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; max-width: 100%; overflow-x: hidden; }
 body { font-family: Arial, sans-serif; word-wrap: break-word; padding: 12px; background: #ffffff; display: flow-root; }
-span, a { display: inline-block; text-decoration: none; color: #c9c9c9; }
+span, a { display: inline-block; text-decoration: none; color: #222222 !important; }
 img { max-width: 100%; height: auto; vertical-align: middle; }
 h3 { font-family: 'Roboto Condensed', Arial, sans-serif; font-size: 32px; letter-spacing: 3px; color: #c9c9c9; text-align: center; margin: 10px 0; }
 .pageHeading { text-align: center; margin-bottom: 24px; }
@@ -89,7 +89,7 @@ table { border-collapse: collapse; width: 100%; }
 /* Race header bar (green) */
 .race_no_data { background: #16a34a !important; border-radius: 4px; margin: 36px 0 18px; overflow: hidden; }
 .race_no_data th { background: transparent; color: #ffffff !important; text-align: left; padding: 12px 26px; font-size: 14px; line-height: 1.1; vertical-align: top; border: none !important; }
-.race_no_data th, .race_no_data th span, .race_no_data th * { color: #ffffff !important; }
+.race_no_data th, .race_no_data th span, .race_no_data th * { color: #222222 !important; }
 .darkGrey { color: #ffffff !important; font-weight: bold; }
 .foreign_eligible2 span { display: block; margin: 2px 0; }
 
@@ -254,7 +254,8 @@ export default function RaceCard() {
                 span.style.marginTop = "2px";
             });
 
-            el.querySelectorAll("br").forEach((br) => {
+            // Hide <br> only inside the green race header, NOT inside horse cards
+            el.querySelectorAll("th br").forEach((br) => {
                 br.style.display = "none";
             });
         });

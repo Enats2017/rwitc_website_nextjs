@@ -1389,9 +1389,57 @@ MENU;
         $access = array_values(array_unique($access));
         return array('access' => $access, 'modify' => $access);
     }
+    /**
+     * Returns the module keys a specific admin has been given inside ONE group.
+     * Example: group has 5 modules, admin was ticked on 2 -> returns only those 2.
+     */
+    public static function getAdminGroupModules($db, $adminId, $groupId)
+    {
+        $adminId = (int)$adminId;
+        $groupId = (int)$groupId;
+        $catalog = self::moduleCatalog();
 
+        $g = $db->getSingleRowAssoc(
+            "SELECT permission FROM user_group WHERE user_group_id = " . $groupId
+        );
+        if (!$g) {
+            return array();
+        }
+
+        $p = @unserialize($g['permission']);
+        $groupAccess = (is_array($p) && !empty($p['access']) && is_array($p['access'])) ? $p['access'] : array();
+
+        $result = array();
+
+        // Modules ticked for this admin in this group
+        $rows = $db->getMultiDimensionalArray(
+            "SELECT module_key FROM admin_group_modules
+             WHERE admin_id = " . $adminId . " AND user_group_id = " . $groupId
+        );
+
+        if (is_array($rows) && count($rows) > 0) {
+            foreach ($rows as $r) {
+                $k = $r['module_key'];
+                if (in_array($k, $groupAccess, true) && isset($catalog[$k])) {
+                    $result[] = $k;
+                }
+            }
+        } else {
+            // Legacy fallback: admin only has the old single group -> all modules of that group
+            $a = $db->getSingleRowAssoc("SELECT user_group_id FROM admins WHERE id = " . $adminId);
+            if ($a && (int)$a['user_group_id'] === $groupId) {
+                foreach ($groupAccess as $k) {
+                    if (isset($catalog[$k])) {
+                        $result[] = $k;
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($result));
+    }
     function writeLeftPanel()
-    {   
+    {
         $sessionUser = isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'ADMIN';
         $currentPage = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
         $shareUrl = 'https://' . $_SERVER['HTTP_HOST'] . '' . $_SERVER['REQUEST_URI'];
@@ -1415,40 +1463,24 @@ MENU;
             $userGroupSubActiveClass = $isUserGroupPage ? ' active' : '';
 
             $usersMenuHtml = '
-    <li class="sidebar-user-dropdown' . $usersDropdownOpenClass . '" id="navUsers">
-        <a href="#" onclick="toggleSidebarGroup(event, \'navUsers\');">
-            <i class="fas fa-users"></i>
-            Users
-            <i class="fas fa-chevron-down sidebar-user-arrow"></i>
-        </a>
-        <ul id="sidebarUsersMenu" class="sidebar-submenu">
-            <li class="' . trim($usersSubActiveClass) . '">
-                <a href="turf-console/users.php"><i class="fas fa-user"></i> Users</a>
-            </li>
-            <li class="' . trim($userGroupSubActiveClass) . '">
-                <a href="turf-console/userGroup.php"><i class="fas fa-user-group"></i> User Group</a>
-            </li>
-        </ul>
-    </li>';
+        <li class="sidebar-user-dropdown' . $usersDropdownOpenClass . '" id="navUsers">
+            <a href="#" onclick="toggleSidebarGroup(event, \'navUsers\');">
+                <i class="fas fa-users"></i>
+                Users
+                <i class="fas fa-chevron-down sidebar-user-arrow"></i>
+            </a>
+            <ul id="sidebarUsersMenu" class="sidebar-submenu">
+                <li class="' . trim($usersSubActiveClass) . '">
+                    <a href="turf-console/users.php"><i class="fas fa-user"></i> Users</a>
+                </li>
+                <li class="' . trim($userGroupSubActiveClass) . '">
+                    <a href="turf-console/userGroup.php"><i class="fas fa-user-group"></i> User Group</a>
+                </li>
+            </ul>
+        </li>';
         }
 
-        // ---------------- Hardcoded menus (All Modules) ----------------
-        $fixedMenus = array(
-            'photo'      => array('Photo Manager - Banners',        'fa-images'),
-            'notice'     => array('Notice & Annual Report Manager', 'fa-bullhorn'),
-            'stories'    => array('Stories & News Article Manager', 'fa-newspaper'),
-            'prerace'    => array('Pre Race Manager',               'fa-horse-head'),
-            'postrace'   => array('Post Race Manager',              'fa-horse-head'),
-            'trackwork'  => array('Track Work Manager',             'fa-running'),
-            'liverace'   => array('Live Race Manager - Updates',    'fa-bullhorn'),
-            'sponsor'    => array('Sponsor Manager',                'fa-handshake'),
-            'mailer'     => array('Mailer Manager',                 'fa-envelope'),
-            'calendar'   => array('Calender Manager',               'fa-calendar-alt'),
-            'dividends'  => array('Dividends Manager',              'fa-chart-line'),
-            'others'     => array('Others/Miscellaneous',           'fa-folder-open'),
-        );
-
-        // ---------------- User groups as sidebar dropdowns ----------------
+        // ---------------- User groups as sidebar items (from DB) ----------------
         $sidebarGroupsHtml = '';
         $sgRows = array();
         try {
@@ -1459,11 +1491,21 @@ MENU;
                     "SELECT user_group_id, name, permission FROM user_group ORDER BY name ASC"
                 );
             } else {
+                // Groups where this admin has ticked modules (admin_group_modules),
+                // plus the legacy single group stored in admins.user_group_id
                 $sgRows = $sgDb->getMultiDimensionalArray(
                     "SELECT ug.user_group_id, ug.name, ug.permission
                      FROM user_group ug
-                     INNER JOIN admin_user_group aug ON aug.user_group_id = ug.user_group_id
-                     WHERE aug.admin_id = " . $adminId . "
+                     WHERE ug.user_group_id IN (
+                               SELECT agm.user_group_id
+                               FROM admin_group_modules agm
+                               WHERE agm.admin_id = " . $adminId . "
+                           )
+                        OR ug.user_group_id = (
+                               SELECT a.user_group_id
+                               FROM admins a
+                               WHERE a.id = " . $adminId . "
+                           )
                      ORDER BY ug.name ASC"
                 );
             }
@@ -1477,34 +1519,21 @@ MENU;
         $catalog = self::moduleCatalog();
 
         foreach ($sgRows as $sg) {
-            
-            if (in_array($sg['name'], array_column($fixedMenus, 0), true)) {
-                continue;
-            }
 
             $perm = @unserialize($sg['permission']);
             if (!is_array($perm) || empty($perm['access']) || !is_array($perm['access'])) {
                 continue;
             }
 
-            $itemsHtml = '';
-            $groupIsOpen = false;
-
+            // Skip the group if none of its modules exist in the catalog
+            $hasValidModule = false;
             foreach ($perm['access'] as $k) {
-                if (!isset($catalog[$k])) {
-                    continue;
+                if (isset($catalog[$k])) {
+                    $hasValidModule = true;
+                    break;
                 }
-                $label = htmlspecialchars($catalog[$k][0]);
-                $url   = htmlspecialchars($catalog[$k][1]);
-                $icon  = $catalog[$k][2];
-                $isActive = (basename(parse_url($catalog[$k][1], PHP_URL_PATH)) === $currentPage);
-                if ($isActive) {
-                    $groupIsOpen = true;
-                }
-                $itemsHtml .= '<li class="' . ($isActive ? 'active' : '') . '"><a href="' . $url . '"><i class="' . $icon . '"></i> ' . $label . '</a></li>';
             }
-
-            if ($itemsHtml === '') {
+            if (!$hasValidModule) {
                 continue;
             }
 
@@ -1515,38 +1544,11 @@ MENU;
             $isActiveGroup = ($currentPage === 'dashboard.php' && isset($_GET['grp']) && (int)$_GET['grp'] === $gid);
 
             $sidebarGroupsHtml .= '
-    <li class="' . ($isActiveGroup ? 'active' : '') . '" id="navSg' . $gid . '">
-        <a href="turf-console/dashboard.php?grp=' . $gid . '">
-            <i class="fas ' . $gIcon . '"></i> ' . $gName . '
-        </a>
-    </li>';
-        }
-
-        // ---------------- Hardcoded menus (All Modules ke niche) ----------------
-        $fixedMenus = array(
-            'photo'      => array('Photo Manager - Banners',        'fa-images'),
-            'notice'     => array('Notice & Annual Report Manager', 'fa-bullhorn'),
-            'stories'    => array('Stories & News Article Manager', 'fa-newspaper'),
-            'prerace'    => array('Pre Race Manager',               'fa-horse-head'),
-            'postrace'   => array('Post Race Manager',              'fa-horse-head'),
-            'trackwork'  => array('Track Work Manager',             'fa-running'),
-            'liverace'   => array('Live Race Manager - Updates',    'fa-bullhorn'),
-            'sponsor'    => array('Sponsor Manager',                'fa-handshake'),
-            'mailer'     => array('Mailer Manager',                 'fa-envelope'),
-            'calendar'   => array('Calender Manager',               'fa-calendar-alt'),
-            'dividends'  => array('Dividends Manager',              'fa-chart-line'),
-            'others'     => array('Others/Miscellaneous',           'fa-folder-open'),
-        );
-
-        $fixedMenuHtml = '';
-        foreach ($fixedMenus as $fKey => $fInfo) {
-            $isActiveFixed = ($currentPage === 'dashboard.php' && isset($_GET['menu']) && $_GET['menu'] === $fKey);
-            $fixedMenuHtml .= '
-    <li class="' . ($isActiveFixed ? 'active' : '') . '" id="navFixed_' . $fKey . '">
-        <a href="turf-console/dashboard.php?menu=' . $fKey . '">
-            <i class="fas ' . $fInfo[1] . '"></i> ' . htmlspecialchars($fInfo[0]) . '
-        </a>
-    </li>';
+        <li class="' . ($isActiveGroup ? 'active' : '') . '" id="navSg' . $gid . '">
+            <a href="turf-console/dashboard.php?grp=' . $gid . '">
+                <i class="fas ' . $gIcon . '"></i> ' . $gName . '
+            </a>
+        </li>';
         }
 
         // ---------------- Dashboard / All Modules ----------------
@@ -1631,15 +1633,15 @@ MENU;
             #rightArea .quick-access-list li a { font-size: 12px; padding: 7px 8px; gap: 6px; }
         }
         </style>
-<script>
-function toggleSidebarGroup(event, id) {
-    event.preventDefault();
-    var dropdown = document.getElementById(id);
-    if (dropdown) {
-        dropdown.classList.toggle('open');
-    }
-}
-</script>
+        <script>
+        function toggleSidebarGroup(event, id) {
+            event.preventDefault();
+            var dropdown = document.getElementById(id);
+            if (dropdown) {
+                dropdown.classList.toggle('open');
+            }
+        }
+        </script>
                 <div id="rightArea" class="col-lg-3">
 
             <div class="profile-card">
@@ -1664,7 +1666,6 @@ function toggleSidebarGroup(event, id) {
                 <li class="{$activeAllModules}" id="navAllModules">
                     <a href="turf-console/allModules.php"><i class="fas fa-th-large"></i> All Modules</a>
                 </li>
-                {$fixedMenuHtml}
                 {$sidebarGroupsHtml}
             </ul>
 

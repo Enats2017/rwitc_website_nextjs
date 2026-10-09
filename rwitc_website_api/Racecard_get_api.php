@@ -212,16 +212,16 @@ function ensureUtf8Html($content)
 
     return $converted;
 }
-
 function racecardWrapDownloadHtml($htmlContent)
 {
     $htmlContent = (string) $htmlContent;
 
     $css = <<<'CSS'
-* { box-sizing: border-box; }
-    body { font-family: Arial; margin: 0; padding: 12px; background: #ffffff; }
-    span, a { display: inline-block; text-decoration: none; color: #c9c9c9; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 12px; background: #ffffff; min-height: 100vh; }
+    span, a { display: inline-block; text-decoration: none; color: #111111; }
     img { vertical-align: middle; }
+
     h3 {
         font-family: 'Roboto Condensed', Arial, sans-serif;
         font-size: 32px;
@@ -231,15 +231,9 @@ function racecardWrapDownloadHtml($htmlContent)
         margin: 10px 0;
     }
     .pageHeading { text-align: center; margin-bottom: 24px; }
-    .subHeading {
-        text-align: center;
-        font-size: 13px;
-        font-weight: bold;
-        color: #111;
-        margin: 4px 0;
-    }
+    .subHeading { text-align: center; font-size: 13px; font-weight: bold; color: #111; margin: 4px 0; }
 
-    /* Legacy "download" link — hidden, page already renders its own button. */
+    /* Legacy "download" link hidden */
     .download { display: none !important; }
 
     /* Race-number quick-nav pills */
@@ -254,6 +248,7 @@ function racecardWrapDownloadHtml($htmlContent)
         border-radius: 50%;
         background: #16a34a;
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         font-weight: 700;
         font-size: 14px;
     }
@@ -263,64 +258,50 @@ function racecardWrapDownloadHtml($htmlContent)
     .table-bordered { border: 1px solid #e2e2e2; }
     .table-bordered th, .table-bordered td { border: none; }
 
-    /* ---- Race header bar (green) ---- */
-.race_no_data {
-    background: #16a34a !important;
-    border-radius: 4px;
-    margin: 36px 0 18px;
-    overflow: hidden;
-}
-
-/* ---- Spacing between horse cards ---- */
-
-td > table.infoTable[style*='box-shadow'] {
-    margin: 18px 0 !important;
-    padding: 24px 28px !important;
-}
-
+    /* ---- Race header: WHITE background, BLACK text ---- */
+    .race_no_data { margin: 36px 0 18px; }
+    .race_no_data,
+    .race_no_data tr,
+    .race_no_data th,
+    .race_no_data td {
+        background: transparent !important;
+        background-color: transparent !important;
+    }
     .race_no_data th {
-    background: transparent;
-    color: #ffffff !important;
-    text-align: left;
-    padding: 12px 26px;
-    font-size: 14px;
-    line-height: 1.1;
-    vertical-align: top;
-    border: none !important;
-}
-.race_no_data th,
-.race_no_data th span,
-.race_no_data th * {
-    color: #ffffff !important;
-}
-
-    .darkGrey { color: #ffffff !important; font-weight: bold; }
+        text-align: left;
+        padding: 12px 26px;
+        font-size: 14px;
+        line-height: 1.3;
+        vertical-align: top;
+        border: none !important;
+    }
     .foreign_eligible2 span { display: block; margin: 2px 0; }
 
-    /* ---- Horse card (grey box, background comes from inline style) ---- */
-    
+    /* ---- Spacing between horse cards ---- */
+    td > table.infoTable[style*='box-shadow'] {
+        margin: 18px 0 !important;
+        padding: 24px 28px !important;
+    }
+
+    /* ---- Horse card ---- */
     .infoTable { width: 100%; }
-    .infoTable td { border: 0; padding: 4px 6px; font-size: 13.5px; color: #222; font-weight: 700; }
-    .horse_number_class { color: #111 !important; }
+    .infoTable td { border: 0; padding: 4px 6px; font-size: 13.5px; font-weight: 700; }
     .alignLeft { text-align: left !important; }
     .alignRight { text-align: right !important; }
-
     .infoTable img { border: 2px solid #16a34a !important; border-radius: 2px; }
     .infoTable td:has(> img) { text-align: right !important; }
 
-    /* "View Runs" button */
+    /* ---- View Runs button ---- */
     .view_perform { cursor: pointer; }
     .view_runs {
         display: inline-block;
         background: #16a34a;
-        color: #ffffff !important;
         font-weight: 700;
         font-size: 12px;
         padding: 6px 16px;
         border-radius: 4px;
         cursor: pointer;
     }
-    .view_runs:hover { background: #12833b; }
 
     /* ---- Performance history table ---- */
     .perform_head td {
@@ -331,31 +312,21 @@ td > table.infoTable[style*='box-shadow'] {
         border: 1px solid #e2e2e2;
         text-align: center;
     }
-    
     .perform_data td {
-    font-size: 12px;
-    padding: 8px;
-    border: 1px solid #e2e2e2;
-    text-align: center;
-    font-weight: 700;
-}
+        font-size: 12px;
+        padding: 8px;
+        border: 1px solid #e2e2e2;
+        text-align: center;
+        font-weight: 700;
+    }
 
     /* ---- Pools table ---- */
-    .poolsTable th {
-        background: #16a34a;
-        color: #ffffff !important;
-        padding: 10px;
-        text-align: left;
-    }
-    .poolsTable td {
-        padding: 10px;
-        border: 1px solid #e2e2e2;
-    }
+    .poolsTable th { background: #16a34a; padding: 10px; text-align: left; }
+    .poolsTable td { padding: 10px; border: 1px solid #e2e2e2; }
 
     @media (min-width: 500px) and (max-width: 2560px) {
         .show1 { display: none; }
     }
-
     @media (max-width: 500px) {
         td, th { font-size: 11px !important; }
         .perform_data {
@@ -373,36 +344,61 @@ td > table.infoTable[style*='box-shadow'] {
             width: 45%;
         }
     }
-    body { min-height: 100vh; }
-    .download { display: none !important; }
 
-CSS;
+    /* =====================================================
+    FINAL OVERRIDES: sab text BLACK (bg white)
+    ===================================================== */
+    .race_no_data,
+    .race_no_data *,
+    .darkGrey,
+    .darkGrey *,
+    .foreign_eligible2,
+    .foreign_eligible2 *,
+    .infoTable,
+    .infoTable *:not(img) {
+        color: #111111 !important;
+        -webkit-text-fill-color: #111111 !important;
+        text-shadow: none !important;
+    }
 
-    if (stripos($htmlContent, "<html") !== false) {
-        if (stripos($htmlContent, "</head>") !== false) {
-            return preg_replace(
-                "/<\/head>/i",
-                "<style>" . $css . "</style></head>",
-                $htmlContent,
-                1
-            );
-        }
+    [style*="color:#fff"],
+    [style*="color: #fff"],
+    [style*="color:#FFF"],
+    [style*="color: #FFF"],
+    [style*="color:white"],
+    [style*="color: white"],
+    [style*="color:#ffffff"],
+    [style*="color: #ffffff"],
+    font[color] {
+        color: #111111 !important;
+        -webkit-text-fill-color: #111111 !important;
+    }
 
-        if (stripos($htmlContent, "<body") !== false) {
-            return preg_replace(
-                "/<body([^>]*)>/i",
-                "<head><style>" . $css . "</style></head><body$1>",
-                $htmlContent,
-                1
-            );
-        }
+    .view_runs,
+    .infoTable .view_runs,
+    .infoTable .view_runs *,
+    .slider a.race_call,
+    .poolsTable th {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    CSS;
+
+    $styleTag = "<style>" . $css . "</style>";
+
+    $pos = strripos($htmlContent, "</body>");
+
+    if ($pos !== false) {
+        return substr($htmlContent, 0, $pos)
+            . $styleTag
+            . substr($htmlContent, $pos);
     }
 
     return "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">"
         . "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
-        . "<style>" . $css . "</style>"
         . "</head><body>"
         . $htmlContent
+        . $styleTag
         . "</body></html>";
 }
 

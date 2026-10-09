@@ -21,5 +21,13 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4"
-  }
+  },
+  "browserslist": [
+    "chrome >= 50",
+    "edge >= 79",
+    "firefox >= 52",
+    "safari >= 10",
+    "ios_saf >= 10",
+    "samsung >= 5"
+  ]
 }
