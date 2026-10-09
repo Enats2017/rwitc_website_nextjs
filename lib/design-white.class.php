@@ -1337,6 +1337,7 @@ MENU;
             'notice_agm'             => array('Notice for the AGM',                      'turf-console/noticeAgmManager.php',          'fas fa-bullhorn'),
             'annual_report'          => array('Annual Report',                           'turf-console/annualReportManager.php',       'fas fa-file-invoice'),
             'about_rwitc'            => array('About RWITC',                             'turf-console/aboutRwitcManager.php',         'fas fa-landmark'),
+            'vision_mission'         => array('Vision & Mission',                        'turf-console/visionMissionManager.php',      'fas fa-bullseye'),
         );
     }
 
@@ -1352,7 +1353,7 @@ MENU;
             'trackwork' => array('trackworkManager'),
             'liverace'  => array('media_tips'),
             'sponsor'   => array('sponsorManager', 'sponsorofthedayManager'),
-            'mailer'    => array('send_mailer', 'mailManager'),
+            'mailer'    => array('send_mailer', '   mailManager'),
             'calendar'  => array('calendar', 'availability_calendar'),
             'dividends' => array('dividends'),
             'others'    => array( 

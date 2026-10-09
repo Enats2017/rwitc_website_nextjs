@@ -1237,6 +1237,30 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                 <?php } ?>
 
 
+                <!-- VISION & MISSION -->
+
+                <?php if (hasModuleAccess('vision_mission')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/visionMissionManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Vision &amp; Mission
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
             </div>
 
             <?php } /* end else (normal dashboard) */ ?>
