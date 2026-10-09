@@ -1338,6 +1338,8 @@ MENU;
             'annual_report'          => array('Annual Report',                           'turf-console/annualReportManager.php',       'fas fa-file-invoice'),
             'about_rwitc'            => array('About RWITC',                             'turf-console/aboutRwitcManager.php',         'fas fa-landmark'),
             'vision_mission'         => array('Vision & Mission',                        'turf-console/visionMissionManager.php',      'fas fa-bullseye'),
+            'organisation_management' => array('Organisation & Management',              'turf-console/organisationManager.php',       'fas fa-sitemap'),
+            'history_timeline'       => array('History - Timeline / Major Events',       'turf-console/historyTimelineManager.php',    'fas fa-history'),
         );
     }
 
