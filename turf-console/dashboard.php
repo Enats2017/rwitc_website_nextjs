@@ -1668,6 +1668,368 @@ $design->writeContentPageStyles();
                     </a>
 
                 <?php } ?>
+
+
+                <!-- MEDICATION RULES -->
+
+                <?php if (hasModuleAccess('medication_rules')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/medicationRulesManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-pills"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Medication Rules
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- BEGINNERS GUIDE -->
+
+                <?php if (hasModuleAccess('beginners_guide')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/beginnersGuideManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-book-open"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Beginners Guide
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- RULES OF RACING -->
+
+                <?php if (hasModuleAccess('rules_of_racing')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/rulesOfRacingManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-gavel"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Rules of Racing
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- RACING CALENDAR -->
+
+                <?php if (hasModuleAccess('racing_calendar_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/racingCalendarManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-calendar-days"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Racing Calendar
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- JOCKEY'S RIDING WEIGHT -->
+
+                <?php if (hasModuleAccess('jockey_riding_weight_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/jockeyRidingWeightManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-weight-scale"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Jockey's Riding Weight
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- MEMORANDUM & ARTICLES OF ASSOCIATION -->
+
+                <?php if (hasModuleAccess('memorandum_articles_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/memorandumArticlesManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-scroll"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Memorandum &amp; Articles of Association
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- READY RECKONER -->
+
+                <?php if (hasModuleAccess('ready_reckoner_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/readyReckonerManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-calculator"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Ready Reckoner
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- RECORD TIMINGS -->
+
+                <?php if (hasModuleAccess('record_timings_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/recordTimingsManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-stopwatch"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Record Timings
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- STANDARD TIMINGS -->
+
+                <?php if (hasModuleAccess('standard_timings_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/standardTimingsManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-clock"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Standard Timings
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- BEGINNERS LUCK IN RACING -->
+
+                <?php if (hasModuleAccess('beginners_luck_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/beginnersLuckManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-clover"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Beginners Luck in Racing
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- WAGERING TERMS -->
+
+                <?php if (hasModuleAccess('wagering_terms_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/wageringTermsManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-coins"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Wagering Terms
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- BETTING POOLS -->
+
+                <?php if (hasModuleAccess('betting_pools_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/bettingPoolsManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Betting Pools
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- NATIONAL TOTE POOLS -->
+
+                <?php if (hasModuleAccess('national_tote_pools_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/nationalTotePoolsManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-globe"></i>
+                        </span>
+
+                        <span class="card-title">
+                            National Tote Pools
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- BETTING CHANNELS -->
+
+                <?php if (hasModuleAccess('betting_channels_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/bettingChannelsManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-tower-broadcast"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Betting Channels
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- DEDUCTION NORMS -->
+
+                <?php if (hasModuleAccess('deduction_norms_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/deductionNormsManager.php"
+                    >
+
+                        <span class="card-icon">
+                            <i class="fas fa-percent"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Deduction Norms
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
             </div>
 
         <?php } /* end else (normal dashboard) */ ?>

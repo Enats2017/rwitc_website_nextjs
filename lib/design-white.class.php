@@ -1351,10 +1351,25 @@ MENU;
             'mgt_7'                  => array('MGT-7',                                   'turf-console/mgt7Manager.php',               'fas fa-file-contract'),
             'register_of_directors'  => array('Register of Directors',                   'turf-console/registerOfDirectorsManager.php', 'fas fa-user-tie'),
             'register_of_contracts'  => array('Register of Contracts',                   'turf-console/registerOfContractsManager.php', 'fas fa-file-signature'),
+            'medication_rules'       => array('Medication Rules',                        'turf-console/medicationRulesManager.php',     'fas fa-pills'),
+            'beginners_guide'        => array('Beginners Guide',                         'turf-console/beginnersGuideManager.php',      'fas fa-book-open'),
+            'rules_of_racing'        => array('Rules of Racing',                         'turf-console/rulesOfRacingManager.php',       'fas fa-gavel'),
+            'racing_calendar_docs'   => array('Racing Calendar',                         'turf-console/racingCalendarManager.php',      'fas fa-calendar-days'),
+            'jockey_riding_weight_docs' => array("Jockey's Riding Weight",               'turf-console/jockeyRidingWeightManager.php',  'fas fa-weight-scale'),
+            'memorandum_articles_docs' => array('Memorandum & Articles of Association',  'turf-console/memorandumArticlesManager.php',  'fas fa-scroll'),
+            'ready_reckoner_docs'    => array('Ready Reckoner',                          'turf-console/readyReckonerManager.php',       'fas fa-calculator'),
+            'record_timings_docs'    => array('Record Timings',                          'turf-console/recordTimingsManager.php',       'fas fa-stopwatch'),
+            'standard_timings_docs'  => array('Standard Timings',                        'turf-console/standardTimingsManager.php',     'fas fa-clock'),
+            'beginners_luck_docs'    => array('Beginners Luck in Racing',                'turf-console/beginnersLuckManager.php',       'fas fa-clover'),
+            'wagering_terms_docs'    => array('Wagering Terms',                          'turf-console/wageringTermsManager.php',       'fas fa-coins'),
+            'betting_pools_docs'     => array('Betting Pools',                           'turf-console/bettingPoolsManager.php',        'fas fa-layer-group'),
+            'national_tote_pools_docs' => array('National Tote Pools',                   'turf-console/nationalTotePoolsManager.php',   'fas fa-globe'),
+            'betting_channels_docs'  => array('Betting Channels',                        'turf-console/bettingChannelsManager.php',     'fas fa-tower-broadcast'),
+            'deduction_norms_docs'   => array('Deduction Norms',                         'turf-console/deductionNormsManager.php',      'fas fa-percent'),
         );
     }
 
-   
+
     public static function fixedMenuModules()
     {
         return array(
