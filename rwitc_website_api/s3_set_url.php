@@ -29,9 +29,19 @@ try {
         'Key'    => $key,
     ]);
 
-    header("Content-Type: " . $result['ContentType']);
+    $body = (string) $result['Body'];
+    $contentType = $result['ContentType'];
+
+    if (preg_match('/\.html?$/i', $key)) {
+        if (!mb_check_encoding($body, 'UTF-8')) {
+            $body = mb_convert_encoding($body, 'UTF-8', 'Windows-1252');
+        }
+        $contentType = 'text/html; charset=utf-8';
+    }
+
+    header("Content-Type: " . $contentType);
     header("Cache-Control: public, max-age=86400");
-    echo $result['Body'];
+    echo $body;
 
 } catch (AwsException $e) {
 

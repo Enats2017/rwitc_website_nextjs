@@ -409,25 +409,33 @@
     color: var(--pp-green-dark);
 }
 
-/* ---- BACK BUTTON (race result view) ---- */
-.ppBackBtn {
-    display: inline-flex;
+.performanceProfilePage .ppBackBtn {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    margin: 0;
+    padding: 0;
+    display: flex;
     align-items: center;
-    gap: 6px;
-    background: var(--pp-gray-light);
+    justify-content: center;
+    background: #FFFFFF;
     border: 1px solid var(--pp-border);
     border-radius: 10px;
-    padding: 8px 16px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--pp-green-dark);
+    color: var(--pp-green);
     cursor: pointer;
-    margin-bottom: 20px;
-    transition: background 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-.ppBackBtn:hover {
-    background: #E9EDEA;
+.performanceProfilePage .ppBackBtn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.performanceProfilePage .ppBackBtn:hover {
+    background: var(--pp-green);
+    color: #FFFFFF;
+    border-color: var(--pp-green);
 }
 
 /* ---- RACE RESULT TITLE ---- */
@@ -479,6 +487,11 @@
     .performanceProfilePage .ppInput {
         font-size: 16px;
         padding: 11px 12px 11px 42px;
+    }
+
+    .performanceProfilePage .ppBackBtn {
+        width: 42px;
+        height: 42px;
     }
 
     .performanceProfilePage .ppSearchIconWrap {
