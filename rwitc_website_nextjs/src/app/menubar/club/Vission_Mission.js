@@ -1,18 +1,64 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getVisionMission } from "../../../services/clubService";
 import "./Vission_Mission.css";
 
+const DEFAULT_TITLE = "The RWITC Vision & Mission Statement";
+const BULLET = /^\s*(?:-|•)\s+/;
+
+// Text ko blocks me todta hai:
+// - khali line se alag hue blocks
+// - jis block ki saari lines "- " se shuru hon wo bullet list, baaki paragraph
+function parseBlocks(text) {
+    return String(text)
+        .split(/\n\s*\n/)
+        .map((b) => b.trim())
+        .filter(Boolean)
+        .map((block) => {
+            const lines = block
+                .split("\n")
+                .map((l) => l.trim())
+                .filter(Boolean);
+
+            if (lines.length > 0 && lines.every((l) => BULLET.test(l))) {
+                return {
+                    type: "list",
+                    items: lines.map((l) => l.replace(BULLET, "")),
+                };
+            }
+
+            return { type: "p", text: lines.join(" ") };
+        });
+}
+
 export default function VissionMission() {
+    const [title, setTitle] = useState(DEFAULT_TITLE);
+    const [blocks, setBlocks] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+
+        getVisionMission()
+            .then((data) => {
+                if (!active || !data) return;
+
+                if (data.title) setTitle(data.title);
+                if (data.text) setBlocks(parseBlocks(data.text));
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
-
         <section className="aboutPage">
-
             <div className="aboutContainer">
-
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">The RWITC Vision &amp; Mission Statement</h1>
+                    <h1 className="aboutHeading">{title}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -22,81 +68,30 @@ export default function VissionMission() {
                 </div>
 
                 <div className="aboutCard">
-
                     <div className="aboutContent">
-
-                        <p>
-                            RWITC is renowned as the premier racing club in India offering
-                            facilities matching the best in the world. It is also the home of
-                            the Indian Classics introduced first in 1943 and modelled on the
-                            British originals – Classics that are truly national in character.
-                        </p>
-
-                        <p className="visionIntroLine">
-                            The following in brief is the Club's vision and mission statement:
-                        </p>
-
-                        <ul className="visionList">
-
-                            <li>
-                                To ensure quality in its race programmes, racing surfaces,
-                                racing environment and conduct as behoves one of Asia's most
-                                famous race courses and home to the five Indian Classics.
-                            </li>
-
-                            <li>
-                                To ensure that race courses at Mumbai and Pune continue to be
-                                maintained as world-class racing venues so as to measure up to
-                                RWITC's reputation as one of the leading race Clubs in Asia.
-                            </li>
-
-                            <li>
-                                To set the highest standards in the organization and
-                                administration of the sport.
-                            </li>
-
-                            <li>
-                                To provide superior amenities and up-to-date facilities to its
-                                racing patrons and members by way of the quality of
-                                entertainment, infrastructure and betting facilities.
-                            </li>
-
-                            <li>
-                                To be totally transparent in every aspect of its working and to
-                                be always owner- as well as punter-friendly.
-                            </li>
-
-                            <li>
-                                To maximize returns from its racing and non-racing activities.
-                            </li>
-
-                            <li>
-                                To ensure for its sponsors optimum returns on investment.
-                            </li>
-
-                            <li>
-                                To make horse racing a clean and family-oriented sport.
-                            </li>
-
-                            <li>
-                                To provide the best working environment to its staff.
-                            </li>
-
-                            <li>
-                                To contribute its bit toward social causes and be responsive to
-                                the needs of the society in to the best of its abilities.
-                            </li>
-
-                        </ul>
-
+                        {blocks.map((block, i) =>
+                            block.type === "list" ? (
+                                <ul key={i} className="visionList">
+                                    {block.items.map((item, j) => (
+                                        <li key={j}>{item}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p
+                                    key={i}
+                                    className={
+                                        blocks[i + 1]?.type === "list"
+                                            ? "visionIntroLine"
+                                            : undefined
+                                    }
+                                >
+                                    {block.text}
+                                </p>
+                            )
+                        )}
                     </div>
-
                 </div>
-
             </div>
-
         </section>
-
     );
-
 }

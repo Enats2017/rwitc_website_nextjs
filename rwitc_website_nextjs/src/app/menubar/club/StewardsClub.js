@@ -1,33 +1,61 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getOrganisation } from "../../../services/clubService";
 import "./StewardsClub.css";
 
-export default function StewardsClub() {
+const DEFAULT_TITLE = "Stewards of the Club";
+const BULLET = /^\s*(?:-|•)\s+/;
 
-    const stewards = [
-        "Dr. Ram H. Shroff (Chairman)",
-        "Lt. Gen. Rajesh Pushkar, AVSM, VSM, GOC-in-C, Southern Command",
-        "Mr. Jiyaji M. Bhosale",
-        "Mr. Khushroo N. Dhunjibhoy",
-        "Mr. Amitesh Kumar, IPS",
-        "Mr. Sunil G. Jhangiani",
-        "Mr. Gautam P. Lala",
-        "Mr. S. R. Sanas",
-        "Mr. Sanjay D. Shah",
-        "Mr. Vijay B. Shirke",
-        "Mr. Sanjeev Kumar Singhal, IPS",
-        "Mr. Rustom H. Vakil",
-    ];
+function parseBlocks(text) {
+    return String(text)
+        .split(/\n\s*\n/)
+        .map((b) => b.trim())
+        .filter(Boolean)
+        .map((block) => {
+            const lines = block
+                .split("\n")
+                .map((l) => l.trim())
+                .filter(Boolean);
+
+            if (lines.length > 0 && lines.every((l) => BULLET.test(l))) {
+                return {
+                    type: "list",
+                    items: lines.map((l) => l.replace(BULLET, "")),
+                };
+            }
+
+            return { type: "p", text: lines.join(" ") };
+        });
+}
+
+export default function StewardsClub() {
+    const [title, setTitle] = useState(DEFAULT_TITLE);
+    const [blocks, setBlocks] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+
+        getOrganisation("stewards_of_club")
+            .then((data) => {
+                if (!active || !data) return;
+
+                if (data.title) setTitle(data.title);
+                if (data.text) setBlocks(parseBlocks(data.text));
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
-
         <section className="aboutPage">
-
             <div className="aboutContainer">
-
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">Stewards of the Club</h1>
+                    <h1 className="aboutHeading">{title}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -37,44 +65,30 @@ export default function StewardsClub() {
                 </div>
 
                 <div className="aboutCard">
-
                     <div className="aboutContent">
-
-                        <p>
-                            The Stewards are responsible for the conduct of racing and have
-                            jurisdiction over all racing matters. The Chairman of the Stewards
-                            is chosen by the Stewards of the Club.
-                        </p>
-
-                        <p>
-                            After the annual elections of the Managing Committee, the
-                            Committee nominates nine Club members of the Club to serve as the
-                            Stewards of the Club for the period of its own tenure. There are
-                            two Government nominees as additional Stewards of the Club,
-                            usually the Commissioner/Joint Commissioner of Police, Mumbai/Pune
-                            and the Director General, Anti-Corruption Bureau. In addition, the
-                            Club invites the GOC-in-Chief, Southern Command, Pune, to be a
-                            Steward of the Club.
-                        </p>
-
-                        <p className="visionIntroLine">
-                            The following are the Stewards of the Club at present:
-                        </p>
-
-                        <ul className="memberList">
-                            {stewards.map((name, index) => (
-                                <li key={index}>{name}</li>
-                            ))}
-                        </ul>
-
+                        {blocks.map((block, i) =>
+                            block.type === "list" ? (
+                                <ul key={i} className="memberList">
+                                    {block.items.map((item, j) => (
+                                        <li key={j}>{item}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p
+                                    key={i}
+                                    className={
+                                        blocks[i + 1]?.type === "list"
+                                            ? "visionIntroLine"
+                                            : undefined
+                                    }
+                                >
+                                    {block.text}
+                                </p>
+                            )
+                        )}
                     </div>
-
                 </div>
-
             </div>
-
         </section>
-
     );
-
 }

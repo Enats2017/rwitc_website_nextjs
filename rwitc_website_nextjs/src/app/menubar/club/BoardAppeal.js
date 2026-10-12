@@ -1,27 +1,60 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getOrganisation } from "../../../services/clubService";
 import "./BoardAppeal.css";
 
-export default function BoardAppeal() {
+const DEFAULT_TITLE = "Board of Appeal";
+const BULLET = /^\s*(?:-|•)\s+/;
+function parseBlocks(text) {
+    return String(text)
+        .split(/\n\s*\n/)
+        .map((b) => b.trim())
+        .filter(Boolean)
+        .map((block) => {
+            const lines = block
+                .split("\n")
+                .map((l) => l.trim())
+                .filter(Boolean);
 
-    const members = [
-        "Mr. Dilip P. Goculdas",
-        "Mr. Asif Lampwala",
-        "Ms. Zinia Lawyer",
-        "Ms. Manisha Patankar Mhaiskar, I. A. S. (Govt. Nominee)",
-        "Mr. Geoffrey B. Nagpal",
-        "Mr. Hoshang J. Nazir",
-        "Mr. Gulamhusein A. Vahanvaty",
-    ];
+            if (lines.length > 0 && lines.every((l) => BULLET.test(l))) {
+                return {
+                    type: "list",
+                    items: lines.map((l) => l.replace(BULLET, "")),
+                };
+            }
+
+            return { type: "p", text: lines.join(" ") };
+        });
+}
+
+export default function BoardAppeal() {
+    const [title, setTitle] = useState(DEFAULT_TITLE);
+    const [blocks, setBlocks] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+
+        getOrganisation("board_of_appeal")
+            .then((data) => {
+                if (!active || !data) return;
+
+                if (data.title) setTitle(data.title);
+                if (data.text) setBlocks(parseBlocks(data.text));
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
         <section className="aboutPage">
-
             <div className="aboutContainer">
-
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">Board of Appeal</h1>
+                    <h1 className="aboutHeading">{title}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -31,44 +64,30 @@ export default function BoardAppeal() {
                 </div>
 
                 <div className="aboutCard">
-
                     <div className="aboutContent">
-
-                        <p>
-                            The Board of Appeal deals with the appeals preferred against the
-                            decision of the Stewards of the Club.
-                        </p>
-
-                        <p>
-                            Its six members are elected by the Club members in accordance
-                            with the Articles of Association of the Club. 1/3rd of the members,
-                            i.e. two members, retire in rotation at each Annual General Meeting
-                            and in their place two new members are elected by Club members at
-                            the Annual General Meeting.
-                        </p>
-
-                        <p>
-                            In addition, there is a Government nominee on the Board of Appeal,
-                            usually the Additional Chief Secretary, Government of Maharashtra,
-                            Home Department.
-                        </p>
-
-                        <p className="visionIntroLine">
-                            The following are members of the Board of Appeal at present:
-                        </p>
-
-                        <ul className="memberList">
-                            {members.map((name, index) => (
-                                <li key={index}>{name}</li>
-                            ))}
-                        </ul>
-
+                        {blocks.map((block, i) =>
+                            block.type === "list" ? (
+                                <ul key={i} className="memberList">
+                                    {block.items.map((item, j) => (
+                                        <li key={j}>{item}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p
+                                    key={i}
+                                    className={
+                                        blocks[i + 1]?.type === "list"
+                                            ? "visionIntroLine"
+                                            : undefined
+                                    }
+                                >
+                                    {block.text}
+                                </p>
+                            )
+                        )}
                     </div>
-
                 </div>
-
             </div>
-
         </section>
     );
 }
