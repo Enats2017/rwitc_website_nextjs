@@ -35,6 +35,7 @@ import DeductionNorms from "./wagering/DeductionNorms";
 import MembershipOverview from "./membership/MembershipOverview";
 import ClubMembershipPrivileges from "./membership/ClubMembershipPrivileges";
 import MembershipCategories from "./membership/MembershipCategories";
+import AffiliatedClubs from "./membership/AffiliatedClubs";
 import ComeRacingOverview from "./comeracing/ComeRacingOverview";
 import MumbaiRaceCourse from "./comeracing/MumbaiRaceCourse";
 import PuneRaceCourse from "./comeracing/PuneRaceCourse";
@@ -82,6 +83,7 @@ function MenuBarContent() {
         case "membership-overview": return <MembershipOverview />;
         case "club-membership-privileges": return <ClubMembershipPrivileges />;
         case "membership-categories": return <MembershipCategories />;
+        case "affiliated-clubs": return <AffiliatedClubs />;
         case "comeracing-overview": return <ComeRacingOverview />;
         case "mumbai-race-course": return <MumbaiRaceCourse />;
         case "pune-race-course": return <PuneRaceCourse />;

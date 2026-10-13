@@ -95,57 +95,46 @@
     color: #ffffff;
 }
 
-/* SUB HEADINGS */
-.guideSubHeading {
-    font-size: 22px;
-    font-weight: 800;
-    color: #16a34a;
-    margin-top: 12px;
-    padding-bottom: 6px;
-    border-bottom: 2px solid #eef1f4;
+.cmpRichContent h2,
+.cmpRichContent h3,
+.cmpRichContent h4 {
+    margin: 24px 0 12px;
+    line-height: 1.3;
 }
 
-.guideSubHeading:first-child {
-    margin-top: 0;
+.cmpRichContent h2 { font-size: 24px; }
+.cmpRichContent h3 { font-size: 20px; }
+.cmpRichContent h4 { font-size: 17px; }
+
+.cmpRichContent p {
+    margin: 0 0 16px;
+    line-height: 1.8;
 }
 
-/* MEMBER PRIVILEGES LIST */
-.memberList {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+.cmpRichContent ul,
+.cmpRichContent ol {
+    margin: 0 0 20px;
+    padding-left: 22px;
 }
 
-.memberList li {
-    position: relative;
-    padding-left: 28px;
-    color: #374151;
-    font-size: 17px;
-    line-height: 1.75;
+.cmpRichContent li {
+    margin-bottom: 10px;
+    line-height: 1.8;
 }
 
-.memberList li::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 9px;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: #16a34a;
+.cmpRichContent a { text-decoration: underline; }
+
+.cmpRichContent table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 20px;
 }
 
-/* AFFILIATED CLUBS CENTERED HEADING */
-.cmpCenterHeading {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 800;
-    color: #111827;
-    margin-top: 20px;
-    letter-spacing: .3px;
+.cmpRichContent th,
+.cmpRichContent td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
 }
 
 /* TABLET */
@@ -160,17 +149,9 @@
     }
 
     .aboutContent p,
-    .memberList li {
+    .cmpRichContent li {
         font-size: 16px;
         line-height: 1.8;
-    }
-
-    .guideSubHeading {
-        font-size: 20px;
-    }
-
-    .cmpCenterHeading {
-        font-size: 20px;
     }
 
 }
@@ -211,26 +192,10 @@
     }
 
     .aboutContent p,
-    .memberList li {
+    .cmpRichContent li {
         font-size: 15px;
         line-height: 1.8;
         text-align: left;
-    }
-
-    .guideSubHeading {
-        font-size: 18px;
-    }
-
-    .memberList {
-        gap: 12px;
-    }
-
-    .memberList li {
-        padding-left: 22px;
-    }
-
-    .cmpCenterHeading {
-        font-size: 18px;
     }
 
 }
@@ -251,16 +216,8 @@
     }
 
     .aboutContent p,
-    .memberList li {
+    .cmpRichContent li {
         font-size: 14px;
-    }
-
-    .guideSubHeading {
-        font-size: 16.5px;
-    }
-
-    .cmpCenterHeading {
-        font-size: 16px;
     }
 
 }

@@ -1,19 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getClubMembershipPrivileges } from "@/services/ClubMembershipPrivilegesService";
 import "./ClubMembershipPrivileges.css";
 
 export default function ClubMembershipPrivileges() {
+    const [content, setContent] = useState(null);
+    const [error, setError] = useState("");
 
-    const privileges = [
-        "Entry into Members Enclosure exclusively for Members and their guests only.",
-        "Preference in allocation of private boxes.",
-        "Concession in rates of hiring of lawns (one year after becoming a member) for personal functions, use of helipad.",
-        "Exclusive use of the facilities at the Turf Club House, Pune (including residential).",
-        "Use of the Club House at the Mumbai Race Course.",
-        "Discount at Gallops and Keiba Restaurants at Mahalaxmi. Discounted rates at the Fitness Centre. Discounts at proposed additions on food and beverage / other facilities.",
-        "Invitations to major racing events at the Club.",
-    ];
+    useEffect(() => {
+        let active = true;
+
+        getClubMembershipPrivileges()
+            .then((data) => {
+                if (active) setContent(data);
+            })
+            .catch((loadError) => {
+                if (active) setError(loadError.message);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
 
@@ -33,46 +43,16 @@ export default function ClubMembershipPrivileges() {
 
                 <div className="aboutCard">
 
-                    <div className="aboutContent">
-
-                        <h3 className="guideSubHeading">Importance of being a Member</h3>
-
-                        <p>
-                            Being a member of the Royal Western India Turf Club, Ltd.,
-                            one of the oldest and prestigious institutions in the
-                            country, is a privilege and a status symbol.
-                        </p>
-
-                        <p>
-                            The membership of the Club is not restricted to people based
-                            in Mumbai and Pune or ardent race goers but is drawn from a
-                            cross section of the society spread over the length and
-                            breadth of the country.
-                        </p>
-
-                        <p>
-                            The members of the Club enjoy special privileges not only on
-                            race days and but also while making use of other facilities
-                            offered by the Club.
-                        </p>
-
-                        <p>
-                            There are several categories of members.
-                        </p>
-
-                        <h3 className="guideSubHeading">Privileges enjoyed by Members</h3>
-
-                        <ul className="memberList">
-                            {privileges.map((item, index) => (
-                                <li key={index}>{item}</li>
-                            ))}
-                        </ul>
-
-                        <h2 className="cmpCenterHeading">
-                            AFFILIATED CLUBS WITH RWITC, LTD.
-                        </h2>
-
-                    </div>
+                    {error ? (
+                        <p role="alert">{error}</p>
+                    ) : !content ? (
+                        <p role="status">Loading membership privileges...</p>
+                    ) : (
+                        <div
+                            className="aboutContent cmpRichContent"
+                            dangerouslySetInnerHTML={{ __html: content.content }}
+                        />
+                    )}
 
                 </div>
 

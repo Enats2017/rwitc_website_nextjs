@@ -1,32 +1,29 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getMembershipCategories } from "@/services/MembershipCategoriesService";
 import "./MembershipCategories.css";
 
 export default function MembershipCategories() {
+    const [content, setContent] = useState(null);
+    const [error, setError] = useState("");
 
-    const categories = [
-        "Club Membership (the only category with voting rights)",
-        "Life Membership",
-        "Stand Membership (presently discontinued)",
-        "Lady Stand Membership",
-        "Invitee",
-        "Service Membership",
-        "Temporary Membership",
-        "Local Membership of the Turf Club House at Pune",
-        "Local Corporate Membership of the Turf Club House at Pune",
-        "Short Term Associates",
-    ];
+    useEffect(() => {
+        let active = true;
 
-    const strength = [
-        "Club Members - 1684",
-        "Life Members - 5784",
-        "Stand Members - 1465",
-        "Lady Stand Members - 1368",
-        "Invitee Members - 108",
-        "Local Members (Turf Club House, Pune)- 511",
-        "Total - 10920",
-    ];
+        getMembershipCategories()
+            .then((data) => {
+                if (active) setContent(data);
+            })
+            .catch((loadError) => {
+                if (active) setError(loadError.message);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
 
@@ -45,25 +42,16 @@ export default function MembershipCategories() {
                 </div>
 
                 <div className="aboutCard">
-
-                    <div className="aboutContent">
-
-                        <div className="mcPlainList">
-                            {categories.map((item, index) => (
-                                <p key={index}>{item}</p>
-                            ))}
-                        </div>
-
-                        <h3 className="guideSubHeading">Present Membership Strength</h3>
-
-                        <div className="mcPlainList">
-                            {strength.map((item, index) => (
-                                <p key={index}>{item}</p>
-                            ))}
-                        </div>
-
-                    </div>
-
+                    {error ? (
+                        <p role="alert">{error}</p>
+                    ) : !content ? (
+                        <p role="status">Loading membership categories...</p>
+                    ) : (
+                        <div
+                            className="aboutContent mcRichContent"
+                            dangerouslySetInnerHTML={{ __html: content.content }}
+                        />
+                    )}
                 </div>
 
             </div>
