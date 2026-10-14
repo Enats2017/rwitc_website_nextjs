@@ -2,39 +2,44 @@
 
 import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
-import { API_URL } from "../../../services/api";
+import { getPdfLinks } from "../../../services/pdfService";
 import "./JockeyRidingWeight.css";
 
-function splitInHalf(arr) {
-    const mid = Math.ceil(arr.length / 2);
-    return [arr.slice(0, mid), arr.slice(mid)];
+// Returns the lowercase file extension from a url (example: "htm", "pdf")
+function getExtension(url) {
+    const clean = decodeURIComponent(String(url).split("?")[0]);
+    const name = clean.substring(clean.lastIndexOf("/") + 1);
+    return (name.split(".").pop() || "").toLowerCase();
 }
 
-function SimpleWeightTable({ rows }) {
-    return (
-        <table className="jrwTable">
-            <thead>
-                <tr>
-                    <th className="colNo">Sr. No.</th>
-                    <th className="colName">NAME</th>
-                    <th className="colWeight">Lowest riding weight</th>
-                </tr>
-            </thead>
-            <tbody>
-                {rows.map((row) => (
-                    <tr key={row.no}>
-                        <td className="colNo">{row.no}</td>
-                        <td className="colName">{row.name}</td>
-                        <td className="colWeight">{row.weight}</td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
+// Decodes the file bytes. Tries UTF-8 first, falls back to windows-1252 for old HTM files.
+function decodeHtmlBytes(buffer) {
+    const utf8 = new TextDecoder("utf-8").decode(buffer);
+    if (utf8.indexOf("\uFFFD") === -1) {
+        return utf8;
+    }
+    return new TextDecoder("windows-1252").decode(buffer);
+}
+
+// Takes a full HTML document string and returns only what is safe to show inside the page:
+// the <style> tags and the <body> content (scripts are removed).
+function extractHtmlContent(htmlString) {
+    const doc = new DOMParser().parseFromString(htmlString, "text/html");
+    doc.querySelectorAll("script").forEach((el) => el.remove());
+
+    let styles = "";
+    doc.querySelectorAll("style").forEach((el) => {
+        styles += el.outerHTML;
+        el.remove();
+    });
+
+    return styles + doc.body.innerHTML;
 }
 
 export default function JockeyRidingWeight() {
-    const [data, setData] = useState(null);
+    const [fileUrl, setFileUrl] = useState("");
+    const [fileType, setFileType] = useState("");   // "html" | "pdf" | "image" | "other"
+    const [html, setHtml] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -43,13 +48,35 @@ export default function JockeyRidingWeight() {
 
         async function load() {
             try {
-                const res = await fetch(`${API_URL}/jockey_riding_weight_get_api.php`);
-                const json = await res.json();
+                // Latest uploaded file link (same service the menu uses)
+                const links = await getPdfLinks();
+                const url = links["jockey_riding_weight"];
 
-                if (!res.ok || !json.success) {
-                    throw new Error(json.error || "Unable to load riding weight data");
+                if (!url || typeof url !== "string") {
+                    if (!cancelled) setError("No riding weight file has been uploaded yet.");
+                    return;
                 }
-                if (!cancelled) setData(json.data);
+
+                const ext = getExtension(url);
+
+                if (ext === "htm" || ext === "html") {
+                    const res = await fetch(url);
+                    if (!res.ok) { throw new Error("Failed to load file"); }
+                    const buffer = await res.arrayBuffer();
+                    const content = extractHtmlContent(decodeHtmlBytes(buffer));
+                    if (!cancelled) {
+                        setHtml(content);
+                        setFileType("html");
+                    }
+                } else if (ext === "pdf") {
+                    if (!cancelled) setFileType("pdf");
+                } else if (["jpg", "jpeg", "png"].indexOf(ext) !== -1) {
+                    if (!cancelled) setFileType("image");
+                } else {
+                    if (!cancelled) setFileType("other");
+                }
+
+                if (!cancelled) setFileUrl(url);
             } catch (err) {
                 if (!cancelled) setError("Unable to load riding weight data.");
             } finally {
@@ -60,12 +87,6 @@ export default function JockeyRidingWeight() {
         load();
         return () => { cancelled = true; };
     }, []);
-
-    // rows aane par category ke hisaab se group karo (JSON mode ke liye)
-    const aLicensed = data?.rows?.filter((r) => r.category === "A") || [];
-    const apprentice = data?.rows?.filter((r) => r.category === "APPRENTICE") || [];
-    const bLicensed = data?.rows?.filter((r) => r.category === "B") || [];
-    const [aLeft, aRight] = splitInHalf(aLicensed);
 
     return (
         <section className="aboutPage">
@@ -85,88 +106,39 @@ export default function JockeyRidingWeight() {
                     {loading && <p className="statsMsg">Loading...</p>}
                     {!loading && error && <p className="statsMsg statsMsgError">{error}</p>}
 
-                    {!loading && !error && data && (
-                        <>
-                            {/* MODE 1: server ki ready-made HTML file (RIDINGWEIGHT.HTM) */}
-                            {data.mode === "html" && (
-                                <div
-                                    className="statsTableWrap statsHtml"
-                                    dangerouslySetInnerHTML={{ __html: data.html }}
-                                />
-                            )}
+                    {/* HTM / HTML file: same container and class as before, so CSS stays the same */}
+                    {!loading && !error && fileType === "html" && (
+                        <div
+                            className="statsTableWrap statsHtml"
+                            dangerouslySetInnerHTML={{ __html: html }}
+                        />
+                    )}
 
-                            {/* MODE 2: DB rows */}
-                            {data.mode === "json" && (
-                                <>
-                                    {data.as_on && (
-                                        <h2 className="statsSubHeading">
-                                            Jockey's Riding Weight as on {data.as_on}
-                                        </h2>
-                                    )}
+                    {/* PDF file */}
+                    {!loading && !error && fileType === "pdf" && (
+                        <iframe
+                            src={fileUrl}
+                            title="Jockey's Riding Weight"
+                            style={{ width: "100%", height: "80vh", border: "none" }}
+                        />
+                    )}
 
-                                    {aLicensed.length > 0 && (
-                                        <>
-                                            <div className="jrwSectionBar">
-                                                <span>"A" Licenced Jockeys</span>
-                                            </div>
-                                            <div className="jrwTwoColWrap">
-                                                <div className="jrwTableWrap">
-                                                    <SimpleWeightTable rows={aLeft} />
-                                                </div>
-                                                <div className="jrwTableWrap">
-                                                    <SimpleWeightTable rows={aRight} />
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
+                    {/* Image file */}
+                    {!loading && !error && fileType === "image" && (
+                        <img
+                            src={fileUrl}
+                            alt="Jockey's Riding Weight"
+                            style={{ maxWidth: "100%", height: "auto", display: "block", margin: "0 auto" }}
+                        />
+                    )}
 
-                                    {apprentice.length > 0 && (
-                                        <>
-                                            <div className="jrwSectionBar">
-                                                <span>Apprentice (†) / Allowance Claiming Jockeys</span>
-                                            </div>
-                                            <div className="jrwTableWrap">
-                                                <table className="jrwTable">
-                                                    <thead>
-                                                        <tr>
-                                                            <th className="colNo">No.</th>
-                                                            <th className="colName">NAME</th>
-                                                            <th className="colWeight">Lowest riding weight</th>
-                                                            <th className="colAllowance">Allowance Entitle</th>
-                                                            <th className="colWinners">Total Winners</th>
-                                                            <th className="colTrainer">Master Trainer</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {apprentice.map((row) => (
-                                                            <tr key={row.no}>
-                                                                <td className="colNo">{row.no}</td>
-                                                                <td className="colName">{row.name}</td>
-                                                                <td className="colWeight">{row.weight}</td>
-                                                                <td className="colAllowance">{row.allowance}</td>
-                                                                <td className="colWinners">{row.winners}</td>
-                                                                <td className="colTrainer">{row.trainer}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {bLicensed.length > 0 && (
-                                        <>
-                                            <div className="jrwSectionBar">
-                                                <span>"B" Licenced Jockeys</span>
-                                            </div>
-                                            <div className="jrwTableWrap jrwTableNarrow">
-                                                <SimpleWeightTable rows={bLicensed} />
-                                            </div>
-                                        </>
-                                    )}
-                                </>
-                            )}
-                        </>
+                    {/* Any other file (doc, xls, zip, etc.): download link */}
+                    {!loading && !error && fileType === "other" && (
+                        <p className="statsMsg">
+                            <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+                                Click here to open / download the file
+                            </a>
+                        </p>
                     )}
 
                 </div>

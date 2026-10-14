@@ -1366,6 +1366,17 @@ MENU;
             'national_tote_pools_docs' => array('National Tote Pools',                   'turf-console/nationalTotePoolsManager.php',   'fas fa-globe'),
             'betting_channels_docs'  => array('Betting Channels',                        'turf-console/bettingChannelsManager.php',     'fas fa-tower-broadcast'),
             'deduction_norms_docs'   => array('Deduction Norms',                         'turf-console/deductionNormsManager.php',      'fas fa-percent'),
+            'chart_pdf_upload'       => array('Chart PDF Upload',                        'turf-console/chartPdfUpload.php',             'fas fa-file-pdf'),
+            'prospectus_pdf_upload'  => array('Prospectus PDF Upload',                   'turf-console/prospectusPdfUpload.php',        'fas fa-file-pdf'),
+            'membership_importance'  => array('Importance of being a Member',            'turf-console/membershipImportanceManager.php', 'fas fa-id-card'),
+            'club_membership_privileges' => array('Club Membership Privileges',          'turf-console/clubMembershipPrivilegesManager.php', 'fas fa-horse-head'),
+            'affiliated_clubs'     => array('Affiliated Clubs with RWITC',            'turf-console/affiliatedClubsManager.php', 'fas fa-handshake-angle'),
+            'membership_categories'  => array('Membership Categories',                   'turf-console/membershipCategoriesManager.php', 'fas fa-users'),
+            'wagering_overview_docs' => array('Wagering Manager - Overview',             'turf-console/wageringOverviewManager.php',    'fas fa-chart-pie'),
+            'come_racing_overview'   => array('Come Racing - Overview',                    'turf-console/comeRacingOverviewManager.php',  'fas fa-flag-checkered'),
+            'come_racing_mumbai'     => array('Come Racing - Mumbai Race Course',          'turf-console/comeRacingMumbaiManager.php',    'fas fa-location-dot'),
+            'come_racing_pune'       => array('Come Racing - Pune Race Course',            'turf-console/comeRacingPuneManager.php',      'fas fa-map-location-dot'),
+            'come_racing_services'   => array('Come Racing - Race Course Services & Others', 'turf-console/comeRacingServicesManager.php', 'fas fa-bell-concierge'),
         );
     }
 
@@ -1384,7 +1395,7 @@ MENU;
             'mailer'    => array('send_mailer', '   mailManager'),
             'calendar'  => array('calendar', 'availability_calendar'),
             'dividends' => array('dividends'),
-            'others'    => array( 
+            'others'    => array(
                 'stewards_report',
                 'race_history',
                 'polls',

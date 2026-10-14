@@ -38,3 +38,57 @@ export async function getHistory(section) {
     const json = await res.json();
     return json?.data ?? json;
 }
+
+// Charity Race Days
+export async function getCharityRaceDays() {
+    const res = await fetch(`${API_BASE}/Charity_get_api.php`);
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    return json?.data ?? json;
+}
+
+// Contribution to the Communities
+export async function getCommunityContribution() {
+    const res = await fetch(`${API_BASE}/Community_get_api.php`);
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    return json?.data ?? json;
+}
+
+// Responsible Gambling
+export async function getResponsibleGambling() {
+    const res = await fetch(`${API_BASE}/Gambling_get_api.php`);
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    return json?.data ?? json;
+}
+
+// Careers
+export async function getCareers() {
+    const res = await fetch(`${API_BASE}/Careers_get_api.php`);
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    return json?.data ?? json;
+}
+
+// Wagering Overview
+export async function getWageringOverview() {
+    const res = await fetch(`${API_BASE}/Wagering_get_api.php`);
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    return json?.data ?? json;
+}
+
+// Beginners Guide
+export async function getBeginnersGuide() {
+    const res = await fetch(`${API_BASE}/Beginners_get_api.php`);
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    return json?.data ?? json;
+}

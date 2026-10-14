@@ -1,18 +1,48 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getCareers } from "../../../services/clubService";
 import "./CareersClub.css";
 
+// Shown when no custom title is set in the admin panel
+const DEFAULT_TITLE = "Career Opportunities in Racing";
+
 export default function CareersClub() {
+    const [title, setTitle] = useState(DEFAULT_TITLE);
+    const [paragraphs, setParagraphs] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+
+        getCareers()
+            .then((data) => {
+                if (!active || !data) return;
+
+                if (data.title) setTitle(data.title);
+
+                if (data.text) {
+                    // A blank line separates paragraphs
+                    const list = String(data.text)
+                        .split(/\n\s*\n/)
+                        .map((p) => p.trim())
+                        .filter(Boolean);
+
+                    setParagraphs(list);
+                }
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
-
         <section className="aboutPage">
-
             <div className="aboutContainer">
-
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">Career Opportunities in Racing</h1>
+                    <h1 className="aboutHeading">{title}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -22,41 +52,13 @@ export default function CareersClub() {
                 </div>
 
                 <div className="aboutCard">
-
                     <div className="aboutContent">
-
-                        <p>
-                            The activity of racing provides innumerable opportunities for
-                            those seeking to make a career in this Sport of Kings. At the
-                            administrative level, there is scope for young and enthusiastic
-                            people with talent to make their foray in several areas such as
-                            working as racing officials such as Stipendiary Stewards,
-                            Veterinary doctors, race day officials, computer operators etc.
-                            Racing is a labor intensive industry which gives wide scope for
-                            employment opportunities directly through the club and also
-                            through the several license holders who are part of its
-                            activity in related jobs..
-                        </p>
-
-                        <p>
-                            Racing also provides opportunities for those with a penchant
-                            for riding to take a career as a jockey. This of course is
-                            demanding because a person wanting to be a jockey should do so
-                            at a young age, have the required physical attributes, with
-                            light weight. There are also opportunities to become race horse
-                            trainers. These two jobs are highly skilled jobs for which only
-                            some are suitabl. All in all, racing triggers a huge economic
-                            activity with multiple career options.
-                        </p>
-
+                        {paragraphs.map((text, i) => (
+                            <p key={i}>{text}</p>
+                        ))}
                     </div>
-
                 </div>
-
             </div>
-
         </section>
-
     );
-
 }
