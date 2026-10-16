@@ -181,7 +181,7 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    header('Location: clubMembershipPrivilegesManager.php');
+    header('Location: /turf-console/clubMembershipPrivilegesManager.php');
     exit;
 }
 
@@ -239,7 +239,7 @@ $design->writeContentPageStyles();
             <div class="cmp-message <?php echo $escapeHtml($flashType); ?>" role="status"><?php echo $escapeHtml($flash); ?></div>
         <?php } ?>
 
-        <form method="post" action="clubMembershipPrivilegesManager.php">
+        <form method="post" action="/turf-console/clubMembershipPrivilegesManager.php">
             <input type="hidden" name="csrf" value="<?php echo $escapeHtml($csrf); ?>">
 
             <section class="cmp-card">
@@ -249,7 +249,7 @@ $design->writeContentPageStyles();
 
             <div class="cmp-actions">
                 <button class="cmp-button cmp-button-primary" type="submit">Save changes</button>
-                <a class="cmp-button cmp-button-secondary" href="../dashboard.php">Back to dashboard</a>
+<a class="cmp-button cmp-button-secondary" href="/turf-console/dashboard.php">Back to dashboard</a>
             </div>
         </form>
 

@@ -17,7 +17,7 @@ $userObj = new Users($db);
 $pdfType   = 'memorandum_articles';              // must match the key in pdf_registry.php and the "type" column
 $pdfTitle  = 'Memorandum & Articles of Association'; // label shown on this admin page
 $moduleKey = 'memorandum_articles';              // module permission name used by hasModuleAccess()
-$pageFile  = 'memorandumManager.php';            // this file's own name
+$pageFile  = 'memorandumArticlesManager.php';            // this file's own name
 
 $perPage  = 6;                      // records per page
 $s3Folder = 'uploads/club/';        // S3 folder (key prefix) for all PDFs

@@ -1700,7 +1700,7 @@ $design->writeContentPageStyles();
                         </span>
 
                         <span class="card-title">
-                            Overview
+                           Partners Overview
                         </span>
 
                         <i class="fas fa-chevron-right card-arrow"></i>
@@ -2120,7 +2120,7 @@ $design->writeContentPageStyles();
                     </a>
 
                 <?php } ?>
-                
+
                 <?php if (hasModuleAccess('club_membership_privileges')) { ?>
                     <a class="card-item" href="turf-console/clubMembershipPrivilegesManager.php">
                         <span class="card-icon"><i class="fas fa-horse-head"></i></span>
@@ -2165,22 +2165,6 @@ $design->writeContentPageStyles();
 
                     </a>
 
-                <?php } ?>
-                <!-- APPLICATION FORMS MANAGER -->
-                <?php if (hasModuleAccess('application_forms')) { ?>
-                    <a class="card-item"
-                        href="turf-console/applicationFormsManager.php">
-
-                        <span class="card-icon">
-                            <i class="fas fa-file-pdf"></i>
-                        </span>
-
-                        <span class="card-title">
-                            Application Forms Manager
-                        </span>
-
-                        <i class="fas fa-chevron-right card-arrow"></i>
-                    </a>
                 <?php } ?>
 
                 <!-- CHART PDF UPLOAD -->

@@ -1,31 +1,28 @@
 import { API_URL } from "./api";
 
-// export async function getBodyWeightHorses() {
-//     try {
-//         const response = await fetch(
-//             `${API_URL}/bodyWeightHorseApi.php`
-//         );
-
-
 export async function getBodyWeightHorses() {
     try {
-        console.log(
-            "BODY WEIGHT API URL:",
-            `${API_URL}/bodyWeightHorseApi.php`
-        );
-
-        const response = await fetch(
-            `${API_URL}/bodyWeightHorseApi.php`
-        );
-
+        const response = await fetch(`${API_URL}/bodyWeightHorseApi.php`);
 
         if (!response.ok) {
             throw new Error("Failed to fetch Body Weight Horses");
         }
 
-        const data = await response.json();
+        const json = await response.json();
 
-        return data || [];
+        if (!json.success) {
+            throw new Error(json.error || "Failed to fetch Body Weight Horses");
+        }
+
+        const horses = json.data?.horses || [];
+
+        return horses.map((item) => ({
+            horse: item.horse,
+            runs: (item.runs || []).map((run) => ({
+                raceno: run.raceno,
+                weight: run.weight,
+            })),
+        }));
     } catch (error) {
         console.error("Body Weight Horses Error :", error);
 

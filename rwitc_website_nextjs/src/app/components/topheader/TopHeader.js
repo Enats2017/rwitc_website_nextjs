@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import "./TopHeader.css";
 import { getPdfLinks } from "../../../services/pdfService";
-import { UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL, STATIC_URL } from "../../../services/api";
+import { API_URL, UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL, STATIC_URL } from "../../../services/api";
 import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay, FaHome, FaUniversity, FaHorseHead, FaTags, FaUsers, FaStar, FaHandshake, FaCloudDownloadAlt, FaImages, } from "react-icons/fa";
 
 /* ---------- DESKTOP: nested submenu — CLICK ONLY, vertical ---------- */
@@ -301,8 +301,8 @@ export default function TopHeader() {
             icon: <FaCloudDownloadAlt />,
             children: [
                 { label: "Forms", href: "menubar?type=application-forms" },
-                { label: "Chart", href: `${NEW_URL}/aplication_forms/CHART.pdf`, target: "_blank" },
-                { label: "Prospectus", href: `${NEW_URL}/aplication_forms/PROSPECTUS.pdf`, target: "_blank" },
+                { label: "Chart", href: `${API_URL}/application_forms_download.php?doc=chart`, target: "_blank" },
+                { label: "Prospectus", href: `${API_URL}/application_forms_download.php?doc=prospectus`, target: "_blank" },
             ],
         },
     ];

@@ -1,18 +1,106 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getBettingChannels } from "../../../services/clubService";
 import "./BettingChannels.css";
 
+const DEFAULT_TITLE = "Tote betting and backing with the Bookmakers";
+
+// Line markers used in the admin text
+const HEADING_LINE = /^##\s+/;       // "## Sub heading"
+const NUMBERED_LINE = /^\d+[.)]\s+/; // "1. text"
+const BOLD_PART = /(\*\*[^*]+\*\*)/g; // "**bold text**"
+
+// Renders inline **bold** markers as <strong>
+function renderInline(text) {
+    return text.split(BOLD_PART).map((part, i) =>
+        /^\*\*[^*]+\*\*$/.test(part) ? (
+            <strong key={i}>{part.slice(2, -2)}</strong>
+        ) : (
+            part
+        )
+    );
+}
+
+// Converts raw admin text into blocks: heading, list and paragraphs
+function parseBlocks(rawText) {
+    const lines = String(rawText).replace(/\r\n?/g, "\n").split("\n");
+    const blocks = [];
+    let para = [];
+    let list = null;
+
+    const flushPara = () => {
+        if (!para.length) return;
+        blocks.push({ type: "para", text: para.join(" ").trim() });
+        para = [];
+    };
+
+    const flushList = () => {
+        if (!list) return;
+        blocks.push({ type: "list", items: list });
+        list = null;
+    };
+
+    lines.forEach((line) => {
+        const t = line.trim();
+
+        if (!t) {
+            flushPara();
+            flushList();
+            return;
+        }
+
+        if (HEADING_LINE.test(t)) {
+            flushPara();
+            flushList();
+            blocks.push({ type: "heading", text: t.replace(HEADING_LINE, "") });
+            return;
+        }
+
+        if (NUMBERED_LINE.test(t)) {
+            flushPara();
+            list = list || [];
+            list.push(t.replace(NUMBERED_LINE, ""));
+            return;
+        }
+
+        flushList();
+        para.push(t);
+    });
+
+    flushPara();
+    flushList();
+
+    return blocks;
+}
+
 export default function BettingChannels() {
+    const [title, setTitle] = useState(DEFAULT_TITLE);
+    const [blocks, setBlocks] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+
+        getBettingChannels()
+            .then((data) => {
+                if (!active || !data?.text) return;
+
+                if (data.title) setTitle(data.title);
+                setBlocks(parseBlocks(data.text));
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
-
         <section className="aboutPage">
-
             <div className="aboutContainer">
-
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">Tote betting and backing with the Bookmakers</h1>
+                    <h1 className="aboutHeading">{title}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -22,40 +110,31 @@ export default function BettingChannels() {
                 </div>
 
                 <div className="aboutCard">
-
                     <div className="aboutContent">
+                        {blocks.map((block, i) => {
+                            if (block.type === "heading") {
+                                return (
+                                    <h3 key={i} className="guideSubHeading">
+                                        {block.text}
+                                    </h3>
+                                );
+                            }
 
-                        <p>
-                            A punter can place his bets with either the officially
-                            operated totalisator pools where your bet can be as little
-                            as Rs 10 or with the legal permitted bookmakers operating at
-                            the club premises. To back with the bookmakers, the minimum
-                            bet that one needs to do is higher than with the totalisator
-                            pools
-                        </p>
+                            if (block.type === "list") {
+                                return (
+                                    <ol key={i} className="guideList">
+                                        {block.items.map((item, j) => (
+                                            <li key={j}>{renderInline(item)}</li>
+                                        ))}
+                                    </ol>
+                                );
+                            }
 
-                        <p>
-                            The club has set hundreds of tote booths where one can place
-                            their bets. The club also offers incentives to those backing
-                            with the club operated tote pools by way of giving various
-                            bumper prizes which can also include a Mercedes car on the
-                            Indian Derby day.
-                        </p>
-
-                        <p>
-                            Apart from the race course, the club also operates several
-                            outside betting centres where one can place a bet on the
-                            tote pools which is linked to the club's overall pool.
-                        </p>
-
+                            return <p key={i}>{renderInline(block.text)}</p>;
+                        })}
                     </div>
-
                 </div>
-
             </div>
-
         </section>
-
     );
-
 }

@@ -14,7 +14,8 @@
  *   ALTER TABLE run_race_details
  *     ADD COLUMN htm_file_url VARCHAR(500) NULL DEFAULT NULL AFTER file_url;
  *   (agar `type` column ENUM hai to usme money_owner, money_jockey, money_horse,
- *    money_trainer, jockey_statistics, trainer_statistics add karna)
+ *    money_trainer, jockey_statistics, trainer_statistics, saddle_cloth,
+ *    saddle_cloth_green, saddle_cloth_red, saddle_cloth_blue add karna)
  */
 
 header("Content-Type: application/json; charset=UTF-8");
@@ -103,13 +104,20 @@ $conn->set_charset("utf8mb4");
 $s3Prefix = "run_races/";
 
 // Fixed filenames (no date inside name). Date comes from POST["date"].
+// NOTE: keys MUST be lowercase (filename is lowercased before lookup).
 $fixedFiles = array(
     "owner.html"              => array("type" => "money_owner",        "race_type" => "post_race"),
     "jockey.html"             => array("type" => "money_jockey",       "race_type" => "post_race"),
     "horse.html"              => array("type" => "money_horse",        "race_type" => "post_race"),
     "trainer.html"            => array("type" => "money_trainer",      "race_type" => "post_race"),
     "jockey_statistics.html"  => array("type" => "jockey_statistics",  "race_type" => "post_race"),
-    "trainer_statistics.html" => array("type" => "trainer_statistics", "race_type" => "post_race")
+    "trainer_statistics.html" => array("type" => "trainer_statistics", "race_type" => "post_race"),
+
+    // SADDLE CLOTH (ERP: catalog/saddle_cloth_no_color -> Push_Website)
+    "saddlecloth.html"        => array("type" => "saddle_cloth",       "race_type" => "pre_race"),
+    "saddlecloth_green.html"  => array("type" => "saddle_cloth_green", "race_type" => "pre_race"),
+    "saddlecloth_red.html"    => array("type" => "saddle_cloth_red",   "race_type" => "pre_race"),
+    "saddlecloth_blue.html"   => array("type" => "saddle_cloth_blue",  "race_type" => "pre_race")
 );
 
 
@@ -167,7 +175,7 @@ function getFileInformation($filename)
         return array("type" => "mock_race_result", "race_type" => "post_race");
     }
 
-    // MONEY LEADER + STATISTICS fixed filenames
+    // FIXED FILENAMES (Money Leader, Statistics, Saddle Cloth)
     if (isset($fixedFiles[$name])) {
         return $fixedFiles[$name];
     }

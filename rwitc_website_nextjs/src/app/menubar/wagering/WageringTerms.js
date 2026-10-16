@@ -1,18 +1,106 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getWageringTerms } from "../../../services/clubService";
 import "./WageringTerms.css";
 
+const DEFAULT_TITLE = "Terms About Wagering";
+
+// Line markers used in the admin text
+const HEADING_LINE = /^##\s+/;       // "## Place Bet"
+const NUMBERED_LINE = /^\d+[.)]\s+/; // "1. text"
+const BOLD_PART = /(\*\*[^*]+\*\*)/g; // "**bold text**"
+
+// Renders inline **bold** markers as <strong>
+function renderInline(text) {
+    return text.split(BOLD_PART).map((part, i) =>
+        /^\*\*[^*]+\*\*$/.test(part) ? (
+            <strong key={i}>{part.slice(2, -2)}</strong>
+        ) : (
+            part
+        )
+    );
+}
+
+// Converts raw admin text into blocks: heading, list and paragraphs
+function parseBlocks(rawText) {
+    const lines = String(rawText).replace(/\r\n?/g, "\n").split("\n");
+    const blocks = [];
+    let para = [];
+    let list = null;
+
+    const flushPara = () => {
+        if (!para.length) return;
+        blocks.push({ type: "para", text: para.join(" ").trim() });
+        para = [];
+    };
+
+    const flushList = () => {
+        if (!list) return;
+        blocks.push({ type: "list", items: list });
+        list = null;
+    };
+
+    lines.forEach((line) => {
+        const t = line.trim();
+
+        if (!t) {
+            flushPara();
+            flushList();
+            return;
+        }
+
+        if (HEADING_LINE.test(t)) {
+            flushPara();
+            flushList();
+            blocks.push({ type: "heading", text: t.replace(HEADING_LINE, "") });
+            return;
+        }
+
+        if (NUMBERED_LINE.test(t)) {
+            flushPara();
+            list = list || [];
+            list.push(t.replace(NUMBERED_LINE, ""));
+            return;
+        }
+
+        flushList();
+        para.push(t);
+    });
+
+    flushPara();
+    flushList();
+
+    return blocks;
+}
+
 export default function WageringTerms() {
+    const [title, setTitle] = useState(DEFAULT_TITLE);
+    const [blocks, setBlocks] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+
+        getWageringTerms()
+            .then((data) => {
+                if (!active || !data?.text) return;
+
+                if (data.title) setTitle(data.title);
+                setBlocks(parseBlocks(data.text));
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
-
         <section className="aboutPage">
-
             <div className="aboutContainer">
-
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">Terms About Wagering</h1>
+                    <h1 className="aboutHeading">{title}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -22,50 +110,31 @@ export default function WageringTerms() {
                 </div>
 
                 <div className="aboutCard">
-
                     <div className="aboutContent">
+                        {blocks.map((block, i) => {
+                            if (block.type === "heading") {
+                                return (
+                                    <h3 key={i} className="guideSubHeading">
+                                        {block.text}
+                                    </h3>
+                                );
+                            }
 
-                        <h3 className="guideSubHeading">Evens or Even Money</h3>
-                        <p>
-                            When your stake equals your winnings, e.g., an investment of
-                            Rs 10 fetching a return of another Rs 10, totaling to Rs 20
-                            including the investment.
-                        </p>
+                            if (block.type === "list") {
+                                return (
+                                    <ol key={i} className="guideList">
+                                        {block.items.map((item, j) => (
+                                            <li key={j}>{renderInline(item)}</li>
+                                        ))}
+                                    </ol>
+                                );
+                            }
 
-                        <h3 className="guideSubHeading">Odds-on</h3>
-                        <p>
-                            When the returns are less than your investment. For example,
-                            if a horse you back is at 80/100, a bet of Rs 100 will return
-                            Rs 180 which includes your investment.
-                        </p>
-
-                        <h3 className="guideSubHeading">Starting Price</h3>
-                        <p>
-                            The odds offered on a horse at the time of the start of the
-                            race and at which bets are settled by the official
-                            bookmakers.
-                        </p>
-
-                        <h3 className="guideSubHeading">Place</h3>
-                        <p>
-                            First, second or third position at the finish.
-                        </p>
-
-                        <h3 className="guideSubHeading">Place Bet</h3>
-                        <p>
-                            Wager on a horse to finish first, second or third. Place
-                            bets are given upto two places if there are 4 or more
-                            runners; upto three places if there are 8 or more runners.
-                        </p>
-
+                            return <p key={i}>{renderInline(block.text)}</p>;
+                        })}
                     </div>
-
                 </div>
-
             </div>
-
         </section>
-
     );
-
 }

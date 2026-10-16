@@ -1365,10 +1365,11 @@ MENU;
             'betting_pools_docs'     => array('Betting Pools',                           'turf-console/bettingPoolsManager.php',        'fas fa-layer-group'),
             'national_tote_pools_docs' => array('National Tote Pools',                   'turf-console/nationalTotePoolsManager.php',   'fas fa-globe'),
             'betting_channels_docs'  => array('Betting Channels',                        'turf-console/bettingChannelsManager.php',     'fas fa-tower-broadcast'),
+            'application_forms'     =>  array('Application Forms Manager',               'turf-console/applicationFormsManager.php',    'fas fa-file-pdf'),
             'deduction_norms_docs'   => array('Deduction Norms',                         'turf-console/deductionNormsManager.php',      'fas fa-percent'),
             'chart_pdf_upload'       => array('Chart PDF Upload',                        'turf-console/chartPdfUpload.php',             'fas fa-file-pdf'),
             'prospectus_pdf_upload'  => array('Prospectus PDF Upload',                   'turf-console/prospectusPdfUpload.php',        'fas fa-file-pdf'),
-            'membership_importance'  => array('Importance of being a Member',            'turf-console/membershipImportanceManager.php', 'fas fa-id-card'),
+            'membership_importance'  => array('Membership Overview',            'turf-console/membershipImportanceManager.php', 'fas fa-id-card'),
             'club_membership_privileges' => array('Club Membership Privileges',          'turf-console/clubMembershipPrivilegesManager.php', 'fas fa-horse-head'),
             'affiliated_clubs'     => array('Affiliated Clubs with RWITC',            'turf-console/affiliatedClubsManager.php', 'fas fa-handshake-angle'),
             'membership_categories'  => array('Membership Categories',                   'turf-console/membershipCategoriesManager.php', 'fas fa-users'),
@@ -1377,6 +1378,10 @@ MENU;
             'come_racing_mumbai'     => array('Come Racing - Mumbai Race Course',          'turf-console/comeRacingMumbaiManager.php',    'fas fa-location-dot'),
             'come_racing_pune'       => array('Come Racing - Pune Race Course',            'turf-console/comeRacingPuneManager.php',      'fas fa-map-location-dot'),
             'come_racing_services'   => array('Come Racing - Race Course Services & Others', 'turf-console/comeRacingServicesManager.php', 'fas fa-bell-concierge'),
+            'partners_overview'           => array('Partners Overview',                                  'turf-console/partnersOverviewManager.php',           'fas fa-eye'),
+            'partners_sponsor_privileges' => array("Sponsor's Privileges",                      'turf-console/partnersSponsorPrivilegesManager.php',  'fas fa-crown'),
+            'partners_advertising'        => array('Advertising & Sponsorship Opportunities',   'turf-console/partnersAdvertisingManager.php',        'fas fa-ad'),
+            'partners_contact_us'         => array('Contact Us',                                'turf-console/partnersContactUsManager.php',          'fas fa-address-book'),
         );
     }
 
