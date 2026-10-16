@@ -5,24 +5,48 @@ import { FaHorseHead } from "react-icons/fa";
 import { getAboutRwitc } from "../../../services/clubService";
 import "./About.css";
 
+const PAGE_TITLE = "About RWITC";
+
+// Old content was plain text (blank line = new paragraph).
+// If the saved text has no HTML tags, convert it to <p> blocks.
+function toHtml(text) {
+    const value = String(text || "").trim();
+    if (!value) return "";
+    if (/<[a-z][^>]*>/i.test(value)) return value;
+
+    const escape = (s) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    return value
+        .split(/\n\s*\n/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .map((p) => `<p>${escape(p).replace(/\n/g, "<br>")}</p>`)
+        .join("");
+}
+
 export default function About() {
-    const [paragraphs, setParagraphs] = useState([]);
+    const [html, setHtml] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         let active = true;
 
-        getAboutRwitc()
-            .then((data) => {
-                if (!active || !data?.text) return;
+        (async () => {
+            try {
+                const data = await getAboutRwitc();
+                if (!active) return;
 
-                const list = String(data.text)
-                    .split(/\n\s*\n/)
-                    .map((p) => p.trim())
-                    .filter(Boolean);
-
-                setParagraphs(list);
-            })
-            .catch(() => {});
+                // API returns the saved column as data.text (HTML or old plain text)
+                const raw = data?.text ?? data?.content ?? "";
+                if (raw) setHtml(toHtml(raw));
+            } catch (err) {
+                if (active) setError(err.message || "Unable to load content.");
+            } finally {
+                if (active) setLoading(false);
+            }
+        })();
 
         return () => {
             active = false;
@@ -33,7 +57,7 @@ export default function About() {
         <section className="aboutPage">
             <div className="aboutContainer">
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">About RWITC</h1>
+                    <h1 className="aboutHeading">{PAGE_TITLE}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -43,11 +67,21 @@ export default function About() {
                 </div>
 
                 <div className="aboutCard">
-                    <div className="aboutContent">
-                        {paragraphs.map((text, i) => (
-                            <p key={i}>{text}</p>
-                        ))}
-                    </div>
+                    {loading && <p className="aboutStatus">Loading...</p>}
+
+                    {!loading && error && <p className="aboutStatus">{error}</p>}
+
+                    {!loading && !error && !html && (
+                        <p className="aboutStatus">Content will be updated soon.</p>
+                    )}
+
+                    {/* Content is sanitized on the server (admin panel) before saving */}
+                    {!loading && !error && html && (
+                        <div
+                            className="aboutContent guideContent"
+                            dangerouslySetInnerHTML={{ __html: html }}
+                        />
+                    )}
                 </div>
             </div>
         </section>

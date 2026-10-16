@@ -12,10 +12,12 @@ $userObj = new Users($db);
 // ---------------------------------------------------------------
 // SETTINGS
 // ---------------------------------------------------------------
-$perPage = 6;                                   // records per page
-$newsDir = dirname(__DIR__) . '/news/';         // Upload folder (used only for the Working Group section)
+$maxChars = 50000;                              // max characters allowed in the content (text tabs)
+$maxTitle = 200;                                // max characters allowed in the title
+$newsDir  = dirname(__DIR__) . '/news/';        // Upload folder (used only for the Working Group PDF)
 
 // Sections (tabs) of this module: key => label
+// Every section keeps exactly ONE row in organisation_management.
 $sections = array(
     'structure'          => 'Structure',
     'managing_committee' => 'Managing Committee',
@@ -32,7 +34,7 @@ if (is_string($reqSec) && isset($sections[$reqSec])) {
 }
 $secName = $sections[$secKey];
 
-// All tabs except Working Group are text-only.
+// All tabs except Working Group are text-only. Working Group is PDF-only.
 $textOnly = ($secKey !== 'working_group');
 
 // ---------------------------------------------------------------
@@ -76,27 +78,36 @@ function orgDeleteFile($dir, $name)
     }
 }
 
-// Handles the upload. Returns the saved file name on success, or '' and sets $err on failure.
-function orgUploadFile($dir, &$err)
+// Validates and saves the PDF. Returns the saved file name on success, or '' and sets $err on failure.
+function orgUploadPdf($dir, &$err)
 {
     if (!isset($_FILES['report_file']) || $_FILES['report_file']['error'] !== UPLOAD_ERR_OK) {
         $err = 'File upload failed. Please try again (check file size limit).';
         return '';
     }
 
+    $tmp  = $_FILES['report_file']['tmp_name'];
     $orig = basename($_FILES['report_file']['name']);
     $ext  = strtolower(pathinfo($orig, PATHINFO_EXTENSION));
-    $blocked = array('php', 'php3', 'php4', 'php5', 'phtml', 'phar', 'exe', 'sh', 'bat', 'cgi', 'pl', 'htaccess');
 
-    if (in_array($ext, $blocked, true)) {
-        $err = 'This file type is not allowed.';
+    // extension check
+    if ($ext !== 'pdf') {
+        $err = 'Only PDF files are allowed.';
+        return '';
+    }
+
+    // real content check (mime + PDF header)
+    $mime = function_exists('mime_content_type') ? mime_content_type($tmp) : 'application/pdf';
+    $head = file_get_contents($tmp, false, null, 0, 5);
+    if ($mime !== 'application/pdf' || $head !== '%PDF-') {
+        $err = 'Invalid PDF file.';
         return '';
     }
 
     $clean = preg_replace('/[^A-Za-z0-9._-]/', '_', $orig);
     $saved = time() . '_' . $clean;
 
-    if (!move_uploaded_file($_FILES['report_file']['tmp_name'], $dir . $saved)) {
+    if (!move_uploaded_file($tmp, $dir . $saved)) {
         $err = 'Could not save file on server (check news/ folder permission).';
         return '';
     }
@@ -104,287 +115,156 @@ function orgUploadFile($dir, &$err)
     return $saved;
 }
 
-// URL builder for pagination
-function orgPageUrl($p, $sec)
+// Display name of a stored file (timestamp prefix removed)
+function orgFileLabel($name)
 {
-    return 'organisationManager.php?sec=' . urlencode($sec) . ($p > 1 ? '&page=' . (int)$p : '');
+    return preg_replace('/^\d+_/', '', basename((string)$name));
+}
+
+// The ONE row of a section. $secKey is whitelisted, so it is safe to use in SQL.
+// If old duplicate rows exist, the latest one (by date, then id) is used, whatever its id is.
+function orgGetSectionRow($db, $secKey)
+{
+    return $db->getSingleRowAssoc(
+        "SELECT * FROM organisation_management
+         WHERE section = '" . $db->escape($secKey) . "'
+         ORDER BY report_date DESC, id DESC
+         LIMIT 1"
+    );
 }
 
 // URL for HTML links (the page uses <base href>, so the folder prefix is needed)
-function orgHtmlUrl($p, $sec)
+function orgHtmlUrl($sec)
 {
-    return 'turf-console/' . orgPageUrl($p, $sec);
+    return 'turf-console/organisationManager.php?sec=' . urlencode($sec);
 }
 
 // ---------------------------------------------------------------
-// POST ACTIONS (save / update / delete)
+// SAVE (every section always uses exactly one row)
 // ---------------------------------------------------------------
 if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $action   = isset($_POST['action']) ? $_POST['action'] : '';
-    $pageNo   = isset($_POST['page']) ? max(1, (int)$_POST['page']) : 1;
-    $redirect = orgPageUrl($pageNo, $secKey);
+    $redirect = 'organisationManager.php?sec=' . urlencode($secKey);
 
     // CSRF check
     if (!isset($_POST['csrf']) || !hash_equals($_SESSION['org_csrf'], (string)$_POST['csrf'])) {
         orgSetFlash('Invalid request. Please try again.', 'error');
-        header('Location: ' . orgPageUrl(1, $secKey));
-        exit;
-    }
-
-    // ---------------- DELETE ----------------
-    if ($action === 'delete') {
-
-        $id  = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-        $row = $id > 0 ? $db->getSingleRowAssoc("SELECT * FROM organisation_management WHERE id = $id AND section = '$secKey'") : null;
-
-        if ($row) {
-            try {
-                $db->query("DELETE FROM organisation_management WHERE id = $id AND section = '$secKey'");
-                if ($row['type'] === 'file') {
-                    orgDeleteFile($newsDir, $row['file_name']);
-                }
-                orgSetFlash('Entry deleted successfully.', 'success');
-            } catch (Exception $e) {
-                orgSetFlash('Database error. Could not delete.', 'error');
-            }
-        } else {
-            orgSetFlash('Entry not found.', 'error');
-        }
-
-        // if the current page becomes empty, go back one page
-        $countSql = "SELECT COUNT(*) FROM organisation_management WHERE section = '$secKey'" . ($textOnly ? " AND type = 'text'" : "");
-        $total    = (int)$db->getSingleValue($countSql);
-        $lastPage = max(1, (int)ceil($total / $perPage));
-        if ($pageNo > $lastPage) {
-            $pageNo = $lastPage;
-        }
-        header('Location: ' . orgPageUrl($pageNo, $secKey));
-        exit;
-    }
-
-    // ---------------- SAVE / UPDATE ----------------
-    if ($action === 'save' || $action === 'update') {
-
-        $date  = isset($_POST['report_date']) ? trim($_POST['report_date']) : '';
-        $title = isset($_POST['report_title']) ? trim($_POST['report_title']) : '';
-        $text  = isset($_POST['report_text']) ? trim($_POST['report_text']) : '';
-        $id    = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-        $err   = '';
-
-        // ==================== TEXT-ONLY TABS ====================
-        if ($textOnly) {
-
-            // Normalize line endings to ensure consistent text formatting.
-            $text = str_replace(array("\r\n", "\r"), "\n", $text);
-
-            if ($action === 'update') {
-                $oldRow = $id > 0 ? $db->getSingleRowAssoc("SELECT id FROM organisation_management WHERE id = $id AND section = '$secKey'") : null;
-                if (!$oldRow) {
-                    $err = 'Entry not found.';
-                }
-            }
-
-            $d = DateTime::createFromFormat('Y-m-d', $date);
-            if ($err !== '') {
-                // already set
-            } elseif (!$d || $d->format('Y-m-d') !== $date) {
-                $err = 'Please select a valid date.';
-            } elseif ($text === '') {
-                $err = 'Text is required.';
-            }
-
-            if ($err === '') {
-
-                $titleSql = ($title !== '') ? "'" . $db->escape($title) . "'" : "NULL";
-                $textSql  = "'" . $db->escape($text) . "'";
-
-                try {
-                    if ($action === 'update') {
-                        $db->update("UPDATE organisation_management SET
-                                        report_date = '" . $db->escape($date) . "',
-                                        title = $titleSql,
-                                        type = 'text',
-                                        content_text = $textSql,
-                                        file_name = NULL
-                                     WHERE id = $id AND section = '$secKey'");
-                        orgSetFlash('Entry updated successfully.', 'success');
-                    } else {
-                        $db->insert("INSERT INTO organisation_management (section, report_date, title, type, content_text, file_name)
-                                     VALUES ('" . $db->escape($secKey) . "',
-                                             '" . $db->escape($date) . "',
-                                             $titleSql,
-                                             'text',
-                                             $textSql,
-                                             NULL)");
-                        orgSetFlash('Saved successfully.', 'success');
-                        $redirect = orgPageUrl(1, $secKey);
-                    }
-                } catch (Exception $e) {
-                    orgSetFlash('Database error. Could not save.', 'error');
-                }
-            } else {
-                orgSetFlash($err, 'error');
-                if ($action === 'update' && $id > 0) {
-                    $redirect = 'organisationManager.php?sec=' . urlencode($secKey) . '&edit=' . $id . ($pageNo > 1 ? '&page=' . $pageNo : '');
-                }
-            }
-
-            header('Location: ' . $redirect);
-            exit;
-        }
-
-        // ==================== WORKING GROUP (existing functionality preserved) ====================
-        $type   = isset($_POST['report_type']) ? $_POST['report_type'] : '';
-        $oldRow = null;
-
-        if ($action === 'update') {
-            $oldRow = $id > 0 ? $db->getSingleRowAssoc("SELECT * FROM organisation_management WHERE id = $id AND section = '$secKey'") : null;
-            if (!$oldRow) {
-                $err = 'Entry not found.';
-            }
-        }
-
-        $d = DateTime::createFromFormat('Y-m-d', $date);
-        if ($err !== '') {
-            // already set
-        } elseif (!$d || $d->format('Y-m-d') !== $date) {
-            $err = 'Invalid date.';
-        } elseif ($title === '') {
-            $err = 'Title is required.';
-        } elseif ($type !== 'text' && $type !== 'file') {
-            $err = 'Invalid type.';
-        } elseif ($type === 'text' && $text === '') {
-            $err = 'Text is required.';
-        }
-
-        $newFile      = '';   // newly uploaded file
-        $fileToKeep   = '';   // old file to keep
-        $fileToDelete = '';   // old file to delete
-
-        if ($err === '' && $type === 'file') {
-
-            $hasUpload = isset($_FILES['report_file']) && $_FILES['report_file']['error'] !== UPLOAD_ERR_NO_FILE;
-            $oldIsFile = ($oldRow && $oldRow['type'] === 'file' && $oldRow['file_name'] !== '');
-
-            if ($hasUpload) {
-                $newFile = orgUploadFile($newsDir, $err);
-                if ($err === '' && $oldIsFile) {
-                    $fileToDelete = $oldRow['file_name'];
-                }
-            } elseif ($oldIsFile) {
-                $fileToKeep = $oldRow['file_name'];
-            } else {
-                $err = 'Please choose a file.';
-            }
-        }
-
-        if ($err === '') {
-
-            $finalFile = ($type === 'file') ? ($newFile !== '' ? $newFile : $fileToKeep) : '';
-
-            // if switched to text, remove the old file
-            if ($type === 'text' && $oldRow && $oldRow['type'] === 'file') {
-                $fileToDelete = $oldRow['file_name'];
-            }
-
-            $textSql = ($type === 'text') ? "'" . $db->escape($text) . "'" : "NULL";
-            $fileSql = ($type === 'file') ? "'" . $db->escape($finalFile) . "'" : "NULL";
-
-            try {
-                if ($action === 'update') {
-                    $db->update("UPDATE organisation_management SET
-                                    report_date = '" . $db->escape($date) . "',
-                                    title = '" . $db->escape($title) . "',
-                                    type = '" . $db->escape($type) . "',
-                                    content_text = $textSql,
-                                    file_name = $fileSql
-                                 WHERE id = $id AND section = '$secKey'");
-                    orgSetFlash('Entry updated successfully.', 'success');
-                } else {
-                    $db->insert("INSERT INTO organisation_management (section, report_date, title, type, content_text, file_name)
-                                 VALUES ('" . $db->escape($secKey) . "',
-                                         '" . $db->escape($date) . "',
-                                         '" . $db->escape($title) . "',
-                                         '" . $db->escape($type) . "',
-                                         $textSql,
-                                         $fileSql)");
-                    orgSetFlash('Saved successfully.', 'success');
-                    $redirect = orgPageUrl(1, $secKey);   // new entry -> page 1
-                }
-
-                if ($fileToDelete !== '') {
-                    orgDeleteFile($newsDir, $fileToDelete);
-                }
-            } catch (Exception $e) {
-                // if the DB save fails, remove the newly uploaded file
-                if ($newFile !== '') {
-                    orgDeleteFile($newsDir, $newFile);
-                }
-                orgSetFlash('Database error. Could not save.', 'error');
-            }
-        } else {
-            orgSetFlash($err, 'error');
-            if ($action === 'update' && $id > 0) {
-                $redirect = 'organisationManager.php?sec=' . urlencode($secKey) . '&edit=' . $id . ($pageNo > 1 ? '&page=' . $pageNo : '');
-            }
-        }
-
         header('Location: ' . $redirect);
         exit;
     }
+
+    $title = isset($_POST['report_title']) ? trim($_POST['report_title']) : '';
+    $text  = isset($_POST['content']) ? trim($_POST['content']) : '';
+    // normalise line endings so paragraphs are always separated by "\n\n"
+    $text  = str_replace("\r\n", "\n", $text);
+    $text  = str_replace("\r", "\n", $text);
+
+    $type = $textOnly ? 'text' : 'file';
+    $err  = '';
+
+    $oldRow = orgGetSectionRow($db, $secKey);
+
+    if (mb_strlen($title) > $maxTitle) {
+        $err = 'Title is too long (max ' . $maxTitle . ' characters).';
+    } elseif ($textOnly && $text === '') {
+        $err = 'Content is required.';
+    } elseif ($textOnly && mb_strlen($text) > $maxChars) {
+        $err = 'Content is too long (max ' . $maxChars . ' characters).';
+    }
+
+    $newFile      = '';   // newly uploaded file
+    $fileToKeep   = '';   // old file to keep
+    $fileToDelete = '';   // old file to delete
+
+    $oldIsFile = ($oldRow && $oldRow['type'] === 'file' && (string)$oldRow['file_name'] !== '');
+
+    if ($err === '' && !$textOnly) {
+
+        $hasUpload = isset($_FILES['report_file']) && $_FILES['report_file']['error'] !== UPLOAD_ERR_NO_FILE;
+
+        if ($hasUpload) {
+            $newFile = orgUploadPdf($newsDir, $err);
+            if ($err === '' && $oldIsFile) {
+                $fileToDelete = $oldRow['file_name'];   // old PDF is removed automatically
+            }
+        } elseif ($oldIsFile) {
+            $fileToKeep = $oldRow['file_name'];
+        } else {
+            $err = 'Please choose a PDF file.';
+        }
+    }
+
+    if ($err === '') {
+
+        // text tab: if the row was a file before, remove that old file
+        if ($textOnly && $oldIsFile) {
+            $fileToDelete = $oldRow['file_name'];
+        }
+
+        $finalFile = (!$textOnly) ? ($newFile !== '' ? $newFile : $fileToKeep) : '';
+
+        $titleSql = ($title !== '') ? "'" . $db->escape($title) . "'" : "NULL";
+        $textSql  = $textOnly ? "'" . $db->escape($text) . "'" : "NULL";
+        $fileSql  = (!$textOnly) ? "'" . $db->escape($finalFile) . "'" : "NULL";
+
+        try {
+            if ($oldRow) {
+                // Row already exists -> always UPDATE it (never a new row)
+                $db->update("UPDATE organisation_management SET
+                                report_date = CURDATE(),
+                                title = $titleSql,
+                                type = '" . $db->escape($type) . "',
+                                content_text = $textSql,
+                                file_name = $fileSql
+                             WHERE id = " . (int)$oldRow['id'] . " AND section = '" . $db->escape($secKey) . "'");
+            } else {
+                // First time for this section -> create its one and only row
+                $db->insert("INSERT INTO organisation_management (section, report_date, title, type, content_text, file_name)
+                             VALUES ('" . $db->escape($secKey) . "',
+                                     CURDATE(),
+                                     $titleSql,
+                                     '" . $db->escape($type) . "',
+                                     $textSql,
+                                     $fileSql)");
+            }
+
+            orgSetFlash($textOnly ? 'Content updated successfully.' : 'PDF updated successfully.', 'success');
+
+            if ($fileToDelete !== '') {
+                orgDeleteFile($newsDir, $fileToDelete);
+            }
+        } catch (Exception $e) {
+            error_log('Organisation save error: ' . $e->getMessage());
+            // if the DB save fails, remove the newly uploaded file
+            if ($newFile !== '') {
+                orgDeleteFile($newsDir, $newFile);
+            }
+            orgSetFlash('Database error. Could not save.', 'error');
+        }
+    } else {
+        orgSetFlash($err, 'error');
+    }
+
+    header('Location: ' . $redirect);
+    exit;
 }
 
 // ---------------------------------------------------------------
-// PAGE DATA (list + edit row)
+// LOAD CURRENT CONTENT (the section's one row)
 // ---------------------------------------------------------------
-$page       = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-$editRow    = null;
-$rows       = array();
-$total      = 0;
-$totalPages = 1;
-$offset     = 0;
-
-$typeFilter = $textOnly ? " AND type = 'text'" : "";
+$fTitle = '';
+$fText  = '';
+$fFile  = '';
+$lastUpdated = '';
 
 if (empty($secmsg)) {
-
-    if (isset($_GET['edit']) && (int)$_GET['edit'] > 0) {
-        $eid     = (int)$_GET['edit'];
-        $editRow = $db->getSingleRowAssoc("SELECT * FROM organisation_management WHERE id = $eid AND section = '$secKey'" . $typeFilter);
+    $row = orgGetSectionRow($db, $secKey);
+    if ($row) {
+        $fTitle = (string)$row['title'];
+        $fText  = (string)$row['content_text'];
+        $fFile  = ($row['type'] === 'file') ? (string)$row['file_name'] : '';
+        $lastUpdated = $row['report_date'] ? date('d M Y', strtotime($row['report_date'])) : '';
     }
-
-    $total      = (int)$db->getSingleValue("SELECT COUNT(*) FROM organisation_management WHERE section = '$secKey'" . $typeFilter);
-    $totalPages = max(1, (int)ceil($total / $perPage));
-    if ($page > $totalPages) {
-        $page = $totalPages;
-    }
-    $offset = ($page - 1) * $perPage;
-
-    $rows = $db->getMultiDimensionalArray(
-        "SELECT id, report_date, title, type, content_text, file_name
-         FROM organisation_management
-         WHERE section = '$secKey'" . $typeFilter . "
-         ORDER BY report_date DESC, id DESC
-         LIMIT $perPage OFFSET $offset"
-    );
-}
-
-$isEdit = !empty($editRow);
-
-// default form values
-if ($textOnly) {
-    $fDate  = $isEdit ? $editRow['report_date'] : date('Y-m-d');
-    $fTitle = $isEdit ? (string)$editRow['title'] : '';
-    $fType  = 'text';
-    $fText  = $isEdit ? (string)$editRow['content_text'] : '';
-    $fFile  = '';
-} else {
-    $fDate  = $isEdit ? $editRow['report_date'] : '';
-    $fTitle = $isEdit ? $editRow['title'] : '';
-    $fType  = $isEdit ? $editRow['type'] : '';
-    $fText  = $isEdit ? (string)$editRow['content_text'] : '';
-    $fFile  = ($isEdit && $editRow['type'] === 'file') ? (string)$editRow['file_name'] : '';
 }
 
 // PAGE TITLE
@@ -414,32 +294,24 @@ $design->writeContentPageStyles();
     .ar-title { font-size: 24px; font-weight: 700; color: #2b332f; margin: 0; }
     .ar-subtitle { font-size: 14px; color: #7a8c84; margin: 0; }
 
-    .ar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); max-width: 820px; margin-bottom: 26px; }
-    .ar-card.wide { max-width: 100%; }
+    .ar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); max-width: 900px; margin-bottom: 26px; }
     .ar-card-title { font-family: inherit; font-size: 17px; font-weight: 600; color: #2b332f; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px solid #eef1ef; }
     .ar-card-title::before, .ar-card-title::after { display: none; content: none; }
-    .ar-card-title .ar-count { font-size: 13px; font-weight: 500; color: #7a8c84; margin-left: 8px; }
-    .ar-card.editing { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.10); }
 
-    .ar-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .ar-field { margin-bottom: 18px; min-width: 0; }
     .ar-field label { display: block; font-size: 13px; font-weight: 600; color: #2b332f; margin-bottom: 6px; }
     .ar-field label .req { color: #c0392b; }
     .ar-field label .opt { color: #7a8c84; font-weight: 500; }
-    .ar-input, .ar-select, .ar-textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
-    .ar-input::placeholder, .ar-textarea::placeholder { color: #9aa9a2; }
-    .ar-input:focus, .ar-select:focus, .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-textarea { min-height: 220px; resize: vertical; line-height: 1.5; }
-    .ar-textarea.tall { min-height: 320px; }
-    .ar-select { cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%237a8c84' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
-    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; }
-    .ar-input.invalid, .ar-select.invalid, .ar-textarea.invalid, .ar-drop.invalid { border-color: #c0392b; }
+    .ar-input { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
+    .ar-input::placeholder { color: #9aa9a2; }
+    .ar-input:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
+    .ar-textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; min-height: 340px; resize: vertical; line-height: 1.6; transition: border-color .15s ease, box-shadow .15s ease; }
+    .ar-textarea::placeholder { color: #9aa9a2; }
+    .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
+    .ar-input.invalid, .ar-textarea.invalid, .ar-drop.invalid { border-color: #c0392b; }
+    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     .ar-err { color: #c0392b; font-size: 12px; margin-top: 5px; display: none; }
     .ar-err.show { display: block; }
-
-    .ar-section { display: none; }
-    .ar-section.active { display: block; animation: arFade .2s ease; }
-    @keyframes arFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
     .ar-drop { border: 2px dashed #b9c4be; border-radius: 12px; padding: 32px 16px; text-align: center; cursor: pointer; background: #f8faf9; transition: all .15s ease; }
     .ar-drop:hover, .ar-drop.dragover { border-color: #1a7a45; background: #eef7f1; }
@@ -468,35 +340,8 @@ $design->writeContentPageStyles();
     .ar-btn-secondary { background: #fff; color: #2b332f; border-color: #d3d9d6; }
     .ar-btn-secondary:hover { border-color: #7a8c84; color: #2b332f; }
 
-    /* ---------- LIST TABLE ---------- */
-    .ar-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .ar-table { width: 100%; border-collapse: collapse; min-width: 520px; }
-    .ar-table th { text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: #0f5c33; background: #f3f6f4; padding: 11px 12px; border-bottom: 1px solid #e2e6e4; white-space: nowrap; }
-    .ar-table td { font-size: 14px; color: #2b332f; padding: 12px; border-bottom: 1px solid #eef1ef; vertical-align: middle; }
-    .ar-table tr:hover td { background: #f8faf9; }
-    .ar-table tr.is-editing td { background: #eef7f1; }
-    .ar-t-title { font-weight: 600; word-break: break-word; }
-    .ar-t-sub { font-size: 12px; color: #7a8c84; margin-top: 3px; word-break: break-word; }
-    .ar-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-    .ar-badge.text { background: #e8f0fb; color: #1f4f9c; }
-    .ar-badge.file { background: #fdf0e0; color: #9a5a0c; }
-    .ar-act { display: flex; gap: 6px; flex-wrap: nowrap; }
-    .ar-icon-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #d3d9d6; background: #fff; color: #2b332f; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; text-decoration: none; transition: all .15s ease; padding: 0; }
-    .ar-icon-btn:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
-    .ar-icon-btn.del:hover { border-color: #c0392b; color: #a12626; background: #fde8e8; }
-    .ar-act form { margin: 0; }
-    .ar-empty { text-align: center; padding: 30px 10px; color: #7a8c84; font-size: 14px; }
-    .ar-live { display: inline-block; margin-left: 8px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: #e3f6ea; color: #0f5c33; vertical-align: middle; }
-
-    /* ---------- PAGINATION ---------- */
-    .ar-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
-    .ar-pager-info { font-size: 13px; color: #7a8c84; }
-    .ar-pages { display: flex; gap: 6px; flex-wrap: wrap; }
-    .ar-page { min-width: 36px; height: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d3d9d6; border-radius: 8px; background: #fff; color: #2b332f; font-size: 14px; font-weight: 500; text-decoration: none; transition: all .15s ease; }
-    .ar-page:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
-    .ar-page.current { background: #0f5c33; border-color: #0f5c33; color: #fff; }
-    .ar-page.disabled { opacity: .45; pointer-events: none; }
-    .ar-page.dots { border: none; background: none; pointer-events: none; }
+    .ar-updated { font-size: 13px; color: #7a8c84; margin-bottom: 14px; }
+    .ar-updated i { color: #0f5c33; margin-right: 4px; }
 
     /* ---------- SECTION TABS ---------- */
     .ar-tabs { display: flex; gap: 8px; margin-bottom: 22px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
@@ -504,29 +349,50 @@ $design->writeContentPageStyles();
     .ar-tab:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
     .ar-tab.active { background: #0f5c33; border-color: #0f5c33; color: #fff; }
 
+    /* ---------- LIVE PREVIEW (text tabs) ---------- */
+    .ar-preview { background: #fff; border: 1px solid #e2e6e4; border-radius: 16px; padding: 26px 30px; box-shadow: 0 6px 20px rgba(11, 61, 36, 0.06); }
+    .ar-preview h3 { font-size: 18px; font-weight: 700; color: #2b332f; margin: 0 0 16px; }
+    .ar-preview p { font-style: italic; color: #4b5563; font-size: 14.5px; line-height: 1.9; margin: 0 0 18px !important; text-align: left !important; }
+    .ar-preview > :last-child { margin-bottom: 0 !important; }
+    .ar-preview-empty { color: #9aa9a2; font-size: 14px; }
+
+    /* ---------- CURRENT PDF LIST (Working Group) ---------- */
+    .ar-card.wide { max-width: 100%; }
+    .ar-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .ar-table { width: 100%; border-collapse: collapse; min-width: 480px; }
+    .ar-table th { text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: #0f5c33; background: #f3f6f4; padding: 11px 12px; border-bottom: 1px solid #e2e6e4; white-space: nowrap; }
+    .ar-table td { font-size: 14px; color: #2b332f; padding: 12px; border-bottom: 1px solid #eef1ef; vertical-align: middle; }
+    .ar-table tr:hover td { background: #f8faf9; }
+    .ar-t-file { display: flex; align-items: center; gap: 10px; word-break: break-word; }
+    .ar-t-file i { color: #c0392b; font-size: 18px; flex-shrink: 0; }
+    .ar-t-title { font-weight: 600; }
+    .ar-t-sub { font-size: 12px; color: #7a8c84; margin-top: 3px; word-break: break-word; }
+    .ar-act { display: flex; gap: 6px; flex-wrap: nowrap; }
+    .ar-icon-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #d3d9d6; background: #fff; color: #2b332f; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; text-decoration: none; transition: all .15s ease; padding: 0; }
+    .ar-icon-btn:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
+    .ar-live { display: inline-block; margin-left: 8px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: #e3f6ea; color: #0f5c33; vertical-align: middle; }
+    .ar-empty { text-align: center; padding: 30px 10px; color: #7a8c84; font-size: 14px; }
+
     html, body { scrollbar-width: none; -ms-overflow-style: none; }
     html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
     @media (min-width: 1920px) {
         .ar-title { font-size: 30px; }
-        .ar-card { max-width: 980px; padding: 30px; }
+        .ar-card { max-width: 1100px; padding: 30px; }
         .ar-card.wide { max-width: 100%; }
     }
-
     @media (max-width: 700px) {
         .ar-title { font-size: 20px; }
         .ar-card { padding: 16px; border-radius: 10px; }
-        .ar-row { grid-template-columns: 1fr; gap: 0; }
+        .ar-preview { padding: 18px 16px; }
         .ar-drop { padding: 24px 12px; }
     }
-
     @media (max-width: 560px) {
         .ar-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
         .ar-subtitle { font-size: 13px; }
         .ar-actions { flex-direction: column; }
         .ar-btn { width: 100%; }
-        .ar-textarea, .ar-textarea.tall { min-height: 200px; }
-        .ar-pager { flex-direction: column; align-items: flex-start; }
+        .ar-textarea { min-height: 260px; }
     }
 </style>
 
@@ -553,7 +419,7 @@ $design->writeContentPageStyles();
                 <h1 class="ar-title">ORGANISATION &amp; MANAGEMENT</h1>
                 <p class="ar-subtitle">
                     <?php echo htmlspecialchars($secName); ?> &mdash;
-                    <?php echo $textOnly ? 'latest entry (by date) is shown on the website' : 'upload a file or write text'; ?>
+                    <?php echo $textOnly ? 'edit the text shown on the website page' : 'upload a PDF file'; ?>
                 </p>
             </div>
         </div>
@@ -561,7 +427,7 @@ $design->writeContentPageStyles();
         <div class="ar-tabs">
             <?php foreach ($sections as $tKey => $tLabel) { ?>
                 <a class="ar-tab<?php echo $tKey === $secKey ? ' active' : ''; ?>"
-                   href="<?php echo htmlspecialchars(orgHtmlUrl(1, $tKey)); ?>">
+                   href="<?php echo htmlspecialchars(orgHtmlUrl($tKey)); ?>">
                     <?php echo htmlspecialchars($tLabel); ?>
                 </a>
             <?php } ?>
@@ -573,542 +439,275 @@ $design->writeContentPageStyles();
             </div>
         <?php } ?>
 
-        <?php if (isset($_GET['edit']) && !$isEdit) { ?>
-            <div class="message error">Entry not found.</div>
-        <?php } ?>
-
         <div id="arMsg" class="message" style="display:none;"></div>
 
 
-        <!-- ===================== ADD / EDIT FORM ===================== -->
-        <div class="ar-card<?php echo $isEdit ? ' editing' : ''; ?>">
+        <!-- ===================== EDITOR ===================== -->
+        <div class="ar-card">
 
-            <div class="ar-card-title">
-                <?php echo $isEdit ? 'Edit ' . htmlspecialchars($secName) . ' Entry' : 'Add New ' . htmlspecialchars($secName) . ' Entry'; ?>
-            </div>
+            <div class="ar-card-title"><?php echo htmlspecialchars($secName); ?> <?php echo $textOnly ? 'Content' : 'PDF'; ?></div>
 
-            <?php if ($textOnly) { ?>
-
-                <!-- ============ TEXT-ONLY FORM ============ -->
-                <form id="arForm" method="post" action="turf-console/organisationManager.php" novalidate>
-
-                    <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
-                    <input type="hidden" name="action" value="<?php echo $isEdit ? 'update' : 'save'; ?>">
-                    <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
-                    <input type="hidden" name="sec" value="<?php echo htmlspecialchars($secKey); ?>">
-                    <?php if ($isEdit) { ?>
-                        <input type="hidden" name="id" value="<?php echo (int)$editRow['id']; ?>">
-                    <?php } ?>
-
-                    <div class="ar-row">
-
-                        <div class="ar-field">
-                            <label for="arDate">Date <span class="req">*</span></label>
-                            <input type="date" id="arDate" name="report_date" class="ar-input" value="<?php echo htmlspecialchars($fDate); ?>">
-                            <div class="ar-err" id="errDate">Please select a date.</div>
-                        </div>
-
-                        <div class="ar-field">
-                            <label for="arTitle">Title <span class="opt">(optional)</span></label>
-                            <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="200" placeholder="Enter title (optional)" value="<?php echo htmlspecialchars($fTitle); ?>">
-                            <div class="ar-hint"><span>Leave this field empty to display the default heading on the website.</span></div>
-                        </div>
-
-                    </div>
-
-                    <div class="ar-field">
-                        <label for="arText">Text <span class="req">*</span></label>
-                        <textarea id="arText" name="report_text" class="ar-textarea tall" placeholder="Write your text here..."><?php echo htmlspecialchars($fText); ?></textarea>
-                        <div class="ar-hint"><span>Plain text. Leave one blank line between paragraphs.</span><span id="arCount">0 characters</span></div>
-                        <div class="ar-err" id="errText">Please write some text.</div>
-                    </div>
-
-                    <div class="ar-actions">
-                        <button type="submit" class="ar-btn ar-btn-primary">
-                            <i class="fas fa-save"></i> <?php echo $isEdit ? 'Update' : 'Save'; ?>
-                        </button>
-                        <?php if ($isEdit) { ?>
-                            <a class="ar-btn ar-btn-secondary" href="<?php echo htmlspecialchars(orgHtmlUrl($page, $secKey)); ?>">
-                                <i class="fas fa-times"></i> Cancel
-                            </a>
-                        <?php } else { ?>
-                            <button type="button" class="ar-btn ar-btn-secondary" id="arReset">
-                                <i class="fas fa-undo"></i> Reset
-                            </button>
-                        <?php } ?>
-                    </div>
-
-                </form>
-
-            <?php } else { ?>
-
-                <!-- ============ WORKING GROUP FORM (existing functionality preserved) ============ -->
-                <form id="arForm" method="post" action="turf-console/organisationManager.php" enctype="multipart/form-data" novalidate>
-
-                    <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
-                    <input type="hidden" name="action" value="<?php echo $isEdit ? 'update' : 'save'; ?>">
-                    <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
-                    <input type="hidden" name="sec" value="<?php echo htmlspecialchars($secKey); ?>">
-                    <?php if ($isEdit) { ?>
-                        <input type="hidden" name="id" value="<?php echo (int)$editRow['id']; ?>">
-                    <?php } ?>
-
-                    <div class="ar-row">
-
-                        <div class="ar-field">
-                            <label for="arDate">Date <span class="req">*</span></label>
-                            <input type="text" id="arDate" name="report_date" class="ar-input" placeholder="YYYY-MM-DD" maxlength="10" inputmode="numeric" autocomplete="off" value="<?php echo htmlspecialchars($fDate); ?>">
-                            <div class="ar-hint"><span>Format: YYYY-MM-DD (e.g. 2026-10-07)</span></div>
-                            <div class="ar-err" id="errDate">Please enter a valid date in YYYY-MM-DD format.</div>
-                        </div>
-
-                        <div class="ar-field">
-                            <label for="arTitle">Title <span class="req">*</span></label>
-                            <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="200" placeholder="Enter title" value="<?php echo htmlspecialchars($fTitle); ?>">
-                            <div class="ar-err" id="errTitle">Please enter a title.</div>
-                        </div>
-
-                    </div>
-
-                    <div class="ar-field">
-                        <label for="arType">Type <span class="req">*</span></label>
-                        <select id="arType" name="report_type" class="ar-select">
-                            <option value="">-- Select --</option>
-                            <option value="text" <?php echo $fType === 'text' ? 'selected' : ''; ?>>Write Text</option>
-                            <option value="file" <?php echo $fType === 'file' ? 'selected' : ''; ?>>Upload File</option>
-                        </select>
-                        <div class="ar-err" id="errType">Please select a type.</div>
-                    </div>
-
-
-                    <!-- TEXT SECTION -->
-                    <div class="ar-section" id="secText">
-                        <div class="ar-field">
-                            <label for="arText">Text <span class="req">*</span></label>
-                            <textarea id="arText" name="report_text" class="ar-textarea" placeholder="Write your text here..."><?php echo htmlspecialchars($fText); ?></textarea>
-                            <div class="ar-hint"><span>Plain text / HTML allowed</span><span id="arCount">0 characters</span></div>
-                            <div class="ar-err" id="errText">Please write some text.</div>
-                        </div>
-                    </div>
-
-
-                    <!-- FILE SECTION -->
-                    <div class="ar-section" id="secFile">
-                        <div class="ar-field">
-                            <label>Upload File <span class="req">*</span></label>
-
-                            <?php if ($fFile !== '') { ?>
-                                <div class="ar-current" style="margin:0 0 12px;">
-                                    Current file:
-                                    <a href="news/<?php echo rawurlencode($fFile); ?>" target="_blank"><?php echo htmlspecialchars($fFile); ?></a>
-                                    <br><span style="color:#7a8c84;">If you choose a new file, it will replace this one. Otherwise the current file is kept.</span>
-                                </div>
-                            <?php } ?>
-
-                            <div class="ar-drop" id="arDrop">
-                                <div class="ar-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                                <p class="ar-drop-text">Drag &amp; drop file here or <span>browse</span></p>
-                                <p class="ar-drop-sub">HTML, DOC, DOCX, PDF, ZIP, images, etc.</p>
-                            </div>
-
-                            <input type="file" id="arFile" name="report_file" class="ar-file-input">
-
-                            <div class="ar-file-box" id="arFileBox">
-                                <div class="ar-file-ico"><i class="fas fa-file" id="arFileIcon"></i></div>
-                                <div class="ar-file-info">
-                                    <div class="ar-file-name" id="arFileName"></div>
-                                    <div class="ar-file-size" id="arFileSize"></div>
-                                </div>
-                                <button type="button" class="ar-file-remove" id="arFileRemove" title="Remove file">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-
-                            <div class="ar-err" id="errFile">Please choose a file.</div>
-                        </div>
-                    </div>
-
-
-                    <div class="ar-actions">
-                        <button type="submit" class="ar-btn ar-btn-primary">
-                            <i class="fas fa-save"></i> <?php echo $isEdit ? 'Update' : 'Save'; ?>
-                        </button>
-                        <?php if ($isEdit) { ?>
-                            <a class="ar-btn ar-btn-secondary" href="<?php echo htmlspecialchars(orgHtmlUrl($page, $secKey)); ?>">
-                                <i class="fas fa-times"></i> Cancel
-                            </a>
-                        <?php } else { ?>
-                            <button type="button" class="ar-btn ar-btn-secondary" id="arReset">
-                                <i class="fas fa-undo"></i> Reset
-                            </button>
-                        <?php } ?>
-                    </div>
-
-                </form>
-
+            <?php if ($lastUpdated !== '') { ?>
+                <div class="ar-updated"><i class="fas fa-clock"></i> Last updated: <?php echo htmlspecialchars($lastUpdated); ?></div>
             <?php } ?>
+
+            <form id="arForm" method="post" action="turf-console/organisationManager.php"<?php echo $textOnly ? '' : ' enctype="multipart/form-data"'; ?> novalidate>
+
+                <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
+                <input type="hidden" name="sec" value="<?php echo htmlspecialchars($secKey); ?>">
+
+                <div class="ar-field">
+                    <label for="arTitle">Title <span class="opt">(optional)</span></label>
+                    <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="<?php echo (int)$maxTitle; ?>" placeholder="Enter title (optional)" value="<?php echo htmlspecialchars($fTitle); ?>">
+                    <div class="ar-hint"><span>Leave this field empty to display the default heading on the website.</span></div>
+                    <div class="ar-err" id="errTitle">Title is too long.</div>
+                </div>
+
+                <?php if ($textOnly) { ?>
+
+                    <!-- TEXT -->
+                    <div class="ar-field">
+                        <label for="arContent">Content <span class="req">*</span></label>
+                        <textarea id="arContent" name="content" class="ar-textarea" placeholder="Write the content here..."><?php echo htmlspecialchars($fText); ?></textarea>
+                        <div class="ar-hint">
+                            <span>Leave a blank line between paragraphs. Each paragraph shows as a separate block on the website.</span>
+                            <span id="arCount">0 characters</span>
+                        </div>
+                        <div class="ar-err" id="errContent">Please write some content.</div>
+                    </div>
+
+                <?php } else { ?>
+
+                    <!-- PDF -->
+                    <div class="ar-field">
+                        <label>PDF File <span class="req">*</span></label>
+
+                        <?php if ($fFile !== '') { ?>
+                            <div class="ar-current" style="margin:0 0 12px;">
+                                Current file:
+                                <a href="news/<?php echo rawurlencode($fFile); ?>" target="_blank"><?php echo htmlspecialchars(orgFileLabel($fFile)); ?></a>
+                                <br><span style="color:#7a8c84;">If you choose a new file, it will replace this one. Otherwise the current file is kept.</span>
+                            </div>
+                        <?php } ?>
+
+                        <div class="ar-drop" id="arDrop">
+                            <div class="ar-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <p class="ar-drop-text">Drag &amp; drop PDF here or <span>browse</span></p>
+                            <p class="ar-drop-sub">Only PDF files are allowed</p>
+                        </div>
+
+                        <input type="file" id="arFile" name="report_file" class="ar-file-input" accept="application/pdf,.pdf">
+
+                        <div class="ar-file-box" id="arFileBox">
+                            <div class="ar-file-ico"><i class="fas fa-file-pdf"></i></div>
+                            <div class="ar-file-info">
+                                <div class="ar-file-name" id="arFileName"></div>
+                                <div class="ar-file-size" id="arFileSize"></div>
+                            </div>
+                            <button type="button" class="ar-file-remove" id="arFileRemove" title="Remove file">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div class="ar-err" id="errFile">Please choose a PDF file.</div>
+                    </div>
+
+                <?php } ?>
+
+
+                <div class="ar-actions">
+                    <button type="submit" class="ar-btn ar-btn-primary">
+                        <i class="fas fa-save"></i> Save Content
+                    </button>
+                    <button type="button" class="ar-btn ar-btn-secondary" id="arRevert">
+                        <i class="fas fa-undo"></i> Revert Changes
+                    </button>
+                </div>
+
+            </form>
 
         </div>
 
 
-        <!-- ===================== LIST ===================== -->
-        <div class="ar-card wide">
+        <?php if ($textOnly) { ?>
 
-            <div class="ar-card-title">
-                All Entries <span class="ar-count">(<?php echo (int)$total; ?> total)</span>
+            <!-- ===================== LIVE PREVIEW (text tabs) ===================== -->
+            <div class="ar-card">
+                <div class="ar-card-title">Preview</div>
+                <div class="ar-preview" id="arPreview"></div>
             </div>
 
-            <?php if (empty($rows)) { ?>
+        <?php } else { ?>
 
-                <div class="ar-empty">No entries yet.</div>
+            <!-- ===================== CURRENT PDF (Working Group) ===================== -->
+            <div class="ar-card wide">
 
-            <?php } else { ?>
+                <div class="ar-card-title">Current PDF</div>
 
-                <div class="ar-table-wrap">
-                    <table class="ar-table">
-                        <thead>
-                            <tr>
-                                <th style="width:110px;">Date</th>
-                                <th><?php echo $textOnly ? 'Title / Text' : 'Title'; ?></th>
-                                <?php if (!$textOnly) { ?>
-                                    <th style="width:100px;">Type</th>
-                                <?php } ?>
-                                <th style="width:120px;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($rows as $idx => $r) {
-                                $rid = (int)$r['id'];
-                                $isRowEditing = ($isEdit && (int)$editRow['id'] === $rid);
-                                $editUrl = 'turf-console/organisationManager.php?sec=' . urlencode($secKey) . '&edit=' . $rid . ($page > 1 ? '&page=' . $page : '');
+                <?php if ($fFile === '') { ?>
 
-                                if ($r['type'] === 'file') {
-                                    $sub = (string)$r['file_name'];
-                                } else {
-                                    $plain = trim(strip_tags((string)$r['content_text']));
-                                    $sub = (function_exists('mb_substr') ? mb_substr($plain, 0, 90) : substr($plain, 0, 90)) . (strlen($plain) > 90 ? '...' : '');
-                                }
+                    <div class="ar-empty">No PDF uploaded yet.</div>
 
-                                $heading = trim((string)$r['title']);
-                                $isLive  = ($textOnly && $page === 1 && $idx === 0);
-                            ?>
-                                <tr class="<?php echo $isRowEditing ? 'is-editing' : ''; ?>">
-                                    <td><?php echo htmlspecialchars(date('d M Y', strtotime($r['report_date']))); ?></td>
+                <?php } else { ?>
+
+                    <div class="ar-table-wrap">
+                        <table class="ar-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:120px;">Date</th>
+                                    <th>File</th>
+                                    <th style="width:90px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($lastUpdated); ?></td>
                                     <td>
-                                        <?php if ($heading !== '') { ?>
-                                            <div class="ar-t-title"><?php echo htmlspecialchars($heading); ?><?php if ($isLive) { ?><span class="ar-live">LIVE</span><?php } ?></div>
-                                            <?php if ($sub !== '') { ?>
-                                                <div class="ar-t-sub"><?php echo htmlspecialchars($sub); ?></div>
-                                            <?php } ?>
-                                        <?php } else { ?>
-                                            <div class="ar-t-title"><?php echo htmlspecialchars($sub); ?><?php if ($isLive) { ?><span class="ar-live">LIVE</span><?php } ?></div>
-                                        <?php } ?>
+                                        <div class="ar-t-file">
+                                            <i class="fas fa-file-pdf"></i>
+                                            <div>
+                                                <?php if (trim($fTitle) !== '') { ?>
+                                                    <div class="ar-t-title"><?php echo htmlspecialchars($fTitle); ?><span class="ar-live">LIVE</span></div>
+                                                    <div class="ar-t-sub"><?php echo htmlspecialchars(orgFileLabel($fFile)); ?></div>
+                                                <?php } else { ?>
+                                                    <div class="ar-t-title"><?php echo htmlspecialchars(orgFileLabel($fFile)); ?><span class="ar-live">LIVE</span></div>
+                                                <?php } ?>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <?php if (!$textOnly) { ?>
-                                        <td>
-                                            <?php if ($r['type'] === 'file') { ?>
-                                                <span class="ar-badge file"><i class="fas fa-file"></i> File</span>
-                                            <?php } else { ?>
-                                                <span class="ar-badge text"><i class="fas fa-align-left"></i> Text</span>
-                                            <?php } ?>
-                                        </td>
-                                    <?php } ?>
                                     <td>
                                         <div class="ar-act">
-                                            <?php if (!$textOnly && $r['type'] === 'file' && $r['file_name'] !== '') { ?>
-                                                <a class="ar-icon-btn" title="Open file" target="_blank" href="news/<?php echo rawurlencode($r['file_name']); ?>">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </a>
-                                            <?php } ?>
-                                            <a class="ar-icon-btn" title="Edit" href="<?php echo htmlspecialchars($editUrl); ?>">
-                                                <i class="fas fa-pen"></i>
+                                            <a class="ar-icon-btn" title="View" target="_blank" href="news/<?php echo rawurlencode($fFile); ?>">
+                                                <i class="fas fa-eye"></i>
                                             </a>
-                                            <form method="post" action="turf-console/organisationManager.php" class="arDelForm">
-                                                <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
-                                                <input type="hidden" name="action" value="delete">
-                                                <input type="hidden" name="id" value="<?php echo $rid; ?>">
-                                                <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
-                                                <input type="hidden" name="sec" value="<?php echo htmlspecialchars($secKey); ?>">
-                                                <button type="submit" class="ar-icon-btn del" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
                                         </div>
                                     </td>
                                 </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <?php if ($totalPages > 1) {
-
-                    $show = array();
-                    for ($i = 1; $i <= $totalPages; $i++) {
-                        if ($i === 1 || $i === $totalPages || abs($i - $page) <= 2) {
-                            $show[] = $i;
-                        }
-                    }
-                    $from = $offset + 1;
-                    $to   = min($offset + $perPage, $total);
-                ?>
-                    <div class="ar-pager">
-                        <div class="ar-pager-info">Showing <?php echo $from; ?>-<?php echo $to; ?> of <?php echo (int)$total; ?></div>
-                        <div class="ar-pages">
-                            <a class="ar-page<?php echo $page <= 1 ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(orgHtmlUrl($page - 1, $secKey)); ?>">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-
-                            <?php
-                            $prev = 0;
-                            foreach ($show as $p) {
-                                if ($prev && $p - $prev > 1) {
-                                    echo '<span class="ar-page dots">...</span>';
-                                }
-                                $cls = ($p === $page) ? ' current' : '';
-                                echo '<a class="ar-page' . $cls . '" href="' . htmlspecialchars(orgHtmlUrl($p, $secKey)) . '">' . $p . '</a>';
-                                $prev = $p;
-                            }
-                            ?>
-
-                            <a class="ar-page<?php echo $page >= $totalPages ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(orgHtmlUrl($page + 1, $secKey)); ?>">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
+
                 <?php } ?>
 
-            <?php } ?>
+            </div>
 
-        </div>
+        <?php } ?>
 
     </div>
 
 
-    <?php if ($textOnly) { ?>
+    <script type="text/javascript">
+        (function() {
 
-        <!-- ============ JS: TEXT-ONLY TABS ============ -->
-        <script type="text/javascript">
-            (function() {
+            var isWG         = <?php echo json_encode(!$textOnly); ?>;
+            var existingFile = <?php echo json_encode($fFile !== ''); ?>;
+            var maxChars     = <?php echo (int)$maxChars; ?>;
+            var maxTitle     = <?php echo (int)$maxTitle; ?>;
 
-                var form     = document.getElementById('arForm');
-                var dateIn   = document.getElementById('arDate');
-                var txtArea  = document.getElementById('arText');
-                var counter  = document.getElementById('arCount');
-                var resetBtn = document.getElementById('arReset');
-                var msgBox   = document.getElementById('arMsg');
-                var msgTimer = null;
+            var form    = document.getElementById('arForm');
+            var titleIn = document.getElementById('arTitle');
+            var revert  = document.getElementById('arRevert');
+            var msgBox  = document.getElementById('arMsg');
+            var msgTimer = null;
 
-                function $(id) {
-                    return document.getElementById(id);
+            // text tabs
+            var area    = document.getElementById('arContent');
+            var counter = document.getElementById('arCount');
+            var preview = document.getElementById('arPreview');
+
+            // Working Group (PDF)
+            var drop     = document.getElementById('arDrop');
+            var fileIn   = document.getElementById('arFile');
+            var fileBox  = document.getElementById('arFileBox');
+            var fileName = document.getElementById('arFileName');
+            var fileSize = document.getElementById('arFileSize');
+            var fileRem  = document.getElementById('arFileRemove');
+
+            var savedTitle   = titleIn.value;
+            var savedContent = area ? area.value : '';
+
+            function showMsg(text, type) {
+                msgBox.className = 'message ' + (type || '');
+                msgBox.textContent = text;
+                msgBox.style.display = 'block';
+                clearTimeout(msgTimer);
+                msgTimer = setTimeout(function() {
+                    msgBox.style.display = 'none';
+                }, 4000);
+            }
+
+            function setErr(errId, inputEl, show, text) {
+                var e = document.getElementById(errId);
+                if (!e) return;
+                if (text) e.textContent = text;
+                e.classList.toggle('show', show);
+                if (inputEl) inputEl.classList.toggle('invalid', show);
+            }
+
+            // ---------------- PDF (Working Group) ----------------
+            function formatSize(b) {
+                if (b < 1024) return b + ' B';
+                if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+                if (b < 1073741824) return (b / 1048576).toFixed(2) + ' MB';
+                return (b / 1073741824).toFixed(2) + ' GB';
+            }
+
+            function isPdf(file) {
+                return /\.pdf$/i.test(file.name);
+            }
+
+            function showFile(file) {
+                fileName.textContent = file.name;
+                fileSize.textContent = formatSize(file.size);
+                fileBox.classList.add('show');
+                setErr('errFile', drop, false);
+            }
+
+            function clearFile() {
+                fileIn.value = '';
+                fileBox.classList.remove('show');
+            }
+
+            // ---------------- TEXT PREVIEW ----------------
+            function renderPreview() {
+                var text = area.value.replace(/\r\n?/g, '\n').trim();
+                var title = titleIn.value.trim();
+                preview.innerHTML = '';
+
+                if (text === '') {
+                    var empty = document.createElement('div');
+                    empty.className = 'ar-preview-empty';
+                    empty.textContent = 'Nothing to preview yet.';
+                    preview.appendChild(empty);
+                    return;
                 }
 
-                function showMsg(text, type) {
-                    msgBox.className = 'message ' + (type || '');
-                    msgBox.textContent = text;
-                    msgBox.style.display = 'block';
-                    clearTimeout(msgTimer);
-                    msgTimer = setTimeout(function() {
-                        msgBox.style.display = 'none';
-                    }, 4000);
+                if (title !== '') {
+                    var h = document.createElement('h3');
+                    h.textContent = title;
+                    preview.appendChild(h);
                 }
 
-                function setErr(errId, inputEl, show) {
-                    var e = $(errId);
-                    if (show) {
-                        e.classList.add('show');
-                        if (inputEl) inputEl.classList.add('invalid');
-                    } else {
-                        e.classList.remove('show');
-                        if (inputEl) inputEl.classList.remove('invalid');
-                    }
+                var parts = text.split(/\n\s*\n/);
+                for (var i = 0; i < parts.length; i++) {
+                    var p = document.createElement('p');
+                    p.textContent = parts[i].trim();   // textContent keeps it safe from HTML
+                    preview.appendChild(p);
                 }
+            }
 
-                function updateCount() {
-                    counter.textContent = txtArea.value.length + ' characters';
-                }
+            function updateText() {
+                counter.textContent = area.value.length + ' characters';
+                if (area.value.trim()) setErr('errContent', area, false);
+                renderPreview();
+            }
 
-                dateIn.addEventListener('change', function() {
-                    if (this.value) setErr('errDate', this, false);
-                });
+            titleIn.addEventListener('input', function() {
+                if (titleIn.value.trim().length <= maxTitle) setErr('errTitle', titleIn, false);
+                if (!isWG) renderPreview();
+            });
 
-                txtArea.addEventListener('input', function() {
-                    updateCount();
-                    if (txtArea.value.trim()) setErr('errText', txtArea, false);
-                });
-
-                if (resetBtn) {
-                    resetBtn.addEventListener('click', function() {
-                        form.reset();
-                        updateCount();
-                        setErr('errDate', dateIn, false);
-                        setErr('errText', txtArea, false);
-                    });
-                }
-
-                form.addEventListener('submit', function(e) {
-                    var ok = true;
-
-                    if (!dateIn.value) {
-                        setErr('errDate', dateIn, true);
-                        ok = false;
-                    }
-                    if (!txtArea.value.trim()) {
-                        setErr('errText', txtArea, true);
-                        ok = false;
-                    }
-
-                    if (!ok) {
-                        e.preventDefault();
-                        showMsg('Please fill all required fields.', 'error');
-                    }
-                });
-
-                var delForms = document.querySelectorAll('.arDelForm');
-                for (var i = 0; i < delForms.length; i++) {
-                    delForms[i].addEventListener('submit', function(e) {
-                        if (!confirm('Are you sure you want to delete this entry? This cannot be undone.')) {
-                            e.preventDefault();
-                        }
-                    });
-                }
-
-                updateCount();
-
-            })();
-        </script>
-
-    <?php } else { ?>
-
-        <!-- ============ JS: WORKING GROUP (existing functionality preserved) ============ -->
-        <script type="text/javascript">
-            (function() {
-
-                var existingFile = <?php echo json_encode($fFile !== ''); ?>;
-
-                var form     = document.getElementById('arForm');
-                var dateIn   = document.getElementById('arDate');
-                var titleIn  = document.getElementById('arTitle');
-                var typeSel  = document.getElementById('arType');
-                var secText  = document.getElementById('secText');
-                var secFile  = document.getElementById('secFile');
-                var txtArea  = document.getElementById('arText');
-                var counter  = document.getElementById('arCount');
-                var drop     = document.getElementById('arDrop');
-                var fileIn   = document.getElementById('arFile');
-                var fileBox  = document.getElementById('arFileBox');
-                var fileName = document.getElementById('arFileName');
-                var fileSize = document.getElementById('arFileSize');
-                var fileIcon = document.getElementById('arFileIcon');
-                var fileRem  = document.getElementById('arFileRemove');
-                var resetBtn = document.getElementById('arReset');
-                var msgBox   = document.getElementById('arMsg');
-                var msgTimer = null;
-
-                function $(id) {
-                    return document.getElementById(id);
-                }
-
-                function showMsg(text, type) {
-                    msgBox.className = 'message ' + (type || '');
-                    msgBox.textContent = text;
-                    msgBox.style.display = 'block';
-                    clearTimeout(msgTimer);
-                    msgTimer = setTimeout(function() {
-                        msgBox.style.display = 'none';
-                    }, 4000);
-                }
-
-                function setErr(errId, inputEl, show) {
-                    var e = $(errId);
-                    if (show) {
-                        e.classList.add('show');
-                    } else {
-                        e.classList.remove('show');
-                    }
-                    if (inputEl) {
-                        if (show) {
-                            inputEl.classList.add('invalid');
-                        } else {
-                            inputEl.classList.remove('invalid');
-                        }
-                    }
-                }
-
-                function formatSize(b) {
-                    if (b < 1024) return b + ' B';
-                    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
-                    if (b < 1073741824) return (b / 1048576).toFixed(2) + ' MB';
-                    return (b / 1073741824).toFixed(2) + ' GB';
-                }
-
-                function iconFor(name) {
-                    var ext = (name.split('.').pop() || '').toLowerCase();
-                    if (ext === 'pdf') return 'fas fa-file-pdf';
-                    if (ext === 'doc' || ext === 'docx') return 'fas fa-file-word';
-                    if (ext === 'xls' || ext === 'xlsx' || ext === 'csv') return 'fas fa-file-excel';
-                    if (ext === 'zip' || ext === 'rar' || ext === '7z') return 'fas fa-file-archive';
-                    if (ext === 'htm' || ext === 'html') return 'fas fa-file-code';
-                    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].indexOf(ext) !== -1) return 'fas fa-file-image';
-                    return 'fas fa-file';
-                }
-
-                function showFile(file) {
-                    fileName.textContent = file.name;
-                    fileSize.textContent = formatSize(file.size);
-                    fileIcon.className = iconFor(file.name);
-                    fileBox.classList.add('show');
-                    setErr('errFile', drop, false);
-                }
-
-                function clearFile() {
-                    fileIn.value = '';
-                    fileBox.classList.remove('show');
-                }
-
-                function isValidDate(str) {
-                    if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) return false;
-                    var y = parseInt(str.substr(0, 4), 10);
-                    var m = parseInt(str.substr(5, 2), 10);
-                    var d = parseInt(str.substr(8, 2), 10);
-                    if (y < 1900 || y > 2100) return false;
-                    var dt = new Date(y, m - 1, d);
-                    return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
-                }
-
-                function updateCount() {
-                    counter.textContent = txtArea.value.length + ' characters';
-                }
-
-                // Date auto-format while typing
-                dateIn.addEventListener('input', function() {
-                    var digits = this.value.replace(/\D/g, '').slice(0, 8);
-                    var out = digits;
-                    if (digits.length > 6) {
-                        out = digits.slice(0, 4) + '-' + digits.slice(4, 6) + '-' + digits.slice(6);
-                    } else if (digits.length > 4) {
-                        out = digits.slice(0, 4) + '-' + digits.slice(4);
-                    }
-                    this.value = out;
-                    if (isValidDate(out)) setErr('errDate', this, false);
-                });
-
-                // Type dropdown
-                function applyType() {
-                    var v = typeSel.value;
-                    secText.classList.toggle('active', v === 'text');
-                    secFile.classList.toggle('active', v === 'file');
-                    setErr('errText', txtArea, false);
-                    setErr('errFile', drop, false);
-                    if (v) setErr('errType', typeSel, false);
-                }
-                typeSel.addEventListener('change', applyType);
-
-                // Text counter
-                txtArea.addEventListener('input', function() {
-                    updateCount();
-                    if (txtArea.value.trim()) setErr('errText', txtArea, false);
-                });
+            if (isWG) {
 
                 // File: click and drag/drop
                 drop.addEventListener('click', function() {
@@ -1117,6 +716,11 @@ $design->writeContentPageStyles();
 
                 fileIn.addEventListener('change', function() {
                     if (fileIn.files && fileIn.files[0]) {
+                        if (!isPdf(fileIn.files[0])) {
+                            clearFile();
+                            setErr('errFile', drop, true, 'Only PDF files are allowed.');
+                            return;
+                        }
                         showFile(fileIn.files[0]);
                     }
                 });
@@ -1135,100 +739,82 @@ $design->writeContentPageStyles();
                 });
                 drop.addEventListener('drop', function(e) {
                     if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        var f = e.dataTransfer.files[0];
+                        if (!isPdf(f)) {
+                            clearFile();
+                            setErr('errFile', drop, true, 'Only PDF files are allowed.');
+                            return;
+                        }
                         try {
                             fileIn.files = e.dataTransfer.files;
                         } catch (err) {}
-                        showFile(e.dataTransfer.files[0]);
+                        showFile(f);
                     }
                 });
 
                 fileRem.addEventListener('click', clearFile);
 
-                titleIn.addEventListener('input', function() {
-                    if (this.value.trim()) setErr('errTitle', this, false);
-                });
+            } else {
+                area.addEventListener('input', updateText);
+            }
 
-                // Reset (Add mode only)
-                if (resetBtn) {
-                    resetBtn.addEventListener('click', function() {
-                        form.reset();
-                        clearFile();
-                        updateCount();
-                        applyType();
-                        ['errDate', 'errTitle', 'errType', 'errText', 'errFile'].forEach(function(id) {
-                            setErr(id, null, false);
-                        });
-                        [dateIn, titleIn, typeSel, txtArea, drop].forEach(function(el) {
-                            el.classList.remove('invalid');
-                        });
-                    });
+            revert.addEventListener('click', function() {
+                titleIn.value = savedTitle;
+                setErr('errTitle', titleIn, false);
+                if (isWG) {
+                    clearFile();
+                    setErr('errFile', drop, false);
+                } else {
+                    area.value = savedContent;
+                    setErr('errContent', area, false);
+                    updateText();
+                }
+            });
+
+            form.addEventListener('submit', function(e) {
+                var t = titleIn.value.trim();
+
+                if (t.length > maxTitle) {
+                    e.preventDefault();
+                    setErr('errTitle', titleIn, true, 'Title is too long (max ' + maxTitle + ' characters).');
+                    showMsg('Title is too long.', 'error');
+                    return;
                 }
 
-                // Submit: frontend validation, then normal POST
-                form.addEventListener('submit', function(e) {
-                    var ok = true;
-
-                    if (!isValidDate(dateIn.value)) {
-                        setErr('errDate', dateIn, true);
-                        ok = false;
-                    } else {
-                        setErr('errDate', dateIn, false);
-                    }
-                    if (!titleIn.value.trim()) {
-                        setErr('errTitle', titleIn, true);
-                        ok = false;
-                    } else {
-                        setErr('errTitle', titleIn, false);
-                    }
-                    if (!typeSel.value) {
-                        setErr('errType', typeSel, true);
-                        ok = false;
-                    } else {
-                        setErr('errType', typeSel, false);
-                    }
-
-                    if (typeSel.value === 'text') {
-                        if (!txtArea.value.trim()) {
-                            setErr('errText', txtArea, true);
-                            ok = false;
-                        } else {
-                            setErr('errText', txtArea, false);
-                        }
-                    }
-                    if (typeSel.value === 'file') {
-                        var hasNew = fileIn.files && fileIn.files.length;
-                        if (!hasNew && !existingFile) {
-                            setErr('errFile', drop, true);
-                            ok = false;
-                        } else {
-                            setErr('errFile', drop, false);
-                        }
-                    }
-
-                    if (!ok) {
+                if (isWG) {
+                    var hasNew = fileIn.files && fileIn.files.length;
+                    if (!hasNew && !existingFile) {
                         e.preventDefault();
+                        setErr('errFile', drop, true, 'Please choose a PDF file.');
                         showMsg('Please fill all required fields correctly.', 'error');
+                    } else if (hasNew && !isPdf(fileIn.files[0])) {
+                        e.preventDefault();
+                        setErr('errFile', drop, true, 'Only PDF files are allowed.');
+                        showMsg('Only PDF files are allowed.', 'error');
                     }
-                });
-
-                // Delete confirm
-                var delForms = document.querySelectorAll('.arDelForm');
-                for (var i = 0; i < delForms.length; i++) {
-                    delForms[i].addEventListener('submit', function(e) {
-                        if (!confirm('Are you sure you want to delete this entry? This cannot be undone (the file will also be deleted).')) {
-                            e.preventDefault();
-                        }
-                    });
+                    return;
                 }
 
-                // initial state (in edit mode the fields are pre-filled)
-                updateCount();
-                applyType();
+                var v = area.value.trim();
+                if (!v) {
+                    e.preventDefault();
+                    setErr('errContent', area, true, 'Please write some content.');
+                    showMsg('Please fill all required fields correctly.', 'error');
+                    return;
+                }
+                if (v.length > maxChars) {
+                    e.preventDefault();
+                    setErr('errContent', area, true, 'Content is too long (max ' + maxChars + ' characters).');
+                    showMsg('Content is too long.', 'error');
+                }
+            });
 
-            })();
-        </script>
+            if (!isWG) {
+                updateText();
+            }
 
-    <?php } ?>
+        })();
+    </script>
 
 <?php } ?>
 

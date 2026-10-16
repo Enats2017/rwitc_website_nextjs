@@ -1,9 +1,8 @@
 <?php
-
 include_once('../bootstrap.php');
-require_once("../lib/users.class.php");
-require_once("../lib/userchecks.php");
-require_once("../lib/permissions.php");
+require_once('../lib/users.class.php');
+require_once('../lib/userchecks.php');
+require_once('../lib/permissions.php');
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../rwitc_website_api/config/config.php';
 
@@ -11,260 +10,247 @@ use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 
 session_start();
-
 $userObj = new Users($db);
-$moduleKey = 'affiliated_clubs';
-$pageTitle = 'Affiliated Clubs with RWITC';
-$maxFileSize = 20 * 1024 * 1024;
-$s3Folder = 'uploads/AffiliatedClubs/';
-$secmsg = '';
-$flash = '';
-$flashType = '';
 
+$pageTitle   = 'Affiliated Clubs with RWITC';
+$moduleKey   = 'affiliated_clubs';
+$pageFile    = 'affiliatedClubsManager.php';
+$s3Folder    = 'uploads/AffiliatedClubs/';
+$maxFileSize = 20 * 1024 * 1024;   // 20 MB
+
+$secmsg = '';
 if (!isAdminlogin()) {
-    $secmsg = "You do not have access to this page.";
+    $secmsg = 'You do not have access to this page.';
 } elseif (!hasModuleAccess($moduleKey)) {
-    $secmsg = "You do not have access to this module.";
+    $secmsg = 'You do not have access to this module.';
 }
 
 if (empty($_SESSION['afc_csrf'])) {
-    $_SESSION['afc_csrf'] = bin2hex(random_bytes(32));
+    $_SESSION['afc_csrf'] = bin2hex(random_bytes(16));
 }
 $csrf = $_SESSION['afc_csrf'];
+$flash = isset($_SESSION['afc_flash']['text']) ? $_SESSION['afc_flash']['text'] : '';
+$flashType = isset($_SESSION['afc_flash']['type']) ? $_SESSION['afc_flash']['type'] : '';
+unset($_SESSION['afc_flash']);
 
-if (isset($_SESSION['afc_flash'])) {
-    $flash = $_SESSION['afc_flash']['text'];
-    $flashType = $_SESSION['afc_flash']['type'];
-    unset($_SESSION['afc_flash']);
+function afcSetFlash($text, $type)
+{
+    $_SESSION['afc_flash'] = array('text' => $text, 'type' => $type);
 }
 
 function afcS3Client()
 {
-    return new S3Client([
+    return new S3Client(array(
         'version' => 'latest',
         'region' => AWS_REGION,
-        'credentials' => [
-            'key' => AWS_ACCESS_KEY_ID,
-            'secret' => AWS_SECRET_ACCESS_KEY,
-        ],
-    ]);
+        'credentials' => array('key' => AWS_ACCESS_KEY_ID, 'secret' => AWS_SECRET_ACCESS_KEY)
+    ));
 }
 
-if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $error = '';
-    $postedToken = isset($_POST['csrf']) ? (string)$_POST['csrf'] : '';
+function afcKeyFromUrl($url)
+{
+    global $s3Folder;
+    $path = urldecode((string) parse_url((string) $url, PHP_URL_PATH));
+    $pos = strpos($path, $s3Folder);
+    return $pos === false ? '' : substr($path, $pos);
+}
 
-    if (!hash_equals($_SESSION['afc_csrf'], $postedToken)) {
-        $error = 'Invalid request. Please try again.';
-    } elseif (!isset($_FILES['clubsFile']) || $_FILES['clubsFile']['error'] === UPLOAD_ERR_NO_FILE) {
-        $error = 'Please choose a PDF file to upload.';
+function afcDeleteFromS3($url)
+{
+    $key = afcKeyFromUrl($url);
+    if ($key === '') return;
+    try {
+        afcS3Client()->deleteObject(array('Bucket' => AWS_BUCKET, 'Key' => $key));
+    } catch (AwsException $e) {
+        error_log('AFFILIATED_CLUBS_OLD_FILE_DELETE_ERROR | ' . $e->getMessage());
+    }
+}
+
+// Validates the PDF and uploads it to S3. Returns the file URL ('' on failure, $error is set).
+function afcUpload($tmpFile, &$error)
+{
+    global $s3Folder;
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($tmpFile);
+    $header = file_get_contents($tmpFile, false, null, 0, 5);
+    if ($mime !== 'application/pdf' || $header !== '%PDF-') {
+        $error = 'Invalid PDF file.';
+        return '';
+    }
+
+    // Unique key per upload so browsers/CDN never show a cached old PDF
+    $key = $s3Folder . 'affiliated_clubs_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.pdf';
+    try {
+        $result = afcS3Client()->putObject(array(
+            'Bucket' => AWS_BUCKET,
+            'Key' => $key,
+            'SourceFile' => $tmpFile,
+            'ContentType' => 'application/pdf',
+            'ContentDisposition' => 'inline'
+        ));
+        return isset($result['ObjectURL']) ? (string) $result['ObjectURL'] : '';
+    } catch (AwsException $e) {
+        error_log('AFFILIATED_CLUBS_UPLOAD_ERROR | ' . $e->getMessage());
+        $error = 'Could not upload the PDF. Please try again.';
+        return '';
+    }
+}
+
+// SAVE (the table always holds exactly one row: id = 1)
+if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['csrf']) || !hash_equals($csrf, (string) $_POST['csrf'])) {
+        afcSetFlash('Invalid request. Please try again.', 'error');
+        header('Location: ' . $pageFile);
+        exit;
+    }
+
+    $error = '';
+    if (!isset($_FILES['clubsFile']) || $_FILES['clubsFile']['error'] === UPLOAD_ERR_NO_FILE) {
+        $error = 'Please choose a PDF file.';
     } elseif ($_FILES['clubsFile']['error'] !== UPLOAD_ERR_OK) {
         $error = 'The file could not be uploaded. Please try again.';
-    } else {
-        $file = $_FILES['clubsFile'];
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-
-        if ($ext !== 'pdf') {
-            $error = 'Only PDF files are allowed.';
-        } elseif ($file['size'] > $maxFileSize) {
-            $error = 'The file is too large. Maximum size is 20 MB.';
-        } else {
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-            $mime = $finfo->file($file['tmp_name']);
-            if ($mime !== 'application/pdf') {
-                $error = 'Only PDF files are allowed.';
-            }
-        }
+    } elseif (strtolower(pathinfo($_FILES['clubsFile']['name'], PATHINFO_EXTENSION)) !== 'pdf') {
+        $error = 'Only PDF files are allowed.';
+    } elseif ($_FILES['clubsFile']['size'] > $maxFileSize) {
+        $error = 'The file is too large. Maximum size is 20 MB.';
     }
 
     if ($error === '') {
-        try {
-            $newKey = $s3Folder . 'affiliated_clubs_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.pdf';
-            $s3 = afcS3Client();
+        $newUrl = afcUpload($_FILES['clubsFile']['tmp_name'], $error);
+        if ($error === '' && $newUrl !== '') {
+            try {
+                $old = $db->getSingleRowAssoc("SELECT file_url FROM affiliated_clubs WHERE id = 1");
+                $oldUrl = ($old && !empty($old['file_url'])) ? (string) $old['file_url'] : '';
+                $originalName = basename((string) $_FILES['clubsFile']['name']);
 
-            $result = $s3->putObject([
-                'Bucket' => AWS_BUCKET,
-                'Key' => $newKey,
-                'SourceFile' => $_FILES['clubsFile']['tmp_name'],
-                'ContentType' => 'application/pdf',
-                'ContentDisposition' => 'inline',
-            ]);
+                // Always id = 1: inserts the first time, updates every time after
+                $db->query(
+                    "INSERT INTO affiliated_clubs (id, file_url, file_name)
+                     VALUES (1, '" . $db->escape($newUrl) . "', '" . $db->escape($originalName) . "')
+                     ON DUPLICATE KEY UPDATE file_url = VALUES(file_url), file_name = VALUES(file_name)"
+                );
 
-            $fileUrl = (string)$result['ObjectURL'];
-            $originalName = basename((string)$_FILES['clubsFile']['name']);
-
-            $old = $db->getSingleRowAssoc("SELECT file_url FROM affiliated_clubs WHERE id = 1");
-            $oldUrl = ($old && !empty($old['file_url'])) ? (string)$old['file_url'] : '';
-
-            $urlEsc = $db->escape($fileUrl);
-            $nameEsc = $db->escape($originalName);
-            $db->query(
-                "INSERT INTO affiliated_clubs (id, file_url, file_name)
-                 VALUES (1, '$urlEsc', '$nameEsc')
-                 ON DUPLICATE KEY UPDATE file_url = VALUES(file_url), file_name = VALUES(file_name)"
-            );
-
-            if ($oldUrl !== '') {
-                $oldKey = urldecode(ltrim((string)parse_url($oldUrl, PHP_URL_PATH), '/'));
-                if (strpos($oldKey, $s3Folder) === 0 && $oldKey !== $newKey) {
-                    try {
-                        $s3->deleteObject(['Bucket' => AWS_BUCKET, 'Key' => $oldKey]);
-                    } catch (AwsException $e) {
-                        error_log('AFFILIATED_CLUBS_OLD_FILE_DELETE_ERROR | ' . $e->getMessage());
-                    }
+                // Remove the previous file from S3 so only one PDF is kept
+                if ($oldUrl !== '' && afcKeyFromUrl($oldUrl) !== afcKeyFromUrl($newUrl)) {
+                    afcDeleteFromS3($oldUrl);
                 }
-            }
 
-            $_SESSION['afc_flash'] = ['text' => 'Affiliated clubs file uploaded successfully.', 'type' => 'success'];
-        } catch (Throwable $uploadError) {
-            error_log('AFFILIATED_CLUBS_UPLOAD_ERROR | ' . $uploadError->getMessage());
-            $_SESSION['afc_flash'] = ['text' => 'Unable to upload the file. Please try again or contact support.', 'type' => 'error'];
+                afcSetFlash('Affiliated Clubs PDF was updated successfully.', 'success');
+            } catch (Exception $e) {
+                error_log('AFFILIATED_CLUBS_DB_ERROR | ' . $e->getMessage());
+                afcSetFlash('Database error. Could not save the PDF.', 'error');
+            }
+        } else {
+            afcSetFlash($error !== '' ? $error : 'Could not upload the PDF. Please try again.', 'error');
         }
     } else {
-        $_SESSION['afc_flash'] = ['text' => $error, 'type' => 'error'];
+        afcSetFlash($error, 'error');
     }
 
-    header('Location: affiliatedClubsManager.php');
+    header('Location: ' . $pageFile);
     exit;
 }
 
-$currentUrl = '';
-$currentName = '';
-$updatedAt = '';
+// LOAD CURRENT FILE
+$row = null;
 if (empty($secmsg)) {
     $row = $db->getSingleRowAssoc("SELECT file_url, file_name, updated_at FROM affiliated_clubs WHERE id = 1");
-    if ($row && !empty($row['file_url'])) {
-        $currentUrl = (string)$row['file_url'];
-        $currentName = (string)$row['file_name'];
-        $updatedAt = (string)$row['updated_at'];
+    if (!$row || empty($row['file_url'])) {
+        $row = null;
     }
 }
-
-$escapeHtml = function ($value) {
-    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
-};
 
 $design = new Design();
 $design->js = '';
 $design->css = '';
-$design->jqueryJs = "";
+$design->jqueryJs = '';
 $design->startPage($pageTitle);
 $design->writeLogoTickerMenu();
-$design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper", "col-lg-12");
-$design->openDiv("leftArea", 'col-lg-9');
+$design->openDiv('contentWrapper');
+$design->openDiv('infoWrapper', 'col-lg-12');
+$design->openDiv('leftArea', 'col-lg-9');
 $design->writeContentPageStyles();
 ?>
 <style>
-    .cmp-manager { max-width: 960px; margin: 24px auto; color: #25352c; }
-    .cmp-manager h1 { margin: 0 0 8px; font-size: 26px; }
-    .cmp-manager .cmp-intro { color: #68776f; margin: 0 0 22px; }
-    .cmp-card { box-sizing: border-box; width: 100%; min-width: 0; background: #fff; border: 1px solid #e2e8e4; border-radius: 12px; padding: 22px; margin-bottom: 20px; }
-    .cmp-card h2 { margin: 0 0 12px; font-size: 18px; color: #0f5c33; }
-    .cmp-hint { display: block; color: #748078; font-size: 13px; margin: 0 0 12px; }
-    .cmp-file-input { width: 100%; box-sizing: border-box; border: 1px solid #ccd7d0; border-radius: 7px; padding: 10px 12px; font: inherit; background: #fff; }
-    .cmp-button { border: 0; border-radius: 7px; cursor: pointer; font: inherit; font-weight: 600; padding: 10px 16px; text-decoration: none; display: inline-block; }
-    .cmp-button-primary { background: #0f6935; color: white; }
-    .cmp-button-secondary { background: #edf2ef; color: #26382d; }
-    .cmp-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .cmp-message { padding: 12px 15px; border-radius: 7px; margin-bottom: 16px; }
-    .cmp-message.success { background: #e5f5ea; color: #155b2d; }
-    .cmp-message.error { background: #fde9e8; color: #922b26; }
-#leftArea .afc-current {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    gap: 10px !important;
-    width: 100% !important;
-    padding: 10px 0 !important;
-    box-sizing: border-box !important;
-}
-#leftArea .afc-current-icon {
-    display: block !important;
-    color: #c0392b !important;
-    font-size: 48px !important;
-    line-height: 1 !important;
-}
-#leftArea .afc-current-name {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    color: #25352c !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
-    writing-mode: horizontal-tb !important;
-    white-space: normal !important;
-}
-#leftArea .afc-current-meta {
-    display: block !important;
-    color: #68776f !important;
-    font-size: 13px !important;
-    writing-mode: horizontal-tb !important;
-}
-#leftArea .afc-current .cmp-button {
-    margin-top: 6px;
-    white-space: nowrap;
-}
-.cmp-meta { color: #68776f; font-size: 13px; }
-    @media (max-width: 700px) {
-        .cmp-actions { flex-direction: column; }
-        .cmp-button { width: 100%; text-align: center; }
-    }
+.message{padding:12px 16px;border-radius:8px;margin-bottom:15px;font-size:15px;background:#fff3cd;border:1px solid #ffe08a}.message.success{background:#e3f6ea;border-color:#a9dcbd;color:#0f5c33}.message.error{background:#fde8e8;border-color:#f5b5b5;color:#a12626}
+.ar-header{margin-bottom:20px}.ar-title{font-size:24px;font-weight:700;color:#2b332f;margin:0}.ar-subtitle{font-size:14px;color:#7a8c84;margin:6px 0 0}.ar-card{background:#fff;border:1px solid #e2e6e4;border-radius:12px;padding:24px;box-shadow:0 1px 2px rgba(0,0,0,.03);max-width:100%;margin-bottom:26px}.ar-card-title{font-size:17px;font-weight:600;color:#2b332f;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid #eef1ef}.ar-field{margin-bottom:18px}.ar-field label{display:block;font-size:13px;font-weight:600;color:#2b332f;margin-bottom:6px}.ar-drop{border:2px dashed #b9c4be;border-radius:12px;padding:32px 16px;text-align:center;cursor:pointer;background:#f8faf9}.ar-drop:hover,.ar-drop.dragover{border-color:#1a7a45;background:#eef7f1}.ar-drop-icon{font-size:32px;color:#0f5c33;margin-bottom:10px}.ar-drop-text{font-size:15px;font-weight:500;color:#2b332f;margin:0 0 4px}.ar-drop-text span{color:#0f5c33;text-decoration:underline}.ar-drop-sub{font-size:12px;color:#7a8c84;margin:0}.ar-file-input{display:none}.ar-file-box{display:none;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;border:1px solid #e2e6e4;border-radius:10px}.ar-file-box.show{display:flex}.ar-file-ico{width:38px;height:38px;border-radius:9px;background:#0f5c33;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}.ar-file-info{flex:1;min-width:0}.ar-file-name{font-size:14px;font-weight:500;color:#2b332f;overflow-wrap:anywhere}.ar-file-size{font-size:12px;color:#7a8c84}.ar-actions{display:flex;gap:10px;margin-top:8px;padding-top:18px;border-top:1px solid #eef1ef;flex-wrap:wrap}.ar-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid transparent;cursor:pointer;text-decoration:none}.ar-btn-primary{background:#0f5c33;color:#fff}.ar-btn-primary:hover{background:#1a7a45;color:#fff}.ar-btn-secondary{background:#fff;color:#2b332f;border-color:#d3d9d6}.ar-table-wrap{width:100%;overflow-x:auto}.ar-table{width:100%;border-collapse:collapse;min-width:460px}.ar-table th{text-align:left;font-size:12px;color:#0f5c33;background:#f3f6f4;padding:11px 12px;border-bottom:1px solid #e2e6e4}.ar-table td{font-size:14px;color:#2b332f;padding:12px;border-bottom:1px solid #eef1ef;vertical-align:middle}.ar-t-file{display:flex;align-items:center;gap:10px;font-weight:600;overflow-wrap:anywhere}.ar-t-file i{color:#c0392b;font-size:18px}.ar-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #d3d9d6;background:#fff;color:#2b332f;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}.ar-icon-btn:hover{border-color:#1a7a45;color:#0f5c33;background:#eef7f1}.ar-empty{text-align:center;padding:24px 10px;color:#7a8c84;font-size:14px}html,body{scrollbar-width:none;-ms-overflow-style:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
+@media(min-width:1920px){.ar-title{font-size:30px}.ar-card{padding:30px}}@media(max-width:700px){.ar-title{font-size:20px}.ar-card{padding:16px;border-radius:10px}.ar-drop{padding:24px 12px}}@media(max-width:560px){.ar-actions{flex-direction:column}.ar-btn{width:100%;box-sizing:border-box}}
 </style>
-
-<main class="cmp-manager">
-    <h1>Affiliated Clubs with RWITC</h1>
-    <p class="cmp-intro">Upload the PDF that should appear on the public membership page.</p>
-
-    <?php if ($secmsg !== '') { ?>
-        <div class="cmp-message error" role="alert"><?php echo $escapeHtml($secmsg); ?></div>
-    <?php } else { ?>
-        <?php if ($flash !== '') { ?>
-            <div class="cmp-message <?php echo $escapeHtml($flashType); ?>" role="status"><?php echo $escapeHtml($flash); ?></div>
-        <?php } ?>
-
-        <section class="cmp-card">
-            <h2>Current file</h2>
-<?php if ($currentUrl !== '') { ?>
-    <div class="afc-current">
-        <i class="fas fa-file-pdf afc-current-icon"></i>
-        <span class="afc-current-name"><?php echo $escapeHtml($currentName); ?></span>
-        <span class="afc-current-meta">Last updated: <?php echo $escapeHtml($updatedAt); ?></span>
-        <a class="cmp-button cmp-button-secondary" href="<?php echo $escapeHtml($currentUrl); ?>" target="_blank" rel="noopener noreferrer">View PDF</a>
+<?php if ($secmsg !== '') { ?><div class="message"><?php echo htmlspecialchars($secmsg); ?></div><?php } ?>
+<?php if ($secmsg === '') { ?>
+<div class="main-content">
+    <div class="ar-header">
+        <h1 class="ar-title">AFFILIATED CLUBS WITH RWITC</h1>
+        <p class="ar-subtitle">Upload the PDF shown on the website. Only one file is kept; uploading again replaces the current file.</p>
     </div>
-<?php } else { ?>
-                <p class="cmp-meta">No file uploaded yet.</p>
-            <?php } ?>
-        </section>
+    <?php if ($flash !== '') { ?><div class="message <?php echo htmlspecialchars($flashType); ?>"><?php echo htmlspecialchars($flash); ?></div><?php } ?>
 
-        <form method="post" action="turf-console/affiliatedClubsManager.php" enctype="multipart/form-data">
-            <input type="hidden" name="csrf" value="<?php echo $escapeHtml($csrf); ?>">
-
-            <section class="cmp-card">
-                <h2><?php echo $currentUrl !== '' ? 'Replace file' : 'Upload file'; ?></h2>
-                <span class="cmp-hint">Upload an file</span>
-                <input class="cmp-file-input" type="file" name="clubsFile" accept="application/pdf,.pdf" required>
-            </section>
-
-            <div class="cmp-actions">
-                <button class="cmp-button cmp-button-primary" type="submit">Upload</button>
-                <a class="cmp-button cmp-button-secondary" href="turf-console/dashboard.php">Back to dashboard</a>
+    <div class="ar-card">
+        <div class="ar-card-title"><?php echo $row ? 'Replace PDF' : 'Upload PDF'; ?></div>
+        <form id="pdfForm" method="post" action="turf-console/<?php echo htmlspecialchars($pageFile); ?>" enctype="multipart/form-data">
+            <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
+            <div class="ar-field">
+                <label>PDF File <span style="color:#c0392b">*</span></label>
+                <div class="ar-drop" id="pdfDrop"><div class="ar-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div><p class="ar-drop-text">Drag &amp; drop PDF here or <span>browse</span></p><p class="ar-drop-sub">Only PDF files are allowed (max 20 MB)</p></div>
+                <input type="file" id="pdfFile" name="clubsFile" class="ar-file-input" accept="application/pdf,.pdf" required>
+                <div class="ar-file-box" id="pdfFileBox"><div class="ar-file-ico"><i class="fas fa-file-pdf"></i></div><div class="ar-file-info"><div class="ar-file-name" id="pdfFileName"></div><div class="ar-file-size" id="pdfFileSize"></div></div></div>
+                <div id="pdfError" style="display:none;color:#c0392b;font-size:12px;margin-top:6px">Please choose a valid PDF file.</div>
             </div>
+            <div class="ar-actions"><button type="submit" class="ar-btn ar-btn-primary"><i class="fas fa-save"></i> Save PDF</button><button type="button" class="ar-btn ar-btn-secondary" id="pdfReset"><i class="fas fa-undo"></i> Reset</button></div>
         </form>
-    <?php } ?>
-</main>
+    </div>
 
+    <div class="ar-card">
+        <div class="ar-card-title">Current File</div>
+        <?php if (!$row) { ?>
+            <div class="ar-empty">No PDF uploaded yet.</div>
+        <?php } else { ?>
+            <div class="ar-table-wrap">
+                <table class="ar-table">
+                    <thead><tr><th>File</th><th style="width:190px">Last Updated</th><th style="width:80px;text-align:center">View</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="ar-t-file"><i class="fas fa-file-pdf"></i><span><?php echo htmlspecialchars($pageTitle); ?><br><small style="font-weight:400;color:#7a8c84"><?php echo htmlspecialchars((string) $row['file_name']); ?></small></span></div></td>
+                            <td><?php echo !empty($row['updated_at']) ? htmlspecialchars(date('d M Y, h:i A', strtotime($row['updated_at']))) : '—'; ?></td>
+                            <td style="text-align:center"><a class="ar-icon-btn" title="View PDF" target="_blank" rel="noopener noreferrer" href="<?php echo htmlspecialchars($row['file_url']); ?>"><i class="fas fa-eye"></i></a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        <?php } ?>
+    </div>
+</div>
+<script>
+(function(){
+    var maxSize=<?php echo (int) $maxFileSize; ?>;
+    var drop=document.getElementById('pdfDrop'),file=document.getElementById('pdfFile'),box=document.getElementById('pdfFileBox'),name=document.getElementById('pdfFileName'),size=document.getElementById('pdfFileSize'),form=document.getElementById('pdfForm'),error=document.getElementById('pdfError'),reset=document.getElementById('pdfReset');
+    function formatSize(bytes){return bytes<1024?bytes+' B':bytes<1048576?(bytes/1024).toFixed(1)+' KB':(bytes/1048576).toFixed(2)+' MB';}
+    function showError(text){error.textContent=text;error.style.display='block';}
+    function showFile(f){name.textContent=f.name;size.textContent=formatSize(f.size);box.classList.add('show');error.style.display='none';}
+    function acceptFile(f){
+        if(!f||!(/\.pdf$/i).test(f.name)){file.value='';box.classList.remove('show');showError('Please choose a valid PDF file.');return;}
+        if(f.size>maxSize){file.value='';box.classList.remove('show');showError('The file is too large. Maximum size is 20 MB.');return;}
+        showFile(f);
+    }
+    drop.addEventListener('click',function(){file.click();});
+    file.addEventListener('change',function(){if(file.files[0])acceptFile(file.files[0]);});
+    ['dragenter','dragover'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add('dragover');});});
+    ['dragleave','drop'].forEach(function(ev){drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove('dragover');});});
+    drop.addEventListener('drop',function(e){var files=e.dataTransfer.files;if(files&&files[0]){try{file.files=files;}catch(err){}acceptFile(files[0]);}});
+    reset.addEventListener('click',function(){form.reset();box.classList.remove('show');error.style.display='none';});
+    form.addEventListener('submit',function(e){
+        if(!file.files.length||!(/\.pdf$/i).test(file.files[0].name)){e.preventDefault();showError('Please choose a valid PDF file.');return;}
+        if(file.files[0].size>maxSize){e.preventDefault();showError('The file is too large. Maximum size is 20 MB.');}
+    });
+})();
+</script>
+<?php } ?>
 <?php
-
 $design->closeDiv();
 $design->writeLeftPanel();
 $design->closeDiv();
 $design->closeDiv();
 $design->endPage();
-$design = NULL;
-
+$design = null;
 ?>

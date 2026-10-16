@@ -5,51 +5,61 @@ import { FaHorseHead } from "react-icons/fa";
 import { getMembershipImportance } from "../../../services/Membershipimportanceservice";
 import "./MembershipOverview.css";
 
-export default function MembershipOverview() {
+const PAGE_TITLE = "Importance of being a Member";
 
-    const [paragraphs, setParagraphs] = useState([]);
+// Old content was plain text (blank line = new paragraph).
+// If the saved text has no HTML tags, convert it to <p> blocks.
+function toHtml(text) {
+    const value = String(text || "").trim();
+    if (!value) return "";
+    if (/<[a-z][^>]*>/i.test(value)) return value;
+
+    const escape = (s) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    return value
+        .split(/\n\s*\n/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .map((p) => `<p>${escape(p).replace(/\n/g, "<br>")}</p>`)
+        .join("");
+}
+
+export default function MembershipOverview() {
+    const [html, setHtml] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-
         let cancelled = false;
 
         (async () => {
+            try {
+                const data = await getMembershipImportance();
+                if (cancelled) return;
 
-            const data = await getMembershipImportance();
-
-            if (cancelled) return;
-
-            if (data.error) {
-                setError(data.error);
-            } else if (data.exists) {
-                // a blank line in the admin text = a new paragraph
-                setParagraphs(
-                    data.text
-                        .split(/\n\s*\n/)
-                        .map((p) => p.trim())
-                        .filter(Boolean)
-                );
+                if (data?.error) {
+                    setError(data.error);
+                } else if (data?.exists && data.text) {
+                    setHtml(toHtml(data.text));
+                }
+            } catch (e) {
+                if (!cancelled) setError("Unable to load content.");
             }
 
-            setLoading(false);
+            if (!cancelled) setLoading(false);
         })();
 
         return () => {
             cancelled = true;
         };
-
     }, []);
 
     return (
-
         <section className="aboutPage">
-
             <div className="aboutContainer">
-
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">Importance of being a Member</h1>
+                    <h1 className="aboutHeading">{PAGE_TITLE}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -59,29 +69,23 @@ export default function MembershipOverview() {
                 </div>
 
                 <div className="aboutCard">
+                    {loading && <p className="aboutStatus">Loading…</p>}
 
-                    <div className="aboutContent">
+                    {!loading && error && <p className="aboutStatus">{error}</p>}
 
-                        {loading && <p>Loading…</p>}
+                    {!loading && !error && !html && (
+                        <p className="aboutStatus">Content will be updated soon.</p>
+                    )}
 
-                        {!loading && error && <p>{error}</p>}
-
-                        {!loading && !error && paragraphs.length === 0 && (
-                            <p>Content will be updated soon.</p>
-                        )}
-
-                        {!loading && !error && paragraphs.map((p, i) => (
-                            <p key={i}>{p}</p>
-                        ))}
-
-                    </div>
-
+                    {/* Content is sanitized on the server (admin panel) before saving */}
+                    {!loading && !error && html && (
+                        <div
+                            className="aboutContent guideContent"
+                            dangerouslySetInnerHTML={{ __html: html }}
+                        />
+                    )}
                 </div>
-
             </div>
-
         </section>
-
     );
-
 }

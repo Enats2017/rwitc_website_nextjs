@@ -27,6 +27,215 @@
     text-align: center;
 }
 
+/* =========================================================
+   RICH TEXT CONTENT (HTML saved from the admin editor)
+========================================================= */
+
+.aboutContent.guideContent {
+    display: block;
+}
+
+.guideContent p {
+    color: #374151;
+    font-size: 17px;
+    font-style: normal;
+    margin: 0 0 20px;
+    line-height: 1.85;
+    text-align: justify;
+}
+
+/* Consecutive "**Label:** text" paragraphs sit closer together (like the old termsBlock) */
+.guideContent p:has(> strong:first-child):has(+ p > strong:first-child) {
+    margin-bottom: 14px;
+}
+
+.guideContent p:last-child {
+    margin-bottom: 0;
+}
+
+.guideContent> :first-child {
+    margin-top: 0;
+}
+
+/* Heading 2 in the editor = centered section heading */
+.guideContent h2 {
+    text-align: center;
+    font-size: 21px;
+    font-weight: 800;
+    font-style: normal;
+    line-height: 1.5;
+    color: #111827;
+    margin: 40px 0 20px;
+}
+
+/* Heading 3 in the editor = green underlined sub-heading */
+.guideContent h3 {
+    font-size: 18px;
+    font-weight: 800;
+    font-style: normal;
+    color: #16a34a;
+    text-decoration: underline;
+    margin: 28px 0 14px;
+}
+
+.guideContent h4 {
+    font-size: 17px;
+    font-weight: 700;
+    font-style: normal;
+    color: #0b3d24;
+    margin: 24px 0 10px;
+}
+
+.guideContent strong,
+.guideContent b {
+    font-style: normal;
+    font-weight: 700;
+    color: #111827;
+}
+
+.guideContent ol,
+.guideContent ul {
+    margin: 0 0 20px;
+    padding-left: 24px;
+}
+
+.guideContent li {
+    color: #374151;
+    font-size: 17px;
+    font-style: normal;
+    line-height: 1.75;
+    margin-bottom: 10px;
+}
+
+.guideContent a {
+    color: #16a34a;
+    text-decoration: underline;
+    word-break: break-word;
+}
+
+/* Pool rows: a 2-column table with no borders (label | ": text") */
+.guideContent table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 20px;
+}
+
+.guideContent td,
+.guideContent th {
+    border: none;
+    padding: 4px 0;
+    font-size: 17px;
+    line-height: 1.8;
+    color: #374151;
+    text-align: left;
+    vertical-align: top;
+}
+
+.guideContent td:first-child,
+.guideContent th:first-child {
+    width: 200px;
+    padding-right: 10px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.guideContent td:nth-child(2)::before {
+    content: ": ";
+}
+
+@media (max-width: 992px) {
+
+    .guideContent p,
+    .guideContent li,
+    .guideContent td,
+    .guideContent th {
+        font-size: 16px;
+        line-height: 1.8;
+    }
+
+    .guideContent h2 {
+        font-size: 19px;
+    }
+
+    .guideContent h3 {
+        font-size: 17px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .guideContent p,
+    .guideContent li {
+        font-size: 15px;
+        line-height: 1.8;
+    }
+
+    .guideContent p {
+        text-align: left;
+    }
+
+    .guideContent h2 {
+        font-size: 17px;
+    }
+
+    .guideContent h3 {
+        font-size: 15.5px;
+    }
+
+    .guideContent h4 {
+        font-size: 15px;
+    }
+
+    .guideContent ol,
+    .guideContent ul {
+        padding-left: 18px;
+    }
+
+    /* Pool rows stack on mobile: label on top, text below */
+    .guideContent table,
+    .guideContent tbody,
+    .guideContent tr,
+    .guideContent td,
+    .guideContent th {
+        display: block;
+        width: 100%;
+    }
+
+    .guideContent tr {
+        margin-bottom: 8px;
+    }
+
+    .guideContent td,
+    .guideContent th {
+        font-size: 15px;
+        padding: 2px 0;
+    }
+
+    .guideContent td:first-child,
+    .guideContent th:first-child {
+        width: 100%;
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .guideContent p,
+    .guideContent li,
+    .guideContent td,
+    .guideContent th {
+        font-size: 14px;
+    }
+
+    .guideContent h2 {
+        font-size: 16px;
+    }
+
+    .guideContent h3 {
+        font-size: 14.5px;
+    }
+}
+
 /* SECTION DIVIDER */
 .sectionDivider {
     display: flex;

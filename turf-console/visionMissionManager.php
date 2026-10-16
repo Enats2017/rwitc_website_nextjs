@@ -12,7 +12,8 @@ $userObj = new Users($db);
 // ---------------------------------------------------------------
 // SETTINGS
 // ---------------------------------------------------------------
-$perPage = 6;
+$maxChars = 50000;   // max characters allowed in the content
+$maxTitle = 200;     // max characters allowed in the title
 
 // ---------------------------------------------------------------
 // LOGIN + MODULE ACCESS CHECK
@@ -40,172 +41,74 @@ if (isset($_SESSION['vision_flash'])) {
 }
 
 // ---------------------------------------------------------------
-// HELPERS
-// ---------------------------------------------------------------
-function visionSetFlash($text, $type)
-{
-    $_SESSION['vision_flash'] = array('text' => $text, 'type' => $type);
-}
-
-function visionPageUrl($p)
-{
-    return 'visionMissionManager.php' . ($p > 1 ? '?page=' . (int)$p : '');
-}
-
-function visionHtmlUrl($p)
-{
-    return 'turf-console/' . visionPageUrl($p);
-}
-
-// ---------------------------------------------------------------
-// POST ACTIONS (save / update / delete)
+// SAVE (the page always uses exactly one row: id = 1)
 // ---------------------------------------------------------------
 if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $action   = isset($_POST['action']) ? $_POST['action'] : '';
-    $pageNo   = isset($_POST['page']) ? max(1, (int)$_POST['page']) : 1;
-    $redirect = visionPageUrl($pageNo);
-
-    // CSRF check
     if (!isset($_POST['csrf']) || !hash_equals($_SESSION['vision_csrf'], (string)$_POST['csrf'])) {
-        visionSetFlash('Invalid request. Please try again.', 'error');
+        $_SESSION['vision_flash'] = array('text' => 'Invalid request. Please try again.', 'type' => 'error');
         header('Location: visionMissionManager.php');
         exit;
     }
 
-    // ---------------- DELETE ----------------
-    if ($action === 'delete') {
+    $title   = isset($_POST['report_title']) ? trim($_POST['report_title']) : '';
+    $content = isset($_POST['content']) ? trim($_POST['content']) : '';
+    // normalise line endings so paragraphs are always separated by "\n\n"
+    $content = str_replace("\r\n", "\n", $content);
+    $content = str_replace("\r", "\n", $content);
 
-        $id  = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-        $row = $id > 0 ? $db->getSingleRowAssoc("SELECT id FROM vision_mission WHERE id = $id") : null;
-
-        if ($row) {
-            try {
-                $db->query("DELETE FROM vision_mission WHERE id = $id");
-                visionSetFlash('Entry deleted successfully.', 'success');
-            } catch (Exception $e) {
-                visionSetFlash('Database error. Could not delete.', 'error');
-            }
-        } else {
-            visionSetFlash('Entry not found.', 'error');
-        }
-
-        $total    = (int)$db->getSingleValue("SELECT COUNT(*) FROM vision_mission WHERE type = 'text'");
-        $lastPage = max(1, (int)ceil($total / $perPage));
-        if ($pageNo > $lastPage) {
-            $pageNo = $lastPage;
-        }
-        header('Location: ' . visionPageUrl($pageNo));
-        exit;
+    $err = '';
+    if ($content === '') {
+        $err = 'Content is required.';
+    } elseif (mb_strlen($content) > $maxChars) {
+        $err = 'Content is too long (max ' . $maxChars . ' characters).';
+    } elseif (mb_strlen($title) > $maxTitle) {
+        $err = 'Title is too long (max ' . $maxTitle . ' characters).';
     }
 
-    // ---------------- SAVE / UPDATE ----------------
-    if ($action === 'save' || $action === 'update') {
-
-        $date  = isset($_POST['report_date']) ? trim($_POST['report_date']) : '';
-        $title = isset($_POST['report_title']) ? trim($_POST['report_title']) : '';
-        $text  = isset($_POST['report_text']) ? trim($_POST['report_text']) : '';
-        $id    = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-        $err   = '';
-
-        // Normalize line endings to ensure consistent text formatting.
-        $text = str_replace(array("\r\n", "\r"), "\n", $text);
-
-        if ($action === 'update') {
-            $oldRow = $id > 0 ? $db->getSingleRowAssoc("SELECT id FROM vision_mission WHERE id = $id") : null;
-            if (!$oldRow) {
-                $err = 'Entry not found.';
-            }
-        }
-
-        $d = DateTime::createFromFormat('Y-m-d', $date);
-        if ($err !== '') {
-            // already set
-        } elseif (!$d || $d->format('Y-m-d') !== $date) {
-            $err = 'Please select a valid date.';
-        } elseif ($text === '') {
-            $err = 'Text is required.';
-        }
-
-        if ($err === '') {
-
+    if ($err === '') {
+        try {
             $titleSql = ($title !== '') ? "'" . $db->escape($title) . "'" : "NULL";
-            $textSql  = "'" . $db->escape($text) . "'";
 
-            try {
-                if ($action === 'update') {
-                    $db->update("UPDATE vision_mission SET
-                                    report_date = '" . $db->escape($date) . "',
-                                    title = $titleSql,
-                                    type = 'text',
-                                    content_text = $textSql,
-                                    file_name = NULL
-                                 WHERE id = $id");
-                    visionSetFlash('Entry updated successfully.', 'success');
-                } else {
-                    $db->insert("INSERT INTO vision_mission (report_date, title, type, content_text, file_name)
-                                 VALUES ('" . $db->escape($date) . "',
-                                         $titleSql,
-                                         'text',
-                                         $textSql,
-                                         NULL)");
-                    visionSetFlash('Saved successfully.', 'success');
-                    $redirect = 'visionMissionManager.php';
-                }
-            } catch (Exception $e) {
-                visionSetFlash('Database error. Could not save.', 'error');
-            }
-        } else {
-            visionSetFlash($err, 'error');
-            if ($action === 'update' && $id > 0) {
-                $redirect = 'visionMissionManager.php?edit=' . $id . ($pageNo > 1 ? '&page=' . $pageNo : '');
-            }
+            // Always writes to id = 1: inserts it the first time, updates it afterwards
+            $db->query(
+                "INSERT INTO vision_mission (id, report_date, title, `type`, content_text, file_name)
+                 VALUES (1, CURDATE(), $titleSql, 'text', '" . $db->escape($content) . "', NULL)
+                 ON DUPLICATE KEY UPDATE
+                    report_date = CURDATE(),
+                    title = VALUES(title),
+                    `type` = 'text',
+                    content_text = VALUES(content_text),
+                    file_name = NULL"
+            );
+            $_SESSION['vision_flash'] = array('text' => 'Content updated successfully.', 'type' => 'success');
+        } catch (Exception $e) {
+            error_log('Vision Mission save error: ' . $e->getMessage());
+            $_SESSION['vision_flash'] = array('text' => 'Database error. Could not save.', 'type' => 'error');
         }
-
-        header('Location: ' . $redirect);
-        exit;
+    } else {
+        $_SESSION['vision_flash'] = array('text' => $err, 'type' => 'error');
     }
+
+    header('Location: visionMissionManager.php');
+    exit;
 }
 
 // ---------------------------------------------------------------
-// PAGE DATA (list + edit row)
+// LOAD CURRENT CONTENT
 // ---------------------------------------------------------------
-$page       = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-$editRow    = null;
-$rows       = array();
-$total      = 0;
-$totalPages = 1;
-$offset     = 0;
+$currentTitle = '';
+$currentContent = '';
+$lastUpdated = '';
 
 if (empty($secmsg)) {
-
-    if (isset($_GET['edit']) && (int)$_GET['edit'] > 0) {
-        $eid     = (int)$_GET['edit'];
-        $editRow = $db->getSingleRowAssoc("SELECT * FROM vision_mission WHERE id = $eid AND type = 'text'");
+    $row = $db->getSingleRowAssoc("SELECT title, content_text, report_date FROM vision_mission WHERE id = 1");
+    if ($row) {
+        $currentTitle = (string)$row['title'];
+        $currentContent = (string)$row['content_text'];
+        $lastUpdated = $row['report_date'] ? date('d M Y', strtotime($row['report_date'])) : '';
     }
-
-    $total      = (int)$db->getSingleValue("SELECT COUNT(*) FROM vision_mission WHERE type = 'text'");
-    $totalPages = max(1, (int)ceil($total / $perPage));
-    if ($page > $totalPages) {
-        $page = $totalPages;
-    }
-    $offset = ($page - 1) * $perPage;
-
-    $rows = $db->getMultiDimensionalArray(
-        "SELECT id, report_date, title, content_text
-         FROM vision_mission
-         WHERE type = 'text'
-         ORDER BY report_date DESC, id DESC
-         LIMIT $perPage OFFSET $offset"
-    );
 }
-
-$isEdit = !empty($editRow);
-
-// default form values
-$fDate  = $isEdit ? $editRow['report_date'] : date('Y-m-d');
-$fTitle = $isEdit ? (string)$editRow['title'] : '';
-$fText  = $isEdit ? (string)$editRow['content_text'] : '';
 
 // PAGE TITLE
 $pageTitle = 'Vision & Mission';
@@ -234,24 +137,23 @@ $design->writeContentPageStyles();
     .ar-title { font-size: 24px; font-weight: 700; color: #2b332f; margin: 0; }
     .ar-subtitle { font-size: 14px; color: #7a8c84; margin: 0; }
 
-    .ar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); max-width: 820px; margin-bottom: 26px; }
-    .ar-card.wide { max-width: 100%; }
+    .ar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); max-width: 900px; margin-bottom: 26px; }
     .ar-card-title { font-family: inherit; font-size: 17px; font-weight: 600; color: #2b332f; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px solid #eef1ef; }
     .ar-card-title::before, .ar-card-title::after { display: none; content: none; }
-    .ar-card-title .ar-count { font-size: 13px; font-weight: 500; color: #7a8c84; margin-left: 8px; }
-    .ar-card.editing { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.10); }
 
-    .ar-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .ar-field { margin-bottom: 18px; min-width: 0; }
     .ar-field label { display: block; font-size: 13px; font-weight: 600; color: #2b332f; margin-bottom: 6px; }
     .ar-field label .req { color: #c0392b; }
     .ar-field label .opt { color: #7a8c84; font-weight: 500; }
-    .ar-input, .ar-textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
-    .ar-input::placeholder, .ar-textarea::placeholder { color: #9aa9a2; }
-    .ar-input:focus, .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-textarea { min-height: 320px; resize: vertical; line-height: 1.5; }
-    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; }
-    .ar-input.invalid, .ar-textarea.invalid { border-color: #c0392b; }
+    .ar-input { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
+    .ar-input::placeholder { color: #9aa9a2; }
+    .ar-input:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
+    .ar-input.invalid { border-color: #c0392b; }
+    .ar-textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; min-height: 340px; resize: vertical; line-height: 1.6; transition: border-color .15s ease, box-shadow .15s ease; }
+    .ar-textarea::placeholder { color: #9aa9a2; }
+    .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
+    .ar-textarea.invalid { border-color: #c0392b; }
+    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     .ar-err { color: #c0392b; font-size: 12px; margin-top: 5px; display: none; }
     .ar-err.show { display: block; }
 
@@ -262,50 +164,36 @@ $design->writeContentPageStyles();
     .ar-btn-secondary { background: #fff; color: #2b332f; border-color: #d3d9d6; }
     .ar-btn-secondary:hover { border-color: #7a8c84; color: #2b332f; }
 
-    .ar-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .ar-table { width: 100%; border-collapse: collapse; min-width: 520px; }
-    .ar-table th { text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: #0f5c33; background: #f3f6f4; padding: 11px 12px; border-bottom: 1px solid #e2e6e4; white-space: nowrap; }
-    .ar-table td { font-size: 14px; color: #2b332f; padding: 12px; border-bottom: 1px solid #eef1ef; vertical-align: middle; }
-    .ar-table tr:hover td { background: #f8faf9; }
-    .ar-table tr.is-editing td { background: #eef7f1; }
-    .ar-t-title { font-weight: 600; word-break: break-word; }
-    .ar-t-sub { font-size: 12px; color: #7a8c84; margin-top: 3px; word-break: break-word; }
-    .ar-act { display: flex; gap: 6px; flex-wrap: nowrap; }
-    .ar-icon-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #d3d9d6; background: #fff; color: #2b332f; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; text-decoration: none; transition: all .15s ease; padding: 0; }
-    .ar-icon-btn:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
-    .ar-icon-btn.del:hover { border-color: #c0392b; color: #a12626; background: #fde8e8; }
-    .ar-act form { margin: 0; }
-    .ar-empty { text-align: center; padding: 30px 10px; color: #7a8c84; font-size: 14px; }
-    .ar-live { display: inline-block; margin-left: 8px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: #e3f6ea; color: #0f5c33; vertical-align: middle; }
+    .ar-updated { font-size: 13px; color: #7a8c84; margin-bottom: 14px; }
+    .ar-updated i { color: #0f5c33; margin-right: 4px; }
 
-    .ar-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
-    .ar-pager-info { font-size: 13px; color: #7a8c84; }
-    .ar-pages { display: flex; gap: 6px; flex-wrap: wrap; }
-    .ar-page { min-width: 36px; height: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d3d9d6; border-radius: 8px; background: #fff; color: #2b332f; font-size: 14px; font-weight: 500; text-decoration: none; transition: all .15s ease; }
-    .ar-page:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
-    .ar-page.current { background: #0f5c33; border-color: #0f5c33; color: #fff; }
-    .ar-page.disabled { opacity: .45; pointer-events: none; }
-    .ar-page.dots { border: none; background: none; pointer-events: none; }
+    /* ---------- LIVE PREVIEW ---------- */
+    .ar-preview { background: #fff; border: 1px solid #e2e6e4; border-radius: 16px; padding: 26px 30px; box-shadow: 0 6px 20px rgba(11, 61, 36, 0.06); }
+    .ar-preview h3 { font-size: 18px; font-weight: 700; color: #2b332f; margin: 0 0 16px; }
+    .ar-preview p { font-style: italic; color: #4b5563; font-size: 14.5px; line-height: 1.9; margin: 0 0 18px !important; text-align: left !important; }
+    .ar-preview ul { margin: 0 0 18px; padding-left: 22px; }
+    .ar-preview li { font-style: italic; color: #4b5563; font-size: 14.5px; line-height: 1.9; }
+    .ar-preview > :last-child { margin-bottom: 0 !important; }
+    .ar-preview-empty { color: #9aa9a2; font-size: 14px; }
 
     html, body { scrollbar-width: none; -ms-overflow-style: none; }
     html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
     @media (min-width: 1920px) {
         .ar-title { font-size: 30px; }
-        .ar-card { max-width: 980px; padding: 30px; }
-        .ar-card.wide { max-width: 100%; }
+        .ar-card { max-width: 1100px; padding: 30px; }
     }
     @media (max-width: 700px) {
         .ar-title { font-size: 20px; }
         .ar-card { padding: 16px; border-radius: 10px; }
-        .ar-row { grid-template-columns: 1fr; gap: 0; }
+        .ar-preview { padding: 18px 16px; }
     }
     @media (max-width: 560px) {
         .ar-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
+        .ar-subtitle { font-size: 13px; }
         .ar-actions { flex-direction: column; }
         .ar-btn { width: 100%; }
-        .ar-textarea { min-height: 240px; }
-        .ar-pager { flex-direction: column; align-items: flex-start; }
+        .ar-textarea { min-height: 260px; }
     }
 </style>
 
@@ -330,7 +218,7 @@ $design->writeContentPageStyles();
         <div class="ar-header">
             <div>
                 <h1 class="ar-title">VISION &amp; MISSION</h1>
-                <p class="ar-subtitle">Latest entry (by date) is shown on the website</p>
+                <p class="ar-subtitle">Edit the text shown on the website page</p>
             </div>
         </div>
 
@@ -340,65 +228,46 @@ $design->writeContentPageStyles();
             </div>
         <?php } ?>
 
-        <?php if (isset($_GET['edit']) && !$isEdit) { ?>
-            <div class="message error">Entry not found.</div>
-        <?php } ?>
-
         <div id="arMsg" class="message" style="display:none;"></div>
 
 
-        <!-- ===================== ADD / EDIT FORM ===================== -->
-        <div class="ar-card<?php echo $isEdit ? ' editing' : ''; ?>">
+        <!-- ===================== EDITOR ===================== -->
+        <div class="ar-card">
 
-            <div class="ar-card-title">
-                <?php echo $isEdit ? 'Edit Vision &amp; Mission Entry' : 'Add New Vision &amp; Mission Entry'; ?>
-            </div>
+            <div class="ar-card-title">Page Content</div>
+
+            <?php if ($lastUpdated !== '') { ?>
+                <div class="ar-updated"><i class="fas fa-clock"></i> Last updated: <?php echo htmlspecialchars($lastUpdated); ?></div>
+            <?php } ?>
 
             <form id="arForm" method="post" action="turf-console/visionMissionManager.php" novalidate>
 
                 <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
-                <input type="hidden" name="action" value="<?php echo $isEdit ? 'update' : 'save'; ?>">
-                <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
-                <?php if ($isEdit) { ?>
-                    <input type="hidden" name="id" value="<?php echo (int)$editRow['id']; ?>">
-                <?php } ?>
 
-                <div class="ar-row">
-
-                    <div class="ar-field">
-                        <label for="arDate">Date <span class="req">*</span></label>
-                        <input type="date" id="arDate" name="report_date" class="ar-input" value="<?php echo htmlspecialchars($fDate); ?>">
-                        <div class="ar-err" id="errDate">Please select a date.</div>
-                    </div>
-
-                    <div class="ar-field">
-                        <label for="arTitle">Title <span class="opt">(optional)</span></label>
-                        <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="200" placeholder="Enter title (optional)" value="<?php echo htmlspecialchars($fTitle); ?>">
-                        <div class="ar-hint"><span>Leave this field empty to display the default heading on the website.</span></div>
-                    </div>
-
+                <div class="ar-field">
+                    <label for="arTitle">Title <span class="opt">(optional)</span></label>
+                    <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="<?php echo (int)$maxTitle; ?>" placeholder="Enter title (optional)" value="<?php echo htmlspecialchars($currentTitle); ?>">
+                    <div class="ar-hint"><span>Leave this field empty to display the default heading on the website.</span></div>
+                    <div class="ar-err" id="errTitle">Title is too long.</div>
                 </div>
 
                 <div class="ar-field">
-                    <label for="arText">Text <span class="req">*</span></label>
-                    <textarea id="arText" name="report_text" class="ar-textarea" placeholder="Write your text here..."><?php echo htmlspecialchars($fText); ?></textarea>
-                    <div class="ar-hint"><span>Leave one blank line between paragraphs. To create a bullet point, start the line with <b>- </b> (dash + space).</span><span id="arCount">0 characters</span></div>
-                    <div class="ar-err" id="errText">Please write some text.</div>
+                    <label for="arContent">Content <span class="req">*</span></label>
+                    <textarea id="arContent" name="content" class="ar-textarea" placeholder="Write the content here..."><?php echo htmlspecialchars($currentContent); ?></textarea>
+                    <div class="ar-hint">
+                        <span>Leave a blank line between paragraphs. To create a bullet point, start the line with <b>- </b> (dash + space).</span>
+                        <span id="arCount">0 characters</span>
+                    </div>
+                    <div class="ar-err" id="errContent">Please write some content.</div>
                 </div>
 
                 <div class="ar-actions">
                     <button type="submit" class="ar-btn ar-btn-primary">
-                        <i class="fas fa-save"></i> <?php echo $isEdit ? 'Update' : 'Save'; ?>
+                        <i class="fas fa-save"></i> Save Content
                     </button>
-                    <?php if ($isEdit) { ?>
-                        <a class="ar-btn ar-btn-secondary" href="<?php echo htmlspecialchars(visionHtmlUrl($page)); ?>">
-                            <i class="fas fa-times"></i> Cancel
-                        </a>
-                    <?php } else { ?>
-                        <button type="button" class="ar-btn ar-btn-secondary" id="arReset">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                    <?php } ?>
+                    <button type="button" class="ar-btn ar-btn-secondary" id="arRevert">
+                        <i class="fas fa-undo"></i> Revert Changes
+                    </button>
                 </div>
 
             </form>
@@ -406,110 +275,10 @@ $design->writeContentPageStyles();
         </div>
 
 
-        <!-- ===================== LIST ===================== -->
-        <div class="ar-card wide">
-
-            <div class="ar-card-title">
-                All Entries <span class="ar-count">(<?php echo (int)$total; ?> total)</span>
-            </div>
-
-            <?php if (empty($rows)) { ?>
-
-                <div class="ar-empty">No entries yet.</div>
-
-            <?php } else { ?>
-
-                <div class="ar-table-wrap">
-                    <table class="ar-table">
-                        <thead>
-                            <tr>
-                                <th style="width:110px;">Date</th>
-                                <th>Title / Text</th>
-                                <th style="width:100px;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($rows as $idx => $r) {
-                                $rid = (int)$r['id'];
-                                $isRowEditing = ($isEdit && (int)$editRow['id'] === $rid);
-                                $editUrl = 'turf-console/visionMissionManager.php?edit=' . $rid . ($page > 1 ? '&page=' . $page : '');
-
-                                $plain = trim(strip_tags((string)$r['content_text']));
-                                $sub = (function_exists('mb_substr') ? mb_substr($plain, 0, 90) : substr($plain, 0, 90)) . (strlen($plain) > 90 ? '...' : '');
-                                $heading = trim((string)$r['title']);
-                                $isLive = ($page === 1 && $idx === 0);
-                            ?>
-                                <tr class="<?php echo $isRowEditing ? 'is-editing' : ''; ?>">
-                                    <td><?php echo htmlspecialchars(date('d M Y', strtotime($r['report_date']))); ?></td>
-                                    <td>
-                                        <?php if ($heading !== '') { ?>
-                                            <div class="ar-t-title"><?php echo htmlspecialchars($heading); ?><?php if ($isLive) { ?><span class="ar-live">LIVE</span><?php } ?></div>
-                                            <div class="ar-t-sub"><?php echo htmlspecialchars($sub); ?></div>
-                                        <?php } else { ?>
-                                            <div class="ar-t-title"><?php echo htmlspecialchars($sub); ?><?php if ($isLive) { ?><span class="ar-live">LIVE</span><?php } ?></div>
-                                        <?php } ?>
-                                    </td>
-                                    <td>
-                                        <div class="ar-act">
-                                            <a class="ar-icon-btn" title="Edit" href="<?php echo htmlspecialchars($editUrl); ?>">
-                                                <i class="fas fa-pen"></i>
-                                            </a>
-                                            <form method="post" action="turf-console/visionMissionManager.php" class="arDelForm">
-                                                <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
-                                                <input type="hidden" name="action" value="delete">
-                                                <input type="hidden" name="id" value="<?php echo $rid; ?>">
-                                                <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
-                                                <button type="submit" class="ar-icon-btn del" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <?php if ($totalPages > 1) {
-
-                    $show = array();
-                    for ($i = 1; $i <= $totalPages; $i++) {
-                        if ($i === 1 || $i === $totalPages || abs($i - $page) <= 2) {
-                            $show[] = $i;
-                        }
-                    }
-                    $from = $offset + 1;
-                    $to   = min($offset + $perPage, $total);
-                ?>
-                    <div class="ar-pager">
-                        <div class="ar-pager-info">Showing <?php echo $from; ?>-<?php echo $to; ?> of <?php echo (int)$total; ?></div>
-                        <div class="ar-pages">
-                            <a class="ar-page<?php echo $page <= 1 ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(visionHtmlUrl($page - 1)); ?>">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-
-                            <?php
-                            $prev = 0;
-                            foreach ($show as $p) {
-                                if ($prev && $p - $prev > 1) {
-                                    echo '<span class="ar-page dots">...</span>';
-                                }
-                                $cls = ($p === $page) ? ' current' : '';
-                                echo '<a class="ar-page' . $cls . '" href="' . htmlspecialchars(visionHtmlUrl($p)) . '">' . $p . '</a>';
-                                $prev = $p;
-                            }
-                            ?>
-
-                            <a class="ar-page<?php echo $page >= $totalPages ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(visionHtmlUrl($page + 1)); ?>">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                <?php } ?>
-
-            <?php } ?>
-
+        <!-- ===================== LIVE PREVIEW ===================== -->
+        <div class="ar-card">
+            <div class="ar-card-title">Preview</div>
+            <div class="ar-preview" id="arPreview"></div>
         </div>
 
     </div>
@@ -519,16 +288,17 @@ $design->writeContentPageStyles();
         (function() {
 
             var form     = document.getElementById('arForm');
-            var dateIn   = document.getElementById('arDate');
-            var txtArea  = document.getElementById('arText');
+            var titleIn  = document.getElementById('arTitle');
+            var area     = document.getElementById('arContent');
             var counter  = document.getElementById('arCount');
-            var resetBtn = document.getElementById('arReset');
+            var preview  = document.getElementById('arPreview');
+            var revert   = document.getElementById('arRevert');
             var msgBox   = document.getElementById('arMsg');
+            var savedTitle   = titleIn.value;
+            var savedContent = area.value;
+            var maxChars = <?php echo (int)$maxChars; ?>;
+            var maxTitle = <?php echo (int)$maxTitle; ?>;
             var msgTimer = null;
-
-            function $(id) {
-                return document.getElementById(id);
-            }
 
             function showMsg(text, type) {
                 msgBox.className = 'message ' + (type || '');
@@ -540,67 +310,111 @@ $design->writeContentPageStyles();
                 }, 4000);
             }
 
-            function setErr(errId, inputEl, show) {
-                var e = $(errId);
-                if (show) {
-                    e.classList.add('show');
-                    if (inputEl) inputEl.classList.add('invalid');
-                } else {
-                    e.classList.remove('show');
-                    if (inputEl) inputEl.classList.remove('invalid');
+            function setErr(errId, inputEl, show, text) {
+                var e = document.getElementById(errId);
+                if (text) e.textContent = text;
+                e.classList.toggle('show', show);
+                inputEl.classList.toggle('invalid', show);
+            }
+
+            // Preview: title (if any), blank lines split blocks, "- " lines become bullets
+            function renderPreview() {
+                var text = area.value.replace(/\r\n?/g, '\n').trim();
+                var title = titleIn.value.trim();
+                preview.innerHTML = '';
+
+                if (text === '') {
+                    var empty = document.createElement('div');
+                    empty.className = 'ar-preview-empty';
+                    empty.textContent = 'Nothing to preview yet.';
+                    preview.appendChild(empty);
+                    return;
+                }
+
+                if (title !== '') {
+                    var h = document.createElement('h3');
+                    h.textContent = title;
+                    preview.appendChild(h);
+                }
+
+                var blocks = text.split(/\n\s*\n/);
+                for (var i = 0; i < blocks.length; i++) {
+                    var lines = blocks[i].split('\n');
+                    var ul = null;
+                    var para = [];
+
+                    var flushPara = function() {
+                        if (para.length) {
+                            var p = document.createElement('p');
+                            p.textContent = para.join(' ');
+                            preview.appendChild(p);
+                            para = [];
+                        }
+                    };
+
+                    for (var j = 0; j < lines.length; j++) {
+                        var line = lines[j].trim();
+                        if (line === '') continue;
+                        if (line.indexOf('- ') === 0) {
+                            flushPara();
+                            if (!ul) {
+                                ul = document.createElement('ul');
+                                preview.appendChild(ul);
+                            }
+                            var li = document.createElement('li');
+                            li.textContent = line.substring(2).trim();   // textContent keeps it safe from HTML
+                            ul.appendChild(li);
+                        } else {
+                            ul = null;
+                            para.push(line);
+                        }
+                    }
+                    flushPara();
                 }
             }
 
-            function updateCount() {
-                counter.textContent = txtArea.value.length + ' characters';
+            function update() {
+                counter.textContent = area.value.length + ' characters';
+                if (area.value.trim()) setErr('errContent', area, false);
+                if (titleIn.value.trim().length <= maxTitle) setErr('errTitle', titleIn, false);
+                renderPreview();
             }
 
-            dateIn.addEventListener('change', function() {
-                if (this.value) setErr('errDate', this, false);
-            });
+            area.addEventListener('input', update);
+            titleIn.addEventListener('input', update);
 
-            txtArea.addEventListener('input', function() {
-                updateCount();
-                if (txtArea.value.trim()) setErr('errText', txtArea, false);
+            revert.addEventListener('click', function() {
+                titleIn.value = savedTitle;
+                area.value = savedContent;
+                setErr('errContent', area, false);
+                setErr('errTitle', titleIn, false);
+                update();
             });
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    form.reset();
-                    updateCount();
-                    setErr('errDate', dateIn, false);
-                    setErr('errText', txtArea, false);
-                });
-            }
 
             form.addEventListener('submit', function(e) {
-                var ok = true;
+                var v = area.value.trim();
+                var t = titleIn.value.trim();
 
-                if (!dateIn.value) {
-                    setErr('errDate', dateIn, true);
-                    ok = false;
-                }
-                if (!txtArea.value.trim()) {
-                    setErr('errText', txtArea, true);
-                    ok = false;
-                }
-
-                if (!ok) {
+                if (!v) {
                     e.preventDefault();
-                    showMsg('Please fill all required fields.', 'error');
+                    setErr('errContent', area, true, 'Please write some content.');
+                    showMsg('Please fill all required fields correctly.', 'error');
+                    return;
+                }
+                if (v.length > maxChars) {
+                    e.preventDefault();
+                    setErr('errContent', area, true, 'Content is too long (max ' + maxChars + ' characters).');
+                    showMsg('Content is too long.', 'error');
+                    return;
+                }
+                if (t.length > maxTitle) {
+                    e.preventDefault();
+                    setErr('errTitle', titleIn, true, 'Title is too long (max ' + maxTitle + ' characters).');
+                    showMsg('Title is too long.', 'error');
                 }
             });
 
-            var delForms = document.querySelectorAll('.arDelForm');
-            for (var i = 0; i < delForms.length; i++) {
-                delForms[i].addEventListener('submit', function(e) {
-                    if (!confirm('Are you sure you want to delete this entry? This cannot be undone.')) {
-                        e.preventDefault();
-                    }
-                });
-            }
-
-            updateCount();
+            update();
 
         })();
     </script>

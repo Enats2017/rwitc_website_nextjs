@@ -5,38 +5,11 @@ import { FaHorseHead } from "react-icons/fa";
 import { getWageringOverview } from "../../../services/clubService";
 import "./WageringOverview.css";
 
-// Shown when no custom title is set in the admin panel
-const DEFAULT_TITLE = "Beginner's luck in Racing";
-
-const LEAD = /^##\s+(.*)$/; // "## Highlighted lead line"
-
-// Splits the admin text into blocks separated by blank lines.
-// A block starting with "## " is the highlighted lead line, everything else is a paragraph.
-function parseBlocks(text) {
-    return String(text)
-        .split(/\n\s*\n/)
-        .map((b) => b.trim())
-        .filter(Boolean)
-        .map((block) => {
-            const joined = block
-                .split("\n")
-                .map((l) => l.trim())
-                .filter(Boolean)
-                .join(" ");
-
-            const m = joined.match(LEAD);
-
-            if (m) {
-                return { type: "lead", text: m[1].trim() };
-            }
-
-            return { type: "p", text: joined };
-        });
-}
+// Fixed page heading (title field is removed from the admin panel)
+const PAGE_TITLE = "Beginner's luck in Racing";
 
 export default function WageringOverview() {
-    const [title, setTitle] = useState(DEFAULT_TITLE);
-    const [blocks, setBlocks] = useState([]);
+    const [html, setHtml] = useState("");
 
     useEffect(() => {
         let active = true;
@@ -44,9 +17,7 @@ export default function WageringOverview() {
         getWageringOverview()
             .then((data) => {
                 if (!active || !data) return;
-
-                if (data.title) setTitle(data.title);
-                if (data.text) setBlocks(parseBlocks(data.text));
+                if (data.text) setHtml(String(data.text));
             })
             .catch(() => {});
 
@@ -59,7 +30,7 @@ export default function WageringOverview() {
         <section className="aboutPage">
             <div className="aboutContainer">
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">{title}</h1>
+                    <h1 className="aboutHeading">{PAGE_TITLE}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -69,18 +40,11 @@ export default function WageringOverview() {
                 </div>
 
                 <div className="aboutCard">
-                    <div className="aboutContent">
-                        {blocks.map((block, i) => (
-                            <p
-                                key={i}
-                                className={
-                                    block.type === "lead" ? "wageringLeadLine" : undefined
-                                }
-                            >
-                                {block.text}
-                            </p>
-                        ))}
-                    </div>
+                    {/* Content is sanitized on the server (admin panel) before saving */}
+                    <div
+                        className="aboutContent guideContent"
+                        dangerouslySetInnerHTML={{ __html: html }}
+                    />
                 </div>
             </div>
         </section>

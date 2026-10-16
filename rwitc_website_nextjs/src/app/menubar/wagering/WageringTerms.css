@@ -77,6 +77,166 @@
     gap: 20px;
 }
 
+/* =========================================================
+   RICH TEXT CONTENT (HTML saved from the admin editor)
+========================================================= */
+
+.aboutContent.guideContent {
+    display: block;
+}
+
+.guideContent p {
+    color: #374151;
+    font-size: 17.5px;
+    font-style: normal;
+    margin: 0 0 20px;
+    line-height: 1.9;
+    text-align: justify;
+}
+
+.guideContent p:last-child {
+    margin-bottom: 0;
+}
+
+.guideContent> :first-child {
+    margin-top: 0;
+}
+
+/* Heading 3 in the editor = green sub-heading (same look as before) */
+.guideContent h3 {
+    font-size: 22px;
+    font-weight: 800;
+    font-style: normal;
+    color: #16a34a;
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #eef1f4;
+}
+
+.guideContent h2 {
+    font-size: 26px;
+    font-weight: 800;
+    font-style: normal;
+    color: #0d3b1f;
+    margin: 30px 0 14px;
+}
+
+.guideContent h4 {
+    font-size: 18px;
+    font-weight: 700;
+    font-style: normal;
+    color: #0b3d24;
+    margin: 24px 0 10px;
+}
+
+.guideContent strong,
+.guideContent b {
+    font-style: normal;
+    font-weight: 700;
+    color: #111827;
+}
+
+.guideContent ol,
+.guideContent ul {
+    margin: 0 0 20px;
+    padding-left: 24px;
+}
+
+.guideContent li {
+    color: #374151;
+    font-size: 17.5px;
+    font-style: normal;
+    line-height: 1.75;
+    margin-bottom: 8px;
+}
+
+.guideContent a {
+    color: #16a34a;
+    text-decoration: underline;
+    word-break: break-word;
+}
+
+.guideContent table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 20px;
+}
+
+.guideContent th,
+.guideContent td {
+    border: 1px solid #e2e6e4;
+    padding: 10px 12px;
+    font-size: 16px;
+    color: #374151;
+    text-align: left;
+}
+
+.guideContent th {
+    background: #f3f6f4;
+    font-weight: 700;
+}
+
+@media (max-width: 992px) {
+
+    .guideContent p,
+    .guideContent li {
+        font-size: 16.5px;
+        line-height: 1.85;
+    }
+
+    .guideContent h3 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .guideContent p,
+    .guideContent li {
+        font-size: 15.5px;
+        line-height: 1.85;
+    }
+
+    .guideContent p {
+        text-align: left;
+    }
+
+    .guideContent h2 {
+        font-size: 21px;
+    }
+
+    .guideContent h3 {
+        font-size: 18px;
+    }
+
+    .guideContent h4 {
+        font-size: 16px;
+    }
+
+    .guideContent ol,
+    .guideContent ul {
+        padding-left: 18px;
+    }
+
+    .guideContent th,
+    .guideContent td {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .guideContent p,
+    .guideContent li {
+        font-size: 14.5px;
+    }
+
+    .guideContent h3 {
+        font-size: 16.5px;
+    }
+}
+
 .aboutContent p {
     color: #374151;
     font-size: 17.5px;

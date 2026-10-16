@@ -1,619 +1,276 @@
 <?php
-
 include_once('../bootstrap.php');
-require_once("../lib/users.class.php");
-require_once("../lib/userchecks.php");
-require_once("../lib/permissions.php");
+require_once('../lib/users.class.php');
+require_once('../lib/userchecks.php');
+require_once('../lib/permissions.php');
 
 session_start();
-
 $userObj = new Users($db);
 
-// ---------------------------------------------------------------
-// SETTINGS
-// ---------------------------------------------------------------
-$perPage = 6;
+$pageTitle  = 'About RWITC';
+$moduleKey  = 'about_rwitc';
+$pageFile   = 'aboutRwitcManager.php';
+$maxContent = 120000;   // max size of the cleaned HTML (bytes)
 
-// ---------------------------------------------------------------
-// LOGIN + MODULE ACCESS CHECK
-// ---------------------------------------------------------------
 $secmsg = '';
 if (!isAdminlogin()) {
-    $secmsg = "You do not have access to this page.";
-} elseif (!hasModuleAccess('about_rwitc')) {
-    $secmsg = "You do not have access to this module.";
+    $secmsg = 'You do not have access to this page.';
+} elseif (!hasModuleAccess($moduleKey)) {
+    $secmsg = 'You do not have access to this module.';
 }
 
-// CSRF token
 if (empty($_SESSION['about_csrf'])) {
-    $_SESSION['about_csrf'] = bin2hex(openssl_random_pseudo_bytes(16));
+    $_SESSION['about_csrf'] = bin2hex(random_bytes(16));
 }
 $csrf = $_SESSION['about_csrf'];
+$flash = isset($_SESSION['about_flash']['text']) ? $_SESSION['about_flash']['text'] : '';
+$flashType = isset($_SESSION['about_flash']['type']) ? $_SESSION['about_flash']['type'] : '';
+unset($_SESSION['about_flash']);
 
-// FLASH MESSAGE
-$flash = '';
-$flashType = '';
-if (isset($_SESSION['about_flash'])) {
-    $flash = $_SESSION['about_flash']['text'];
-    $flashType = $_SESSION['about_flash']['type'];
-    unset($_SESSION['about_flash']);
-}
-
-// ---------------------------------------------------------------
-// HELPERS
-// ---------------------------------------------------------------
-function aboutSetFlash($text, $type)
+// Old plain-text content (blank line = new paragraph) -> HTML paragraphs.
+// If the content already contains HTML tags it is returned unchanged.
+function aboutLegacyToHtml($text)
 {
-    $_SESSION['about_flash'] = array('text' => $text, 'type' => $type);
+    $text = (string)$text;
+    if (preg_match('/<[a-z][^>]*>/i', $text)) {
+        return $text;
+    }
+    $text = str_replace(array("\r\n", "\r"), "\n", trim($text));
+    if ($text === '') {
+        return '';
+    }
+    $out = '';
+    foreach (preg_split('/\n\s*\n/', $text) as $part) {
+        $part = trim($part);
+        if ($part !== '') {
+            $out .= '<p>' . nl2br(htmlspecialchars($part, ENT_QUOTES, 'UTF-8')) . '</p>';
+        }
+    }
+    return $out;
 }
 
-function aboutPageUrl($p)
+// HTML sanitizer (allow-list). Keeps bold/italic/lists/links/tables, text-align, font-size and list style only.
+function aboutSanitizeHtml($html)
 {
-    return 'aboutRwitcManager.php' . ($p > 1 ? '?page=' . (int)$p : '');
-}
-
-function aboutHtmlUrl($p)
-{
-    return 'turf-console/' . aboutPageUrl($p);
-}
-
-// ---------------------------------------------------------------
-// POST ACTIONS (save / update / delete)
-// ---------------------------------------------------------------
-if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    $action   = isset($_POST['action']) ? $_POST['action'] : '';
-    $pageNo   = isset($_POST['page']) ? max(1, (int)$_POST['page']) : 1;
-    $redirect = aboutPageUrl($pageNo);
-
-    // CSRF check
-    if (!isset($_POST['csrf']) || !hash_equals($_SESSION['about_csrf'], (string)$_POST['csrf'])) {
-        aboutSetFlash('Invalid request. Please try again.', 'error');
-        header('Location: aboutRwitcManager.php');
-        exit;
+    $html = trim((string)$html);
+    if ($html === '') {
+        return '';
     }
 
-    // ---------------- DELETE ----------------
-    if ($action === 'delete') {
+    $allowedTags = array('p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'sub', 'sup', 'span', 'div',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'hr',
+        'a', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th');
+    $dropTags = array('script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button',
+        'textarea', 'select', 'link', 'meta', 'svg', 'math', 'head', 'title', 'xml', 'img');
 
-        $id  = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-        $row = $id > 0 ? $db->getSingleRowAssoc("SELECT id FROM about_rwitc WHERE id = $id") : null;
+    $previous = libxml_use_internal_errors(true);
+    $doc = new DOMDocument('1.0', 'UTF-8');
+    $doc->loadHTML('<?xml encoding="utf-8" ?><div>' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
 
-        if ($row) {
-            try {
-                $db->query("DELETE FROM about_rwitc WHERE id = $id");
-                aboutSetFlash('Entry deleted successfully.', 'success');
-            } catch (Exception $e) {
-                aboutSetFlash('Database error. Could not delete.', 'error');
-            }
-        } else {
-            aboutSetFlash('Entry not found.', 'error');
-        }
-
-        $total    = (int)$db->getSingleValue("SELECT COUNT(*) FROM about_rwitc WHERE type = 'text'");
-        $lastPage = max(1, (int)ceil($total / $perPage));
-        if ($pageNo > $lastPage) {
-            $pageNo = $lastPage;
-        }
-        header('Location: ' . aboutPageUrl($pageNo));
-        exit;
+    $root = $doc->getElementsByTagName('div')->item(0);
+    if (!$root) {
+        return '';
     }
 
-    // ---------------- SAVE / UPDATE ----------------
-    if ($action === 'save' || $action === 'update') {
-
-        $date  = isset($_POST['report_date']) ? trim($_POST['report_date']) : '';
-        $title = isset($_POST['report_title']) ? trim($_POST['report_title']) : '';
-        $text  = isset($_POST['report_text']) ? trim($_POST['report_text']) : '';
-        $id    = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-        $err   = '';
-
-       // Normalize line endings to ensure consistent text formatting.
-        $text = str_replace(array("\r\n", "\r"), "\n", $text);
-
-        if ($action === 'update') {
-            $oldRow = $id > 0 ? $db->getSingleRowAssoc("SELECT id FROM about_rwitc WHERE id = $id") : null;
-            if (!$oldRow) {
-                $err = 'Entry not found.';
+    $clean = function (DOMNode $node) use (&$clean, $allowedTags, $dropTags) {
+        $children = array();
+        foreach ($node->childNodes as $child) {
+            $children[] = $child;
+        }
+        foreach ($children as $child) {
+            if ($child->nodeType === XML_TEXT_NODE) {
+                continue;
             }
-        }
-
-        $d = DateTime::createFromFormat('Y-m-d', $date);
-        if ($err !== '') {
-            // already set
-        } elseif (!$d || $d->format('Y-m-d') !== $date) {
-            $err = 'Please select a valid date.';
-        } elseif ($text === '') {
-            $err = 'Text is required.';
-        }
-
-        if ($err === '') {
-
-            $titleSql = ($title !== '') ? "'" . $db->escape($title) . "'" : "NULL";
-            $textSql  = "'" . $db->escape($text) . "'";
-
-            try {
-                if ($action === 'update') {
-                    $db->update("UPDATE about_rwitc SET
-                                    report_date = '" . $db->escape($date) . "',
-                                    title = $titleSql,
-                                    type = 'text',
-                                    content_text = $textSql,
-                                    file_name = NULL
-                                 WHERE id = $id");
-                    aboutSetFlash('Entry updated successfully.', 'success');
-                } else {
-                    $db->insert("INSERT INTO about_rwitc (report_date, title, type, content_text, file_name)
-                                 VALUES ('" . $db->escape($date) . "',
-                                         $titleSql,
-                                         'text',
-                                         $textSql,
-                                         NULL)");
-                    aboutSetFlash('Saved successfully.', 'success');
-                    $redirect = 'aboutRwitcManager.php';
+            if ($child->nodeType !== XML_ELEMENT_NODE) {
+                $node->removeChild($child);
+                continue;
+            }
+            $tag = strtolower($child->nodeName);
+            if (in_array($tag, $dropTags, true)) {
+                $node->removeChild($child);
+                continue;
+            }
+            $clean($child);
+            if (!in_array($tag, $allowedTags, true)) {
+                while ($child->firstChild) {
+                    $node->insertBefore($child->firstChild, $child);
                 }
-            } catch (Exception $e) {
-                aboutSetFlash('Database error. Could not save.', 'error');
+                $node->removeChild($child);
+                continue;
             }
-        } else {
-            aboutSetFlash($err, 'error');
-            if ($action === 'update' && $id > 0) {
-                $redirect = 'aboutRwitcManager.php?edit=' . $id . ($pageNo > 1 ? '&page=' . $pageNo : '');
+
+            $href = $child->getAttribute('href');
+            $style = $child->getAttribute('style');
+            $colspan = (int)$child->getAttribute('colspan');
+            $rowspan = (int)$child->getAttribute('rowspan');
+            while ($child->attributes->length > 0) {
+                $child->removeAttributeNode($child->attributes->item(0));
+            }
+
+            if ($tag === 'a' && preg_match('#^(https?://|mailto:|tel:)#i', trim($href))) {
+                $child->setAttribute('href', trim($href));
+                $child->setAttribute('target', '_blank');
+                $child->setAttribute('rel', 'noopener noreferrer');
+            }
+            if ($tag === 'td' || $tag === 'th') {
+                if ($colspan > 1) $child->setAttribute('colspan', (string)$colspan);
+                if ($rowspan > 1) $child->setAttribute('rowspan', (string)$rowspan);
+            }
+
+            $safeStyle = '';
+            if ($style !== '' && preg_match('/text-align\s*:\s*(left|right|center|justify)/i', $style, $m)) {
+                $safeStyle .= 'text-align: ' . strtolower($m[1]) . ';';
+            }
+            if ($style !== '' && preg_match('/font-size\s*:\s*(\d+(?:\.\d+)?)(px|pt|em|rem|%)/i', $style, $m) && (float)$m[1] > 0 && (float)$m[1] <= 200) {
+                $safeStyle .= ($safeStyle !== '' ? ' ' : '') . 'font-size: ' . $m[1] . strtolower($m[2]) . ';';
+            }
+            if (($tag === 'ol' || $tag === 'ul') && $style !== '' && preg_match('/list-style-type\s*:\s*(decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|lower-greek|disc|circle|square)/i', $style, $m)) {
+                $safeStyle .= ($safeStyle !== '' ? ' ' : '') . 'list-style-type: ' . strtolower($m[1]) . ';';
+            }
+            if ($safeStyle !== '') {
+                $child->setAttribute('style', $safeStyle);
             }
         }
+    };
+    $clean($root);
 
-        header('Location: ' . $redirect);
-        exit;
+    $out = '';
+    foreach ($root->childNodes as $child) {
+        $out .= $doc->saveHTML($child);
     }
+    return trim($out);
 }
 
-// ---------------------------------------------------------------
-// PAGE DATA (list + edit row)
-// ---------------------------------------------------------------
-$page       = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-$editRow    = null;
-$rows       = array();
-$total      = 0;
-$totalPages = 1;
-$offset     = 0;
+// SAVE (the page always uses exactly one row: id = 1)
+if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $error = '';
+    $cleanContent = '';
 
+    if (!isset($_POST['csrf']) || !hash_equals($csrf, (string)$_POST['csrf'])) {
+        $error = 'Invalid request. Please try again.';
+    } else {
+        $raw = isset($_POST['content']) && is_string($_POST['content']) ? $_POST['content'] : '';
+        $cleanContent = aboutSanitizeHtml($raw);
+        if ($cleanContent === '') {
+            $error = 'Content is required.';
+        } elseif (strlen($cleanContent) > $maxContent) {
+            $error = 'Content is too long. Please shorten it.';
+        }
+    }
+
+    if ($error === '') {
+        try {
+            // Always writes to id = 1: inserts it the first time, updates it afterwards
+            $db->query(
+                "INSERT INTO about_rwitc (id, report_date, title, `type`, content_text, file_name)
+                 VALUES (1, CURDATE(), NULL, 'text', '" . $db->escape($cleanContent) . "', NULL)
+                 ON DUPLICATE KEY UPDATE
+                    report_date = CURDATE(),
+                    title = NULL,
+                    `type` = 'text',
+                    content_text = VALUES(content_text),
+                    file_name = NULL"
+            );
+            $_SESSION['about_flash'] = array('text' => 'Content updated successfully.', 'type' => 'success');
+        } catch (Exception $e) {
+            error_log('About RWITC save error: ' . $e->getMessage());
+            $_SESSION['about_flash'] = array('text' => 'Database error. Could not save.', 'type' => 'error');
+        }
+    } else {
+        $_SESSION['about_flash'] = array('text' => $error, 'type' => 'error');
+    }
+
+    header('Location: ' . $pageFile);
+    exit;
+}
+
+// LOAD CURRENT CONTENT
+$content = '';
+$lastUpdated = '';
 if (empty($secmsg)) {
-
-    if (isset($_GET['edit']) && (int)$_GET['edit'] > 0) {
-        $eid     = (int)$_GET['edit'];
-        $editRow = $db->getSingleRowAssoc("SELECT * FROM about_rwitc WHERE id = $eid AND type = 'text'");
+    $row = $db->getSingleRowAssoc("SELECT content_text, report_date FROM about_rwitc WHERE id = 1");
+    if ($row) {
+        $content = aboutLegacyToHtml($row['content_text']);
+        $lastUpdated = $row['report_date'] ? date('d M Y', strtotime($row['report_date'])) : '';
     }
-
-    $total      = (int)$db->getSingleValue("SELECT COUNT(*) FROM about_rwitc WHERE type = 'text'");
-    $totalPages = max(1, (int)ceil($total / $perPage));
-    if ($page > $totalPages) {
-        $page = $totalPages;
-    }
-    $offset = ($page - 1) * $perPage;
-
-    $rows = $db->getMultiDimensionalArray(
-        "SELECT id, report_date, title, content_text
-         FROM about_rwitc
-         WHERE type = 'text'
-         ORDER BY report_date DESC, id DESC
-         LIMIT $perPage OFFSET $offset"
-    );
 }
 
-$isEdit = !empty($editRow);
-
-// default form values
-$fDate  = $isEdit ? $editRow['report_date'] : date('Y-m-d');
-$fTitle = $isEdit ? (string)$editRow['title'] : '';
-$fText  = $isEdit ? (string)$editRow['content_text'] : '';
-
-// PAGE TITLE
-$pageTitle = 'About RWITC';
-
-// DESIGN OBJECT
 $design = new Design();
 $design->js = '';
 $design->css = '';
-$design->jqueryJs = "";
-$design->startPage("$pageTitle");
+$design->jqueryJs = '';
+$design->startPage($pageTitle);
 $design->writeLogoTickerMenu();
-$design->openDiv("contentWrapper");
-$design->openDiv("infoWrapper", "col-lg-12");
-$design->openDiv("leftArea", 'col-lg-9');
+$design->openDiv('contentWrapper');
+$design->openDiv('infoWrapper', 'col-lg-12');
+$design->openDiv('leftArea', 'col-lg-9');
 $design->writeContentPageStyles();
-
 ?>
-<style type="text/css">
-    .message { background: #fff3cd; border: 1px solid #ffe08a; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; }
-    .message.success { background: #e3f6ea; border-color: #a9dcbd; color: #0f5c33; }
-    .message.error { background: #fde8e8; border-color: #f5b5b5; color: #a12626; }
-    .submenu { display: none; }
-
-    .ar-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-    .ar-header > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; }
-    .ar-title { font-size: 24px; font-weight: 700; color: #2b332f; margin: 0; }
-    .ar-subtitle { font-size: 14px; color: #7a8c84; margin: 0; }
-
-    .ar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); max-width: 820px; margin-bottom: 26px; }
-    .ar-card.wide { max-width: 100%; }
-    .ar-card-title { font-family: inherit; font-size: 17px; font-weight: 600; color: #2b332f; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px solid #eef1ef; }
-    .ar-card-title::before, .ar-card-title::after { display: none; content: none; }
-    .ar-card-title .ar-count { font-size: 13px; font-weight: 500; color: #7a8c84; margin-left: 8px; }
-    .ar-card.editing { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.10); }
-
-    .ar-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .ar-field { margin-bottom: 18px; min-width: 0; }
-    .ar-field label { display: block; font-size: 13px; font-weight: 600; color: #2b332f; margin-bottom: 6px; }
-    .ar-field label .req { color: #c0392b; }
-    .ar-field label .opt { color: #7a8c84; font-weight: 500; }
-    .ar-input, .ar-textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
-    .ar-input::placeholder, .ar-textarea::placeholder { color: #9aa9a2; }
-    .ar-input:focus, .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-textarea { min-height: 320px; resize: vertical; line-height: 1.5; }
-    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; }
-    .ar-input.invalid, .ar-textarea.invalid { border-color: #c0392b; }
-    .ar-err { color: #c0392b; font-size: 12px; margin-top: 5px; display: none; }
-    .ar-err.show { display: block; }
-
-    .ar-actions { display: flex; gap: 10px; margin-top: 8px; padding-top: 18px; border-top: 1px solid #eef1ef; flex-wrap: wrap; }
-    .ar-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; font-size: 15px; font-weight: 600; font-family: inherit; border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all .15s ease; text-decoration: none; }
-    .ar-btn-primary { background: #0f5c33; color: #fff; }
-    .ar-btn-primary:hover { background: #1a7a45; box-shadow: 0 4px 10px rgba(15, 92, 51, 0.25); color: #fff; }
-    .ar-btn-secondary { background: #fff; color: #2b332f; border-color: #d3d9d6; }
-    .ar-btn-secondary:hover { border-color: #7a8c84; color: #2b332f; }
-
-    .ar-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .ar-table { width: 100%; border-collapse: collapse; min-width: 520px; }
-    .ar-table th { text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: #0f5c33; background: #f3f6f4; padding: 11px 12px; border-bottom: 1px solid #e2e6e4; white-space: nowrap; }
-    .ar-table td { font-size: 14px; color: #2b332f; padding: 12px; border-bottom: 1px solid #eef1ef; vertical-align: middle; }
-    .ar-table tr:hover td { background: #f8faf9; }
-    .ar-table tr.is-editing td { background: #eef7f1; }
-    .ar-t-title { font-weight: 600; word-break: break-word; }
-    .ar-t-sub { font-size: 12px; color: #7a8c84; margin-top: 3px; word-break: break-word; }
-    .ar-act { display: flex; gap: 6px; flex-wrap: nowrap; }
-    .ar-icon-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #d3d9d6; background: #fff; color: #2b332f; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; text-decoration: none; transition: all .15s ease; padding: 0; }
-    .ar-icon-btn:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
-    .ar-icon-btn.del:hover { border-color: #c0392b; color: #a12626; background: #fde8e8; }
-    .ar-act form { margin: 0; }
-    .ar-empty { text-align: center; padding: 30px 10px; color: #7a8c84; font-size: 14px; }
-    .ar-live { display: inline-block; margin-left: 8px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: #e3f6ea; color: #0f5c33; vertical-align: middle; }
-
-    .ar-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
-    .ar-pager-info { font-size: 13px; color: #7a8c84; }
-    .ar-pages { display: flex; gap: 6px; flex-wrap: wrap; }
-    .ar-page { min-width: 36px; height: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d3d9d6; border-radius: 8px; background: #fff; color: #2b332f; font-size: 14px; font-weight: 500; text-decoration: none; transition: all .15s ease; }
-    .ar-page:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
-    .ar-page.current { background: #0f5c33; border-color: #0f5c33; color: #fff; }
-    .ar-page.disabled { opacity: .45; pointer-events: none; }
-    .ar-page.dots { border: none; background: none; pointer-events: none; }
-
-    html, body { scrollbar-width: none; -ms-overflow-style: none; }
-    html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
-
-    @media (min-width: 1920px) {
-        .ar-title { font-size: 30px; }
-        .ar-card { max-width: 980px; padding: 30px; }
-        .ar-card.wide { max-width: 100%; }
-    }
-    @media (max-width: 700px) {
-        .ar-title { font-size: 20px; }
-        .ar-card { padding: 16px; border-radius: 10px; }
-        .ar-row { grid-template-columns: 1fr; gap: 0; }
-    }
-    @media (max-width: 560px) {
-        .ar-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
-        .ar-actions { flex-direction: column; }
-        .ar-btn { width: 100%; }
-        .ar-textarea { min-height: 240px; }
-        .ar-pager { flex-direction: column; align-items: flex-start; }
-    }
+<style>
+.message{padding:12px 16px;border-radius:8px;margin-bottom:15px;font-size:15px;background:#fff3cd;border:1px solid #ffe08a}.message.success{background:#e3f6ea;border-color:#a9dcbd;color:#0f5c33}.message.error{background:#fde8e8;border-color:#f5b5b5;color:#a12626}
+.ar-header{margin-bottom:20px}.ar-title{font-size:24px;font-weight:700;color:#2b332f;margin:0}.ar-subtitle{font-size:14px;color:#7a8c84;margin:6px 0 0}.ar-card{background:#fff;border:1px solid #e2e6e4;border-radius:12px;padding:24px;box-shadow:0 1px 2px rgba(0,0,0,.03);max-width:100%;margin-bottom:26px}.ar-card-title{font-size:17px;font-weight:600;color:#2b332f;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid #eef1ef}.ar-updated{font-size:13px;color:#7a8c84;margin-bottom:14px}.ar-hint{font-size:12px;color:#7a8c84;margin-bottom:10px;line-height:1.7}.ar-actions{display:flex;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid #eef1ef;flex-wrap:wrap}.ar-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;font-size:15px;font-weight:600;border-radius:8px;border:1px solid transparent;cursor:pointer;text-decoration:none}.ar-btn-primary{background:#0f5c33;color:#fff}.ar-btn-primary:hover{background:#1a7a45;color:#fff}html,body{scrollbar-width:none;-ms-overflow-style:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
+@media(min-width:1920px){.ar-title{font-size:30px}.ar-card{padding:30px}}@media(max-width:700px){.ar-title{font-size:20px}.ar-card{padding:16px;border-radius:10px}}@media(max-width:560px){.ar-actions{flex-direction:column}.ar-btn{width:100%;box-sizing:border-box}}
 </style>
-
-<?php if (!empty($secmsg)) { ?>
-    <div class="message">
-        <?php echo htmlspecialchars($secmsg); ?>
+<?php if ($secmsg !== '') { ?><div class="message"><?php echo htmlspecialchars($secmsg); ?></div><?php } ?>
+<?php if ($secmsg === '') { ?>
+<div class="main-content">
+    <div class="ar-header">
+        <h1 class="ar-title">ABOUT RWITC</h1>
+        <p class="ar-subtitle">Edit the content shown on the website page. Saving always updates the same entry.</p>
     </div>
+    <?php if ($flash !== '') { ?><div class="message <?php echo htmlspecialchars($flashType); ?>"><?php echo htmlspecialchars($flash); ?></div><?php } ?>
+
+    <div class="ar-card">
+        <div class="ar-card-title">Page Content</div>
+        <?php if ($lastUpdated !== '') { ?><div class="ar-updated"><i class="fas fa-clock"></i> Last updated: <?php echo htmlspecialchars($lastUpdated); ?></div><?php } ?>
+        <form id="arForm" method="post" action="turf-console/<?php echo htmlspecialchars($pageFile); ?>">
+            <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
+            <div class="ar-hint">
+                Bold / Italic / Underline toolbar se karo &nbsp;|&nbsp; Heading 2 = main underlined heading &nbsp;|&nbsp; Heading 3 = green underlined sub-heading<br>
+                Numbered list arrow = choose "Lower Roman" for (i), (ii), (iii). Tables: first row ko header row banao (Table &gt; Row &gt; Row properties &gt; Row type: Header).
+            </div>
+            <textarea id="arContent" name="content"><?php echo htmlspecialchars($content, ENT_QUOTES, 'UTF-8'); ?></textarea>
+            <div class="ar-actions">
+                <button type="submit" class="ar-btn ar-btn-primary"><i class="fas fa-save"></i> Save Content</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+tinymce.init({
+    selector: '#arContent',
+    height: 620,
+    menubar: false,
+    branding: false,
+    promotion: false,
+    plugins: 'lists advlist link table code',
+    toolbar: 'undo redo | blocks fontsize | bold italic underline | alignleft aligncenter alignright | bullist numlist | link table | removeformat | code',
+    block_formats: 'Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4',
+    font_size_formats: '12px 14px 16px 18px 20px 24px 28px 32px',
+    advlist_number_styles: 'default,lower-roman,upper-roman,lower-alpha',
+    table_header_type: 'sectionCells',
+    paste_data_images: false,
+    paste_remove_styles_if_webkit: true,
+    content_style: 'body { font-family: Arial, sans-serif; font-size: 15px; line-height: 1.7; } table { border-collapse: collapse; width: 100%; } td, th { border: 1px solid #ccc; padding: 6px 8px; }'
+});
+document.getElementById('arForm').addEventListener('submit', function (e) {
+    tinymce.triggerSave();
+    if (!document.getElementById('arContent').value.replace(/<[^>]*>|&nbsp;|\s/g, '')) {
+        e.preventDefault();
+        alert('Please write some content.');
+    }
+});
+</script>
 <?php } ?>
-
-
-<?php if (empty($secmsg)) { ?>
-
-    <div class="submenu">
-        <div style="float:right;">
-            <a style="float:left;" href="../dashboard.php">Dashboard</a>
-            <a style="float:left; margin-left:5px;" href="../index.php?q=logout">Logout</a>
-        </div>
-    </div>
-
-    <div class="main-content">
-
-        <div class="ar-header">
-            <div>
-                <h1 class="ar-title">ABOUT RWITC</h1>
-                <p class="ar-subtitle">Latest entry (by date) is shown on the website</p>
-            </div>
-        </div>
-
-        <?php if ($flash !== '') { ?>
-            <div class="message <?php echo htmlspecialchars($flashType); ?>">
-                <?php echo htmlspecialchars($flash); ?>
-            </div>
-        <?php } ?>
-
-        <?php if (isset($_GET['edit']) && !$isEdit) { ?>
-            <div class="message error">Entry not found.</div>
-        <?php } ?>
-
-        <div id="arMsg" class="message" style="display:none;"></div>
-
-
-        <!-- ===================== ADD / EDIT FORM ===================== -->
-        <div class="ar-card<?php echo $isEdit ? ' editing' : ''; ?>">
-
-            <div class="ar-card-title">
-                <?php echo $isEdit ? 'Edit About RWITC Entry' : 'Add New About RWITC Entry'; ?>
-            </div>
-
-            <form id="arForm" method="post" action="turf-console/aboutRwitcManager.php" novalidate>
-
-                <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
-                <input type="hidden" name="action" value="<?php echo $isEdit ? 'update' : 'save'; ?>">
-                <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
-                <?php if ($isEdit) { ?>
-                    <input type="hidden" name="id" value="<?php echo (int)$editRow['id']; ?>">
-                <?php } ?>
-
-                <div class="ar-row">
-
-                    <div class="ar-field">
-                        <label for="arDate">Date <span class="req">*</span></label>
-                        <input type="date" id="arDate" name="report_date" class="ar-input" value="<?php echo htmlspecialchars($fDate); ?>">
-                        <div class="ar-err" id="errDate">Please select a date.</div>
-                    </div>
-
-                    <div class="ar-field">
-                        <label for="arTitle">Title <span class="opt">(optional)</span></label>
-                        <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="200" placeholder="Enter title (optional)" value="<?php echo htmlspecialchars($fTitle); ?>">
-                    </div>
-
-                </div>
-
-                <div class="ar-field">
-                    <label for="arText">Text <span class="req">*</span></label>
-                    <textarea id="arText" name="report_text" class="ar-textarea" placeholder="Write your text here..."><?php echo htmlspecialchars($fText); ?></textarea>
-                    <div class="ar-hint"><span>Plain text. Leave one blank line between paragraphs.</span><span id="arCount">0 characters</span></div>
-                    <div class="ar-err" id="errText">Please write some text.</div>
-                </div>
-
-                <div class="ar-actions">
-                    <button type="submit" class="ar-btn ar-btn-primary">
-                        <i class="fas fa-save"></i> <?php echo $isEdit ? 'Update' : 'Save'; ?>
-                    </button>
-                    <?php if ($isEdit) { ?>
-                        <a class="ar-btn ar-btn-secondary" href="<?php echo htmlspecialchars(aboutHtmlUrl($page)); ?>">
-                            <i class="fas fa-times"></i> Cancel
-                        </a>
-                    <?php } else { ?>
-                        <button type="button" class="ar-btn ar-btn-secondary" id="arReset">
-                            <i class="fas fa-undo"></i> Reset
-                        </button>
-                    <?php } ?>
-                </div>
-
-            </form>
-
-        </div>
-
-
-        <!-- ===================== LIST ===================== -->
-        <div class="ar-card wide">
-
-            <div class="ar-card-title">
-                All Entries <span class="ar-count">(<?php echo (int)$total; ?> total)</span>
-            </div>
-
-            <?php if (empty($rows)) { ?>
-
-                <div class="ar-empty">No entries yet.</div>
-
-            <?php } else { ?>
-
-                <div class="ar-table-wrap">
-                    <table class="ar-table">
-                        <thead>
-                            <tr>
-                                <th style="width:110px;">Date</th>
-                                <th>Title / Text</th>
-                                <th style="width:100px;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($rows as $idx => $r) {
-                                $rid = (int)$r['id'];
-                                $isRowEditing = ($isEdit && (int)$editRow['id'] === $rid);
-                                $editUrl = 'turf-console/aboutRwitcManager.php?edit=' . $rid . ($page > 1 ? '&page=' . $page : '');
-
-                                $plain = trim(strip_tags((string)$r['content_text']));
-                                $sub = (function_exists('mb_substr') ? mb_substr($plain, 0, 90) : substr($plain, 0, 90)) . (strlen($plain) > 90 ? '...' : '');
-                                $heading = trim((string)$r['title']);
-                                $isLive = ($page === 1 && $idx === 0);
-                            ?>
-                                <tr class="<?php echo $isRowEditing ? 'is-editing' : ''; ?>">
-                                    <td><?php echo htmlspecialchars(date('d M Y', strtotime($r['report_date']))); ?></td>
-                                    <td>
-                                        <?php if ($heading !== '') { ?>
-                                            <div class="ar-t-title"><?php echo htmlspecialchars($heading); ?><?php if ($isLive) { ?><span class="ar-live">LIVE</span><?php } ?></div>
-                                            <div class="ar-t-sub"><?php echo htmlspecialchars($sub); ?></div>
-                                        <?php } else { ?>
-                                            <div class="ar-t-title"><?php echo htmlspecialchars($sub); ?><?php if ($isLive) { ?><span class="ar-live">LIVE</span><?php } ?></div>
-                                        <?php } ?>
-                                    </td>
-                                    <td>
-                                        <div class="ar-act">
-                                            <a class="ar-icon-btn" title="Edit" href="<?php echo htmlspecialchars($editUrl); ?>">
-                                                <i class="fas fa-pen"></i>
-                                            </a>
-                                            <form method="post" action="turf-console/aboutRwitcManager.php" class="arDelForm">
-                                                <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
-                                                <input type="hidden" name="action" value="delete">
-                                                <input type="hidden" name="id" value="<?php echo $rid; ?>">
-                                                <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
-                                                <button type="submit" class="ar-icon-btn del" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <?php if ($totalPages > 1) {
-
-                    $show = array();
-                    for ($i = 1; $i <= $totalPages; $i++) {
-                        if ($i === 1 || $i === $totalPages || abs($i - $page) <= 2) {
-                            $show[] = $i;
-                        }
-                    }
-                    $from = $offset + 1;
-                    $to   = min($offset + $perPage, $total);
-                ?>
-                    <div class="ar-pager">
-                        <div class="ar-pager-info">Showing <?php echo $from; ?>-<?php echo $to; ?> of <?php echo (int)$total; ?></div>
-                        <div class="ar-pages">
-                            <a class="ar-page<?php echo $page <= 1 ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(aboutHtmlUrl($page - 1)); ?>">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-
-                            <?php
-                            $prev = 0;
-                            foreach ($show as $p) {
-                                if ($prev && $p - $prev > 1) {
-                                    echo '<span class="ar-page dots">...</span>';
-                                }
-                                $cls = ($p === $page) ? ' current' : '';
-                                echo '<a class="ar-page' . $cls . '" href="' . htmlspecialchars(aboutHtmlUrl($p)) . '">' . $p . '</a>';
-                                $prev = $p;
-                            }
-                            ?>
-
-                            <a class="ar-page<?php echo $page >= $totalPages ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(aboutHtmlUrl($page + 1)); ?>">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                <?php } ?>
-
-            <?php } ?>
-
-        </div>
-
-    </div>
-
-
-    <script type="text/javascript">
-        (function() {
-
-            var form     = document.getElementById('arForm');
-            var dateIn   = document.getElementById('arDate');
-            var txtArea  = document.getElementById('arText');
-            var counter  = document.getElementById('arCount');
-            var resetBtn = document.getElementById('arReset');
-            var msgBox   = document.getElementById('arMsg');
-            var msgTimer = null;
-
-            function $(id) {
-                return document.getElementById(id);
-            }
-
-            function showMsg(text, type) {
-                msgBox.className = 'message ' + (type || '');
-                msgBox.textContent = text;
-                msgBox.style.display = 'block';
-                clearTimeout(msgTimer);
-                msgTimer = setTimeout(function() {
-                    msgBox.style.display = 'none';
-                }, 4000);
-            }
-
-            function setErr(errId, inputEl, show) {
-                var e = $(errId);
-                if (show) {
-                    e.classList.add('show');
-                    if (inputEl) inputEl.classList.add('invalid');
-                } else {
-                    e.classList.remove('show');
-                    if (inputEl) inputEl.classList.remove('invalid');
-                }
-            }
-
-            function updateCount() {
-                counter.textContent = txtArea.value.length + ' characters';
-            }
-
-            dateIn.addEventListener('change', function() {
-                if (this.value) setErr('errDate', this, false);
-            });
-
-            txtArea.addEventListener('input', function() {
-                updateCount();
-                if (txtArea.value.trim()) setErr('errText', txtArea, false);
-            });
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', function() {
-                    form.reset();
-                    updateCount();
-                    setErr('errDate', dateIn, false);
-                    setErr('errText', txtArea, false);
-                });
-            }
-
-            form.addEventListener('submit', function(e) {
-                var ok = true;
-
-                if (!dateIn.value) {
-                    setErr('errDate', dateIn, true);
-                    ok = false;
-                }
-                if (!txtArea.value.trim()) {
-                    setErr('errText', txtArea, true);
-                    ok = false;
-                }
-
-                if (!ok) {
-                    e.preventDefault();
-                    showMsg('Please fill all required fields.', 'error');
-                }
-            });
-
-            var delForms = document.querySelectorAll('.arDelForm');
-            for (var i = 0; i < delForms.length; i++) {
-                delForms[i].addEventListener('submit', function(e) {
-                    if (!confirm('Are you sure you want to delete this entry? This cannot be undone.')) {
-                        e.preventDefault();
-                    }
-                });
-            }
-
-            updateCount();
-
-        })();
-    </script>
-
-<?php } ?>
-
-
 <?php
-
 $design->closeDiv();
 $design->writeLeftPanel();
 $design->closeDiv();
 $design->closeDiv();
 $design->endPage();
-$design = NULL;
-
+$design = null;
 ?>
