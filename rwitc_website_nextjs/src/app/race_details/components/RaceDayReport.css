@@ -15,19 +15,17 @@
 .raceDayReportPage .dividerIcon { font-size: 22px; color: #0d3b1f; flex-shrink: 0; }
 
 /* CONTAINER (bordered card) */
-.raceDayReportPage .docContainer { position: relative; width: 100%; max-width: 1140px; height: auto; min-height: 0; margin: 0 auto; padding: 28px 32px 32px; border: 1px solid #e2e2e2; border-radius: 12px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05); overflow: hidden; }
+.raceDayReportPage .docContainer { position: relative; width: 100%; max-width: 1140px; height: auto; min-height: 0; margin: 0 auto; padding: 84px 32px 32px; border: 1px solid #e2e2e2; border-radius: 12px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05); overflow: hidden; }
 
-/* DOWNLOAD BUTTON */
-.raceDayReportPage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border: none; border-radius: 4px; font-family: inherit; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; z-index: 2; }
-.raceDayReportPage .docDownloadBtn:hover { background: #bdb494; text-decoration: underline; }
-
-/* BACK LINK */
-.raceDayReportPage .docBackLink { display: inline-block; margin-top: 20px; padding: 8px 18px; border: 1px solid #16a34a; border-radius: 999px; background: #ffffff; color: #16a34a; font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; transition: background .2s ease, color .2s ease; }
-.raceDayReportPage .docBackLink:hover { background: #16a34a; color: #ffffff; }
-.raceDayReportPage .docBackLink:empty { display: none; }
+/* DOCUMENT ACTIONS */
+.raceDayReportPage .docActions { position: absolute; top: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center; }
+.raceDayReportPage .docActionBtn { display: flex; flex: 0 1 260px; align-items: center; justify-content: center; gap: 12px; width: 260px; max-width: calc(50% - 6px); height: 54px; box-sizing: border-box; padding: 0 14px; border: none; border-radius: 8px; background: #c9c2a8; color: #000; font-size: 16px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
+.raceDayReportPage .docHomeBtn { flex-basis: 180px; width: 180px; }
+.raceDayReportPage .docActionBtn:hover { background: #bdb494; text-decoration: underline; }
+.raceDayReportPage .docHomeBtn svg { flex: 0 0 auto; font-size: 20px; }
 
 /* HEADER */
-.raceDayReportPage .docHeader { text-align: center; margin: 36px 0 28px; }
+.raceDayReportPage .docHeader { text-align: center; margin: 12px 0 28px; }
 .raceDayReportPage .docClub { font-size: 15px; font-weight: 800; color: #111; margin: 0 0 10px; }
 .raceDayReportPage .docWatermark { font-size: 32px; font-weight: 800; letter-spacing: 4px; color: #c9c9c9; margin: 6px 0; }
 .raceDayReportPage .docHint { font-size: 13px; font-weight: 700; color: #111; margin: 0; }
@@ -53,8 +51,11 @@
     .raceDayReportPage .aboutHeading { font-size: 26px; padding-bottom: 12px; }
     .raceDayReportPage .sectionDivider { max-width: 320px; gap: 12px; }
     .raceDayReportPage .dividerIcon { font-size: 18px; }
-    .raceDayReportPage .docContainer { padding: 56px 12px 22px; border-radius: 10px; }
-    .raceDayReportPage .docDownloadBtn { top: 14px; right: 12px; }
+    .raceDayReportPage .docContainer { padding: 66px 12px 22px; border-radius: 10px; }
+    .raceDayReportPage .docActions { top: 14px; left: 12px; right: 12px; }
+    .raceDayReportPage .docActionBtn { flex-basis: 260px; height: 44px; gap: 6px; font-size: 12px; }
+    .raceDayReportPage .docHomeBtn { flex-basis: 140px; width: 140px; }
+    .raceDayReportPage .docHomeBtn svg { font-size: 16px; }
     .raceDayReportPage .docHeader { margin: 12px 0 20px; }
     .raceDayReportPage .docWatermark { font-size: 24px; letter-spacing: 2px; }
     .raceDayReportPage .docClub, .raceDayReportPage .docHint { font-size: 13px; }
@@ -64,6 +65,6 @@
     .raceDayReportPage.docPage { padding: 28px 10px 48px; }
     .raceDayReportPage .aboutHeading { font-size: 22px; }
     .raceDayReportPage .sectionDivider { max-width: 240px; }
-    .raceDayReportPage .docContainer { padding: 52px 8px 18px; }
+    .raceDayReportPage .docContainer { padding: 66px 8px 18px; }
     .raceDayReportPage .docWatermark { font-size: 20px; letter-spacing: 1px; }
 }

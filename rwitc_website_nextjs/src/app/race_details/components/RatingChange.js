@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { getRatingChange } from "../../../services/ratingChangeService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./RatingChange.css";
-import { FaHorseHead } from "react-icons/fa";
+import { FaHome, FaHorseHead } from "react-icons/fa";
 
 /*
  * Styles + script injected INSIDE the archive iframe.
@@ -164,6 +165,23 @@ export default function RatingChange() {
             </div>
 
             <div className="docContainer">
+                <div className="docActionRow">
+                    <Link href="/" className="docActionBtn docHomeBtn">
+                        <FaHome aria-hidden="true" />
+                        <span>Home</span>
+                    </Link>
+
+                    {downloadAvailable && downloadFile && (
+                        <button
+                            type="button"
+                            className="docActionBtn docOpenBtn"
+                            onClick={() => window.open(downloadFile, "_blank", "noopener,noreferrer")}
+                        >
+                            Download / Open HTML
+                        </button>
+                    )}
+                </div>
+
                 {loading && (
                     <div className="docStateBox">
                         <div className="docLoader" />
@@ -185,20 +203,6 @@ export default function RatingChange() {
 
                 {!loading && !error && !hasNoHtml && (
                     <>
-                        {downloadAvailable && downloadFile && (
-                            <div className="docActionRow">
-                                <button
-                                    type="button"
-                                    className="docOpenBtn"
-                                    onClick={() => {
-                                        window.open(downloadFile, "_blank", "noopener,noreferrer");
-                                    }}
-                                >
-                                    Download / Open HTML
-                                </button>
-                            </div>
-                        )}
-
                         {/* Iframe fits the card; only wide tables scroll inside it */}
                         <div className="docArchiveScroll">
                             <iframe

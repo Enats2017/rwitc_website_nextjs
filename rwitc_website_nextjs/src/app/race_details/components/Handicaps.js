@@ -1,8 +1,9 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FaHorseHead } from "react-icons/fa";
+import { FaHome, FaHorseHead } from "react-icons/fa";
 
 import { getHandicaps } from "../../../services/handicapsService";
 import {
@@ -392,20 +393,27 @@ export default function Handicaps() {
 
             {/* MAIN DOCUMENT CONTAINER */}
             <div className="docContainer">
-                {/* DOWNLOAD BUTTON */}
-                <button
-                    type="button"
-                    className="docDownloadBtn"
-                    onClick={() => {
-                        if (downloadAvailable && downloadFile) {
-                            window.open(downloadFile, "_blank", "noopener,noreferrer");
-                        } else {
-                            alert("No download file found for this date. Showing data below.");
-                        }
-                    }}
-                >
-                    Download Handicaps
-                </button>
+                <div className="docActions">
+                    <Link href="/" className="docActionBtn docHomeBtn">
+                        <FaHome aria-hidden="true" />
+                        <span>Home</span>
+                    </Link>
+
+                    {/* DOWNLOAD BUTTON */}
+                    <button
+                        type="button"
+                        className="docActionBtn docDownloadBtn"
+                        onClick={() => {
+                            if (downloadAvailable && downloadFile) {
+                                window.open(downloadFile, "_blank", "noopener,noreferrer");
+                            } else {
+                                alert("No download file found for this date. Showing data below.");
+                            }
+                        }}
+                    >
+                        Download Handicaps
+                    </button>
+                </div>
 
                 {/* HEADER FOR JSON / DB MODE */}
                 {!isHtmlMode && (

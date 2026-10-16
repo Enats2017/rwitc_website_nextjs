@@ -1,8 +1,9 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FaHorseHead } from "react-icons/fa";
+import { FaHome, FaHorseHead } from "react-icons/fa";
 
 import { getAcceptance } from "../../../services/acceptanceService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
@@ -379,21 +380,27 @@ export default function Acceptance() {
 
             {/* MAIN DOCUMENT CONTAINER */}
             <div className="docContainer">
+                <div className="docActions">
+                    <Link href="/" className="docActionBtn docHomeBtn">
+                        <FaHome aria-hidden="true" />
+                        <span>Home</span>
+                    </Link>
 
-                {/* DOWNLOAD BUTTON */}
-                <button
-                    type="button"
-                    className="docDownloadBtn"
-                    onClick={() => {
-                        if (downloadAvailable && downloadFile) {
-                            window.open(downloadFile, "_blank", "noopener,noreferrer");
-                        } else {
-                            alert("No download file found for this date. Showing data below.");
-                        }
-                    }}
-                >
-                    Download Acceptance
-                </button>
+                    {/* DOWNLOAD BUTTON */}
+                    <button
+                        type="button"
+                        className="docActionBtn docDownloadBtn"
+                        onClick={() => {
+                            if (downloadAvailable && downloadFile) {
+                                window.open(downloadFile, "_blank", "noopener,noreferrer");
+                            } else {
+                                alert("No download file found for this date. Showing data below.");
+                            }
+                        }}
+                    >
+                        Download Acceptance
+                    </button>
+                </div>
 
                 {/* HEADER FOR JSON / DB MODE */}
                 {!isHtmlMode && (

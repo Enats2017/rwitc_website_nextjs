@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { getRaceDayReport } from "../../../services/raceDayReportService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./RaceDayReport.css";
-import { FaHorseHead } from "react-icons/fa";
+import { FaHome, FaHorseHead } from "react-icons/fa";
 
 /*
  * Styles + script injected INSIDE the archive iframe.
@@ -169,35 +170,28 @@ export default function RaceDayReport() {
             </div>
 
             <div className="docContainer">
+                <div className="docActions">
+                    <Link href="/" className="docActionBtn docHomeBtn">
+                        <FaHome aria-hidden="true" />
+                        <span>Home</span>
+                    </Link>
 
-                {!hasNoHtml && (
-                    <a
-                        className="docBackLink"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            router.back();
-                        }}
-                        href="#"
-                    >
-                        {/* Back */}
-                    </a>
-                )}
-
-                {!hasNoHtml && (
-                    <button
-                        type="button"
-                        className="docDownloadBtn"
-                        onClick={() => {
-                            if (downloadAvailable && downloadFile) {
-                                window.open(downloadFile, "_blank", "noopener,noreferrer");
-                            } else {
-                                alert("No download file found for this date. Showing data below.");
-                            }
-                        }}
-                    >
-                        Download Raceday Report
-                    </button>
-                )}
+                    {!hasNoHtml && (
+                        <button
+                            type="button"
+                            className="docActionBtn docDownloadBtn"
+                            onClick={() => {
+                                if (downloadAvailable && downloadFile) {
+                                    window.open(downloadFile, "_blank", "noopener,noreferrer");
+                                } else {
+                                    alert("No download file found for this date. Showing data below.");
+                                }
+                            }}
+                        >
+                            Download Raceday Report
+                        </button>
+                    )}
+                </div>
 
                 {!hasNoHtml && dayLabel && (
                     <div className="docHeader">

@@ -14,12 +14,15 @@
 
 /* ================= DOCUMENT CONTAINER ================= */
 
-.handicapsPage .docContainer { position: relative; width: 92%; max-width: 1140px; margin: 0 auto; padding: 60px 32px 40px; background: #ffffff; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; box-shadow: 0 18px 45px rgba(0, 0, 0, .05); animation: handicapsFadeUp .6s ease both; }
+.handicapsPage .docContainer { position: relative; width: 92%; max-width: 1140px; margin: 0 auto; padding: 84px 32px 40px; background: #ffffff; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; box-shadow: 0 18px 45px rgba(0, 0, 0, .05); animation: handicapsFadeUp .6s ease both; }
 
-/* ================= DOWNLOAD BUTTON ================= */
+/* ================= DOCUMENT ACTIONS ================= */
 
-.handicapsPage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
-.handicapsPage .docDownloadBtn:hover { background: #bdb494; text-decoration: underline; }
+.handicapsPage .docActions { position: absolute; top: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center; }
+.handicapsPage .docActionBtn { display: flex; flex: 0 1 260px; align-items: center; justify-content: center; gap: 12px; width: 260px; max-width: calc(50% - 6px); height: 54px; box-sizing: border-box; padding: 0 14px; border: none; border-radius: 8px; background: #c9c2a8; color: #000; font-size: 16px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
+.handicapsPage .docHomeBtn { flex-basis: 180px; width: 180px; }
+.handicapsPage .docActionBtn:hover { background: #bdb494; text-decoration: underline; }
+.handicapsPage .docHomeBtn svg { flex: 0 0 auto; font-size: 20px; }
 
 /* ================= DOCUMENT HEADER (JSON MODE) ================= */
 
@@ -70,7 +73,7 @@
 @media (max-width: 992px) {
     .handicapsPage { padding: 50px 16px 70px; }
     .handicapsPage .docHeading { font-size: 32px; }
-    .handicapsPage .docContainer { width: 94%; padding: 60px 24px 35px; }
+    .handicapsPage .docContainer { width: 94%; padding: 84px 24px 35px; }
 }
 
 /* ================= MOBILE ================= */
@@ -81,8 +84,11 @@
     .handicapsPage .docHeading { font-size: 26px; padding-bottom: 12px; }
     .handicapsPage .docSectionDivider { max-width: 320px; gap: 0; margin-top: 20px; }
     .handicapsPage .docDividerIcon { font-size: 18px; }
-    .handicapsPage .docContainer { width: 100%; padding: 60px 12px 28px; }
-    .handicapsPage .docDownloadBtn { top: 14px; right: 12px; }
+    .handicapsPage .docContainer { width: 100%; padding: 66px 12px 28px; }
+    .handicapsPage .docActions { top: 14px; left: 12px; right: 12px; }
+    .handicapsPage .docActionBtn { flex-basis: 260px; height: 44px; gap: 6px; font-size: 12px; }
+    .handicapsPage .docHomeBtn { flex-basis: 140px; width: 140px; }
+    .handicapsPage .docHomeBtn svg { font-size: 16px; }
     .handicapsPage .docWatermark { font-size: 24px; letter-spacing: 2px; }
     .handicapsPage .docHint, .handicapsPage .docClub { font-size: 13px; }
 
@@ -110,7 +116,7 @@
     .handicapsPage { padding: 35px 10px 60px; }
     .handicapsPage .docHeading { font-size: 22px; }
     .handicapsPage .docSectionDivider { max-width: 240px; }
-    .handicapsPage .docContainer { padding: 56px 8px 24px; }
+    .handicapsPage .docContainer { padding: 66px 8px 24px; }
     .handicapsPage .docRaceBar { padding: 12px 14px; }
 }
 

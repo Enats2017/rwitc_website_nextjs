@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { getRaceResult } from "../../../services/raceResultService";
 import { getRaceDayStatus } from "../../../services/mediaService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
-import { FaHorseHead, FaPlayCircle } from "react-icons/fa";
+import { FaHome, FaHorseHead, FaPlayCircle } from "react-icons/fa";
 import "./RaceResult.css";
 
 /*
@@ -270,20 +271,26 @@ export default function RaceResult() {
             </div>
 
             <div className="docContainer">
+                <div className="docActions">
+                    <Link href="/" className="docActionBtn docHomeBtn">
+                        <FaHome aria-hidden="true" />
+                        <span>Home</span>
+                    </Link>
 
-                <button
-                    type="button"
-                    className="docDownloadBtn"
-                    onClick={() => {
-                        if (downloadUrl) {
-                            window.open(downloadUrl, "_blank", "noopener,noreferrer");
-                        } else {
-                            alert("No race result HTML found for this date.");
-                        }
-                    }}
-                >
-                    Download Race Results
-                </button>
+                    <button
+                        type="button"
+                        className="docActionBtn docDownloadBtn"
+                        onClick={() => {
+                            if (downloadUrl) {
+                                window.open(downloadUrl, "_blank", "noopener,noreferrer");
+                            } else {
+                                alert("No race result HTML found for this date.");
+                            }
+                        }}
+                    >
+                        Download Race Results
+                    </button>
+                </div>
 
                 {/* Header block only applies to the structured (DB) view */}
                 {mode !== "html" && (

@@ -11,11 +11,14 @@
 .declarationsPage .docDividerIcon { font-size: 22px; color: #0d3b1f; flex-shrink: 0; }
 
 /* DOCUMENT CONTAINER */
-.declarationsPage .docContainer { position: relative; width: 92%; max-width: 1140px; margin: 0 auto; padding: 60px 32px 40px; background: #ffffff; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; box-shadow: 0 18px 45px rgba(0, 0, 0, .05); }
+.declarationsPage .docContainer { position: relative; width: 92%; max-width: 1140px; margin: 0 auto; padding: 84px 32px 40px; background: #ffffff; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; box-shadow: 0 18px 45px rgba(0, 0, 0, .05); }
 
-/* DOWNLOAD BUTTON */
-.declarationsPage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
-.declarationsPage .docDownloadBtn:hover { background: #bdb494; text-decoration: underline; }
+/* DOCUMENT ACTIONS */
+.declarationsPage .docActions { position: absolute; top: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center; }
+.declarationsPage .docActionBtn { display: flex; flex: 0 1 260px; align-items: center; justify-content: center; gap: 12px; width: 260px; max-width: calc(50% - 6px); height: 54px; box-sizing: border-box; padding: 0 14px; border: none; border-radius: 8px; background: #c9c2a8; color: #000; font-size: 16px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
+.declarationsPage .docHomeBtn { flex-basis: 180px; width: 180px; }
+.declarationsPage .docActionBtn:hover { background: #bdb494; text-decoration: underline; }
+.declarationsPage .docHomeBtn svg { flex: 0 0 auto; font-size: 20px; }
 
 /* DOCUMENT HEADER (JSON MODE) */
 .declarationsPage .docHeader { text-align: center; margin-bottom: 28px; }
@@ -65,7 +68,7 @@
 @media (max-width: 992px) {
     .declarationsPage { padding: 50px 16px 70px; }
     .declarationsPage .docHeading { font-size: 32px; }
-    .declarationsPage .docContainer { width: 94%; padding: 60px 24px 35px; }
+    .declarationsPage .docContainer { width: 94%; padding: 84px 24px 35px; }
 }
 
 /* MOBILE */
@@ -75,8 +78,11 @@
     .declarationsPage .docHeading { font-size: 26px; padding-bottom: 12px; }
     .declarationsPage .docSectionDivider { max-width: 320px; gap: 0; margin-top: 20px; }
     .declarationsPage .docDividerIcon { font-size: 18px; }
-    .declarationsPage .docContainer { width: 100%; padding: 60px 12px 28px; }
-    .declarationsPage .docDownloadBtn { top: 14px; right: 12px; }
+    .declarationsPage .docContainer { width: 100%; padding: 66px 12px 28px; }
+    .declarationsPage .docActions { top: 14px; left: 12px; right: 12px; }
+    .declarationsPage .docActionBtn { flex-basis: 260px; height: 44px; gap: 6px; font-size: 12px; }
+    .declarationsPage .docHomeBtn { flex-basis: 140px; width: 140px; }
+    .declarationsPage .docHomeBtn svg { font-size: 16px; }
     .declarationsPage .docWatermark { font-size: 24px; letter-spacing: 2px; }
     .declarationsPage .docHint, .declarationsPage .docClub { font-size: 13px; }
     .declarationsPage .docTable thead th, .declarationsPage .docTable tbody td { padding: 8px 10px; font-size: 12.5px; }
@@ -88,7 +94,7 @@
     .declarationsPage { padding: 35px 10px 60px; }
     .declarationsPage .docHeading { font-size: 22px; }
     .declarationsPage .docSectionDivider { max-width: 240px; }
-    .declarationsPage .docContainer { padding: 56px 8px 24px; }
+    .declarationsPage .docContainer { padding: 66px 8px 24px; }
     .declarationsPage .docRaceBar { padding: 12px 14px; }
 }
 

@@ -267,6 +267,23 @@ export default function PerformanceProfile() {
 
         router.push("/");
     }
+
+    const backButton = (
+        <button
+            type="button"
+            className="ppBackBtn"
+            onClick={handleBack}
+            aria-label="Go back"
+            title="Back"
+        >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+            </svg>
+            <span>Back</span>
+        </button>
+    );
+
     return (
         <section className="performanceProfilePage">
 
@@ -275,19 +292,6 @@ export default function PerformanceProfile() {
                 <div className="ppCard">
 
                     <div className="ppSearchRow">
-                        <button
-                            type="button"
-                            className="ppBackBtn"
-                            onClick={handleBack}
-                            aria-label="Go back"
-                            title="Back"
-                        >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="19" y1="12" x2="5" y2="12" />
-                                <polyline points="12 19 5 12 12 5" />
-                            </svg>
-                        </button>
-
                         <div className="ppInputWrap" ref={wrapRef}>
 
                             <span className="ppSearchIconWrap" aria-hidden="true">
@@ -356,19 +360,22 @@ export default function PerformanceProfile() {
 
                 {/* ---------------- PROFILE VIEW ---------------- */}
                 {view === "profile" && submitting && (
-                    <div className="ppResultsCard">
+                    <div className="ppResultsCard ppResultsCardWithBack">
+                        {backButton}
                         <p className="ppResultsLoading">Loading horse profile…</p>
                     </div>
                 )}
 
                 {view === "profile" && !submitting && profileError && (
-                    <div className="ppResultsCard">
+                    <div className="ppResultsCard ppResultsCardWithBack">
+                        {backButton}
                         <p className="ppResultsError">{profileError}</p>
                     </div>
                 )}
 
                 {view === "profile" && !submitting && profileData && (
-                    <div className="ppResultsCard">
+                    <div className="ppResultsCard ppResultsCardWithBack">
+                        {backButton}
 
                         <div className="ppResultsHeader">
                             <h2 className="ppResultsHorseName">{profileData.horse_name}</h2>
@@ -467,7 +474,8 @@ export default function PerformanceProfile() {
 
                 {/* ---------------- RACE RESULT VIEW ---------------- */}
                 {view === "raceResult" && (
-                    <div className="ppResultsCard">
+                    <div className="ppResultsCard ppResultsCardWithBack">
+                        {backButton}
 
                         {loadingRaceResult && (
                             <p className="ppResultsLoading">Loading race result…</p>

@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getFoalRecords } from "../../../services/TrainerhorsesService";
 import "./Trainerhorses.css";
 
 export default function FoalRecords() {
 
+    const router = useRouter();
     const searchParams = useSearchParams();
     const mareName = searchParams.get("mareName") || "";
     const damnat = searchParams.get("damnat") || "";
@@ -59,9 +60,22 @@ export default function FoalRecords() {
     const marenatDisp = first?.MARENAT ? `[${first.MARENAT}]` : "";
 
     return (
-        <section className="trainerHorsesSection">
+        <section className="trainerHorsesSection foalRecordsPage">
             <div className="thWrap">
                 <div className="thResultsCard">
+                    <button
+                        type="button"
+                        className="foalRecordsBackBtn"
+                        onClick={() => router.back()}
+                        aria-label="Go back"
+                        title="Back"
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <line x1="19" y1="12" x2="5" y2="12" />
+                            <polyline points="12 19 5 12 12 5" />
+                        </svg>
+                        <span>Back</span>
+                    </button>
 
                     {loading ? (
                         <div className="thState">

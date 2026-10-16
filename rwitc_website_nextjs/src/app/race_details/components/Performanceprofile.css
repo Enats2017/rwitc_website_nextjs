@@ -250,6 +250,7 @@
 
 /* ---- RESULTS CARD (profile data after submit) ---- */
 .ppResultsCard {
+    position: relative;
     width: 100%;
     background: var(--pp-bg);
     border: 1px solid var(--pp-border);
@@ -411,31 +412,36 @@
 
 .performanceProfilePage .ppBackBtn {
     flex-shrink: 0;
-    width: 46px;
+    position: absolute;
+    top: 14px;
+    left: 16px;
+    min-width: 124px;
     height: 46px;
     margin: 0;
-    padding: 0;
+    padding: 0 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #FFFFFF;
-    border: 1px solid var(--pp-border);
-    border-radius: 10px;
-    color: var(--pp-green);
+    gap: 8px;
+    background: #C9C1A5;
+    border: none;
+    border-radius: 8px;
+    color: #000000;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition: background 0.2s ease;
 }
 
 .performanceProfilePage .ppBackBtn svg {
-    width: 20px;
-    height: 20px;
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
 }
 
 .performanceProfilePage .ppBackBtn:hover {
-    background: var(--pp-green);
-    color: #FFFFFF;
-    border-color: var(--pp-green);
+    background: #BDB494;
 }
 
 /* ---- RACE RESULT TITLE ---- */
@@ -490,8 +496,10 @@
     }
 
     .performanceProfilePage .ppBackBtn {
-        width: 42px;
+        min-width: 108px;
         height: 42px;
+        padding: 0 14px;
+        font-size: 14px;
     }
 
     .performanceProfilePage .ppSearchIconWrap {
@@ -527,6 +535,10 @@
     .ppResultsCard {
         padding: 20px 16px 24px;
         border-radius: 16px;
+    }
+
+    .ppResultsCardWithBack {
+        padding-top: 76px;
     }
 
     .ppResultsHorseName {
@@ -572,5 +584,9 @@
 
     .ppResultsCard {
         padding: 16px 12px 20px;
+    }
+
+    .ppResultsCardWithBack {
+        padding-top: 72px;
     }
 }

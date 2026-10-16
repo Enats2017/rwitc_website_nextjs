@@ -21,11 +21,14 @@
 .raceResultPage .docBadge { display: inline-block; padding: 12px 32px; border-radius: 999px; background: #16a34a; margin-top: 20px; color: #ffffff; font-size: 20px; font-weight: 800; }
 
 /* CONTAINER (bordered card) */
-.raceResultPage .docContainer { position: relative; width: 100%; max-width: 1140px; margin: 0 auto; padding: 28px 32px 40px; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; }
+.raceResultPage .docContainer { position: relative; width: 100%; max-width: 1140px; margin: 0 auto; padding: 84px 32px 40px; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; }
 
-/* DOWNLOAD BUTTON */
-.raceResultPage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; z-index: 2; }
-.raceResultPage .docDownloadBtn:hover { background: #bdb494; text-decoration: underline; }
+/* DOCUMENT ACTIONS */
+.raceResultPage .docActions { position: absolute; top: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center; }
+.raceResultPage .docActionBtn { display: flex; flex: 0 1 260px; align-items: center; justify-content: center; gap: 12px; width: 260px; max-width: calc(50% - 6px); height: 54px; box-sizing: border-box; padding: 0 14px; border: none; border-radius: 8px; background: #c9c2a8; color: #000; font-size: 16px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
+.raceResultPage .docHomeBtn { flex-basis: 180px; width: 180px; }
+.raceResultPage .docActionBtn:hover { background: #bdb494; text-decoration: underline; }
+.raceResultPage .docHomeBtn svg { flex: 0 0 auto; font-size: 20px; }
 
 /* HEADER */
 .raceResultPage .docHeader { text-align: center; margin-bottom: 28px; }
@@ -68,8 +71,11 @@
     .raceResultPage .sectionDivider { max-width: 320px; gap: 12px; }
     .raceResultPage .dividerIcon { font-size: 18px; }
     .raceResultPage .docBadge { font-size: 16px; padding: 10px 24px; }
-    .raceResultPage .docContainer { padding: 56px 4px 24px; }
-    .raceResultPage .docDownloadBtn { top: 14px; right: 12px; }
+    .raceResultPage .docContainer { padding: 66px 4px 24px; }
+    .raceResultPage .docActions { top: 14px; left: 12px; right: 12px; }
+    .raceResultPage .docActionBtn { flex-basis: 260px; height: 44px; gap: 6px; font-size: 12px; }
+    .raceResultPage .docHomeBtn { flex-basis: 140px; width: 140px; }
+    .raceResultPage .docHomeBtn svg { font-size: 16px; }
     .raceResultPage .docWatermark { font-size: 24px; letter-spacing: 2px; }
     .raceResultPage .docHint, .raceResultPage .docClub { font-size: 13px; }
     .raceResultPage .docArchiveScroll { margin-top: 0; }
@@ -95,7 +101,7 @@
     .raceResultPage .aboutHeading { font-size: 22px; }
     .raceResultPage .sectionDivider { max-width: 240px; }
     .raceResultPage .docBadge { font-size: 15px; padding: 9px 20px; }
-    .raceResultPage .docContainer { padding: 52px 3px 24px; }
+    .raceResultPage .docContainer { padding: 66px 3px 24px; }
     .raceResultPage .docRaceBar { padding: 12px 14px; }
     .raceResultPage .docTable thead th,
     .raceResultPage .docTable tbody td,

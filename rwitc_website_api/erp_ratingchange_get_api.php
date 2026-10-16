@@ -265,6 +265,10 @@ function ratingChangeDownloadCss()
 * { box-sizing: border-box; }
 body { font-family: Arial, sans-serif; margin: 0; padding: 24px 20px 40px; color: #333333; background: #ffffff; }
 span, a { text-decoration: none; color: #333333; }
+#ratingChangeBackButton { position: fixed; top: 16px; left: 16px; z-index: 9999; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 124px; height: 46px; padding: 0 18px; border: 0; border-radius: 8px; background: #C9C1A5; color: #000000; font: 700 16px Arial, sans-serif; cursor: pointer; }
+#ratingChangeBackButton:hover { background: #BDB494; }
+#ratingChangeBackButton:focus-visible { outline: 2px solid #0a4b2d; outline-offset: 2px; }
+#ratingChangeBackButton svg { flex: 0 0 auto; width: 16px; height: 16px; }
 .row { display: flex; flex-wrap: wrap; row-gap: 6px; }
 .row > div { padding: 2px 10px 2px 0; line-height: 1.7; font-size: 12.5px !important; }
 .MsoPlainText { margin: 0 0 10px; line-height: 1.6; }
@@ -273,10 +277,59 @@ table { max-width: 100%; }
 img { max-width: 100%; height: auto; }
 @media (max-width: 500px) {
     body { padding: 16px; }
+    #ratingChangeBackButton { top: 12px; left: 12px; min-width: 108px; height: 42px; padding: 0 14px; font-size: 14px; }
     .row > div { width: 100% !important; }
     table { width: 100% !important; }
 }
 CSS;
+}
+
+function addRatingChangeBackButton($html, $date)
+{
+    $button = '<button type="button" id="ratingChangeBackButton" aria-label="Go back" title="Back">'
+        . '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+        . '<line x1="19" y1="12" x2="5" y2="12"></line>'
+        . '<polyline points="12 19 5 12 12 5"></polyline>'
+        . '</svg><span>Back</span></button>';
+
+    $dateQuery = rawurlencode($date);
+    $script = '<script>(function(){var button=document.getElementById("ratingChangeBackButton");'
+        . 'if(!button)return;button.addEventListener("click",function(){'
+        . 'if(window.history.length>1){window.history.back();return;}'
+        . 'window.location.href="/race_details?type=ratingChange&date=' . $dateQuery . '";'
+        . '});})();</script>';
+
+    $bodyMatched = false;
+    $html = preg_replace_callback(
+        '/<body\b[^>]*>/i',
+        function ($matches) use ($button, &$bodyMatched) {
+            $bodyMatched = true;
+            return $matches[0] . $button;
+        },
+        $html,
+        1
+    );
+
+    if (!$bodyMatched) {
+        if (stripos($html, "</head>") !== false) {
+            $html = preg_replace("/<\\/head>/i", "</head><body>" . $button, $html, 1);
+            if (stripos($html, "</body>") === false && stripos($html, "</html>") !== false) {
+                $html = preg_replace("/<\\/html>/i", "</body></html>", $html, 1);
+            }
+        } else {
+            $html = $button . $html;
+        }
+    }
+
+    if (stripos($html, "</body>") !== false) {
+        return preg_replace("/<\\/body>/i", $script . "</body>", $html, 1);
+    }
+
+    if (stripos($html, "</html>") !== false) {
+        return preg_replace("/<\\/html>/i", $script . "</html>", $html, 1);
+    }
+
+    return $html . $script;
 }
 
 // --------------------------------------------------
@@ -348,6 +401,8 @@ try {
                 . "<style>\n" . $css . "\n</style>\n</head>\n<body>\n"
                 . $htmlContent . "\n</body>\n</html>";
         }
+
+        $out = addRatingChangeBackButton($out, $date);
 
         header("Content-Type: text/html; charset=UTF-8");
         header('Content-Disposition: inline; filename="Rating_change_' . $date . '.htm"');

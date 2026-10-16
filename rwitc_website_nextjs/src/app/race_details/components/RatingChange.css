@@ -13,16 +13,13 @@
 .ratingChangePage .dividerIcon { font-size: 22px; color: #0d3b1f; flex-shrink: 0; }
 
 /* CONTAINER (bordered card) */
-.ratingChangePage .docContainer { position: relative; width: 100%; max-width: 1140px; margin: 0 auto; padding: 20px 24px 32px; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; }
+.ratingChangePage .docContainer { position: relative; width: 100%; max-width: 1140px; margin: 0 auto; padding: 84px 24px 32px; border: 1px solid #e2e2e2; border-radius: 4px; box-sizing: border-box; overflow: hidden; }
 
-/* ACTION ROW (Download / Open HTML) */
-.ratingChangePage .docActionRow { display: flex; justify-content: flex-end; margin-bottom: 12px; }
-.ratingChangePage .docOpenBtn { padding: 8px 14px; border: 1px solid #ccc; border-radius: 4px; background: #ffffff; color: #1a1a1a; font-size: 13px; font-weight: 600; cursor: pointer; }
-.ratingChangePage .docOpenBtn:hover { background: #f4f4f4; }
-
-/* DOWNLOAD BUTTON (kept for future use) */
-.ratingChangePage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; z-index: 2; }
-.ratingChangePage .docDownloadBtn:hover { background: #bdb494; text-decoration: underline; }
+/* DOCUMENT ACTIONS */
+.ratingChangePage .docActionRow { position: absolute; top: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center; }
+.ratingChangePage .docActionBtn { display: flex; flex: 0 1 260px; align-items: center; justify-content: center; gap: 12px; width: 260px; max-width: calc(50% - 6px); height: 54px; box-sizing: border-box; padding: 0 14px; border: none; border-radius: 8px; background: #c9c2a8; color: #000; font-size: 16px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
+.ratingChangePage .docActionBtn:hover { background: #bdb494; text-decoration: underline; }
+.ratingChangePage .docHomeBtn svg { flex: 0 0 auto; font-size: 20px; }
 
 /* STATE (loading / error / empty) */
 .ratingChangePage .docStateBox { text-align: center; padding: 60px 20px; color: #555; font-size: 15px; }
@@ -42,8 +39,10 @@
     .ratingChangePage .dividerIcon { font-size: 18px; }
     .ratingChangePage .aboutTitleWrap { margin-bottom: 28px; }
     .ratingChangePage.docPage { padding: 32px 12px 56px; }
-    .ratingChangePage .docContainer { padding: 16px 12px 24px; }
-    .ratingChangePage .docDownloadBtn { top: 14px; right: 12px; }
+    .ratingChangePage .docContainer { padding: 66px 12px 24px; }
+    .ratingChangePage .docActionRow { top: 14px; left: 12px; right: 12px; gap: 12px; }
+    .ratingChangePage .docActionBtn { flex-basis: 260px; height: 44px; gap: 6px; font-size: 12px; }
+    .ratingChangePage .docHomeBtn svg { font-size: 16px; }
     .ratingChangePage .docStateBox { padding: 40px 12px; }
 }
 
@@ -51,8 +50,7 @@
     .ratingChangePage .aboutHeading { font-size: 22px; }
     .ratingChangePage .sectionDivider { max-width: 240px; }
     .ratingChangePage.docPage { padding: 28px 8px 48px; }
-    .ratingChangePage .docContainer { padding: 12px 8px 20px; }
-    .ratingChangePage .docActionRow { justify-content: center; }
+    .ratingChangePage .docContainer { padding: 66px 8px 20px; }
 }
 
 /* DIVIDER + SPACE at the bottom of the card */
