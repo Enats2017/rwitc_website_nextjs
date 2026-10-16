@@ -12,8 +12,10 @@ $userObj = new Users($db);
 // ---------------------------------------------------------------
 // SETTINGS
 // ---------------------------------------------------------------
-$perPage = 6;                                   // records per page
-$newsDir = dirname(__DIR__) . '/news/';         // upload folder
+$perPage = 6;
+
+define('DN_DEFAULT_COL1', 'Odds on withdrawn Horse/s at the time of Withdrawal');
+define('DN_DEFAULT_COL2', 'Percentage of deductions');
 
 // ---------------------------------------------------------------
 // LOGIN + MODULE ACCESS CHECK
@@ -48,52 +50,92 @@ function dnSetFlash($text, $type)
     $_SESSION['dn_flash'] = array('text' => $text, 'type' => $type);
 }
 
-function dnDeleteFile($dir, $name)
-{
-    $name = basename((string)$name);
-    if ($name !== '' && is_file($dir . $name)) {
-        @unlink($dir . $name);
-    }
-}
-
-// Handles the upload. Returns the saved file name on success, or '' and sets $err on failure.
-function dnUploadFile($dir, &$err)
-{
-    if (!isset($_FILES['report_file']) || $_FILES['report_file']['error'] !== UPLOAD_ERR_OK) {
-        $err = 'File upload failed. Please try again (check file size limit).';
-        return '';
-    }
-
-    $orig = basename($_FILES['report_file']['name']);
-    $ext  = strtolower(pathinfo($orig, PATHINFO_EXTENSION));
-    $blocked = array('php', 'php3', 'php4', 'php5', 'phtml', 'phar', 'exe', 'sh', 'bat', 'cgi', 'pl', 'htaccess');
-
-    if (in_array($ext, $blocked, true)) {
-        $err = 'This file type is not allowed.';
-        return '';
-    }
-
-    $clean = preg_replace('/[^A-Za-z0-9._-]/', '_', $orig);
-    $saved = time() . '_' . $clean;
-
-    if (!move_uploaded_file($_FILES['report_file']['tmp_name'], $dir . $saved)) {
-        $err = 'Could not save file on server (check news/ folder permission).';
-        return '';
-    }
-
-    return $saved;
-}
-
-// URL builder for pagination
 function dnPageUrl($p)
 {
     return 'deductionNormsManager.php' . ($p > 1 ? '?page=' . (int)$p : '');
 }
 
-// URL for HTML links (the page uses <base href>, so the folder prefix is needed)
 function dnHtmlUrl($p)
 {
     return 'turf-console/' . dnPageUrl($p);
+}
+
+// Trims a value, normalizes line endings and limits its length.
+function dnCleanStr($v, $max)
+{
+    $v = is_string($v) ? trim($v) : '';
+    $v = str_replace(array("\r\n", "\r"), "\n", $v);
+    if (function_exists('mb_substr')) {
+        $v = mb_substr($v, 0, $max, 'UTF-8');
+    } else {
+        $v = substr($v, 0, $max);
+    }
+    return $v;
+}
+
+// Decodes and cleans the tables JSON. Returns a clean array of sections.
+function dnCleanTables($json)
+{
+    $out  = array();
+    $data = json_decode((string)$json, true);
+
+    if (!is_array($data)) {
+        return $out;
+    }
+
+    foreach ($data as $sec) {
+        if (!is_array($sec)) {
+            continue;
+        }
+        if (count($out) >= 20) {
+            break;
+        }
+
+        $heading = dnCleanStr(isset($sec['heading']) ? $sec['heading'] : '', 300);
+        $text    = dnCleanStr(isset($sec['text']) ? $sec['text'] : '', 5000);
+        $col1    = dnCleanStr(isset($sec['col1']) ? $sec['col1'] : '', 300);
+        $col2    = dnCleanStr(isset($sec['col2']) ? $sec['col2'] : '', 300);
+        $rows    = array();
+
+        if (isset($sec['rows']) && is_array($sec['rows'])) {
+            foreach ($sec['rows'] as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+                if (count($rows) >= 200) {
+                    break;
+                }
+                $c1 = dnCleanStr(isset($row['c1']) ? $row['c1'] : '', 500);
+                $c2 = dnCleanStr(isset($row['c2']) ? $row['c2'] : '', 200);
+                if ($c1 === '' && $c2 === '') {
+                    continue;
+                }
+                $rows[] = array('c1' => $c1, 'c2' => $c2);
+            }
+        }
+
+        // skip completely empty tables
+        if ($heading === '' && $text === '' && count($rows) === 0) {
+            continue;
+        }
+
+        if ($col1 === '') {
+            $col1 = DN_DEFAULT_COL1;
+        }
+        if ($col2 === '') {
+            $col2 = DN_DEFAULT_COL2;
+        }
+
+        $out[] = array(
+            'heading' => $heading,
+            'text'    => $text,
+            'col1'    => $col1,
+            'col2'    => $col2,
+            'rows'    => $rows
+        );
+    }
+
+    return $out;
 }
 
 // ---------------------------------------------------------------
@@ -116,23 +158,20 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
 
         $id  = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-        $row = $id > 0 ? $db->getSingleRowAssoc("SELECT * FROM deduction_norms_docs WHERE id = $id") : null;
+        $row = $id > 0 ? $db->getSingleRowAssoc("SELECT id FROM deduction_norms_docs WHERE id = $id") : null;
 
         if ($row) {
             try {
                 $db->query("DELETE FROM deduction_norms_docs WHERE id = $id");
-                if ($row['type'] === 'file') {
-                    dnDeleteFile($newsDir, $row['file_name']);
-                }
                 dnSetFlash('Entry deleted successfully.', 'success');
             } catch (Exception $e) {
+                error_log($e->getMessage());
                 dnSetFlash('Database error. Could not delete.', 'error');
             }
         } else {
             dnSetFlash('Entry not found.', 'error');
         }
 
-        // if the current page becomes empty, go back one page
         $total    = (int)$db->getSingleValue("SELECT COUNT(*) FROM deduction_norms_docs");
         $lastPage = max(1, (int)ceil($total / $perPage));
         if ($pageNo > $lastPage) {
@@ -146,15 +185,23 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save' || $action === 'update') {
 
         $date   = isset($_POST['report_date']) ? trim($_POST['report_date']) : '';
-        $title  = isset($_POST['report_title']) ? trim($_POST['report_title']) : '';
-        $type   = isset($_POST['report_type']) ? $_POST['report_type'] : '';
-        $text   = isset($_POST['report_text']) ? trim($_POST['report_text']) : '';
+        $title  = dnCleanStr(isset($_POST['report_title']) ? $_POST['report_title'] : '', 200);
+        $header = dnCleanStr(isset($_POST['report_header']) ? $_POST['report_header'] : '', 500);
+        $text   = dnCleanStr(isset($_POST['report_text']) ? $_POST['report_text'] : '', 200000);
+        $tables = dnCleanTables(isset($_POST['tables_json']) ? $_POST['tables_json'] : '');
         $id     = isset($_POST['id']) ? (int)$_POST['id'] : 0;
         $err    = '';
-        $oldRow = null;
 
-        if ($action === 'update') {
-            $oldRow = $id > 0 ? $db->getSingleRowAssoc("SELECT * FROM deduction_norms_docs WHERE id = $id") : null;
+        $tablesJson = '';
+        if (count($tables) > 0) {
+            $tablesJson = json_encode($tables);
+            if ($tablesJson === false || $tablesJson === null) {
+                $err = 'Invalid table data.';
+            }
+        }
+
+        if ($err === '' && $action === 'update') {
+            $oldRow = $id > 0 ? $db->getSingleRowAssoc("SELECT id FROM deduction_norms_docs WHERE id = $id") : null;
             if (!$oldRow) {
                 $err = 'Entry not found.';
             }
@@ -164,77 +211,41 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($err !== '') {
             // already set
         } elseif (!$d || $d->format('Y-m-d') !== $date) {
-            $err = 'Invalid date.';
-        } elseif ($title === '') {
-            $err = 'Title is required.';
-        } elseif ($type !== 'text' && $type !== 'file') {
-            $err = 'Invalid type.';
-        } elseif ($type === 'text' && $text === '') {
-            $err = 'Text is required.';
-        }
-
-        $newFile      = '';   // newly uploaded file
-        $fileToKeep   = '';   // old file to keep
-        $fileToDelete = '';   // old file to delete
-
-        if ($err === '' && $type === 'file') {
-
-            $hasUpload = isset($_FILES['report_file']) && $_FILES['report_file']['error'] !== UPLOAD_ERR_NO_FILE;
-            $oldIsFile = ($oldRow && $oldRow['type'] === 'file' && $oldRow['file_name'] !== '');
-
-            if ($hasUpload) {
-                $newFile = dnUploadFile($newsDir, $err);
-                if ($err === '' && $oldIsFile) {
-                    $fileToDelete = $oldRow['file_name'];
-                }
-            } elseif ($oldIsFile) {
-                $fileToKeep = $oldRow['file_name'];
-            } else {
-                $err = 'Please choose a file.';
-            }
+            $err = 'Please select a valid date.';
+        } elseif ($header === '' && count($tables) === 0 && $text === '') {
+            $err = 'Please add a header, a table or some text.';
         }
 
         if ($err === '') {
 
-            $finalFile = ($type === 'file') ? ($newFile !== '' ? $newFile : $fileToKeep) : '';
-
-            // if switched to text, remove the old file
-            if ($type === 'text' && $oldRow && $oldRow['type'] === 'file') {
-                $fileToDelete = $oldRow['file_name'];
-            }
-
-            $textSql = ($type === 'text') ? "'" . $db->escape($text) . "'" : "NULL";
-            $fileSql = ($type === 'file') ? "'" . $db->escape($finalFile) . "'" : "NULL";
+            // Optional fields: NULL is stored when they are left blank
+            $titleSql  = ($title !== '') ? "'" . $db->escape($title) . "'" : "NULL";
+            $headerSql = ($header !== '') ? "'" . $db->escape($header) . "'" : "NULL";
+            $tablesSql = ($tablesJson !== '') ? "'" . $db->escape($tablesJson) . "'" : "NULL";
+            $textSql   = ($text !== '') ? "'" . $db->escape($text) . "'" : "NULL";
 
             try {
                 if ($action === 'update') {
                     $db->update("UPDATE deduction_norms_docs SET
                                     report_date = '" . $db->escape($date) . "',
-                                    title = '" . $db->escape($title) . "',
-                                    type = '" . $db->escape($type) . "',
-                                    content_text = $textSql,
-                                    file_name = $fileSql
+                                    title = $titleSql,
+                                    header_text = $headerSql,
+                                    tables_json = $tablesSql,
+                                    content_text = $textSql
                                  WHERE id = $id");
                     dnSetFlash('Entry updated successfully.', 'success');
                 } else {
-                    $db->insert("INSERT INTO deduction_norms_docs (report_date, title, type, content_text, file_name)
+                    $db->insert("INSERT INTO deduction_norms_docs (report_date, title, header_text, tables_json, content_text)
                                  VALUES ('" . $db->escape($date) . "',
-                                         '" . $db->escape($title) . "',
-                                         '" . $db->escape($type) . "',
-                                         $textSql,
-                                         $fileSql)");
+                                         $titleSql,
+                                         $headerSql,
+                                         $tablesSql,
+                                         $textSql)");
                     dnSetFlash('Saved successfully.', 'success');
-                    $redirect = 'deductionNormsManager.php';   // new entry -> page 1
-                }
-
-                if ($fileToDelete !== '') {
-                    dnDeleteFile($newsDir, $fileToDelete);
+                    $redirect = 'deductionNormsManager.php';
                 }
             } catch (Exception $e) {
-                // if the DB save fails, remove the newly uploaded file
-                if ($newFile !== '') {
-                    dnDeleteFile($newsDir, $newFile);
-                }
+                error_log($e->getMessage());
                 dnSetFlash('Database error. Could not save.', 'error');
             }
         } else {
@@ -274,7 +285,7 @@ if (empty($secmsg)) {
     $offset = ($page - 1) * $perPage;
 
     $rows = $db->getMultiDimensionalArray(
-        "SELECT id, report_date, title, type, content_text, file_name
+        "SELECT id, report_date, title, header_text, tables_json, content_text
          FROM deduction_norms_docs
          ORDER BY report_date DESC, id DESC
          LIMIT $perPage OFFSET $offset"
@@ -284,11 +295,24 @@ if (empty($secmsg)) {
 $isEdit = !empty($editRow);
 
 // default form values
-$fDate  = $isEdit ? $editRow['report_date'] : '';
-$fTitle = $isEdit ? $editRow['title'] : '';
-$fType  = $isEdit ? $editRow['type'] : '';
-$fText  = $isEdit ? (string)$editRow['content_text'] : '';
-$fFile  = ($isEdit && $editRow['type'] === 'file') ? (string)$editRow['file_name'] : '';
+$fDate   = $isEdit ? $editRow['report_date'] : date('Y-m-d');
+$fTitle  = $isEdit ? (string)$editRow['title'] : '';
+$fHeader = $isEdit ? (string)$editRow['header_text'] : '';
+$fText   = $isEdit ? (string)$editRow['content_text'] : '';
+
+$fTables = array();
+if ($isEdit && !empty($editRow['tables_json'])) {
+    $fTables = dnCleanTables($editRow['tables_json']);
+}
+if (count($fTables) === 0) {
+    $fTables = array(array(
+        'heading' => '',
+        'text'    => '',
+        'col1'    => DN_DEFAULT_COL1,
+        'col2'    => DN_DEFAULT_COL2,
+        'rows'    => array(array('c1' => '', 'c2' => ''))
+    ));
+}
 
 // PAGE TITLE
 $pageTitle = 'Deduction Norms';
@@ -328,39 +352,16 @@ $design->writeContentPageStyles();
     .ar-field { margin-bottom: 18px; min-width: 0; }
     .ar-field label { display: block; font-size: 13px; font-weight: 600; color: #2b332f; margin-bottom: 6px; }
     .ar-field label .req { color: #c0392b; }
-    .ar-input, .ar-select, .ar-textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
+    .ar-field label .opt { color: #7a8c84; font-weight: 500; }
+    .ar-input, .ar-textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
     .ar-input::placeholder, .ar-textarea::placeholder { color: #9aa9a2; }
-    .ar-input:focus, .ar-select:focus, .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-textarea { min-height: 220px; resize: vertical; line-height: 1.5; }
-    .ar-select { cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%237a8c84' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
+    .ar-input:focus, .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
+    .ar-textarea { min-height: 320px; resize: vertical; line-height: 1.5; }
+    .ar-textarea.ar-textarea-sm { min-height: 90px; }
     .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; }
-    .ar-input.invalid, .ar-select.invalid, .ar-textarea.invalid, .ar-drop.invalid { border-color: #c0392b; }
+    .ar-input.invalid, .ar-textarea.invalid { border-color: #c0392b; }
     .ar-err { color: #c0392b; font-size: 12px; margin-top: 5px; display: none; }
     .ar-err.show { display: block; }
-
-    .ar-section { display: none; }
-    .ar-section.active { display: block; animation: arFade .2s ease; }
-    @keyframes arFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-
-    .ar-drop { border: 2px dashed #b9c4be; border-radius: 12px; padding: 32px 16px; text-align: center; cursor: pointer; background: #f8faf9; transition: all .15s ease; }
-    .ar-drop:hover, .ar-drop.dragover { border-color: #1a7a45; background: #eef7f1; }
-    .ar-drop-icon { font-size: 32px; color: #0f5c33; margin-bottom: 10px; }
-    .ar-drop-text { font-size: 15px; font-weight: 500; color: #2b332f; margin: 0 0 4px; }
-    .ar-drop-text span { color: #0f5c33; text-decoration: underline; }
-    .ar-drop-sub { font-size: 12px; color: #7a8c84; margin: 0; }
-    .ar-file-input { display: none; }
-
-    .ar-file-box { display: none; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border: 1px solid #e2e6e4; border-radius: 10px; background: #fff; }
-    .ar-file-box.show { display: flex; }
-    .ar-file-ico { width: 38px; height: 38px; border-radius: 9px; background: #0f5c33; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
-    .ar-file-info { flex: 1; min-width: 0; }
-    .ar-file-name { font-size: 14px; font-weight: 500; color: #2b332f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ar-file-size { font-size: 12px; color: #7a8c84; }
-    .ar-file-remove { border: none; background: #fde8e8; color: #a12626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 13px; flex-shrink: 0; }
-    .ar-file-remove:hover { background: #f9d0d0; }
-
-    .ar-current { margin-top: 12px; padding: 10px 14px; border-radius: 10px; background: #eef7f1; border: 1px solid #cfe6d8; font-size: 13px; color: #2b332f; word-break: break-all; }
-    .ar-current a { color: #0f5c33; font-weight: 600; }
 
     .ar-actions { display: flex; gap: 10px; margin-top: 8px; padding-top: 18px; border-top: 1px solid #eef1ef; flex-wrap: wrap; }
     .ar-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; font-size: 15px; font-weight: 600; font-family: inherit; border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all .15s ease; text-decoration: none; }
@@ -368,27 +369,35 @@ $design->writeContentPageStyles();
     .ar-btn-primary:hover { background: #1a7a45; box-shadow: 0 4px 10px rgba(15, 92, 51, 0.25); color: #fff; }
     .ar-btn-secondary { background: #fff; color: #2b332f; border-color: #d3d9d6; }
     .ar-btn-secondary:hover { border-color: #7a8c84; color: #2b332f; }
+    .ar-btn.ar-btn-sm { padding: 8px 14px; font-size: 13px; }
 
-    /* ---------- LIST TABLE ---------- */
+    /* ---------- TABLE BUILDER ---------- */
+    .ar-sec { border: 1px solid #e2e6e4; border-radius: 12px; padding: 16px; margin-bottom: 16px; background: #f8faf9; }
+    .ar-sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .ar-sec-title { font-size: 13px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: #0f5c33; }
+    .ar-rows-label { font-size: 13px; font-weight: 600; color: #2b332f; margin-bottom: 8px; }
+    .ar-trow { display: grid; grid-template-columns: 1fr 160px 34px; gap: 8px; margin-bottom: 8px; align-items: center; }
+    .ar-sec-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+    .ar-bulk { display: none; margin-top: 12px; }
+    .ar-bulk.open { display: block; }
+    .ar-bulk .ar-btn { margin-top: 8px; }
+
     .ar-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .ar-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    .ar-table { width: 100%; border-collapse: collapse; min-width: 520px; }
     .ar-table th { text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: #0f5c33; background: #f3f6f4; padding: 11px 12px; border-bottom: 1px solid #e2e6e4; white-space: nowrap; }
     .ar-table td { font-size: 14px; color: #2b332f; padding: 12px; border-bottom: 1px solid #eef1ef; vertical-align: middle; }
     .ar-table tr:hover td { background: #f8faf9; }
     .ar-table tr.is-editing td { background: #eef7f1; }
     .ar-t-title { font-weight: 600; word-break: break-word; }
     .ar-t-sub { font-size: 12px; color: #7a8c84; margin-top: 3px; word-break: break-word; }
-    .ar-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-    .ar-badge.text { background: #e8f0fb; color: #1f4f9c; }
-    .ar-badge.file { background: #fdf0e0; color: #9a5a0c; }
     .ar-act { display: flex; gap: 6px; flex-wrap: nowrap; }
     .ar-icon-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #d3d9d6; background: #fff; color: #2b332f; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; text-decoration: none; transition: all .15s ease; padding: 0; }
     .ar-icon-btn:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
     .ar-icon-btn.del:hover { border-color: #c0392b; color: #a12626; background: #fde8e8; }
     .ar-act form { margin: 0; }
     .ar-empty { text-align: center; padding: 30px 10px; color: #7a8c84; font-size: 14px; }
+    .ar-live { display: inline-block; margin-left: 8px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: #e3f6ea; color: #0f5c33; vertical-align: middle; }
 
-    /* ---------- PAGINATION ---------- */
     .ar-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
     .ar-pager-info { font-size: 13px; color: #7a8c84; }
     .ar-pages { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -406,20 +415,17 @@ $design->writeContentPageStyles();
         .ar-card { max-width: 980px; padding: 30px; }
         .ar-card.wide { max-width: 100%; }
     }
-
     @media (max-width: 700px) {
         .ar-title { font-size: 20px; }
         .ar-card { padding: 16px; border-radius: 10px; }
         .ar-row { grid-template-columns: 1fr; gap: 0; }
-        .ar-drop { padding: 24px 12px; }
     }
-
     @media (max-width: 560px) {
         .ar-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
-        .ar-subtitle { font-size: 13px; }
         .ar-actions { flex-direction: column; }
         .ar-btn { width: 100%; }
-        .ar-textarea { min-height: 180px; }
+        .ar-textarea { min-height: 240px; }
+        .ar-trow { grid-template-columns: 1fr 90px 34px; }
         .ar-pager { flex-direction: column; align-items: flex-start; }
     }
 </style>
@@ -445,7 +451,7 @@ $design->writeContentPageStyles();
         <div class="ar-header">
             <div>
                 <h1 class="ar-title">DEDUCTION NORMS</h1>
-                <p class="ar-subtitle">Upload a file or write text</p>
+                <p class="ar-subtitle">Latest entry (by date) is shown on the website</p>
             </div>
         </div>
 
@@ -469,11 +475,12 @@ $design->writeContentPageStyles();
                 <?php echo $isEdit ? 'Edit Deduction Norms Entry' : 'Add New Deduction Norms Entry'; ?>
             </div>
 
-            <form id="arForm" method="post" action="turf-console/deductionNormsManager.php" enctype="multipart/form-data" novalidate>
+            <form id="arForm" method="post" action="turf-console/deductionNormsManager.php" novalidate>
 
                 <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
                 <input type="hidden" name="action" value="<?php echo $isEdit ? 'update' : 'save'; ?>">
                 <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
+                <input type="hidden" name="tables_json" id="arTablesJson" value="">
                 <?php if ($isEdit) { ?>
                     <input type="hidden" name="id" value="<?php echo (int)$editRow['id']; ?>">
                 <?php } ?>
@@ -482,77 +489,38 @@ $design->writeContentPageStyles();
 
                     <div class="ar-field">
                         <label for="arDate">Date <span class="req">*</span></label>
-                        <input type="text" id="arDate" name="report_date" class="ar-input" placeholder="YYYY-MM-DD" maxlength="10" inputmode="numeric" autocomplete="off" value="<?php echo htmlspecialchars($fDate); ?>">
-                        <div class="ar-hint"><span>Format: YYYY-MM-DD (e.g. 2026-10-07)</span></div>
-                        <div class="ar-err" id="errDate">Please enter a valid date in YYYY-MM-DD format.</div>
+                        <input type="date" id="arDate" name="report_date" class="ar-input" value="<?php echo htmlspecialchars($fDate); ?>">
+                        <div class="ar-err" id="errDate">Please select a date.</div>
                     </div>
 
                     <div class="ar-field">
-                        <label for="arTitle">Title <span class="req">*</span></label>
-                        <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="200" placeholder="Enter title" value="<?php echo htmlspecialchars($fTitle); ?>">
-                        <div class="ar-err" id="errTitle">Please enter a title.</div>
+                        <label for="arTitle">Page Title <span class="opt">(optional)</span></label>
+                        <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="200" placeholder="Default: Deduction Norms" value="<?php echo htmlspecialchars($fTitle); ?>">
                     </div>
 
                 </div>
 
                 <div class="ar-field">
-                    <label for="arType">Type <span class="req">*</span></label>
-                    <select id="arType" name="report_type" class="ar-select">
-                        <option value="">-- Select --</option>
-                        <option value="text" <?php echo $fType === 'text' ? 'selected' : ''; ?>>Write Text</option>
-                        <option value="file" <?php echo $fType === 'file' ? 'selected' : ''; ?>>Upload File</option>
-                    </select>
-                    <div class="ar-err" id="errType">Please select a type.</div>
+                    <label for="arHeader">Header <span class="opt">(optional)</span></label>
+                    <input type="text" id="arHeader" name="report_header" class="ar-input" maxlength="500" placeholder="e.g. Revised rules for deduction made by bookmakers/Fixed Odds Betting for withdrawn horses" value="<?php echo htmlspecialchars($fHeader); ?>">
+                    <div class="ar-hint"><span>Main heading shown above the tables.</span></div>
                 </div>
 
-
-                <!-- TEXT SECTION -->
-                <div class="ar-section" id="secText">
-                    <div class="ar-field">
-                        <label for="arText">Text <span class="req">*</span></label>
-                        <textarea id="arText" name="report_text" class="ar-textarea" placeholder="Write your text here..."><?php echo htmlspecialchars($fText); ?></textarea>
-                        <div class="ar-hint"><span>Plain text / HTML allowed</span><span id="arCount">0 characters</span></div>
-                        <div class="ar-err" id="errText">Please write some text.</div>
-                    </div>
+                <div class="ar-field">
+                    <label>Tables <span class="opt">(optional)</span></label>
+                    <div class="ar-hint" style="margin:0 0 10px;"><span>Each table has a heading, a text, two column headings and rows. Use "Add another table" for (B), (C) and so on.</span></div>
+                    <div id="arSections"></div>
+                    <button type="button" class="ar-btn ar-btn-secondary" id="arAddSection">
+                        <i class="fas fa-plus"></i> Add another table
+                    </button>
                 </div>
 
-
-                <!-- FILE SECTION -->
-                <div class="ar-section" id="secFile">
-                    <div class="ar-field">
-                        <label>Upload File <span class="req">*</span></label>
-
-                        <?php if ($fFile !== '') { ?>
-                            <div class="ar-current" style="margin:0 0 12px;">
-                                Current file:
-                                <a href="news/<?php echo rawurlencode($fFile); ?>" target="_blank"><?php echo htmlspecialchars($fFile); ?></a>
-                                <br><span style="color:#7a8c84;">If you choose a new file, it will replace this one. Otherwise the current file is kept.</span>
-                            </div>
-                        <?php } ?>
-
-                        <div class="ar-drop" id="arDrop">
-                            <div class="ar-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                            <p class="ar-drop-text">Drag &amp; drop file here or <span>browse</span></p>
-                            <p class="ar-drop-sub">HTML, DOC, DOCX, PDF, ZIP, images, etc.</p>
-                        </div>
-
-                        <input type="file" id="arFile" name="report_file" class="ar-file-input">
-
-                        <div class="ar-file-box" id="arFileBox">
-                            <div class="ar-file-ico"><i class="fas fa-file" id="arFileIcon"></i></div>
-                            <div class="ar-file-info">
-                                <div class="ar-file-name" id="arFileName"></div>
-                                <div class="ar-file-size" id="arFileSize"></div>
-                            </div>
-                            <button type="button" class="ar-file-remove" id="arFileRemove" title="Remove file">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-
-                        <div class="ar-err" id="errFile">Please choose a file.</div>
-                    </div>
+                <div class="ar-field">
+                    <label for="arText">Text below the tables <span class="opt">(optional)</span></label>
+                    <textarea id="arText" name="report_text" class="ar-textarea" placeholder="Write the text for (C), (D) ... here"><?php echo htmlspecialchars($fText); ?></textarea>
+                    <div class="ar-hint"><span>Plain text. Use "## " for an underlined sub-heading, "# " for a main heading, **text** for bold, "1. " for numbered lines, "- " for bullet lines and "&gt;&gt; text" for the bold sign-off line. Leave one blank line between blocks.</span><span id="arCount">0 characters</span></div>
+                    <div class="ar-err" id="errContent">Please add a header, a table or some text.</div>
                 </div>
-
 
                 <div class="ar-actions">
                     <button type="submit" class="ar-btn ar-btn-primary">
@@ -592,46 +560,50 @@ $design->writeContentPageStyles();
                         <thead>
                             <tr>
                                 <th style="width:110px;">Date</th>
-                                <th>Title</th>
-                                <th style="width:100px;">Type</th>
-                                <th style="width:120px;">Actions</th>
+                                <th>Title / Header</th>
+                                <th style="width:100px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($rows as $r) {
+                            <?php foreach ($rows as $idx => $r) {
                                 $rid = (int)$r['id'];
                                 $isRowEditing = ($isEdit && (int)$editRow['id'] === $rid);
                                 $editUrl = 'turf-console/deductionNormsManager.php?edit=' . $rid . ($page > 1 ? '&page=' . $page : '');
 
-                                if ($r['type'] === 'file') {
-                                    $sub = (string)$r['file_name'];
-                                } else {
-                                    $plain = trim(strip_tags((string)$r['content_text']));
-                                    $sub = (function_exists('mb_substr') ? mb_substr($plain, 0, 90) : substr($plain, 0, 90)) . (strlen($plain) > 90 ? '...' : '');
+                                $titleTxt  = trim((string)$r['title']);
+                                $headerTxt = trim((string)$r['header_text']);
+                                $plain     = trim(strip_tags((string)$r['content_text']));
+                                $snip      = (function_exists('mb_substr') ? mb_substr($plain, 0, 90) : substr($plain, 0, 90)) . (strlen($plain) > 90 ? '...' : '');
+
+                                $tArr   = json_decode((string)$r['tables_json'], true);
+                                $tCount = is_array($tArr) ? count($tArr) : 0;
+
+                                $main = $titleTxt !== '' ? $titleTxt : ($headerTxt !== '' ? $headerTxt : ($snip !== '' ? $snip : 'Deduction Norms'));
+
+                                $subParts = array();
+                                if ($titleTxt !== '' && $headerTxt !== '') {
+                                    $subParts[] = $headerTxt;
                                 }
+                                if ($tCount > 0) {
+                                    $subParts[] = $tCount . ($tCount === 1 ? ' table' : ' tables');
+                                }
+                                if ($snip !== '' && $snip !== $main) {
+                                    $subParts[] = $snip;
+                                }
+                                $sub = implode('  |  ', $subParts);
+
+                                $isLive = ($page === 1 && $idx === 0);
                             ?>
                                 <tr class="<?php echo $isRowEditing ? 'is-editing' : ''; ?>">
                                     <td><?php echo htmlspecialchars(date('d M Y', strtotime($r['report_date']))); ?></td>
                                     <td>
-                                        <div class="ar-t-title"><?php echo htmlspecialchars($r['title']); ?></div>
+                                        <div class="ar-t-title"><?php echo htmlspecialchars($main); ?><?php if ($isLive) { ?><span class="ar-live">LIVE</span><?php } ?></div>
                                         <?php if ($sub !== '') { ?>
                                             <div class="ar-t-sub"><?php echo htmlspecialchars($sub); ?></div>
                                         <?php } ?>
                                     </td>
                                     <td>
-                                        <?php if ($r['type'] === 'file') { ?>
-                                            <span class="ar-badge file"><i class="fas fa-file"></i> File</span>
-                                        <?php } else { ?>
-                                            <span class="ar-badge text"><i class="fas fa-align-left"></i> Text</span>
-                                        <?php } ?>
-                                    </td>
-                                    <td>
                                         <div class="ar-act">
-                                            <?php if ($r['type'] === 'file' && $r['file_name'] !== '') { ?>
-                                                <a class="ar-icon-btn" title="Open file" target="_blank" href="news/<?php echo rawurlencode($r['file_name']); ?>">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </a>
-                                            <?php } ?>
                                             <a class="ar-icon-btn" title="Edit" href="<?php echo htmlspecialchars($editUrl); ?>">
                                                 <i class="fas fa-pen"></i>
                                             </a>
@@ -654,7 +626,7 @@ $design->writeContentPageStyles();
 
                 <?php if ($totalPages > 1) {
 
-                                        $show = array();
+                    $show = array();
                     for ($i = 1; $i <= $totalPages; $i++) {
                         if ($i === 1 || $i === $totalPages || abs($i - $page) <= 2) {
                             $show[] = $i;
@@ -699,29 +671,41 @@ $design->writeContentPageStyles();
     <script type="text/javascript">
         (function() {
 
-            var existingFile = <?php echo json_encode($fFile !== ''); ?>;
+            var DEFAULT_COL1 = 'Odds on withdrawn Horse/s at the time of Withdrawal';
+            var DEFAULT_COL2 = 'Percentage of deductions';
 
-            var form     = document.getElementById('arForm');
-            var dateIn   = document.getElementById('arDate');
-            var titleIn  = document.getElementById('arTitle');
-            var typeSel  = document.getElementById('arType');
-            var secText  = document.getElementById('secText');
-            var secFile  = document.getElementById('secFile');
-            var txtArea  = document.getElementById('arText');
-            var counter  = document.getElementById('arCount');
-            var drop     = document.getElementById('arDrop');
-            var fileIn   = document.getElementById('arFile');
-            var fileBox  = document.getElementById('arFileBox');
-            var fileName = document.getElementById('arFileName');
-            var fileSize = document.getElementById('arFileSize');
-            var fileIcon = document.getElementById('arFileIcon');
-            var fileRem  = document.getElementById('arFileRemove');
-            var resetBtn = document.getElementById('arReset');
-            var msgBox   = document.getElementById('arMsg');
-            var msgTimer = null;
+            var initialTables = <?php echo json_encode($fTables, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+
+            var emptyTables = [{
+                heading: '',
+                text: '',
+                col1: DEFAULT_COL1,
+                col2: DEFAULT_COL2,
+                rows: [{ c1: '', c2: '' }]
+            }];
+
+            var form       = document.getElementById('arForm');
+            var dateIn     = document.getElementById('arDate');
+            var headerIn   = document.getElementById('arHeader');
+            var txtArea    = document.getElementById('arText');
+            var counter    = document.getElementById('arCount');
+            var secBox     = document.getElementById('arSections');
+            var addSecBtn  = document.getElementById('arAddSection');
+            var tablesJson = document.getElementById('arTablesJson');
+            var resetBtn   = document.getElementById('arReset');
+            var msgBox     = document.getElementById('arMsg');
+            var msgTimer   = null;
 
             function $(id) {
                 return document.getElementById(id);
+            }
+
+            function esc(s) {
+                return String(s)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
             }
 
             function showMsg(text, type) {
@@ -738,207 +722,283 @@ $design->writeContentPageStyles();
                 var e = $(errId);
                 if (show) {
                     e.classList.add('show');
+                    if (inputEl) inputEl.classList.add('invalid');
                 } else {
                     e.classList.remove('show');
+                    if (inputEl) inputEl.classList.remove('invalid');
                 }
-                if (inputEl) {
-                    if (show) {
-                        inputEl.classList.add('invalid');
-                    } else {
-                        inputEl.classList.remove('invalid');
-                    }
-                }
-            }
-
-            function formatSize(b) {
-                if (b < 1024) return b + ' B';
-                if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
-                if (b < 1073741824) return (b / 1048576).toFixed(2) + ' MB';
-                return (b / 1073741824).toFixed(2) + ' GB';
-            }
-
-            function iconFor(name) {
-                var ext = (name.split('.').pop() || '').toLowerCase();
-                if (ext === 'pdf') return 'fas fa-file-pdf';
-                if (ext === 'doc' || ext === 'docx') return 'fas fa-file-word';
-                if (ext === 'xls' || ext === 'xlsx' || ext === 'csv') return 'fas fa-file-excel';
-                if (ext === 'zip' || ext === 'rar' || ext === '7z') return 'fas fa-file-archive';
-                if (ext === 'htm' || ext === 'html') return 'fas fa-file-code';
-                if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].indexOf(ext) !== -1) return 'fas fa-file-image';
-                return 'fas fa-file';
-            }
-
-            function showFile(file) {
-                fileName.textContent = file.name;
-                fileSize.textContent = formatSize(file.size);
-                fileIcon.className = iconFor(file.name);
-                fileBox.classList.add('show');
-                setErr('errFile', drop, false);
-            }
-
-            function clearFile() {
-                fileIn.value = '';
-                fileBox.classList.remove('show');
-            }
-
-            function isValidDate(str) {
-                if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) return false;
-                var y = parseInt(str.substr(0, 4), 10);
-                var m = parseInt(str.substr(5, 2), 10);
-                var d = parseInt(str.substr(8, 2), 10);
-                if (y < 1900 || y > 2100) return false;
-                var dt = new Date(y, m - 1, d);
-                return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
             }
 
             function updateCount() {
                 counter.textContent = txtArea.value.length + ' characters';
             }
 
-            // Date auto-format while typing
-            dateIn.addEventListener('input', function() {
-                var digits = this.value.replace(/\D/g, '').slice(0, 8);
-                var out = digits;
-                if (digits.length > 6) {
-                    out = digits.slice(0, 4) + '-' + digits.slice(4, 6) + '-' + digits.slice(6);
-                } else if (digits.length > 4) {
-                    out = digits.slice(0, 4) + '-' + digits.slice(4);
+            function toNode(html) {
+                var d = document.createElement('div');
+                d.innerHTML = html;
+                return d.firstChild;
+            }
+
+            // ---------- TABLE BUILDER ----------
+            function rowHtml(r) {
+                r = r || {};
+                return '<div class="ar-trow">' +
+                    '<input type="text" class="ar-input r-c1" maxlength="500" placeholder="e.g. If the Current Odds are EVENS or ODDS ON" value="' + esc(r.c1 || '') + '">' +
+                    '<input type="text" class="ar-input r-c2" maxlength="200" placeholder="e.g. 50%" value="' + esc(r.c2 || '') + '">' +
+                    '<button type="button" class="ar-icon-btn del r-remove" title="Remove row"><i class="fas fa-times"></i></button>' +
+                    '</div>';
+            }
+
+            function sectionHtml(s) {
+                s = s || {};
+                var rows = (s.rows && s.rows.length) ? s.rows : [{ c1: '', c2: '' }];
+                var rowsHtml = '';
+                for (var i = 0; i < rows.length; i++) {
+                    rowsHtml += rowHtml(rows[i]);
                 }
-                this.value = out;
-                if (isValidDate(out)) setErr('errDate', this, false);
+
+                return '<div class="ar-sec">' +
+                    '<div class="ar-sec-head">' +
+                        '<span class="ar-sec-title">Table</span>' +
+                        '<button type="button" class="ar-icon-btn del s-remove" title="Remove this table"><i class="fas fa-trash"></i></button>' +
+                    '</div>' +
+                    '<div class="ar-field"><label>Table heading</label>' +
+                        '<input type="text" class="ar-input s-heading" maxlength="300" placeholder="e.g. (A) Deduction for WIN bets" value="' + esc(s.heading || '') + '"></div>' +
+                    '<div class="ar-field"><label>Text below the heading</label>' +
+                        '<textarea class="ar-textarea ar-textarea-sm s-text" placeholder="e.g. The percentage rate of deduction on WIN bets ...">' + esc(s.text || '') + '</textarea></div>' +
+                    '<div class="ar-row">' +
+                        '<div class="ar-field"><label>Column 1 heading</label>' +
+                            '<input type="text" class="ar-input s-col1" maxlength="300" value="' + esc(s.col1 || DEFAULT_COL1) + '"></div>' +
+                        '<div class="ar-field"><label>Column 2 heading</label>' +
+                            '<input type="text" class="ar-input s-col2" maxlength="300" value="' + esc(s.col2 || DEFAULT_COL2) + '"></div>' +
+                    '</div>' +
+                    '<div class="ar-rows-label">Rows</div>' +
+                    '<div class="ar-rows">' + rowsHtml + '</div>' +
+                    '<div class="ar-sec-actions">' +
+                        '<button type="button" class="ar-btn ar-btn-secondary ar-btn-sm s-add-row"><i class="fas fa-plus"></i> Add row</button>' +
+                        '<button type="button" class="ar-btn ar-btn-secondary ar-btn-sm s-bulk-toggle"><i class="fas fa-paste"></i> Paste multiple rows</button>' +
+                    '</div>' +
+                    '<div class="ar-bulk">' +
+                        '<textarea class="ar-textarea ar-textarea-sm s-bulk-text" placeholder="One row per line:&#10;Column 1 text | Column 2 text"></textarea>' +
+                        '<button type="button" class="ar-btn ar-btn-primary ar-btn-sm s-bulk-add"><i class="fas fa-plus"></i> Add these rows</button>' +
+                    '</div>' +
+                    '</div>';
+            }
+
+            function renumber() {
+                var secs = secBox.querySelectorAll('.ar-sec');
+                for (var i = 0; i < secs.length; i++) {
+                    secs[i].querySelector('.ar-sec-title').textContent = 'Table ' + (i + 1);
+                }
+            }
+
+            function addSection(s) {
+                var node = toNode(sectionHtml(s));
+                secBox.appendChild(node);
+                renumber();
+                return node;
+            }
+
+            function buildSections(list) {
+                secBox.innerHTML = '';
+                for (var i = 0; i < list.length; i++) {
+                    addSection(list[i]);
+                }
+            }
+
+            function collectTables() {
+                var out = [];
+                var secs = secBox.querySelectorAll('.ar-sec');
+
+                for (var i = 0; i < secs.length; i++) {
+                    var sec = secs[i];
+                    var heading = sec.querySelector('.s-heading').value.trim();
+                    var text    = sec.querySelector('.s-text').value.trim();
+                    var col1    = sec.querySelector('.s-col1').value.trim();
+                    var col2    = sec.querySelector('.s-col2').value.trim();
+                    var rowEls  = sec.querySelectorAll('.ar-trow');
+                    var rows    = [];
+
+                    for (var j = 0; j < rowEls.length; j++) {
+                        var c1 = rowEls[j].querySelector('.r-c1').value.trim();
+                        var c2 = rowEls[j].querySelector('.r-c2').value.trim();
+                        if (c1 === '' && c2 === '') continue;
+                        rows.push({ c1: c1, c2: c2 });
+                    }
+
+                    if (heading === '' && text === '' && rows.length === 0) continue;
+
+                    out.push({
+                        heading: heading,
+                        text: text,
+                        col1: col1 || DEFAULT_COL1,
+                        col2: col2 || DEFAULT_COL2,
+                        rows: rows
+                    });
+                }
+
+                return out;
+            }
+
+            // Clicks inside the table builder (remove, add row, paste rows)
+            secBox.addEventListener('click', function(e) {
+                var btn = e.target;
+                while (btn && btn !== secBox && btn.tagName !== 'BUTTON') {
+                    btn = btn.parentNode;
+                }
+                if (!btn || btn === secBox) return;
+
+                var sec = btn;
+                while (sec && sec !== secBox && !(sec.classList && sec.classList.contains('ar-sec'))) {
+                    sec = sec.parentNode;
+                }
+                if (!sec || sec === secBox) return;
+
+                var rowsBox = sec.querySelector('.ar-rows');
+
+                if (btn.classList.contains('s-remove')) {
+                    if (confirm('Remove this table?')) {
+                        secBox.removeChild(sec);
+                        renumber();
+                    }
+                    return;
+                }
+
+                if (btn.classList.contains('s-add-row')) {
+                    var newRow = toNode(rowHtml());
+                    rowsBox.appendChild(newRow);
+                    newRow.querySelector('.r-c1').focus();
+                    return;
+                }
+
+                if (btn.classList.contains('r-remove')) {
+                    var row = btn.parentNode;
+                    if (rowsBox.querySelectorAll('.ar-trow').length > 1) {
+                        rowsBox.removeChild(row);
+                    } else {
+                        row.querySelector('.r-c1').value = '';
+                        row.querySelector('.r-c2').value = '';
+                    }
+                    return;
+                }
+
+                if (btn.classList.contains('s-bulk-toggle')) {
+                    sec.querySelector('.ar-bulk').classList.toggle('open');
+                    return;
+                }
+
+                if (btn.classList.contains('s-bulk-add')) {
+                    var bulk  = sec.querySelector('.s-bulk-text');
+                    var lines = bulk.value.split(/\r?\n/);
+                    var added = 0;
+
+                    // remove the blank rows first
+                    var existing = rowsBox.querySelectorAll('.ar-trow');
+                    for (var j = 0; j < existing.length; j++) {
+                        var v1 = existing[j].querySelector('.r-c1').value.trim();
+                        var v2 = existing[j].querySelector('.r-c2').value.trim();
+                        if (v1 === '' && v2 === '') {
+                            rowsBox.removeChild(existing[j]);
+                        }
+                    }
+
+                    for (var k = 0; k < lines.length; k++) {
+                        var line = lines[k].trim();
+                        if (line === '') continue;
+
+                        var idx = line.lastIndexOf('|');
+                        var c1 = line;
+                        var c2 = '';
+                        if (idx !== -1) {
+                            c1 = line.substring(0, idx).trim();
+                            c2 = line.substring(idx + 1).trim();
+                        }
+
+                        rowsBox.appendChild(toNode(rowHtml({ c1: c1, c2: c2 })));
+                        added++;
+                    }
+
+                    if (rowsBox.querySelectorAll('.ar-trow').length === 0) {
+                        rowsBox.appendChild(toNode(rowHtml()));
+                    }
+
+                    bulk.value = '';
+                    sec.querySelector('.ar-bulk').classList.remove('open');
+                    if (!added) {
+                        showMsg('Nothing to add. Write one row per line.', 'error');
+                    }
+                    return;
+                }
             });
 
-            // Type dropdown
-            function applyType() {
-                var v = typeSel.value;
-                secText.classList.toggle('active', v === 'text');
-                secFile.classList.toggle('active', v === 'file');
-                setErr('errText', txtArea, false);
-                setErr('errFile', drop, false);
-                if (v) setErr('errType', typeSel, false);
-            }
-            typeSel.addEventListener('change', applyType);
+            addSecBtn.addEventListener('click', function() {
+                var node = addSection({ col1: DEFAULT_COL1, col2: DEFAULT_COL2, rows: [{ c1: '', c2: '' }] });
+                node.querySelector('.s-heading').focus();
+            });
 
-            // Text counter
+            // ---------- OTHER FIELDS ----------
+            dateIn.addEventListener('change', function() {
+                if (this.value) setErr('errDate', this, false);
+            });
+
+            headerIn.addEventListener('input', function() {
+                setErr('errContent', null, false);
+            });
+
             txtArea.addEventListener('input', function() {
                 updateCount();
-                if (txtArea.value.trim()) setErr('errText', txtArea, false);
+                setErr('errContent', null, false);
             });
 
-            // File: click and drag/drop
-            drop.addEventListener('click', function() {
-                fileIn.click();
-            });
-
-            fileIn.addEventListener('change', function() {
-                if (fileIn.files && fileIn.files[0]) {
-                    showFile(fileIn.files[0]);
-                }
-            });
-
-            ['dragenter', 'dragover'].forEach(function(ev) {
-                drop.addEventListener(ev, function(e) {
-                    e.preventDefault();
-                    drop.classList.add('dragover');
-                });
-            });
-            ['dragleave', 'drop'].forEach(function(ev) {
-                drop.addEventListener(ev, function(e) {
-                    e.preventDefault();
-                    drop.classList.remove('dragover');
-                });
-            });
-            drop.addEventListener('drop', function(e) {
-                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
-                    try {
-                        fileIn.files = e.dataTransfer.files;
-                    } catch (err) {}
-                    showFile(e.dataTransfer.files[0]);
-                }
-            });
-
-            fileRem.addEventListener('click', clearFile);
-
-            titleIn.addEventListener('input', function() {
-                if (this.value.trim()) setErr('errTitle', this, false);
-            });
-
-            // Reset (Add mode only)
             if (resetBtn) {
                 resetBtn.addEventListener('click', function() {
                     form.reset();
-                    clearFile();
+                    buildSections(emptyTables);
                     updateCount();
-                    applyType();
-                    ['errDate', 'errTitle', 'errType', 'errText', 'errFile'].forEach(function(id) {
-                        setErr(id, null, false);
-                    });
-                    [dateIn, titleIn, typeSel, txtArea, drop].forEach(function(el) {
-                        el.classList.remove('invalid');
-                    });
+                    setErr('errDate', dateIn, false);
+                    setErr('errContent', null, false);
                 });
             }
 
-            // Submit: frontend validation, then normal POST
             form.addEventListener('submit', function(e) {
                 var ok = true;
 
-                if (!isValidDate(dateIn.value)) {
+                if (!dateIn.value) {
                     setErr('errDate', dateIn, true);
                     ok = false;
-                } else {
-                    setErr('errDate', dateIn, false);
-                }
-                if (!titleIn.value.trim()) {
-                    setErr('errTitle', titleIn, true);
-                    ok = false;
-                } else {
-                    setErr('errTitle', titleIn, false);
-                }
-                if (!typeSel.value) {
-                    setErr('errType', typeSel, true);
-                    ok = false;
-                } else {
-                    setErr('errType', typeSel, false);
                 }
 
-                if (typeSel.value === 'text') {
-                    if (!txtArea.value.trim()) {
-                        setErr('errText', txtArea, true);
-                        ok = false;
-                    } else {
-                        setErr('errText', txtArea, false);
-                    }
-                }
-                if (typeSel.value === 'file') {
-                    var hasNew = fileIn.files && fileIn.files.length;
-                    if (!hasNew && !existingFile) {
-                        setErr('errFile', drop, true);
-                        ok = false;
-                    } else {
-                        setErr('errFile', drop, false);
-                    }
+                var tables = collectTables();
+                var hasContent = headerIn.value.trim() !== '' || tables.length > 0 || txtArea.value.trim() !== '';
+
+                if (!hasContent) {
+                    setErr('errContent', null, true);
+                    ok = false;
+                } else {
+                    setErr('errContent', null, false);
                 }
 
                 if (!ok) {
                     e.preventDefault();
-                    showMsg('Please fill all required fields correctly.', 'error');
+                    showMsg('Please fill all required fields.', 'error');
+                    return;
                 }
+
+                tablesJson.value = tables.length ? JSON.stringify(tables) : '';
             });
 
-            // Delete confirm
             var delForms = document.querySelectorAll('.arDelForm');
             for (var i = 0; i < delForms.length; i++) {
                 delForms[i].addEventListener('submit', function(e) {
-                    if (!confirm('Are you sure you want to delete this entry? This cannot be undone (the file will also be deleted).')) {
+                    if (!confirm('Are you sure you want to delete this entry? This cannot be undone.')) {
                         e.preventDefault();
                     }
                 });
             }
 
-            // initial state (in edit mode the fields are pre-filled)
+            // initial state
+            buildSections(initialTables);
             updateCount();
-            applyType();
 
         })();
     </script>

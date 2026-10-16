@@ -1,75 +1,81 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+
+import { getComeRacingServices } from "../../../services/Comeracingservicesservice";
 import "./RaceCourseServicesOthers.css";
 
+const DEFAULT_HEADING = "Race Course Services";
+
 export default function RaceCourseServicesOthers() {
-
+ 
+    const [paragraphs, setParagraphs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+ 
+    useEffect(() => {
+        let active = true;
+ 
+        async function load() {
+            try {
+                const data = await getComeRacingServices();
+                if (active) setParagraphs(data.paragraphs);
+            } catch (err) {
+                if (active) setError(err.message || "Unable to load race course services details.");
+            } finally {
+                if (active) setLoading(false);
+            }
+        }
+ 
+        load();
+        return () => { active = false; };
+    }, []);
+ 
     return (
-
+ 
         <section className="aboutPage">
-
+ 
             <div className="aboutContainer">
-
+ 
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">Race Course Race Course Services</h1>
-
+                    <h1 className="aboutHeading">Race Course Services</h1>
+ 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
                         <FaHorseHead className="dividerIcon" />
                         <span className="dividerLine dividerLineRight"></span>
                     </div>
                 </div>
-
+ 
                 <div className="aboutCard">
-
-                    <h2 className="rcsSubHeading">
+ 
+                    {/* <h2 className="rcsSubHeading">
                         Making it a pleasurable outing for the enthusiasts
-                    </h2>
-
+                    </h2> */}
+ 
                     <div className="aboutContent">
-
-                        <p>
-                            The Royal Western India Turf Club has provided a number of
-                            facilities for race goers to have a good day at the race
-                            course. Apart from exclusive seating facility for members,
-                            the needs of general public are also catered to in great
-                            detail. For those buying the lawn badge and coming with
-                            their family, there is a huge park which has facilities for
-                            children to engage themselves in recreational activities.
-                        </p>
-
-                        <p>
-                            The RWITC premises are also a veritable gourmet's delight.
-                            Food Lovers can feast themselves on the multiple choices
-                            that are available. Beginning with South India's delicacies
-                            to the all-India favourite, the Biryani, the menu goes far
-                            beyond the traditional. Tastiest sandwiches, pastries et al
-                            are available. The hugely popular Chaats and Paani Puri
-                            stalls provide variety and spice.
-                        </p>
-
-                        <p>
-                            For the members, there is also the Mini Club House,
-                            complete with all the facilities that are a feature of any
-                            good Service Club.
-                        </p>
-
-                        <p>
-                            On important race days, race goers will have the added
-                            pleasure of watching live fashion shows, enjoy food
-                            festivals, life style events that all contribute to make
-                            for an enjoyable day out at racing.
-                        </p>
-
+ 
+                        {loading && <p>Loading...</p>}
+ 
+                        {!loading && error && <p>{error}</p>}
+ 
+                        {!loading && !error && paragraphs.length === 0 && (
+                            <p>Details will be updated soon.</p>
+                        )}
+ 
+                        {!loading && !error && paragraphs.map((text, index) => (
+                            <p key={index}>{text}</p>
+                        ))}
+ 
                     </div>
-
+ 
                 </div>
-
+ 
             </div>
-
+ 
         </section>
-
+ 
     );
-
+ 
 }

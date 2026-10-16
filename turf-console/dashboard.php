@@ -1669,15 +1669,121 @@ $design->writeContentPageStyles();
 
                 <?php } ?>
 
+                <!-- APPLICATION FORMS MANAGER -->
+                <?php if (hasModuleAccess('application_forms')) { ?>
+                    <a class="card-item"
+                        href="turf-console/applicationFormsManager.php">
 
+                        <span class="card-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Application Forms Manager
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+                    </a>
+                <?php } ?>
+
+
+                <!-- PARTNERS - OVERVIEW -->
+
+                <?php if (hasModuleAccess('partners_overview')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/partnersOverviewManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-eye"></i>
+                        </span>
+
+                        <span class="card-title">
+                           Partners Overview
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- PARTNERS - SPONSOR'S PRIVILEGES -->
+
+                <?php if (hasModuleAccess('partners_sponsor_privileges')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/partnersSponsorPrivilegesManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-crown"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Sponsor's Privileges
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- PARTNERS - ADVERTISING & SPONSORSHIP OPPORTUNITIES -->
+
+                <?php if (hasModuleAccess('partners_advertising')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/partnersAdvertisingManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-ad"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Advertising &amp; Sponsorship Opportunities
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- PARTNERS - CONTACT US -->
+
+                <?php if (hasModuleAccess('partners_contact_us')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/partnersContactUsManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-address-book"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Contact Us
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
                 <!-- MEDICATION RULES -->
 
                 <?php if (hasModuleAccess('medication_rules')) { ?>
 
                     <a
                         class="card-item"
-                        href="turf-console/medicationRulesManager.php"
-                    >
+                        href="turf-console/medicationRulesManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-pills"></i>
@@ -1700,8 +1806,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/beginnersGuideManager.php"
-                    >
+                        href="turf-console/beginnersGuideManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-book-open"></i>
@@ -1724,8 +1829,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/rulesOfRacingManager.php"
-                    >
+                        href="turf-console/rulesOfRacingManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-gavel"></i>
@@ -1748,8 +1852,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/racingCalendarManager.php"
-                    >
+                        href="turf-console/racingCalendarManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-calendar-days"></i>
@@ -1772,8 +1875,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/jockeyRidingWeightManager.php"
-                    >
+                        href="turf-console/jockeyRidingWeightManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-weight-scale"></i>
@@ -1796,8 +1898,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/memorandumArticlesManager.php"
-                    >
+                        href="turf-console/memorandumArticlesManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-scroll"></i>
@@ -1820,8 +1921,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/readyReckonerManager.php"
-                    >
+                        href="turf-console/readyReckonerManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-calculator"></i>
@@ -1844,8 +1944,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/recordTimingsManager.php"
-                    >
+                        href="turf-console/recordTimingsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-stopwatch"></i>
@@ -1868,8 +1967,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/standardTimingsManager.php"
-                    >
+                        href="turf-console/standardTimingsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-clock"></i>
@@ -1892,8 +1990,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/beginnersLuckManager.php"
-                    >
+                        href="turf-console/beginnersLuckManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-clover"></i>
@@ -1916,8 +2013,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/wageringTermsManager.php"
-                    >
+                        href="turf-console/wageringTermsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-coins"></i>
@@ -1940,8 +2036,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/bettingPoolsManager.php"
-                    >
+                        href="turf-console/bettingPoolsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-layer-group"></i>
@@ -1964,8 +2059,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/nationalTotePoolsManager.php"
-                    >
+                        href="turf-console/nationalTotePoolsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-globe"></i>
@@ -1988,8 +2082,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/bettingChannelsManager.php"
-                    >
+                        href="turf-console/bettingChannelsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-tower-broadcast"></i>
@@ -2012,8 +2105,7 @@ $design->writeContentPageStyles();
 
                     <a
                         class="card-item"
-                        href="turf-console/deductionNormsManager.php"
-                    >
+                        href="turf-console/deductionNormsManager.php">
 
                         <span class="card-icon">
                             <i class="fas fa-percent"></i>
@@ -2029,7 +2121,196 @@ $design->writeContentPageStyles();
 
                 <?php } ?>
 
+                <?php if (hasModuleAccess('club_membership_privileges')) { ?>
+                    <a class="card-item" href="turf-console/clubMembershipPrivilegesManager.php">
+                        <span class="card-icon"><i class="fas fa-horse-head"></i></span>
+                        <span class="card-title">Club Membership Privileges</span>
+                        <i class="fas fa-chevron-right card-arrow"></i>
+                    </a>
+                <?php } ?>
 
+                <?php if (hasModuleAccess('affiliated_clubs')) { ?>
+                    <a class="card-item" href="turf-console/affiliatedClubsManager.php">
+                        <span class="card-icon"><i class="fas fa-handshake-angle"></i></span>
+                        <span class="card-title">Affiliated Clubs with RWITC</span>
+                        <i class="fas fa-chevron-right card-arrow"></i>
+                    </a>
+                <?php } ?>
+
+                <?php if (hasModuleAccess('membership_categories')) { ?>
+                    <a class="card-item" href="turf-console/membershipCategoriesManager.php">
+                        <span class="card-icon"><i class="fas fa-users"></i></span>
+                        <span class="card-title">Membership Categories</span>
+                        <i class="fas fa-chevron-right card-arrow"></i>
+                    </a>
+                <?php } ?>
+
+                <!-- IMPORTANCE OF BEING A MEMBER -->
+
+                <?php if (hasModuleAccess('membership_importance')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/membershipImportanceManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-id-card"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Membership- Overview
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+                <!-- CHART PDF UPLOAD -->
+                <?php if (hasModuleAccess('chart_pdf_upload')) { ?>
+                    <a
+                        class="card-item"
+                        href="turf-console/chartPdfUpload.php">
+                        <span class="card-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Chart PDF Upload
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+                    </a>
+                <?php } ?>
+
+                <!-- PROSPECTUS PDF UPLOAD -->
+                <?php if (hasModuleAccess('prospectus_pdf_upload')) { ?>
+                    <a
+                        class="card-item"
+                        href="turf-console/prospectusPdfUpload.php">
+                        <span class="card-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Prospectus PDF Upload
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+                    </a>
+                <?php } ?>
+
+                <!-- WAGERING MANAGER - OVERVIEW -->
+                <?php if (hasModuleAccess('wagering_overview_docs')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/wageringOverviewManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Wagering Manager - Overview
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+                <!-- COME RACING - OVERVIEW -->
+
+                <?php if (hasModuleAccess('come_racing_overview')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/comeRacingOverviewManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-flag-checkered"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Come Racing - Overview
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- COME RACING - MUMBAI RACE COURSE -->
+
+                <?php if (hasModuleAccess('come_racing_mumbai')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/comeRacingMumbaiManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-location-dot"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Come Racing - Mumbai Race Course
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- COME RACING - PUNE RACE COURSE -->
+
+                <?php if (hasModuleAccess('come_racing_pune')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/comeRacingPuneManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-map-location-dot"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Come Racing - Pune Race Course
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
+
+
+                <!-- COME RACING - RACE COURSE SERVICES & OTHERS -->
+
+                <?php if (hasModuleAccess('come_racing_services')) { ?>
+
+                    <a
+                        class="card-item"
+                        href="turf-console/comeRacingServicesManager.php">
+
+                        <span class="card-icon">
+                            <i class="fas fa-bell-concierge"></i>
+                        </span>
+
+                        <span class="card-title">
+                            Come Racing - Race Course Services &amp; Others
+                        </span>
+
+                        <i class="fas fa-chevron-right card-arrow"></i>
+
+                    </a>
+
+                <?php } ?>
             </div>
 
         <?php } /* end else (normal dashboard) */ ?>

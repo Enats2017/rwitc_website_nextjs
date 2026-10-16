@@ -1,48 +1,131 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getPdfLinks } from "../../../services/pdfService";
 import "./ReadyReckoner.css";
 
-// DUMMY DATA — replace this array with the API response later.
-const readyReckonerData = [
-    { weight: "49.00", I: 80, II: 60, III: 40, IV: 20, V: 4 },
-    { weight: "49.50", I: 81, II: 61, III: 41, IV: 21, V: 5 },
-    { weight: "50.00", I: 82, II: 62, III: 42, IV: 22, V: 6 },
-    { weight: "50.50", I: 83, II: 63, III: 43, IV: 23, V: 7 },
-    { weight: "51.00", I: 84, II: 64, III: 44, IV: 24, V: 8 },
-    { weight: "51.50", I: 85, II: 65, III: 45, IV: 25, V: 9 },
-    { weight: "52.00", I: 86, II: 66, III: 46, IV: 26, V: 10 },
-    { weight: "52.50", I: 87, II: 67, III: 47, IV: 27, V: 11 },
-    { weight: "53.00", I: 88, II: 68, III: 48, IV: 28, V: 12 },
-    { weight: "53.50", I: 89, II: 69, III: 49, IV: 29, V: 13 },
-    { weight: "54.00", I: 90, II: 70, III: 50, IV: 30, V: 14 },
-    { weight: "54.50", I: 91, II: 71, III: 51, IV: 31, V: 15 },
-    { weight: "55.00", I: 92, II: 72, III: 52, IV: 32, V: 16 },
-    { weight: "55.50", I: 93, II: 73, III: 53, IV: 33, V: 17 },
-    { weight: "56.00", I: 94, II: 74, III: 54, IV: 34, V: 18 },
-    { weight: "56.50", I: 95, II: 75, III: 55, IV: 35, V: 19 },
-    { weight: "57.00", I: 96, II: 76, III: 56, IV: 36, V: 20 },
-    { weight: "57.50", I: 97, II: 77, III: 57, IV: 37, V: 21 },
-    { weight: "58.00", I: 98, II: 78, III: 58, IV: 38, V: 22 },
-    { weight: "58.50", I: 99, II: 79, III: 59, IV: 39, V: 23 },
-    { weight: "59.00", I: 100, II: 80, III: 60, IV: 40, V: 24 },
-    { weight: "59.50", I: 101, II: 81, III: 61, IV: 41, V: 25 },
-    { weight: "60.00", I: 102, II: 82, III: 62, IV: 42, V: 26 },
-    { weight: "60.50", I: 103, II: 83, III: 63, IV: 43, V: 27 },
-    { weight: "61.00", I: 104, II: 84, III: 64, IV: 44, V: 28 },
-    { weight: "61.50", I: 105, II: 85, III: 65, IV: 45, V: 29 },
-    { weight: "62.00", I: 106, II: 86, III: 66, IV: 46, V: 30 },
-];
+// Fallback data, used only when no file is uploaded yet or the file cannot be loaded.
+// Same values as the old hardcoded table (49.00 kg to 62.00 kg, step 0.5).
+function buildFallbackRows() {
+    const rows = [];
+    for (let i = 0; i <= 26; i++) {
+        rows.push({
+            weight: (49 + i * 0.5).toFixed(2),
+            I: 80 + i,
+            II: 60 + i,
+            III: 40 + i,
+            IV: 20 + i,
+            V: 4 + i,
+        });
+    }
+    return rows;
+}
 
-const readyReckonerNotes = [
-    "Ratings are in points where 1 point equals 0.5 kg.",
-    "The minimum Top Weight is 59 kgs with Bottom Weight being 49 kgs.",
-    "Starting rating mark for 3 year olds is 30 points for Colts & Geldings and 27 points for Fillies.",
-];
+const FALLBACK = {
+    club: "Royal Western India Turf Club Ltd.",
+    subtitle: "Ready Reckoner",
+    date: "Mumbai: November 10, 2022",
+    notes: [
+        "Ratings are in points where 1 point equals 0.5 kg.",
+        "The minimum Top Weight is 59 kgs with Bottom Weight being 49 kgs.",
+        "Starting rating mark for 3 year olds is 30 points for Colts & Geldings and 27 points for Fillies.",
+    ],
+    rows: buildFallbackRows(),
+};
 
-const readyReckonerDate = "Mumbai: November 10, 2022";
+// Decodes the file bytes. Tries UTF-8 first, falls back to windows-1252 for old text files.
+function decodeBytes(buffer) {
+    const utf8 = new TextDecoder("utf-8").decode(buffer);
+    if (utf8.indexOf("\uFFFD") === -1) {
+        return utf8;
+    }
+    return new TextDecoder("windows-1252").decode(buffer);
+}
+
+// Parses the uploaded text file.
+// Lines like "CLUB: ...", "SUBTITLE: ...", "DATE: ...", "NOTE: ..." are the text parts.
+// Every other non-empty line is a table row: weight, I, II, III, IV, V
+function parseReckonerText(text) {
+    const result = { club: "", subtitle: "", date: "", notes: [], rows: [] };
+    const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
+
+    lines.forEach((rawLine) => {
+        const line = rawLine.trim();
+        if (!line) { return; }
+
+        const meta = line.match(/^(CLUB|SUBTITLE|DATE|NOTE)\s*:\s*(.*)$/i);
+        if (meta) {
+            const key = meta[1].toUpperCase();
+            const value = meta[2].trim();
+            if (key === "CLUB") { result.club = value; }
+            else if (key === "SUBTITLE") { result.subtitle = value; }
+            else if (key === "DATE") { result.date = value; }
+            else if (key === "NOTE" && value) { result.notes.push(value); }
+            return;
+        }
+
+        const parts = line.split(/[,\t|]+/).map((p) => p.trim());
+        if (parts.length >= 6) {
+            result.rows.push({
+                weight: parts[0],
+                I: parts[1],
+                II: parts[2],
+                III: parts[3],
+                IV: parts[4],
+                V: parts[5],
+            });
+        }
+    });
+
+    return result;
+}
 
 export default function ReadyReckoner() {
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function load() {
+            try {
+                // Latest uploaded file link (same service the menu uses)
+                const links = await getPdfLinks();
+                const url = links["ready_reckoner"];
+
+                if (!url || typeof url !== "string") {
+                    if (!cancelled) setData(FALLBACK);
+                    return;
+                }
+
+                const res = await fetch(url);
+                if (!res.ok) { throw new Error("Failed to load file"); }
+
+                const parsed = parseReckonerText(decodeBytes(await res.arrayBuffer()));
+
+                // If the file has no valid table rows, show the fallback instead of an empty table
+                if (parsed.rows.length === 0) {
+                    if (!cancelled) setData(FALLBACK);
+                    return;
+                }
+
+                if (!cancelled) {
+                    setData({
+                        club: parsed.club || FALLBACK.club,
+                        subtitle: parsed.subtitle || FALLBACK.subtitle,
+                        date: parsed.date,
+                        notes: parsed.notes,
+                        rows: parsed.rows,
+                    });
+                }
+            } catch (err) {
+                if (!cancelled) setData(FALLBACK);
+            }
+        }
+
+        load();
+        return () => { cancelled = true; };
+    }, []);
 
     return (
 
@@ -62,50 +145,56 @@ export default function ReadyReckoner() {
 
                 <div className="aboutCard">
 
-                    <div className="reckonerTitleBlock">
-                        <p className="reckonerClubName">Royal Western India Turf Club Ltd.</p>
-                        <p className="reckonerSubTitle">Ready Reckoner</p>
-                    </div>
+                    {!data && <p style={{ textAlign: "center" }}>Loading...</p>}
 
-                    <div className="statsTableWrap">
-                        <table className="statsTable reckonerTable">
-                            <thead>
-                                <tr>
-                                    <th className="colWeight" rowSpan={2}>
-                                        Weight (Kg)
-                                    </th>
-                                    <th colSpan={5}>Class</th>
-                                </tr>
-                                <tr>
-                                    <th>I Rating</th>
-                                    <th>II Rating</th>
-                                    <th>III Rating</th>
-                                    <th>IV Rating</th>
-                                    <th>V Rating</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {readyReckonerData.map((row, index) => (
-                                    <tr key={index}>
-                                        <td className="colWeight">{row.weight}</td>
-                                        <td>{row.I}</td>
-                                        <td>{row.II}</td>
-                                        <td>{row.III}</td>
-                                        <td>{row.IV}</td>
-                                        <td>{row.V}</td>
-                                    </tr>
+                    {data && (
+                        <>
+                            <div className="reckonerTitleBlock">
+                                <p className="reckonerClubName">{data.club}</p>
+                                <p className="reckonerSubTitle">{data.subtitle}</p>
+                            </div>
+
+                            <div className="statsTableWrap">
+                                <table className="statsTable reckonerTable">
+                                    <thead>
+                                        <tr>
+                                            <th className="colWeight" rowSpan={2}>
+                                                Weight (Kg)
+                                            </th>
+                                            <th colSpan={5}>Class</th>
+                                        </tr>
+                                        <tr>
+                                            <th>I Rating</th>
+                                            <th>II Rating</th>
+                                            <th>III Rating</th>
+                                            <th>IV Rating</th>
+                                            <th>V Rating</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {data.rows.map((row, index) => (
+                                            <tr key={index}>
+                                                <td className="colWeight">{row.weight}</td>
+                                                <td>{row.I}</td>
+                                                <td>{row.II}</td>
+                                                <td>{row.III}</td>
+                                                <td>{row.IV}</td>
+                                                <td>{row.V}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="reckonerNotes">
+                                {data.notes.map((note, index) => (
+                                    <p key={index}>{note}</p>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            </div>
 
-                    <div className="reckonerNotes">
-                        {readyReckonerNotes.map((note, index) => (
-                            <p key={index}>{note}</p>
-                        ))}
-                    </div>
-
-                    <p className="reckonerDate">{readyReckonerDate}</p>
+                            {data.date && <p className="reckonerDate">{data.date}</p>}
+                        </>
+                    )}
 
                 </div>
 

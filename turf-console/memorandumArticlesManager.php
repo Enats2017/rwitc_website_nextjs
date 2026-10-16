@@ -4,16 +4,25 @@ include_once('../bootstrap.php');
 require_once("../lib/users.class.php");
 require_once("../lib/userchecks.php");
 require_once("../lib/permissions.php");
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../rwitc_website_api/config/config.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 
 session_start();
 
 $userObj = new Users($db);
 
-// ---------------------------------------------------------------
-// SETTINGS
-// ---------------------------------------------------------------
-$perPage = 6;                                   // records per page
-$newsDir = dirname(__DIR__) . '/news/';         // upload folder
+$pdfType   = 'memorandum_articles';              // must match the key in pdf_registry.php and the "type" column
+$pdfTitle  = 'Memorandum & Articles of Association'; // label shown on this admin page
+$moduleKey = 'memorandum_articles';              // module permission name used by hasModuleAccess()
+$pageFile  = 'memorandumArticlesManager.php';            // this file's own name
+
+$perPage  = 6;                      // records per page
+$s3Folder = 'uploads/club/';        // S3 folder (key prefix) for all PDFs
+
+$sessionKey = 'menupdf_' . $pdfType;   // session key prefix (csrf + flash)
 
 // ---------------------------------------------------------------
 // LOGIN + MODULE ACCESS CHECK
@@ -21,79 +30,137 @@ $newsDir = dirname(__DIR__) . '/news/';         // upload folder
 $secmsg = '';
 if (!isAdminlogin()) {
     $secmsg = "You do not have access to this page.";
-} elseif (!hasModuleAccess('memorandum_articles_docs')) {
+} elseif (!hasModuleAccess($moduleKey)) {
     $secmsg = "You do not have access to this module.";
 }
 
 // CSRF token
-if (empty($_SESSION['maa_csrf'])) {
-    $_SESSION['maa_csrf'] = bin2hex(openssl_random_pseudo_bytes(16));
+if (empty($_SESSION[$sessionKey . '_csrf'])) {
+    $_SESSION[$sessionKey . '_csrf'] = bin2hex(openssl_random_pseudo_bytes(16));
 }
-$csrf = $_SESSION['maa_csrf'];
+$csrf = $_SESSION[$sessionKey . '_csrf'];
 
 // FLASH MESSAGE
 $flash = '';
 $flashType = '';
-if (isset($_SESSION['maa_flash'])) {
-    $flash = $_SESSION['maa_flash']['text'];
-    $flashType = $_SESSION['maa_flash']['type'];
-    unset($_SESSION['maa_flash']);
+if (isset($_SESSION[$sessionKey . '_flash'])) {
+    $flash = $_SESSION[$sessionKey . '_flash']['text'];
+    $flashType = $_SESSION[$sessionKey . '_flash']['type'];
+    unset($_SESSION[$sessionKey . '_flash']);
 }
 
 // ---------------------------------------------------------------
 // HELPERS
 // ---------------------------------------------------------------
-function maaSetFlash($text, $type)
+function menuPdfSetFlash($text, $type)
 {
-    $_SESSION['maa_flash'] = array('text' => $text, 'type' => $type);
+    global $sessionKey;
+    $_SESSION[$sessionKey . '_flash'] = array('text' => $text, 'type' => $type);
 }
 
-function maaDeleteFile($dir, $name)
+// Returns a ready S3 client
+function menuPdfS3Client()
 {
-    $name = basename((string)$name);
-    if ($name !== '' && is_file($dir . $name)) {
-        @unlink($dir . $name);
+    return new S3Client([
+        'version'     => 'latest',
+        'region'      => AWS_REGION,
+        'credentials' => [
+            'key'    => AWS_ACCESS_KEY_ID,
+            'secret' => AWS_SECRET_ACCESS_KEY,
+        ],
+    ]);
+}
+
+// Extracts the S3 key (uploads/club/xxx.pdf) from a stored S3 url
+function menuPdfKeyFromS3Url($s3Url, $folder)
+{
+    $path = (string)parse_url((string)$s3Url, PHP_URL_PATH);
+    $path = urldecode($path);
+    $pos  = strpos($path, $folder);
+    if ($pos === false) {
+        return '';
+    }
+    return substr($path, $pos);
+}
+
+// Deletes a PDF from S3 using its stored S3 url (best effort)
+function menuPdfDeleteFromS3($s3Url, $folder)
+{
+    $key = menuPdfKeyFromS3Url($s3Url, $folder);
+    if ($key === '') {
+        return;
+    }
+    try {
+        menuPdfS3Client()->deleteObject(array(
+            'Bucket' => AWS_BUCKET,
+            'Key'    => $key,
+        ));
+    } catch (AwsException $e) {
+        // ignore, DB is the source of truth
     }
 }
 
-// Handles the upload. Returns the saved file name on success, or '' and sets $err on failure.
-function maaUploadFile($dir, &$err)
+// Validates and uploads the PDF to S3. Returns the S3 url on success, or '' and sets $err on failure.
+function menuPdfUploadPdf($folder, &$err)
 {
     if (!isset($_FILES['report_file']) || $_FILES['report_file']['error'] !== UPLOAD_ERR_OK) {
         $err = 'File upload failed. Please try again (check file size limit).';
         return '';
     }
 
+    $tmp  = $_FILES['report_file']['tmp_name'];
     $orig = basename($_FILES['report_file']['name']);
     $ext  = strtolower(pathinfo($orig, PATHINFO_EXTENSION));
-    $blocked = array('php', 'php3', 'php4', 'php5', 'phtml', 'phar', 'exe', 'sh', 'bat', 'cgi', 'pl', 'htaccess');
 
-    if (in_array($ext, $blocked, true)) {
-        $err = 'This file type is not allowed.';
+    // extension check
+    if ($ext !== 'pdf') {
+        $err = 'Only PDF files are allowed.';
+        return '';
+    }
+
+    // real content check (mime + PDF header)
+    $mime = function_exists('mime_content_type') ? mime_content_type($tmp) : 'application/pdf';
+    $head = file_get_contents($tmp, false, null, 0, 5);
+    if ($mime !== 'application/pdf' || $head !== '%PDF-') {
+        $err = 'Invalid PDF file.';
         return '';
     }
 
     $clean = preg_replace('/[^A-Za-z0-9._-]/', '_', $orig);
-    $saved = time() . '_' . $clean;
+    $key   = $folder . time() . '_' . $clean;
 
-    if (!move_uploaded_file($_FILES['report_file']['tmp_name'], $dir . $saved)) {
-        $err = 'Could not save file on server (check news/ folder permission).';
+    try {
+        $result = menuPdfS3Client()->putObject([
+            'Bucket'      => AWS_BUCKET,
+            'Key'         => $key,
+            'SourceFile'  => $tmp,
+            'ContentType' => 'application/pdf',
+        ]);
+        return $result['ObjectURL'];
+    } catch (AwsException $e) {
+        $err = 'Could not upload file to S3. Please try again.';
         return '';
     }
-
-    return $saved;
 }
 
-// URL builder for pagination
-function maaPageUrl($p)
+// Display name from the stored S3 url (timestamp prefix removed)
+function menuPdfFileLabel($s3Url)
 {
-    return 'memorandumArticlesManager.php' . ($p > 1 ? '?page=' . (int)$p : '');
+    $name = basename(urldecode((string)parse_url((string)$s3Url, PHP_URL_PATH)));
+    return preg_replace('/^\d+_/', '', $name);
+}
+
+// URL builder for redirects and pagination
+function menuPdfPageUrl($p)
+{
+    global $pageFile;
+    return $pageFile . ($p > 1 ? '?page=' . (int)$p : '');
 }
 
 // URL for HTML links (the page uses <base href>, so the folder prefix is needed)
-function maaHtmlUrl($p)
+function menuPdfHtmlUrl($p)
 {
-    return 'turf-console/' . maaPageUrl($p);
+    return 'turf-console/' . menuPdfPageUrl($p);
 }
 
 // ---------------------------------------------------------------
@@ -103,12 +170,12 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $action   = isset($_POST['action']) ? $_POST['action'] : '';
     $pageNo   = isset($_POST['page']) ? max(1, (int)$_POST['page']) : 1;
-    $redirect = maaPageUrl($pageNo);
+    $redirect = menuPdfPageUrl($pageNo);
 
     // CSRF check
-    if (!isset($_POST['csrf']) || !hash_equals($_SESSION['maa_csrf'], (string)$_POST['csrf'])) {
-        maaSetFlash('Invalid request. Please try again.', 'error');
-        header('Location: memorandumArticlesManager.php');
+    if (!isset($_POST['csrf']) || !hash_equals($_SESSION[$sessionKey . '_csrf'], (string)$_POST['csrf'])) {
+        menuPdfSetFlash('Invalid request. Please try again.', 'error');
+        header('Location: ' . $pageFile);
         exit;
     }
 
@@ -116,29 +183,27 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
 
         $id  = isset($_POST['id']) ? (int)$_POST['id'] : 0;
-        $row = $id > 0 ? $db->getSingleRowAssoc("SELECT * FROM memorandum_articles_docs WHERE id = $id") : null;
+        $row = $id > 0 ? $db->getSingleRowAssoc("SELECT * FROM club_menu_pdf WHERE id = $id AND `type` = '$pdfType'") : null;
 
         if ($row) {
             try {
-                $db->query("DELETE FROM memorandum_articles_docs WHERE id = $id");
-                if ($row['type'] === 'file') {
-                    maaDeleteFile($newsDir, $row['file_name']);
-                }
-                maaSetFlash('Entry deleted successfully.', 'success');
+                $db->query("DELETE FROM club_menu_pdf WHERE id = $id AND `type` = '$pdfType'");
+                menuPdfDeleteFromS3($row['file_url'], $s3Folder);
+                menuPdfSetFlash('Entry deleted successfully.', 'success');
             } catch (Exception $e) {
-                maaSetFlash('Database error. Could not delete.', 'error');
+                menuPdfSetFlash('Database error. Could not delete.', 'error');
             }
         } else {
-            maaSetFlash('Entry not found.', 'error');
+            menuPdfSetFlash('Entry not found.', 'error');
         }
 
         // if the current page becomes empty, go back one page
-        $total    = (int)$db->getSingleValue("SELECT COUNT(*) FROM memorandum_articles_docs");
+        $total    = (int)$db->getSingleValue("SELECT COUNT(*) FROM club_menu_pdf WHERE `type` = '$pdfType'");
         $lastPage = max(1, (int)ceil($total / $perPage));
         if ($pageNo > $lastPage) {
             $pageNo = $lastPage;
         }
-        header('Location: ' . maaPageUrl($pageNo));
+        header('Location: ' . menuPdfPageUrl($pageNo));
         exit;
     }
 
@@ -146,15 +211,12 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save' || $action === 'update') {
 
         $date   = isset($_POST['report_date']) ? trim($_POST['report_date']) : '';
-        $title  = isset($_POST['report_title']) ? trim($_POST['report_title']) : '';
-        $type   = isset($_POST['report_type']) ? $_POST['report_type'] : '';
-        $text   = isset($_POST['report_text']) ? trim($_POST['report_text']) : '';
         $id     = isset($_POST['id']) ? (int)$_POST['id'] : 0;
         $err    = '';
         $oldRow = null;
 
         if ($action === 'update') {
-            $oldRow = $id > 0 ? $db->getSingleRowAssoc("SELECT * FROM memorandum_articles_docs WHERE id = $id") : null;
+            $oldRow = $id > 0 ? $db->getSingleRowAssoc("SELECT * FROM club_menu_pdf WHERE id = $id AND `type` = '$pdfType'") : null;
             if (!$oldRow) {
                 $err = 'Entry not found.';
             }
@@ -165,82 +227,59 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
             // already set
         } elseif (!$d || $d->format('Y-m-d') !== $date) {
             $err = 'Invalid date.';
-        } elseif ($title === '') {
-            $err = 'Title is required.';
-        } elseif ($type !== 'text' && $type !== 'file') {
-            $err = 'Invalid type.';
-        } elseif ($type === 'text' && $text === '') {
-            $err = 'Text is required.';
         }
 
-        $newFile      = '';   // newly uploaded file
-        $fileToKeep   = '';   // old file to keep
-        $fileToDelete = '';   // old file to delete
+        $newS3Url       = '';   // newly uploaded file S3 url
+        $oldS3UrlDelete = '';   // old file S3 url to delete after a successful update
 
-        if ($err === '' && $type === 'file') {
+        if ($err === '') {
 
             $hasUpload = isset($_FILES['report_file']) && $_FILES['report_file']['error'] !== UPLOAD_ERR_NO_FILE;
-            $oldIsFile = ($oldRow && $oldRow['type'] === 'file' && $oldRow['file_name'] !== '');
 
             if ($hasUpload) {
-                $newFile = maaUploadFile($newsDir, $err);
-                if ($err === '' && $oldIsFile) {
-                    $fileToDelete = $oldRow['file_name'];
+                $newS3Url = menuPdfUploadPdf($s3Folder, $err);
+                if ($err === '' && $oldRow) {
+                    $oldS3UrlDelete = $oldRow['file_url'];
                 }
-            } elseif ($oldIsFile) {
-                $fileToKeep = $oldRow['file_name'];
-            } else {
-                $err = 'Please choose a file.';
+            } elseif (!$oldRow) {
+                $err = 'Please choose a PDF file.';
             }
         }
 
         if ($err === '') {
 
-            $finalFile = ($type === 'file') ? ($newFile !== '' ? $newFile : $fileToKeep) : '';
-
-            // if switched to text, remove the old file
-            if ($type === 'text' && $oldRow && $oldRow['type'] === 'file') {
-                $fileToDelete = $oldRow['file_name'];
-            }
-
-            $textSql = ($type === 'text') ? "'" . $db->escape($text) . "'" : "NULL";
-            $fileSql = ($type === 'file') ? "'" . $db->escape($finalFile) . "'" : "NULL";
+            $finalS3Url = ($newS3Url !== '') ? $newS3Url : ($oldRow ? $oldRow['file_url'] : '');
 
             try {
                 if ($action === 'update') {
-                    $db->update("UPDATE memorandum_articles_docs SET
-                                    report_date = '" . $db->escape($date) . "',
-                                    title = '" . $db->escape($title) . "',
-                                    type = '" . $db->escape($type) . "',
-                                    content_text = $textSql,
-                                    file_name = $fileSql
-                                 WHERE id = $id");
-                    maaSetFlash('Entry updated successfully.', 'success');
+                    $db->update("UPDATE club_menu_pdf SET
+                                    `date` = '" . $db->escape($date) . "',
+                                    file_url = '" . $db->escape($finalS3Url) . "'
+                                 WHERE id = $id AND `type` = '$pdfType'");
+                    menuPdfSetFlash('Entry updated successfully.', 'success');
                 } else {
-                    $db->insert("INSERT INTO memorandum_articles_docs (report_date, title, type, content_text, file_name)
-                                 VALUES ('" . $db->escape($date) . "',
-                                         '" . $db->escape($title) . "',
-                                         '" . $db->escape($type) . "',
-                                         $textSql,
-                                         $fileSql)");
-                    maaSetFlash('Saved successfully.', 'success');
-                    $redirect = 'memorandumArticlesManager.php';   // new entry -> page 1
+                    $db->insert("INSERT INTO club_menu_pdf (`type`, file_url, `date`)
+                                 VALUES ('" . $pdfType . "',
+                                         '" . $db->escape($finalS3Url) . "',
+                                         '" . $db->escape($date) . "')");
+                    menuPdfSetFlash('Saved successfully.', 'success');
+                    $redirect = $pageFile;   // new entry -> page 1
                 }
 
-                if ($fileToDelete !== '') {
-                    maaDeleteFile($newsDir, $fileToDelete);
+                if ($oldS3UrlDelete !== '') {
+                    menuPdfDeleteFromS3($oldS3UrlDelete, $s3Folder);
                 }
             } catch (Exception $e) {
                 // if the DB save fails, remove the newly uploaded file
-                if ($newFile !== '') {
-                    maaDeleteFile($newsDir, $newFile);
+                if ($newS3Url !== '') {
+                    menuPdfDeleteFromS3($newS3Url, $s3Folder);
                 }
-                maaSetFlash('Database error. Could not save.', 'error');
+                menuPdfSetFlash('Database error. Could not save.', 'error');
             }
         } else {
-            maaSetFlash($err, 'error');
+            menuPdfSetFlash($err, 'error');
             if ($action === 'update' && $id > 0) {
-                $redirect = 'memorandumArticlesManager.php?edit=' . $id . ($pageNo > 1 ? '&page=' . $pageNo : '');
+                $redirect = $pageFile . '?edit=' . $id . ($pageNo > 1 ? '&page=' . $pageNo : '');
             }
         }
 
@@ -263,10 +302,10 @@ if (empty($secmsg)) {
 
     if (isset($_GET['edit']) && (int)$_GET['edit'] > 0) {
         $eid     = (int)$_GET['edit'];
-        $editRow = $db->getSingleRowAssoc("SELECT * FROM memorandum_articles_docs WHERE id = $eid");
+        $editRow = $db->getSingleRowAssoc("SELECT * FROM club_menu_pdf WHERE id = $eid AND `type` = '$pdfType'");
     }
 
-    $total      = (int)$db->getSingleValue("SELECT COUNT(*) FROM memorandum_articles_docs");
+    $total      = (int)$db->getSingleValue("SELECT COUNT(*) FROM club_menu_pdf WHERE `type` = '$pdfType'");
     $totalPages = max(1, (int)ceil($total / $perPage));
     if ($page > $totalPages) {
         $page = $totalPages;
@@ -274,9 +313,10 @@ if (empty($secmsg)) {
     $offset = ($page - 1) * $perPage;
 
     $rows = $db->getMultiDimensionalArray(
-        "SELECT id, report_date, title, type, content_text, file_name
-         FROM memorandum_articles_docs
-         ORDER BY report_date DESC, id DESC
+        "SELECT id, `date`, file_url
+         FROM club_menu_pdf
+         WHERE `type` = '$pdfType'
+         ORDER BY `date` DESC, id DESC
          LIMIT $perPage OFFSET $offset"
     );
 }
@@ -284,14 +324,11 @@ if (empty($secmsg)) {
 $isEdit = !empty($editRow);
 
 // default form values
-$fDate  = $isEdit ? $editRow['report_date'] : '';
-$fTitle = $isEdit ? $editRow['title'] : '';
-$fType  = $isEdit ? $editRow['type'] : '';
-$fText  = $isEdit ? (string)$editRow['content_text'] : '';
-$fFile  = ($isEdit && $editRow['type'] === 'file') ? (string)$editRow['file_name'] : '';
+$fDate  = $isEdit ? $editRow['date'] : '';
+$fS3Url = $isEdit ? (string)$editRow['file_url'] : '';
 
 // PAGE TITLE
-$pageTitle = 'Memorandum & Articles of Association';
+$pageTitle = $pdfTitle;
 
 // DESIGN OBJECT
 $design = new Design();
@@ -324,23 +361,16 @@ $design->writeContentPageStyles();
     .ar-card-title .ar-count { font-size: 13px; font-weight: 500; color: #7a8c84; margin-left: 8px; }
     .ar-card.editing { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.10); }
 
-    .ar-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .ar-field { margin-bottom: 18px; min-width: 0; }
     .ar-field label { display: block; font-size: 13px; font-weight: 600; color: #2b332f; margin-bottom: 6px; }
     .ar-field label .req { color: #c0392b; }
-    .ar-input, .ar-select, .ar-textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
-    .ar-input::placeholder, .ar-textarea::placeholder { color: #9aa9a2; }
-    .ar-input:focus, .ar-select:focus, .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-textarea { min-height: 220px; resize: vertical; line-height: 1.5; }
-    .ar-select { cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%237a8c84' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
+    .ar-input { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
+    .ar-input::placeholder { color: #9aa9a2; }
+    .ar-input:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
     .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; }
-    .ar-input.invalid, .ar-select.invalid, .ar-textarea.invalid, .ar-drop.invalid { border-color: #c0392b; }
+    .ar-input.invalid, .ar-drop.invalid { border-color: #c0392b; }
     .ar-err { color: #c0392b; font-size: 12px; margin-top: 5px; display: none; }
     .ar-err.show { display: block; }
-
-    .ar-section { display: none; }
-    .ar-section.active { display: block; animation: arFade .2s ease; }
-    @keyframes arFade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
     .ar-drop { border: 2px dashed #b9c4be; border-radius: 12px; padding: 32px 16px; text-align: center; cursor: pointer; background: #f8faf9; transition: all .15s ease; }
     .ar-drop:hover, .ar-drop.dragover { border-color: #1a7a45; background: #eef7f1; }
@@ -371,16 +401,13 @@ $design->writeContentPageStyles();
 
     /* ---------- LIST TABLE ---------- */
     .ar-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .ar-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    .ar-table { width: 100%; border-collapse: collapse; min-width: 480px; }
     .ar-table th { text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: #0f5c33; background: #f3f6f4; padding: 11px 12px; border-bottom: 1px solid #e2e6e4; white-space: nowrap; }
     .ar-table td { font-size: 14px; color: #2b332f; padding: 12px; border-bottom: 1px solid #eef1ef; vertical-align: middle; }
     .ar-table tr:hover td { background: #f8faf9; }
     .ar-table tr.is-editing td { background: #eef7f1; }
-    .ar-t-title { font-weight: 600; word-break: break-word; }
-    .ar-t-sub { font-size: 12px; color: #7a8c84; margin-top: 3px; word-break: break-word; }
-    .ar-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-    .ar-badge.text { background: #e8f0fb; color: #1f4f9c; }
-    .ar-badge.file { background: #fdf0e0; color: #9a5a0c; }
+    .ar-t-file { display: flex; align-items: center; gap: 10px; font-weight: 600; word-break: break-word; }
+    .ar-t-file i { color: #c0392b; font-size: 18px; flex-shrink: 0; }
     .ar-act { display: flex; gap: 6px; flex-wrap: nowrap; }
     .ar-icon-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #d3d9d6; background: #fff; color: #2b332f; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; text-decoration: none; transition: all .15s ease; padding: 0; }
     .ar-icon-btn:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
@@ -410,7 +437,6 @@ $design->writeContentPageStyles();
     @media (max-width: 700px) {
         .ar-title { font-size: 20px; }
         .ar-card { padding: 16px; border-radius: 10px; }
-        .ar-row { grid-template-columns: 1fr; gap: 0; }
         .ar-drop { padding: 24px 12px; }
     }
 
@@ -419,7 +445,6 @@ $design->writeContentPageStyles();
         .ar-subtitle { font-size: 13px; }
         .ar-actions { flex-direction: column; }
         .ar-btn { width: 100%; }
-        .ar-textarea { min-height: 180px; }
         .ar-pager { flex-direction: column; align-items: flex-start; }
     }
 </style>
@@ -444,8 +469,8 @@ $design->writeContentPageStyles();
 
         <div class="ar-header">
             <div>
-                <h1 class="ar-title">MEMORANDUM &amp; ARTICLES OF ASSOCIATION</h1>
-                <p class="ar-subtitle">Upload a file or write text</p>
+                <h1 class="ar-title"><?php echo htmlspecialchars($pdfTitle); ?></h1>
+                <p class="ar-subtitle">Upload a PDF file</p>
             </div>
         </div>
 
@@ -466,10 +491,10 @@ $design->writeContentPageStyles();
         <div class="ar-card<?php echo $isEdit ? ' editing' : ''; ?>">
 
             <div class="ar-card-title">
-                <?php echo $isEdit ? 'Edit Memorandum &amp; Articles Entry' : 'Add New Memorandum &amp; Articles Entry'; ?>
+                <?php echo $isEdit ? 'Edit ' . htmlspecialchars($pdfTitle) . ' Entry' : 'Add New ' . htmlspecialchars($pdfTitle) . ' Entry'; ?>
             </div>
 
-            <form id="arForm" method="post" action="turf-console/memorandumArticlesManager.php" enctype="multipart/form-data" novalidate>
+            <form id="arForm" method="post" action="turf-console/<?php echo htmlspecialchars($pageFile); ?>" enctype="multipart/form-data" novalidate>
 
                 <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
                 <input type="hidden" name="action" value="<?php echo $isEdit ? 'update' : 'save'; ?>">
@@ -478,79 +503,44 @@ $design->writeContentPageStyles();
                     <input type="hidden" name="id" value="<?php echo (int)$editRow['id']; ?>">
                 <?php } ?>
 
-                <div class="ar-row">
-
-                    <div class="ar-field">
-                        <label for="arDate">Date <span class="req">*</span></label>
-                        <input type="text" id="arDate" name="report_date" class="ar-input" placeholder="YYYY-MM-DD" maxlength="10" inputmode="numeric" autocomplete="off" value="<?php echo htmlspecialchars($fDate); ?>">
-                        <div class="ar-hint"><span>Format: YYYY-MM-DD (e.g. 2026-10-07)</span></div>
-                        <div class="ar-err" id="errDate">Please enter a valid date in YYYY-MM-DD format.</div>
-                    </div>
-
-                    <div class="ar-field">
-                        <label for="arTitle">Title <span class="req">*</span></label>
-                        <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="200" placeholder="Enter title" value="<?php echo htmlspecialchars($fTitle); ?>">
-                        <div class="ar-err" id="errTitle">Please enter a title.</div>
-                    </div>
-
+                <div class="ar-field">
+                    <label for="arDate">Date <span class="req">*</span></label>
+                    <input type="text" id="arDate" name="report_date" class="ar-input" placeholder="YYYY-MM-DD" maxlength="10" inputmode="numeric" autocomplete="off" value="<?php echo htmlspecialchars($fDate); ?>">
+                    <div class="ar-hint"><span>Format: YYYY-MM-DD (e.g. 2026-10-07)</span></div>
+                    <div class="ar-err" id="errDate">Please enter a valid date in YYYY-MM-DD format.</div>
                 </div>
 
                 <div class="ar-field">
-                    <label for="arType">Type <span class="req">*</span></label>
-                    <select id="arType" name="report_type" class="ar-select">
-                        <option value="">-- Select --</option>
-                        <option value="text" <?php echo $fType === 'text' ? 'selected' : ''; ?>>Write Text</option>
-                        <option value="file" <?php echo $fType === 'file' ? 'selected' : ''; ?>>Upload File</option>
-                    </select>
-                    <div class="ar-err" id="errType">Please select a type.</div>
-                </div>
+                    <label>PDF File <span class="req">*</span></label>
 
-
-                <!-- TEXT SECTION -->
-                <div class="ar-section" id="secText">
-                    <div class="ar-field">
-                        <label for="arText">Text <span class="req">*</span></label>
-                        <textarea id="arText" name="report_text" class="ar-textarea" placeholder="Write your text here..."><?php echo htmlspecialchars($fText); ?></textarea>
-                        <div class="ar-hint"><span>Plain text / HTML allowed</span><span id="arCount">0 characters</span></div>
-                        <div class="ar-err" id="errText">Please write some text.</div>
-                    </div>
-                </div>
-
-
-                <!-- FILE SECTION -->
-                <div class="ar-section" id="secFile">
-                    <div class="ar-field">
-                        <label>Upload File <span class="req">*</span></label>
-
-                        <?php if ($fFile !== '') { ?>
-                            <div class="ar-current" style="margin:0 0 12px;">
-                                Current file:
-                                <a href="news/<?php echo rawurlencode($fFile); ?>" target="_blank"><?php echo htmlspecialchars($fFile); ?></a>
-                                <br><span style="color:#7a8c84;">If you choose a new file, it will replace this one. Otherwise the current file is kept.</span>
-                            </div>
-                        <?php } ?>
-
-                        <div class="ar-drop" id="arDrop">
-                            <div class="ar-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                            <p class="ar-drop-text">Drag &amp; drop file here or <span>browse</span></p>
-                            <p class="ar-drop-sub">HTML, DOC, DOCX, PDF, ZIP, images, etc.</p>
+                    <?php if ($fS3Url !== '') { ?>
+                        <div class="ar-current" style="margin:0 0 12px;">
+                            Current file:
+                            <a href="<?php echo htmlspecialchars($fS3Url); ?>" target="_blank"><?php echo htmlspecialchars(menuPdfFileLabel($fS3Url)); ?></a>
+                            <br><span style="color:#7a8c84;">If you choose a new file, it will replace this one. Otherwise the current file is kept.</span>
                         </div>
+                    <?php } ?>
 
-                        <input type="file" id="arFile" name="report_file" class="ar-file-input">
-
-                        <div class="ar-file-box" id="arFileBox">
-                            <div class="ar-file-ico"><i class="fas fa-file" id="arFileIcon"></i></div>
-                            <div class="ar-file-info">
-                                <div class="ar-file-name" id="arFileName"></div>
-                                <div class="ar-file-size" id="arFileSize"></div>
-                            </div>
-                            <button type="button" class="ar-file-remove" id="arFileRemove" title="Remove file">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-
-                        <div class="ar-err" id="errFile">Please choose a file.</div>
+                    <div class="ar-drop" id="arDrop">
+                        <div class="ar-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <p class="ar-drop-text">Drag &amp; drop PDF here or <span>browse</span></p>
+                        <p class="ar-drop-sub">Only PDF files are allowed</p>
                     </div>
+
+                    <input type="file" id="arFile" name="report_file" class="ar-file-input" accept="application/pdf,.pdf">
+
+                    <div class="ar-file-box" id="arFileBox">
+                        <div class="ar-file-ico"><i class="fas fa-file-pdf"></i></div>
+                        <div class="ar-file-info">
+                            <div class="ar-file-name" id="arFileName"></div>
+                            <div class="ar-file-size" id="arFileSize"></div>
+                        </div>
+                        <button type="button" class="ar-file-remove" id="arFileRemove" title="Remove file">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="ar-err" id="errFile">Please choose a PDF file.</div>
                 </div>
 
 
@@ -559,7 +549,7 @@ $design->writeContentPageStyles();
                         <i class="fas fa-save"></i> <?php echo $isEdit ? 'Update' : 'Save'; ?>
                     </button>
                     <?php if ($isEdit) { ?>
-                        <a class="ar-btn ar-btn-secondary" href="<?php echo htmlspecialchars(maaHtmlUrl($page)); ?>">
+                        <a class="ar-btn ar-btn-secondary" href="<?php echo htmlspecialchars(menuPdfHtmlUrl($page)); ?>">
                             <i class="fas fa-times"></i> Cancel
                         </a>
                     <?php } else { ?>
@@ -591,51 +581,34 @@ $design->writeContentPageStyles();
                     <table class="ar-table">
                         <thead>
                             <tr>
-                                <th style="width:110px;">Date</th>
-                                <th>Title</th>
-                                <th style="width:100px;">Type</th>
-                                <th style="width:120px;">Actions</th>
+                                <th style="width:120px;">Date</th>
+                                <th>File</th>
+                                <th style="width:140px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($rows as $r) {
                                 $rid = (int)$r['id'];
                                 $isRowEditing = ($isEdit && (int)$editRow['id'] === $rid);
-                                $editUrl = 'turf-console/memorandumArticlesManager.php?edit=' . $rid . ($page > 1 ? '&page=' . $page : '');
-
-                                if ($r['type'] === 'file') {
-                                    $sub = (string)$r['file_name'];
-                                } else {
-                                    $plain = trim(strip_tags((string)$r['content_text']));
-                                    $sub = (function_exists('mb_substr') ? mb_substr($plain, 0, 90) : substr($plain, 0, 90)) . (strlen($plain) > 90 ? '...' : '');
-                                }
+                                $editUrl = 'turf-console/' . $pageFile . '?edit=' . $rid . ($page > 1 ? '&page=' . $page : '');
                             ?>
                                 <tr class="<?php echo $isRowEditing ? 'is-editing' : ''; ?>">
-                                    <td><?php echo htmlspecialchars(date('d M Y', strtotime($r['report_date']))); ?></td>
+                                    <td><?php echo htmlspecialchars(date('d M Y', strtotime($r['date']))); ?></td>
                                     <td>
-                                        <div class="ar-t-title"><?php echo htmlspecialchars($r['title']); ?></div>
-                                        <?php if ($sub !== '') { ?>
-                                            <div class="ar-t-sub"><?php echo htmlspecialchars($sub); ?></div>
-                                        <?php } ?>
-                                    </td>
-                                    <td>
-                                        <?php if ($r['type'] === 'file') { ?>
-                                            <span class="ar-badge file"><i class="fas fa-file"></i> File</span>
-                                        <?php } else { ?>
-                                            <span class="ar-badge text"><i class="fas fa-align-left"></i> Text</span>
-                                        <?php } ?>
+                                        <div class="ar-t-file">
+                                            <i class="fas fa-file-pdf"></i>
+                                            <span><?php echo htmlspecialchars(menuPdfFileLabel($r['file_url'])); ?></span>
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="ar-act">
-                                            <?php if ($r['type'] === 'file' && $r['file_name'] !== '') { ?>
-                                                <a class="ar-icon-btn" title="Open file" target="_blank" href="news/<?php echo rawurlencode($r['file_name']); ?>">
-                                                    <i class="fas fa-external-link-alt"></i>
-                                                </a>
-                                            <?php } ?>
+                                            <a class="ar-icon-btn" title="View" target="_blank" href="<?php echo htmlspecialchars($r['file_url']); ?>">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
                                             <a class="ar-icon-btn" title="Edit" href="<?php echo htmlspecialchars($editUrl); ?>">
                                                 <i class="fas fa-pen"></i>
                                             </a>
-                                            <form method="post" action="turf-console/memorandumArticlesManager.php" class="arDelForm">
+                                            <form method="post" action="turf-console/<?php echo htmlspecialchars($pageFile); ?>" class="arDelForm">
                                                 <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf); ?>">
                                                 <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="id" value="<?php echo $rid; ?>">
@@ -654,7 +627,7 @@ $design->writeContentPageStyles();
 
                 <?php if ($totalPages > 1) {
 
-                                        $show = array();
+                    $show = array();
                     for ($i = 1; $i <= $totalPages; $i++) {
                         if ($i === 1 || $i === $totalPages || abs($i - $page) <= 2) {
                             $show[] = $i;
@@ -666,7 +639,7 @@ $design->writeContentPageStyles();
                     <div class="ar-pager">
                         <div class="ar-pager-info">Showing <?php echo $from; ?>-<?php echo $to; ?> of <?php echo (int)$total; ?></div>
                         <div class="ar-pages">
-                            <a class="ar-page<?php echo $page <= 1 ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(maaHtmlUrl($page - 1)); ?>">
+                            <a class="ar-page<?php echo $page <= 1 ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(menuPdfHtmlUrl($page - 1)); ?>">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
 
@@ -677,12 +650,12 @@ $design->writeContentPageStyles();
                                     echo '<span class="ar-page dots">...</span>';
                                 }
                                 $cls = ($p === $page) ? ' current' : '';
-                                echo '<a class="ar-page' . $cls . '" href="' . htmlspecialchars(maaHtmlUrl($p)) . '">' . $p . '</a>';
+                                echo '<a class="ar-page' . $cls . '" href="' . htmlspecialchars(menuPdfHtmlUrl($p)) . '">' . $p . '</a>';
                                 $prev = $p;
                             }
                             ?>
 
-                            <a class="ar-page<?php echo $page >= $totalPages ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(maaHtmlUrl($page + 1)); ?>">
+                            <a class="ar-page<?php echo $page >= $totalPages ? ' disabled' : ''; ?>" href="<?php echo htmlspecialchars(menuPdfHtmlUrl($page + 1)); ?>">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
                         </div>
@@ -699,22 +672,15 @@ $design->writeContentPageStyles();
     <script type="text/javascript">
         (function() {
 
-            var existingFile = <?php echo json_encode($fFile !== ''); ?>;
+            var existingFile = <?php echo json_encode($fS3Url !== ''); ?>;
 
             var form     = document.getElementById('arForm');
             var dateIn   = document.getElementById('arDate');
-            var titleIn  = document.getElementById('arTitle');
-            var typeSel  = document.getElementById('arType');
-            var secText  = document.getElementById('secText');
-            var secFile  = document.getElementById('secFile');
-            var txtArea  = document.getElementById('arText');
-            var counter  = document.getElementById('arCount');
             var drop     = document.getElementById('arDrop');
             var fileIn   = document.getElementById('arFile');
             var fileBox  = document.getElementById('arFileBox');
             var fileName = document.getElementById('arFileName');
             var fileSize = document.getElementById('arFileSize');
-            var fileIcon = document.getElementById('arFileIcon');
             var fileRem  = document.getElementById('arFileRemove');
             var resetBtn = document.getElementById('arReset');
             var msgBox   = document.getElementById('arMsg');
@@ -734,8 +700,9 @@ $design->writeContentPageStyles();
                 }, 4000);
             }
 
-            function setErr(errId, inputEl, show) {
+            function setErr(errId, inputEl, show, text) {
                 var e = $(errId);
+                if (text) e.textContent = text;
                 if (show) {
                     e.classList.add('show');
                 } else {
@@ -757,21 +724,13 @@ $design->writeContentPageStyles();
                 return (b / 1073741824).toFixed(2) + ' GB';
             }
 
-            function iconFor(name) {
-                var ext = (name.split('.').pop() || '').toLowerCase();
-                if (ext === 'pdf') return 'fas fa-file-pdf';
-                if (ext === 'doc' || ext === 'docx') return 'fas fa-file-word';
-                if (ext === 'xls' || ext === 'xlsx' || ext === 'csv') return 'fas fa-file-excel';
-                if (ext === 'zip' || ext === 'rar' || ext === '7z') return 'fas fa-file-archive';
-                if (ext === 'htm' || ext === 'html') return 'fas fa-file-code';
-                if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].indexOf(ext) !== -1) return 'fas fa-file-image';
-                return 'fas fa-file';
+            function isPdf(file) {
+                return /\.pdf$/i.test(file.name);
             }
 
             function showFile(file) {
                 fileName.textContent = file.name;
                 fileSize.textContent = formatSize(file.size);
-                fileIcon.className = iconFor(file.name);
                 fileBox.classList.add('show');
                 setErr('errFile', drop, false);
             }
@@ -791,10 +750,6 @@ $design->writeContentPageStyles();
                 return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
             }
 
-            function updateCount() {
-                counter.textContent = txtArea.value.length + ' characters';
-            }
-
             // Date auto-format while typing
             dateIn.addEventListener('input', function() {
                 var digits = this.value.replace(/\D/g, '').slice(0, 8);
@@ -808,23 +763,6 @@ $design->writeContentPageStyles();
                 if (isValidDate(out)) setErr('errDate', this, false);
             });
 
-            // Type dropdown
-            function applyType() {
-                var v = typeSel.value;
-                secText.classList.toggle('active', v === 'text');
-                secFile.classList.toggle('active', v === 'file');
-                setErr('errText', txtArea, false);
-                setErr('errFile', drop, false);
-                if (v) setErr('errType', typeSel, false);
-            }
-            typeSel.addEventListener('change', applyType);
-
-            // Text counter
-            txtArea.addEventListener('input', function() {
-                updateCount();
-                if (txtArea.value.trim()) setErr('errText', txtArea, false);
-            });
-
             // File: click and drag/drop
             drop.addEventListener('click', function() {
                 fileIn.click();
@@ -832,6 +770,11 @@ $design->writeContentPageStyles();
 
             fileIn.addEventListener('change', function() {
                 if (fileIn.files && fileIn.files[0]) {
+                    if (!isPdf(fileIn.files[0])) {
+                        clearFile();
+                        setErr('errFile', drop, true, 'Only PDF files are allowed.');
+                        return;
+                    }
                     showFile(fileIn.files[0]);
                 }
             });
@@ -850,32 +793,28 @@ $design->writeContentPageStyles();
             });
             drop.addEventListener('drop', function(e) {
                 if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    var f = e.dataTransfer.files[0];
+                    if (!isPdf(f)) {
+                        clearFile();
+                        setErr('errFile', drop, true, 'Only PDF files are allowed.');
+                        return;
+                    }
                     try {
                         fileIn.files = e.dataTransfer.files;
                     } catch (err) {}
-                    showFile(e.dataTransfer.files[0]);
+                    showFile(f);
                 }
             });
 
             fileRem.addEventListener('click', clearFile);
-
-            titleIn.addEventListener('input', function() {
-                if (this.value.trim()) setErr('errTitle', this, false);
-            });
 
             // Reset (Add mode only)
             if (resetBtn) {
                 resetBtn.addEventListener('click', function() {
                     form.reset();
                     clearFile();
-                    updateCount();
-                    applyType();
-                    ['errDate', 'errTitle', 'errType', 'errText', 'errFile'].forEach(function(id) {
-                        setErr(id, null, false);
-                    });
-                    [dateIn, titleIn, typeSel, txtArea, drop].forEach(function(el) {
-                        el.classList.remove('invalid');
-                    });
+                    setErr('errDate', dateIn, false);
+                    setErr('errFile', drop, false, 'Please choose a PDF file.');
                 });
             }
 
@@ -889,35 +828,16 @@ $design->writeContentPageStyles();
                 } else {
                     setErr('errDate', dateIn, false);
                 }
-                if (!titleIn.value.trim()) {
-                    setErr('errTitle', titleIn, true);
-                    ok = false;
-                } else {
-                    setErr('errTitle', titleIn, false);
-                }
-                if (!typeSel.value) {
-                    setErr('errType', typeSel, true);
-                    ok = false;
-                } else {
-                    setErr('errType', typeSel, false);
-                }
 
-                if (typeSel.value === 'text') {
-                    if (!txtArea.value.trim()) {
-                        setErr('errText', txtArea, true);
-                        ok = false;
-                    } else {
-                        setErr('errText', txtArea, false);
-                    }
-                }
-                if (typeSel.value === 'file') {
-                    var hasNew = fileIn.files && fileIn.files.length;
-                    if (!hasNew && !existingFile) {
-                        setErr('errFile', drop, true);
-                        ok = false;
-                    } else {
-                        setErr('errFile', drop, false);
-                    }
+                var hasNew = fileIn.files && fileIn.files.length;
+                if (!hasNew && !existingFile) {
+                    setErr('errFile', drop, true, 'Please choose a PDF file.');
+                    ok = false;
+                } else if (hasNew && !isPdf(fileIn.files[0])) {
+                    setErr('errFile', drop, true, 'Only PDF files are allowed.');
+                    ok = false;
+                } else {
+                    setErr('errFile', drop, false);
                 }
 
                 if (!ok) {
@@ -930,15 +850,11 @@ $design->writeContentPageStyles();
             var delForms = document.querySelectorAll('.arDelForm');
             for (var i = 0; i < delForms.length; i++) {
                 delForms[i].addEventListener('submit', function(e) {
-                    if (!confirm('Are you sure you want to delete this entry? This cannot be undone (the file will also be deleted).')) {
+                    if (!confirm('Are you sure you want to delete this entry? This cannot be undone (the PDF will also be deleted).')) {
                         e.preventDefault();
                     }
                 });
             }
-
-            // initial state (in edit mode the fields are pre-filled)
-            updateCount();
-            applyType();
 
         })();
     </script>

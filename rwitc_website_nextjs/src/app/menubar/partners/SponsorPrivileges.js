@@ -1,33 +1,100 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getSponsorPrivileges } from "../../../services/clubService";
 import "./SponsorPrivileges.css";
 
-export default function SponsorPrivileges() {
+const DEFAULT_TITLE = "The Privileges of a Sponsor";
 
-    const privileges = [
-        "Conduct contests of skill and award prizes to the public to generate interest",
-        "Advertise on the CCTV transmission at all centers (free of charge).",
-        "Have full rights for on-site branding across the stands.",
-        "Name the race to suit its preference.",
-        "Have its CEO / nominee present the trophy.",
-        "Be entitled to the free use of lawns above a certain value of sponsorship",
-        "Arrange for live entertainment at race time or before or after the event.",
-        "Promote the race via mailers/press.",
-        "Have access to the Club's 7000+ membership data.",
-        "Have reserved parking and seating for its guests.",
-        "Have free promotion on the rwitc.com website with links to other racing websites.",
-        "Get coverage on a major television network at special rates (with select races telecast live).",
-    ];
+// Line markers used in the admin text
+const HEADING_LINE = /^##\s+/;       // "## A sponsor can"
+const BULLET_LINE = /^[-*•]\s+/;     // "- item"
+const NOTE_PREFIX = /^note:\s*/i;    // "Note: text"
+
+// Converts raw admin text into blocks: heading, list, note, para
+function parseBlocks(rawText) {
+    const lines = String(rawText).replace(/\r\n?/g, "\n").split("\n");
+    const blocks = [];
+    let para = [];
+    let list = null;
+
+    const flushPara = () => {
+        if (!para.length) return;
+        const text = para.join(" ").trim();
+        if (NOTE_PREFIX.test(text)) {
+            blocks.push({ type: "note", text: text.replace(NOTE_PREFIX, "") });
+        } else {
+            blocks.push({ type: "para", text });
+        }
+        para = [];
+    };
+
+    const flushList = () => {
+        if (!list) return;
+        blocks.push({ type: "list", items: list });
+        list = null;
+    };
+
+    lines.forEach((line) => {
+        const t = line.trim();
+
+        if (!t) {
+            flushPara();
+            flushList();
+            return;
+        }
+
+        if (HEADING_LINE.test(t)) {
+            flushPara();
+            flushList();
+            blocks.push({ type: "heading", text: t.replace(HEADING_LINE, "") });
+            return;
+        }
+
+        if (BULLET_LINE.test(t)) {
+            flushPara();
+            list = list || [];
+            list.push(t.replace(BULLET_LINE, ""));
+            return;
+        }
+
+        flushList();
+        para.push(t);
+    });
+
+    flushPara();
+    flushList();
+
+    return blocks;
+}
+
+export default function SponsorPrivileges() {
+    const [title, setTitle] = useState(DEFAULT_TITLE);
+    const [blocks, setBlocks] = useState([]);
+
+    useEffect(() => {
+        let active = true;
+
+        getSponsorPrivileges()
+            .then((data) => {
+                if (!active || !data?.text) return;
+
+                if (data.title) setTitle(data.title);
+                setBlocks(parseBlocks(data.text));
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
+        };
+    }, []);
 
     return (
-
         <section className="aboutPage">
-
             <div className="aboutContainer">
-
                 <div className="aboutTitleWrap">
-                    <h1 className="aboutHeading">The Privileges of a Sponsor</h1>
+                    <h1 className="aboutHeading">{title}</h1>
 
                     <div className="sectionDivider">
                         <span className="dividerLine dividerLineLeft"></span>
@@ -37,32 +104,39 @@ export default function SponsorPrivileges() {
                 </div>
 
                 <div className="aboutCard">
-
                     <div className="aboutContent">
+                        {blocks.map((block, i) => {
+                            if (block.type === "heading") {
+                                return (
+                                    <h3 key={i} className="guideSubHeading">
+                                        {block.text}
+                                    </h3>
+                                );
+                            }
 
-                        <h3 className="guideSubHeading">A sponsor can</h3>
+                            if (block.type === "list") {
+                                return (
+                                    <ul key={i} className="memberList">
+                                        {block.items.map((item, j) => (
+                                            <li key={j}>{item}</li>
+                                        ))}
+                                    </ul>
+                                );
+                            }
 
-                        <ul className="memberList">
-                            {privileges.map((item, index) => (
-                                <li key={index}>{item}</li>
-                            ))}
-                        </ul>
+                            if (block.type === "note") {
+                                return (
+                                    <p key={i}>
+                                        <strong>Note:</strong> {block.text}
+                                    </p>
+                                );
+                            }
 
-                        <p>
-                            <strong>Note:</strong> The Mumbai Racing Season runs from
-                            mid-November to end-April and racing is on most Sundays and
-                            Thursdays. In Pune, the season is from August to October,
-                            with racing on all Saturdays and Sundays. 
-                        </p>
-
+                            return <p key={i}>{block.text}</p>;
+                        })}
                     </div>
-
                 </div>
-
             </div>
-
         </section>
-
     );
-
 }

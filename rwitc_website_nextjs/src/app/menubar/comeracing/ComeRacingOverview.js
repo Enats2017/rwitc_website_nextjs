@@ -1,9 +1,56 @@
+
 "use client";
 
+import { useState, useEffect } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getComeRacingOverview } from "../../../services/Comeracingoverviewservice";
 import "./ComeRacingOverview.css";
 
 export default function ComeRacingOverview() {
+
+    const [paragraphs, setParagraphs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+
+        let cancelled = false;
+
+        (async () => {
+
+            try {
+
+                const data = await getComeRacingOverview();
+
+                if (cancelled) return;
+
+                // a blank line in the admin text = a new paragraph
+                setParagraphs(
+                    data.content
+                        .split(/\n\s*\n/)
+                        .map((p) => p.trim())
+                        .filter(Boolean)
+                );
+
+            } catch (e) {
+
+                if (!cancelled) {
+                    setError(e.message || "Unable to load content.");
+                }
+
+            } finally {
+
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+
+    }, []);
 
     return (
 
@@ -23,20 +70,19 @@ export default function ComeRacingOverview() {
 
                 <div className="aboutCard">
 
-                    <div className="aboutContent">
+                                        <div className="aboutContent">
 
-                        <p>
-                            A day at the races either at Mahalaxmi or in Pune is always
-                            full of fun. The Club plans its racing programme in such a
-                            way that everyone will have something more to enjoy than
-                            just backing a horse or cheering a winner. The variety
-                            entertainment programmes, life style events, contest of
-                            skills, bumper prizes and other add-ons make it a day to
-                            remember and cherish. RWITC is the only turf club in the
-                            country to actively encourage people to bring their
-                            children thus making it a family day of leisure &amp;
-                            entertainment.
-                        </p>
+                        {loading && <p>Loading…</p>}
+
+                        {!loading && error && <p>{error}</p>}
+
+                        {!loading && !error && paragraphs.length === 0 && (
+                            <p>Content will be updated soon.</p>
+                        )}
+
+                        {!loading && !error && paragraphs.map((p, i) => (
+                            <p key={i}>{p}</p>
+                        ))}
 
                     </div>
 

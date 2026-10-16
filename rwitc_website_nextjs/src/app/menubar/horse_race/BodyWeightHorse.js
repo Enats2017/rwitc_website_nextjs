@@ -6,50 +6,57 @@ import { getBodyWeightHorses } from "../../../services/bodyWeightHorseService";
 import "./BodyWeightHorse.css";
 
 const weightColumns = [
-    "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10",
-    "B11", "B12", "B13", "B14", "B15", "B16", "B17", "B18", "B19", "B20",
+    "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10",
+    "R11", "R12", "R13", "R14", "R15", "R16", "R17", "R18", "R19", "R20",
 ];
 
 export default function BodyWeightHorse() {
     const [searchValue, setSearchValue] = useState("");
     const [bodyWeightData, setBodyWeightData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let cancelled = false;
+
         const fetchBodyWeightData = async () => {
             try {
-                const data = await getBodyWeightHorses();
+                const horses = await getBodyWeightHorses();
 
-                const formattedData = data.reduce((acc, item) => {
-                    if (!acc[item.horsenm]) {
-                        acc[item.horsenm] = {
-                            horse: item.horsenm,
-                            weights: {},
-                        };
-                    }
+                // Column position = run order (R1 = first run of the season)
+                const result = horses.map((item) => {
+                    const weights = {};
 
-                    acc[item.horsenm].weights[`B${item.raceno}`] =
-                        `${item.raceno}(${item.HORSEWT || "NR"})`;
+                    item.runs.slice(0, weightColumns.length).forEach((run, index) => {
+                        weights[weightColumns[index]] = `${run.raceno}(${run.weight})`;
+                    });
 
-                    return acc;
-                }, {});
+                    return {
+                        horse: item.horse,
+                        weights,
+                    };
+                });
 
-                const result = Object.values(formattedData);
-
-                setBodyWeightData(result);
-                setFilteredData(result);
+                if (!cancelled) {
+                    setBodyWeightData(result);
+                    setFilteredData(result);
+                }
             } catch (error) {
                 console.error("Body Weight Data Error :", error);
+            } finally {
+                if (!cancelled) setLoading(false);
             }
         };
 
         fetchBodyWeightData();
+
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        const query = searchValue.trim().toLowerCase();
+    const applySearch = (value) => {
+        const query = value.trim().toLowerCase();
 
         if (!query) {
             setFilteredData(bodyWeightData);
@@ -61,6 +68,11 @@ export default function BodyWeightHorse() {
                 row.horse.toLowerCase().includes(query)
             )
         );
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        applySearch(searchValue);
     };
 
     return (
@@ -143,11 +155,22 @@ export default function BodyWeightHorse() {
 
                             <tbody>
 
-                                {filteredData.length > 0 ? (
+                                {loading ? (
 
-                                    filteredData.map((row, index) => (
+                                    <tr>
+                                        <td
+                                            className="noResults"
+                                            colSpan={weightColumns.length + 1}
+                                        >
+                                            Loading...
+                                        </td>
+                                    </tr>
 
-                                        <tr key={index}>
+                                ) : filteredData.length > 0 ? (
+
+                                    filteredData.map((row) => (
+
+                                        <tr key={row.horse}>
 
                                             <td className="colHorse">
                                                 {row.horse}
@@ -155,8 +178,7 @@ export default function BodyWeightHorse() {
 
                                             {weightColumns.map((col) => {
 
-                                                const cell =
-                                                    row.weights[col];
+                                                const cell = row.weights[col];
 
                                                 if (!cell) {
                                                     return (
@@ -184,9 +206,7 @@ export default function BodyWeightHorse() {
 
                                         <td
                                             className="noResults"
-                                            colSpan={
-                                                weightColumns.length + 1
-                                            }
+                                            colSpan={weightColumns.length + 1}
                                         >
                                             No horses found.
                                         </td>

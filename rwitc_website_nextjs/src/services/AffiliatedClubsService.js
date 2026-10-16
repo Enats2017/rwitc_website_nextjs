@@ -1,10 +1,8 @@
-const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "http://localhost/rwitc_website/rwitc_website_api";
+import { API_URL } from "./api";
 
 export async function getAffiliatedClubs() {
     const response = await fetch(
-        `${API_BASE_URL}/Affiliated_clubs_get_api.php`,
+        `${API_URL}/Affiliated_clubs_get_api.php`,
         { cache: "no-store" }
     );
 

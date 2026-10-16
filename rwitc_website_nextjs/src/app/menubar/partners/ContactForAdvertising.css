@@ -27,6 +27,12 @@
     text-align: center;
 }
 
+.contactBlock + .contactBlock {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e6e4;
+}
+
 /* SECTION DIVIDER */
 .sectionDivider {
     display: flex;

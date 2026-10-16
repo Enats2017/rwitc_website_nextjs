@@ -2134,7 +2134,7 @@ $design->openDiv('leftArea', 'col-lg-9');
                     <input
                         type="hidden"
                         name="title"
-                        id="af-title-value"
+                        id="title"
                         value="<?php echo afH($afCurrentTitle); ?>"
                     >
 
@@ -2616,7 +2616,7 @@ $design->openDiv('leftArea', 'col-lg-9');
     var emptyEl = document.getElementById('af-combo-empty');
     var valueEl = document.getElementById('af-combo-value');
     var note = document.getElementById('af-combo-note');
-    var hidden = document.getElementById('af-title-value');
+    var hidden = document.getElementById('title');
     var form = document.getElementById('af-form');
     var items = [].slice.call(list.querySelectorAll('.af-combo-opt'));
     var active = -1;
@@ -2831,7 +2831,7 @@ $design->openDiv('leftArea', 'col-lg-9');
                 setTimeout(function () {
                     submit.disabled = true;
                     submit.innerHTML =
-                        '<i class="fas fa-spinner fa-spin"></i> Please wait...';
+                        '<i class="fas fa-spinner fa-spin"></i> Please wait…';
                 }, 0);
             }
         });

@@ -2,7 +2,8 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import "./TopHeader.css";
-import { UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL, STATIC_URL } from "../../../services/api";
+import { getPdfLinks } from "../../../services/pdfService";
+import { API_URL, UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL, STATIC_URL } from "../../../services/api";
 import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay, FaHome, FaUniversity, FaHorseHead, FaTags, FaUsers, FaStar, FaHandshake, FaCloudDownloadAlt, FaImages, } from "react-icons/fa";
 
 /* ---------- DESKTOP: nested submenu — CLICK ONLY, vertical ---------- */
@@ -96,8 +97,32 @@ export default function TopHeader() {
     const [desktopOpenDropdown, setDesktopOpenDropdown] = useState(null);
     const [activeNav, setActiveNav] = useState("home");
     const [hoverNav, setHoverNav] = useState(null);
+    const [pdfLinks, setPdfLinks] = useState({});
+    const getPdfHref = (type, fallbackHref) => pdfLinks[type] || fallbackHref;
+    // Returns menu items for a PDF type that has many entries (example: AGM notices).
+    // Uses the database entries when available, otherwise the old static items.
+    const getPdfMenuItems = (type, fallbackItems) => {
+        const list = pdfLinks[type];
+        if (Array.isArray(list) && list.length > 0) {
+            return list.map((entry) => ({
+                key: entry.key,
+                label: entry.label,
+                href: entry.href,
+                target: "_blank",
+            }));
+        }
+        return fallbackItems;
+    };
     const closeTimerRef = useRef(null);
     const toggleDropdown = (name) => { setOpenDropdown(openDropdown === name ? null : name); };
+    // Load latest PDF links for all PDF types in a single API call
+    useEffect(() => {
+        let active = true;
+        getPdfLinks().then((links) => {
+            if (active) { setPdfLinks(links); }
+        });
+        return () => { active = false; };
+    }, []);
     const handleDropdownEnter = (name) => {
         if (closeTimerRef.current) {
             clearTimeout(closeTimerRef.current);
@@ -153,7 +178,7 @@ export default function TopHeader() {
                         { label: "Managing Committee", href: "menubar?type=managing-committee" },
                         { label: "Stewards of the Club", href: "menubar?type=stewardsclub" },
                         { label: "Board of Appeal", href: "menubar?type=boardappeal" },
-                        { label: "Working Group", href: `${NEWS_URL}/WORKINGGROUPS2023-24.pdf`, target: "_blank" },
+                        { label: "Working Group", href: getPdfHref("working_group", `${NEWS_URL}/WORKINGGROUPS2023-24.pdf`), target: "_blank" },
                     ],
                 },
                 {
@@ -176,19 +201,27 @@ export default function TopHeader() {
                 { label: "Careers", href: "menubar?type=careersclub" },
                 { label: "Feedback", href: "suggestion" },
                 { label: "Email to Chairman", href: "contact" },
-                { label: "MGT-7", href: `${NEW_URL}/RWITC_MGT-7.pdf`, target: "_blank" },
-                { label: "Scrutinizer Report-111th AGM", href: `${NEW_URL}/Scrutinizer_Report.pdf`, target: "_blank" },
-                { label: "Register of Directors", href: `${NEW_URL}/Register_of_Directors.pdf`, target: "_blank" },
-                { label: "Register of Contracts - I", href: `${NEW_URL}/Register_of_Contracts-I.pdf`, target: "_blank" },
-                { label: "Register of Contracts - II", href: `${NEW_URL}/Register_of_Contracts-Part-II.pdf`, target: "_blank" },
-                { label: "Notice for the 110th AGM", href: `${NEWS_URL}/AGM_Notice_18_09_2025.pdf`, target: "_blank" },
-                { label: "Notice for the 111th AGM", href: `${NEWS_URL}/AGM_Notice_17.09.2026.pdf`, target: "_blank" },
-                { label: "110th Annual Report", href: `${NEWS_URL}/110th_Clubs_Annual_Report_March_31_2025.pdf`, target: "_blank" },
-                { label: "111th Annual Report", href: `${NEWS_URL}/111th_Annual_Report%202025-26.pdf`, target: "_blank" },
-                { label: "Scrutinizer's Report (AGM)", href: `${NEWS_URL}/Scrutinizers_Report.pdf`, target: "_blank" },
-                { label: "EGM Notice", href: `${RWITC_UPLOAD_URL}/EGM_Notice_30_01_2026.pdf`, target: "_blank" },
+                { label: "MGT-7", href: getPdfHref("mgt7", `${NEW_URL}/RWITC_MGT-7.pdf`), target: "_blank" },
+                { label: "Register of Directors", href: getPdfHref("register_of_directors", `${NEW_URL}/Register_of_Directors.pdf`), target: "_blank" },
+                { label: "Register of Contracts - I", href: getPdfHref("register_of_contracts_1", `${NEW_URL}/Register_of_Contracts-I.pdf`), target: "_blank" },
+                { label: "Register of Contracts - II", href: getPdfHref("register_of_contracts_2", `${NEW_URL}/Register_of_Contracts-Part-II.pdf`), target: "_blank" },
+                ...getPdfMenuItems("agm_notice", [
+                    { label: "Notice for the 110th AGM", href: `${NEWS_URL}/AGM_Notice_18_09_2025.pdf`, target: "_blank" },
+                    { label: "Notice for the 111th AGM", href: `${NEWS_URL}/AGM_Notice_17.09.2026.pdf`, target: "_blank" },
+                ]),
+                ...getPdfMenuItems("annual_report", [
+                    { label: "110th Annual Report", href: `${NEWS_URL}/110th_Clubs_Annual_Report_March_31_2025.pdf`, target: "_blank" },
+                    { label: "111th Annual Report", href: `${NEWS_URL}/111th_Annual_Report%202025-26.pdf`, target: "_blank" },
+                ]),
+
+                ...getPdfMenuItems("scrutinizer_report_agm", [
+                    { label: "Scrutinizer's Report (AGM)", href: `${NEWS_URL}/Scrutinizers_Report.pdf`, target: "_blank" },
+                ]),
+                ...getPdfMenuItems("scrutinizer_report_egm", [
+                    { label: "Scrutinizer's Report (EGM)", href: `${NEWS_URL}/Scrutinisers_Report-EGM.pdf`, target: "_blank" },
+                ]),
+                { label: "EGM Notice", href: getPdfHref("egm_notice", `${RWITC_UPLOAD_URL}/EGM_Notice_30_01_2026.pdf`), target: "_blank" },
                 { label: "Proceedings of EGM", href: `${RWITC_UPLOAD_URL}/Meeting.mp4`, target: "_blank" },
-                { label: "Scrutinizer's Report (EGM)", href: `${NEWS_URL}/Scrutinisers_Report-EGM.pdf`, target: "_blank" },
             ],
         },
         {
@@ -196,20 +229,20 @@ export default function TopHeader() {
             key: "racing",
             icon: <FaHorseHead />,
             children: [
-                { label: "Medication Rules 2024", href: `${NEW_URL}/Medication Rules.pdf`, target: "_blank" },
+                { label: "Medication Rules 2024", href: getPdfHref("medication_rules", `${NEW_URL}/Medication Rules.pdf`), target: "_blank" },
                 { label: "Beginners Guide", href: "menubar?type=beginners-guide" },
                 { label: "Sweepstake Entries", href: "race_details?type=sweepstakes" },
-                { label: "Rules of Racing", href: `${NEW_URL}/rulesofracing2025.pdf`, target: "_blank" },
-                { label: "Racing Calendar", href: `${STATIC_URL}/racingCalendar.pdf`, target: "_blank" },
+                { label: "Rules of Racing", href: getPdfHref("rules_of_racing", `${NEW_URL}/rulesofracing2025.pdf`), target: "_blank" },
+                { label: "Racing Calendar", href: getPdfHref("racing_calendar", `${STATIC_URL}/racingCalendar.pdf`), target: "_blank" },
                 { label: "Jockey's Statistics", href: "menubar?type=jockeystatistics" },
                 { label: "Jockey's Riding Weight", href: "menubar?type=jockeyridingweight" },
                 { label: "Trainer's Statistics", href: "menubar?type=trainerstatistics" },
-                { label: "Memorandum & Articles of Association", href: `${NEW_URL}/memorandum2025.pdf`, target: "_blank" },
+                { label: "Memorandum & Articles of Association", href: getPdfHref("memorandum_articles", `${NEW_URL}/memorandum2025.pdf`), target: "_blank" },
                 { label: "Notice From Stewards", href: "menubar?type=noticefromstewards" },
                 { label: "Ready Reckoner", href: "menubar?type=readyreckoner" },
                 { label: "Body Weight of Horses", href: "menubar?type=bodyweighthorse" },
                 { label: "Record Timings", href: "menubar?type=recordtimings" },
-                { label: "Standard Timings", href: `${NEW_URL}/standard_timings.pdf`, target: "_blank" },
+                { label: "Standard Timings", href: getPdfHref("standard_timings", `${NEW_URL}/standard_timings.pdf`), target: "_blank" },
                 { label: "Saddle Cloth Numbers", href: "menubar?type=saddleclothnumbers" },
 
             ],
@@ -236,7 +269,7 @@ export default function TopHeader() {
                 { label: "Overview", href: "menubar?type=membership-overview" },
                 { label: "Club Membership Privileges", href: "menubar?type=club-membership-privileges" },
                 { label: "Categories", href: "menubar?type=membership-categories" },
-                { label: "Affiliated Clubs with RWITC", href: `${NEWS_URL}/Affiliation.pdf`, target: "_blank" },
+                { label: "Affiliated Clubs with RWITC", href: "menubar?type=affiliated-clubs" },
             ],
         },
         {
@@ -268,8 +301,8 @@ export default function TopHeader() {
             icon: <FaCloudDownloadAlt />,
             children: [
                 { label: "Forms", href: "menubar?type=application-forms" },
-                { label: "Chart", href: `${NEW_URL}/aplication_forms/CHART.pdf`, target: "_blank" },
-                { label: "Prospectus", href: `${NEW_URL}/aplication_forms/PROSPECTUS.pdf`, target: "_blank" },
+                { label: "Chart", href: `${API_URL}/application_forms_download.php?doc=chart`, target: "_blank" },
+                { label: "Prospectus", href: `${API_URL}/application_forms_download.php?doc=prospectus`, target: "_blank" },
             ],
         },
     ];

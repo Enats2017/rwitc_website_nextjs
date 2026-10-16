@@ -1,18 +1,33 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import { getComeRacingPune } from "../../../services/Comeracingpuneservice"; 
 import "./PuneRaceCourse.css";
 
 export default function PuneRaceCourse() {
 
-    const points = [
-        "Built in 1830.",
-        "Total area: 118.5 acres.",
-        "Additional stabling at Empress Gardens (one km from the Race Course)",
-        "Racing from July to October.",
-        "Highlights: The Pune Derby, The RWITC Gold Cup, Independence Cup, Southern Command Cup and many more.",
-        "Venue for the annual sales of 2-year olds in February.",
-    ];
+    const [points, setPoints] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        let active = true;
+
+        async function load() {
+            try {
+                const data = await getComeRacingPune();
+                if (active) setPoints(data.points);
+            } catch (err) {
+                if (active) setError(err.message || "Unable to load Pune race course details.");
+            } finally {
+                if (active) setLoading(false);
+            }
+        }
+
+        load();
+        return () => { active = false; };
+    }, []);
 
     return (
 
@@ -34,11 +49,21 @@ export default function PuneRaceCourse() {
 
                     <div className="aboutContent">
 
-                        <ul className="memberList">
-                            {points.map((item, index) => (
-                                <li key={index}>{item}</li>
-                            ))}
-                        </ul>
+                        {loading && <p>Loading...</p>}
+
+                        {!loading && error && <p>{error}</p>}
+
+                        {!loading && !error && points.length === 0 && (
+                            <p>Details will be updated soon.</p>
+                        )}
+
+                        {!loading && !error && points.length > 0 && (
+                            <ul className="memberList">
+                                {points.map((item, index) => (
+                                    <li key={index}>{item}</li>
+                                ))}
+                            </ul>
+                        )}
 
                     </div>
 
