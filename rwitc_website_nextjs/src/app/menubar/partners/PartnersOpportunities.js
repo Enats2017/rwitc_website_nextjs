@@ -7,19 +7,41 @@ import "./PartnersOpportunities.css";
 
 const DEFAULT_TITLE = "Sponsorships At The RWITC Ltd";
 
-// Line marker used in the admin text: "## Recap of some key facts:"
-const LEAD_LINE = /^##\s+/;
+// Line markers used in the OLD plain-text content
+const LEAD_LINE = /^##\s+/;          // "## Recap of some key facts:"
+const BULLET_LINE = /^[-*•]\s+/;     // "- item"
+const NOTE_PREFIX = /^note:\s*/i;    // "Note: text"
 
-// Converts raw admin text into blocks: paragraphs and lead lines
-function parseBlocks(rawText) {
-    const lines = String(rawText).replace(/\r\n?/g, "\n").split("\n");
-    const blocks = [];
+const escapeHtml = (s) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// Old content was plain text. If the saved text has no HTML tags,
+// convert it to HTML (lead line / list / note / paragraph).
+function toHtml(rawText) {
+    const value = String(rawText || "").trim();
+    if (!value) return "";
+    if (/<[a-z][^>]*>/i.test(value)) return value;
+
+    const lines = value.replace(/\r\n?/g, "\n").split("\n");
+    let html = "";
     let para = [];
+    let list = [];
 
     const flushPara = () => {
         if (!para.length) return;
-        blocks.push({ type: "para", text: para.join(" ").trim() });
+        const text = para.join(" ").trim();
+        if (NOTE_PREFIX.test(text)) {
+            html += `<p><strong>Note:</strong> ${escapeHtml(text.replace(NOTE_PREFIX, ""))}</p>`;
+        } else {
+            html += `<p>${escapeHtml(text)}</p>`;
+        }
         para = [];
+    };
+
+    const flushList = () => {
+        if (!list.length) return;
+        html += `<ul>${list.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
+        list = [];
     };
 
     lines.forEach((line) => {
@@ -27,26 +49,36 @@ function parseBlocks(rawText) {
 
         if (!t) {
             flushPara();
+            flushList();
             return;
         }
 
         if (LEAD_LINE.test(t)) {
             flushPara();
-            blocks.push({ type: "lead", text: t.replace(LEAD_LINE, "") });
+            flushList();
+            html += `<p class="poLeadLine">${escapeHtml(t.replace(LEAD_LINE, ""))}</p>`;
             return;
         }
 
+        if (BULLET_LINE.test(t)) {
+            flushPara();
+            list.push(t.replace(BULLET_LINE, ""));
+            return;
+        }
+
+        flushList();
         para.push(t);
     });
 
     flushPara();
+    flushList();
 
-    return blocks;
+    return html;
 }
 
 export default function PartnersOpportunities() {
     const [title, setTitle] = useState(DEFAULT_TITLE);
-    const [blocks, setBlocks] = useState([]);
+    const [html, setHtml] = useState("");
 
     useEffect(() => {
         let active = true;
@@ -56,7 +88,7 @@ export default function PartnersOpportunities() {
                 if (!active || !data?.text) return;
 
                 if (data.title) setTitle(data.title);
-                setBlocks(parseBlocks(data.text));
+                setHtml(toHtml(data.text));
             })
             .catch(() => {});
 
@@ -79,17 +111,13 @@ export default function PartnersOpportunities() {
                 </div>
 
                 <div className="aboutCard">
-                    <div className="aboutContent">
-                        {blocks.map((block, i) =>
-                            block.type === "lead" ? (
-                                <p key={i} className="poLeadLine">
-                                    {block.text}
-                                </p>
-                            ) : (
-                                <p key={i}>{block.text}</p>
-                            )
-                        )}
-                    </div>
+                    {/* Content is sanitized on the server (admin panel) before saving */}
+                    {html && (
+                        <div
+                            className="aboutContent guideContent"
+                            dangerouslySetInnerHTML={{ __html: html }}
+                        />
+                    )}
                 </div>
             </div>
         </section>

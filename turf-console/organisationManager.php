@@ -4,6 +4,11 @@ include_once('../bootstrap.php');
 require_once("../lib/users.class.php");
 require_once("../lib/userchecks.php");
 require_once("../lib/permissions.php");
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../rwitc_website_api/config/config.php';
+
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 
 session_start();
 
@@ -14,7 +19,8 @@ $userObj = new Users($db);
 // ---------------------------------------------------------------
 $maxContent = 120000;                           // max size of the cleaned HTML (bytes, text tabs)
 $maxTitle   = 200;                              // max characters allowed in the title
-$newsDir    = dirname(__DIR__) . '/news/';      // Upload folder (used only for the Working Group PDF)
+$newsDir    = dirname(__DIR__) . '/news/';      // Old local upload folder (only used to clean up old Working Group files)
+$wgS3Key    = 'uploads/club/working_group.pdf'; // Working Group PDF always lives at this one S3 key (replaced on every upload)
 
 // Sections (tabs) of this module: key => label
 // Every section keeps exactly ONE row in organisation_management.
@@ -70,16 +76,60 @@ function orgSetFlash($text, $type)
     $_SESSION['org_flash'] = array('text' => $text, 'type' => $type);
 }
 
-function orgDeleteFile($dir, $name)
+function orgS3Client()
 {
-    $name = basename((string)$name);
+    return new S3Client(array(
+        'version'     => 'latest',
+        'region'      => AWS_REGION,
+        'credentials' => array('key' => AWS_ACCESS_KEY_ID, 'secret' => AWS_SECRET_ACCESS_KEY),
+    ));
+}
+
+function orgIsUrl($value)
+{
+    return (bool)preg_match('#^https?://#i', (string)$value);
+}
+
+// S3 key from a stored S3 URL (only keys under uploads/club/ are accepted)
+function orgKeyFromUrl($url)
+{
+    $path = urldecode((string)parse_url((string)$url, PHP_URL_PATH));
+    $pos  = strpos($path, 'uploads/club/');
+    return $pos === false ? '' : substr($path, $pos);
+}
+
+// Deletes a stored Working Group file.
+// - old local file name -> removed from the news/ folder
+// - S3 URL -> removed from S3, unless it is the key that was just replaced ($skipKey)
+function orgDeleteStored($dir, $stored, $skipKey = '')
+{
+    $stored = (string)$stored;
+    if ($stored === '') {
+        return;
+    }
+
+    if (orgIsUrl($stored)) {
+        $key = orgKeyFromUrl($stored);
+        if ($key === '' || ($skipKey !== '' && $key === $skipKey)) {
+            return;
+        }
+        try {
+            orgS3Client()->deleteObject(array('Bucket' => AWS_BUCKET, 'Key' => $key));
+        } catch (AwsException $e) {
+            error_log('Working Group S3 delete failed: ' . $e->getMessage());
+        }
+        return;
+    }
+
+    $name = basename($stored);
     if ($name !== '' && is_file($dir . $name)) {
         @unlink($dir . $name);
     }
 }
 
-// Validates and saves the PDF. Returns the saved file name on success, or '' and sets $err on failure.
-function orgUploadPdf($dir, &$err)
+// Validates the uploaded PDF and uploads it to S3 (always the same key, so it replaces the old file).
+// Returns the file URL on success, or '' and sets $err on failure.
+function orgUploadPdf($key, &$err)
 {
     if (!isset($_FILES['report_file']) || $_FILES['report_file']['error'] !== UPLOAD_ERR_OK) {
         $err = 'File upload failed. Please try again (check file size limit).';
@@ -104,21 +154,45 @@ function orgUploadPdf($dir, &$err)
         return '';
     }
 
-    $clean = preg_replace('/[^A-Za-z0-9._-]/', '_', $orig);
-    $saved = time() . '_' . $clean;
-
-    if (!move_uploaded_file($tmp, $dir . $saved)) {
-        $err = 'Could not save file on server (check news/ folder permission).';
+    try {
+        $result = orgS3Client()->putObject(array(
+            'Bucket'      => AWS_BUCKET,
+            'Key'         => $key,
+            'SourceFile'  => $tmp,
+            'ContentType' => 'application/pdf',
+        ));
+        $url = isset($result['ObjectURL']) ? (string)$result['ObjectURL'] : '';
+        if ($url === '') {
+            $err = 'Could not upload the PDF. Please try again.';
+        }
+        return $url;
+    } catch (AwsException $e) {
+        error_log('Working Group S3 upload failed: ' . $e->getMessage());
+        $err = 'Could not upload the PDF. Please try again.';
         return '';
     }
-
-    return $saved;
 }
 
-// Display name of a stored file (timestamp prefix removed)
-function orgFileLabel($name)
+// Display name of a stored file
+function orgFileLabel($stored)
 {
-    return preg_replace('/^\d+_/', '', basename((string)$name));
+    $stored = (string)$stored;
+    if (orgIsUrl($stored)) {
+        $name = basename(urldecode((string)parse_url($stored, PHP_URL_PATH)));
+    } else {
+        $name = preg_replace('/^\d+_/', '', basename($stored));
+    }
+    return $name === '' ? 'working_group.pdf' : $name;
+}
+
+// Link to open a stored file (S3 URL as it is, old local file from news/)
+function orgFileUrl($stored)
+{
+    $stored = (string)$stored;
+    if (orgIsUrl($stored)) {
+        return $stored;
+    }
+    return 'news/' . rawurlencode($stored);
 }
 
 // The ONE row of a section. $secKey is whitelisted, so it is safe to use in SQL.
@@ -321,9 +395,9 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $err = 'Content is too long. Please shorten it.';
     }
 
-    $newFile      = '';   // newly uploaded file
+    $newUrl       = '';   // URL of the newly uploaded file
     $fileToKeep   = '';   // old file to keep
-    $fileToDelete = '';   // old file to delete
+    $fileToDelete = '';   // old file to delete (old local file or a different S3 file)
 
     $oldIsFile = ($oldRow && $oldRow['type'] === 'file' && (string)$oldRow['file_name'] !== '');
 
@@ -332,9 +406,10 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $hasUpload = isset($_FILES['report_file']) && $_FILES['report_file']['error'] !== UPLOAD_ERR_NO_FILE;
 
         if ($hasUpload) {
-            $newFile = orgUploadPdf($newsDir, $err);
+            // Same S3 key every time -> the old PDF is replaced, not duplicated
+            $newUrl = orgUploadPdf($wgS3Key, $err);
             if ($err === '' && $oldIsFile) {
-                $fileToDelete = $oldRow['file_name'];   // old PDF is removed automatically
+                $fileToDelete = $oldRow['file_name'];   // an old local file is cleaned up; the same S3 key is skipped
             }
         } elseif ($oldIsFile) {
             $fileToKeep = $oldRow['file_name'];
@@ -345,12 +420,7 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($err === '') {
 
-        // text tab: if the row was a file before, remove that old file
-        if ($textOnly && $oldIsFile) {
-            $fileToDelete = $oldRow['file_name'];
-        }
-
-        $finalFile = (!$textOnly) ? ($newFile !== '' ? $newFile : $fileToKeep) : '';
+        $finalFile = (!$textOnly) ? ($newUrl !== '' ? $newUrl : $fileToKeep) : '';
 
         $titleSql = ($title !== '') ? "'" . $db->escape($title) . "'" : "NULL";
         $textSql  = $textOnly ? "'" . $db->escape($text) . "'" : "NULL";
@@ -379,15 +449,17 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
             orgSetFlash($textOnly ? 'Content updated successfully.' : 'PDF updated successfully.', 'success');
 
-            if ($fileToDelete !== '') {
-                orgDeleteFile($newsDir, $fileToDelete);
+            // Working Group: remove an old local file (the S3 file itself was already replaced in place)
+            if (!$textOnly && $fileToDelete !== '') {
+                orgDeleteStored($newsDir, $fileToDelete, $wgS3Key);
+            }
+
+            // Text tab: if this section was a file before, remove that old file completely
+            if ($textOnly && $oldIsFile) {
+                orgDeleteStored($newsDir, $oldRow['file_name'], '');
             }
         } catch (Exception $e) {
             error_log('Organisation save error: ' . $e->getMessage());
-            // if the DB save fails, remove the newly uploaded file
-            if ($newFile !== '') {
-                orgDeleteFile($newsDir, $newFile);
-            }
             orgSetFlash('Database error. Could not save.', 'error');
         }
     } else {
@@ -620,7 +692,7 @@ $design->writeContentPageStyles();
                         <?php if ($fFile !== '') { ?>
                             <div class="ar-current" style="margin:0 0 12px;">
                                 Current file:
-                                <a href="news/<?php echo rawurlencode($fFile); ?>" target="_blank"><?php echo htmlspecialchars(orgFileLabel($fFile)); ?></a>
+                                <a href="<?php echo htmlspecialchars(orgFileUrl($fFile)); ?>" target="_blank" rel="noopener"><?php echo htmlspecialchars(orgFileLabel($fFile)); ?></a>
                                 <br><span style="color:#7a8c84;">If you choose a new file, it will replace this one. Otherwise the current file is kept.</span>
                             </div>
                         <?php } ?>
@@ -704,7 +776,7 @@ $design->writeContentPageStyles();
                                     </td>
                                     <td>
                                         <div class="ar-act">
-                                            <a class="ar-icon-btn" title="View" target="_blank" href="news/<?php echo rawurlencode($fFile); ?>">
+                                            <a class="ar-icon-btn" title="View" target="_blank" rel="noopener" href="<?php echo htmlspecialchars(orgFileUrl($fFile)); ?>">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </div>
