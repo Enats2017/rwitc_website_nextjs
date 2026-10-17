@@ -8,9 +8,17 @@ import "./PartnersOverview.css";
 // Matches numbered lines like "1. text" or "1) text"
 const NUMBERED_LINE = /^\d+[.)]\s+/;
 
-// Converts raw admin text into blocks: paragraphs and numbered lists
-function parseBlocks(rawText) {
-    return String(rawText)
+const escapeHtml = (s) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// Old content was plain text (blank line = new paragraph, "1. text" lines = numbered list).
+// If the saved text has no HTML tags, convert it to <p> / <ol> blocks.
+function toHtml(rawText) {
+    const value = String(rawText || "").trim();
+    if (!value) return "";
+    if (/<[a-z][^>]*>/i.test(value)) return value;
+
+    return value
         .replace(/\r\n?/g, "\n")
         .split(/\n\s*\n/)
         .map((block) => block.trim())
@@ -24,18 +32,19 @@ function parseBlocks(rawText) {
             const isList = lines.length > 0 && lines.every((l) => NUMBERED_LINE.test(l));
 
             if (isList) {
-                return {
-                    type: "list",
-                    items: lines.map((l) => l.replace(NUMBERED_LINE, "")),
-                };
+                const items = lines
+                    .map((l) => `<li>${escapeHtml(l.replace(NUMBERED_LINE, ""))}</li>`)
+                    .join("");
+                return `<ol>${items}</ol>`;
             }
 
-            return { type: "para", text: lines.join(" ") };
-        });
+            return `<p>${escapeHtml(lines.join(" "))}</p>`;
+        })
+        .join("");
 }
 
 export default function PartnersOverview() {
-    const [blocks, setBlocks] = useState([]);
+    const [html, setHtml] = useState("");
 
     useEffect(() => {
         let active = true;
@@ -43,7 +52,7 @@ export default function PartnersOverview() {
         getPartnersOverview()
             .then((data) => {
                 if (!active || !data?.text) return;
-                setBlocks(parseBlocks(data.text));
+                setHtml(toHtml(data.text));
             })
             .catch(() => {});
 
@@ -66,19 +75,13 @@ export default function PartnersOverview() {
                 </div>
 
                 <div className="aboutCard">
-                    <div className="aboutContent">
-                        {blocks.map((block, i) =>
-                            block.type === "list" ? (
-                                <ol key={i} className="spNumberedList">
-                                    {block.items.map((item, j) => (
-                                        <li key={j}>{item}</li>
-                                    ))}
-                                </ol>
-                            ) : (
-                                <p key={i}>{block.text}</p>
-                            )
-                        )}
-                    </div>
+                    {/* Content is sanitized on the server (admin panel) before saving */}
+                    {html && (
+                        <div
+                            className="aboutContent guideContent"
+                            dangerouslySetInnerHTML={{ __html: html }}
+                        />
+                    )}
                 </div>
             </div>
         </section>

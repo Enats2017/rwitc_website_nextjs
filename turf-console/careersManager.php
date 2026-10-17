@@ -7,12 +7,207 @@ require_once("../lib/permissions.php");
 
 session_start();
 
+// ---------------------------------------------------------------
+// RICH TEXT HELPERS (sanitizer) - needs the PHP "dom" extension (php-xml)
+// ---------------------------------------------------------------
+// Tags that are allowed to stay. Everything else is unwrapped (text kept, tag removed).
+function rwAllowedTags() {
+    return array(
+        'p' => 1, 'br' => 1, 'strong' => 1, 'b' => 1, 'em' => 1, 'i' => 1, 'u' => 1, 's' => 1,
+        'sub' => 1, 'sup' => 1, 'span' => 1,
+        'h2' => 1, 'h3' => 1, 'h4' => 1, 'blockquote' => 1, 'hr' => 1,
+        'ul' => 1, 'ol' => 1, 'li' => 1, 'a' => 1,
+        'table' => 1, 'thead' => 1, 'tbody' => 1, 'tfoot' => 1, 'tr' => 1, 'th' => 1, 'td' => 1,
+        'caption' => 1, 'colgroup' => 1, 'col' => 1
+    );
+}
+
+// Tags that are removed completely together with everything inside them.
+function rwDroppedTags() {
+    return array(
+        'script' => 1, 'style' => 1, 'iframe' => 1, 'object' => 1, 'embed' => 1, 'form' => 1,
+        'svg' => 1, 'math' => 1, 'link' => 1, 'meta' => 1, 'noscript' => 1, 'template' => 1,
+        'textarea' => 1, 'select' => 1, 'button' => 1, 'input' => 1, 'applet' => 1,
+        'base' => 1, 'title' => 1, 'head' => 1
+    );
+}
+
+// Only these CSS properties (with safe values) survive in style="..."
+function rwCleanStyle($style) {
+    $rules = array(
+        'text-align'      => '/^(left|right|center|justify)$/i',
+        'text-decoration' => '/^(underline|line-through|none)$/i',
+        'font-size'       => '/^\d{1,3}(\.\d+)?(px|pt|em|rem|%)$/i',
+        'list-style-type' => '/^(none|disc|circle|square|decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|lower-greek)$/i',
+        'width'           => '/^\d{1,4}(\.\d+)?(px|%)$/i',
+        'vertical-align'  => '/^(top|middle|bottom|baseline)$/i'
+    );
+
+    $out = array();
+    foreach (explode(';', (string)$style) as $decl) {
+        $parts = explode(':', $decl, 2);
+        if (count($parts) !== 2) {
+            continue;
+        }
+        $prop = strtolower(trim($parts[0]));
+        $val  = trim($parts[1]);
+        if (isset($rules[$prop]) && preg_match($rules[$prop], $val)) {
+            $out[] = $prop . ': ' . $val;
+        }
+    }
+    return implode('; ', $out);
+}
+
+function rwCleanAttributes($el, $tag) {
+    $names = array();
+    foreach ($el->attributes as $a) {
+        $names[] = $a->nodeName;
+    }
+
+    foreach ($names as $name) {
+        $lname = strtolower($name);
+        $val   = $el->getAttribute($name);
+        $keep  = false;
+
+        if ($lname === 'style') {
+            $clean = rwCleanStyle($val);
+            if ($clean !== '') {
+                $el->setAttribute('style', $clean);
+                $keep = true;
+            }
+        } elseif ($tag === 'a' && $lname === 'href') {
+            // strip control chars/spaces first so "java\nscript:" tricks do not pass
+            $test = preg_replace('/[\x00-\x20\x7f]+/', '', $val);
+            if (preg_match('#^(https?:|mailto:|tel:|/|\#)#i', $test)) {
+                $keep = true;
+            }
+        } elseif ($tag === 'a' && $lname === 'target') {
+            $keep = ($val === '_blank');
+        } elseif (($tag === 'td' || $tag === 'th') && ($lname === 'colspan' || $lname === 'rowspan')) {
+            $keep = (bool)preg_match('/^\d{1,2}$/', $val);
+        } elseif ($tag === 'table' && $lname === 'border') {
+            $keep = (bool)preg_match('/^\d$/', $val);
+        }
+
+        if (!$keep) {
+            $el->removeAttribute($name);
+        }
+    }
+
+    if ($tag === 'a') {
+        if ($el->getAttribute('target') === '_blank') {
+            $el->setAttribute('rel', 'noopener noreferrer');
+        } else {
+            $el->removeAttribute('rel');
+        }
+    }
+}
+
+function rwCleanNode($node) {
+    $allowed = rwAllowedTags();
+    $drop    = rwDroppedTags();
+
+    $children = array();
+    foreach ($node->childNodes as $c) {
+        $children[] = $c;
+    }
+
+    foreach ($children as $child) {
+        if ($child->nodeType === XML_TEXT_NODE) {
+            continue;
+        }
+        if ($child->nodeType !== XML_ELEMENT_NODE) {   // comments, CDATA, processing instructions
+            $node->removeChild($child);
+            continue;
+        }
+
+        $tag = strtolower($child->nodeName);
+
+        if (isset($drop[$tag])) {
+            $node->removeChild($child);
+            continue;
+        }
+
+        rwCleanNode($child);   // clean the inside first
+
+        if (!isset($allowed[$tag])) {
+            // unknown tag: keep its (already cleaned) content, drop the tag itself
+            while ($child->firstChild) {
+                $node->insertBefore($child->firstChild, $child);
+            }
+            $node->removeChild($child);
+            continue;
+        }
+
+        rwCleanAttributes($child, $tag);
+    }
+}
+
+function rwSanitizeHtml($html) {
+    $html = trim((string)$html);
+    if ($html === '') {
+        return '';
+    }
+    if (!class_exists('DOMDocument')) {
+        return false;
+    }
+
+    $prev = libxml_use_internal_errors(true);
+    $doc = new DOMDocument();
+    $doc->loadHTML('<?xml encoding="utf-8" ?><div>' . $html . '</div>', LIBXML_HTML_NODEFDTD);
+    libxml_clear_errors();
+    libxml_use_internal_errors($prev);
+
+    $root = $doc->getElementsByTagName('div')->item(0);
+    if (!$root) {
+        return '';
+    }
+
+    rwCleanNode($root);
+
+    $out = '';
+    foreach ($root->childNodes as $child) {
+        $out .= $doc->saveHTML($child);
+    }
+    return trim($out);
+}
+
+// Visible text only (tags removed, entities decoded, nbsp treated as space)
+function rwPlainText($html) {
+    $text = html_entity_decode(strip_tags((string)$html), ENT_QUOTES, 'UTF-8');
+    $text = preg_replace('/\x{00A0}/u', ' ', $text);
+    return trim($text);
+}
+
+// Old content was plain text (blank line = new paragraph). If it has no HTML tags, convert it.
+function rwTextToHtml($text) {
+    $value = trim((string)$text);
+    if ($value === '') {
+        return '';
+    }
+    if (preg_match('/<[a-z][^>]*>/i', $value)) {
+        return $value;
+    }
+
+    $value = str_replace(array("\r\n", "\r"), "\n", $value);
+    $out = '';
+    foreach (preg_split('/\n\s*\n/', $value) as $p) {
+        $p = trim($p);
+        if ($p === '') {
+            continue;
+        }
+        $out .= '<p>' . nl2br(htmlspecialchars($p, ENT_QUOTES, 'UTF-8')) . '</p>';
+    }
+    return $out;
+}
+
+
 $userObj = new Users($db);
 
 // ---------------------------------------------------------------
 // SETTINGS
 // ---------------------------------------------------------------
-$maxChars = 50000;   // max characters allowed in the content
+$maxChars = 50000;   // max characters of saved HTML (keep the content_text column TEXT or MEDIUMTEXT)
 $maxTitle = 200;     // max characters allowed in the title
 
 // ---------------------------------------------------------------
@@ -53,12 +248,14 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $title   = isset($_POST['report_title']) ? trim($_POST['report_title']) : '';
     $content = isset($_POST['content']) ? trim($_POST['content']) : '';
-    // normalise line endings so paragraphs are always separated by "\n\n"
-    $content = str_replace("\r\n", "\n", $content);
-    $content = str_replace("\r", "\n", $content);
+
+    // The editor sends HTML. Never trust it: clean it on the server before saving.
+    $content = rwSanitizeHtml($content);
 
     $err = '';
-    if ($content === '') {
+    if ($content === false) {
+        $err = 'Server cannot process the content (PHP DOM extension is missing).';
+    } elseif (rwPlainText($content) === '') {
         $err = 'Content is required.';
     } elseif (mb_strlen($content) > $maxChars) {
         $err = 'Content is too long (max ' . $maxChars . ' characters).';
@@ -105,7 +302,8 @@ if (empty($secmsg)) {
     $row = $db->getSingleRowAssoc("SELECT title, content_text, report_date FROM careers WHERE id = 1");
     if ($row) {
         $currentTitle = (string)$row['title'];
-        $currentContent = (string)$row['content_text'];
+        // old plain text content is converted to <p> blocks so the editor shows it properly
+        $currentContent = rwTextToHtml($row['content_text']);
         $lastUpdated = $row['report_date'] ? date('d M Y', strtotime($row['report_date'])) : '';
     }
 }
@@ -149,13 +347,14 @@ $design->writeContentPageStyles();
     .ar-input::placeholder { color: #9aa9a2; }
     .ar-input:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
     .ar-input.invalid { border-color: #c0392b; }
-    .ar-textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; min-height: 340px; resize: vertical; line-height: 1.6; transition: border-color .15s ease, box-shadow .15s ease; }
-    .ar-textarea::placeholder { color: #9aa9a2; }
-    .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-textarea.invalid { border-color: #c0392b; }
-    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .ar-textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; font-size: 15px; font-family: inherit; min-height: 340px; border: 1px solid #d3d9d6; border-radius: 8px; }
+    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; line-height: 1.6; }
     .ar-err { color: #c0392b; font-size: 12px; margin-top: 5px; display: none; }
     .ar-err.show { display: block; }
+
+    /* editor look */
+    .tox-tinymce { border: 1px solid #d3d9d6 !important; border-radius: 8px !important; }
+    .tox-tinymce.ar-invalid { border-color: #c0392b !important; }
 
     .ar-actions { display: flex; gap: 10px; margin-top: 8px; padding-top: 18px; border-top: 1px solid #eef1ef; flex-wrap: wrap; }
     .ar-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; font-size: 15px; font-weight: 600; font-family: inherit; border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all .15s ease; text-decoration: none; }
@@ -167,13 +366,6 @@ $design->writeContentPageStyles();
     .ar-updated { font-size: 13px; color: #7a8c84; margin-bottom: 14px; }
     .ar-updated i { color: #0f5c33; margin-right: 4px; }
 
-    /* ---------- LIVE PREVIEW ---------- */
-    .ar-preview { background: #fff; border: 1px solid #e2e6e4; border-radius: 16px; padding: 26px 30px; box-shadow: 0 6px 20px rgba(11, 61, 36, 0.06); }
-    .ar-preview h3 { font-size: 18px; font-weight: 700; color: #2b332f; margin: 0 0 16px; }
-    .ar-preview p { font-style: italic; color: #4b5563; font-size: 14.5px; line-height: 1.9; margin: 0 0 18px !important; text-align: left !important; }
-    .ar-preview > :last-child { margin-bottom: 0 !important; }
-    .ar-preview-empty { color: #9aa9a2; font-size: 14px; }
-
     html, body { scrollbar-width: none; -ms-overflow-style: none; }
     html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
@@ -184,14 +376,12 @@ $design->writeContentPageStyles();
     @media (max-width: 700px) {
         .ar-title { font-size: 20px; }
         .ar-card { padding: 16px; border-radius: 10px; }
-        .ar-preview { padding: 18px 16px; }
     }
     @media (max-width: 560px) {
         .ar-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
         .ar-subtitle { font-size: 13px; }
         .ar-actions { flex-direction: column; }
         .ar-btn { width: 100%; }
-        .ar-textarea { min-height: 260px; }
     }
 </style>
 
@@ -216,7 +406,7 @@ $design->writeContentPageStyles();
         <div class="ar-header">
             <div>
                 <h1 class="ar-title">CAREERS</h1>
-                <p class="ar-subtitle">Edit the text shown on the website page</p>
+                <p class="ar-subtitle">Edit the content shown on the website page. Saving always updates the same entry.</p>
             </div>
         </div>
 
@@ -251,9 +441,12 @@ $design->writeContentPageStyles();
 
                 <div class="ar-field">
                     <label for="arContent">Content <span class="req">*</span></label>
-                    <textarea id="arContent" name="content" class="ar-textarea" placeholder="Write the content here..."><?php echo htmlspecialchars($currentContent); ?></textarea>
+                    <textarea id="arContent" name="content" class="ar-textarea"><?php echo htmlspecialchars($currentContent); ?></textarea>
                     <div class="ar-hint">
-                        <span>Leave a blank line between paragraphs. Each paragraph shows as a separate block on the website.</span>
+                        <span>
+                            Bold / Italic / Underline toolbar se karo &nbsp;|&nbsp; Heading 2 = main underlined heading &nbsp;|&nbsp; Heading 3 = green underlined sub-heading<br>
+                            Numbered list arrow = choose "Lower Roman" for (i), (ii), (iii). Tables: first row ko header row banao (Table &gt; Row &gt; Row properties &gt; Row type: Header).
+                        </span>
                         <span id="arCount">0 characters</span>
                     </div>
                     <div class="ar-err" id="errContent">Please write some content.</div>
@@ -272,15 +465,11 @@ $design->writeContentPageStyles();
 
         </div>
 
-
-        <!-- ===================== LIVE PREVIEW ===================== -->
-        <div class="ar-card">
-            <div class="ar-card-title">Preview</div>
-            <div class="ar-preview" id="arPreview"></div>
-        </div>
-
     </div>
 
+
+    <!-- If your About manager already loads TinyMCE from somewhere else, use the same <script> line here. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
 
     <script type="text/javascript">
         (function() {
@@ -289,7 +478,6 @@ $design->writeContentPageStyles();
             var titleIn = document.getElementById('arTitle');
             var area    = document.getElementById('arContent');
             var counter = document.getElementById('arCount');
-            var preview = document.getElementById('arPreview');
             var revert  = document.getElementById('arRevert');
             var msgBox  = document.getElementById('arMsg');
             var savedTitle   = titleIn.value;
@@ -297,6 +485,20 @@ $design->writeContentPageStyles();
             var maxChars = <?php echo (int)$maxChars; ?>;
             var maxTitle = <?php echo (int)$maxTitle; ?>;
             var msgTimer = null;
+
+            function editor() {
+                return (window.tinymce && tinymce.get('arContent')) ? tinymce.get('arContent') : null;
+            }
+
+            function plainText() {
+                var ed = editor();
+                return (ed ? ed.getContent({ format: 'text' }) : area.value).replace(/\u00a0/g, ' ').trim();
+            }
+
+            function htmlLength() {
+                var ed = editor();
+                return (ed ? ed.getContent() : area.value).length;
+            }
 
             function showMsg(text, type) {
                 msgBox.className = 'message ' + (type || '');
@@ -308,83 +510,88 @@ $design->writeContentPageStyles();
                 }, 4000);
             }
 
-            function setErr(errId, inputEl, show, text) {
-                var e = document.getElementById(errId);
+            function setTitleErr(show, text) {
+                var e = document.getElementById('errTitle');
                 if (text) e.textContent = text;
                 e.classList.toggle('show', show);
-                inputEl.classList.toggle('invalid', show);
+                titleIn.classList.toggle('invalid', show);
             }
 
-            // Preview: optional title, then blank lines split the text into paragraphs
-            function renderPreview() {
-                var text = area.value.replace(/\r\n?/g, '\n').trim();
-                var title = titleIn.value.trim();
-                preview.innerHTML = '';
-
-                if (text === '') {
-                    var empty = document.createElement('div');
-                    empty.className = 'ar-preview-empty';
-                    empty.textContent = 'Nothing to preview yet.';
-                    preview.appendChild(empty);
-                    return;
-                }
-
-                if (title !== '') {
-                    var h = document.createElement('h3');
-                    h.textContent = title;
-                    preview.appendChild(h);
-                }
-
-                var parts = text.split(/\n\s*\n/);
-                for (var i = 0; i < parts.length; i++) {
-                    var p = document.createElement('p');
-                    p.textContent = parts[i].trim();   // textContent keeps it safe from HTML
-                    preview.appendChild(p);
-                }
+            function setContentErr(show, text) {
+                var e = document.getElementById('errContent');
+                if (text) e.textContent = text;
+                e.classList.toggle('show', show);
+                var ed = editor();
+                var box = ed ? ed.getContainer() : area;
+                if (box) box.classList.toggle(ed ? 'ar-invalid' : 'invalid', show);
             }
 
             function update() {
-                counter.textContent = area.value.length + ' characters';
-                if (area.value.trim()) setErr('errContent', area, false);
-                if (titleIn.value.trim().length <= maxTitle) setErr('errTitle', titleIn, false);
-                renderPreview();
+                counter.textContent = plainText().length + ' characters';
+                if (plainText()) setContentErr(false);
+                if (titleIn.value.trim().length <= maxTitle) setTitleErr(false);
             }
 
-            area.addEventListener('input', update);
             titleIn.addEventListener('input', update);
+
+            tinymce.init({
+                selector: '#arContent',
+                height: 480,
+                menubar: false,
+                branding: false,
+                promotion: false,
+                plugins: 'advlist lists link table code',
+                toolbar: 'undo redo | blocks fontsize | bold italic underline | alignleft aligncenter alignright | bullist numlist | link table | removeformat | code',
+                block_formats: 'Paragraph=p; Heading 2=h2; Heading 3=h3',
+                font_size_formats: '12px 13px 14px 15px 16px 18px 20px 24px',
+                advlist_number_styles: 'default,lower-alpha,lower-roman,upper-alpha,upper-roman',
+                link_default_target: '_blank',
+                convert_urls: false,
+                relative_urls: false,
+                content_style:
+                    'body{font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#2b332f;padding:8px 12px}' +
+                    'h2{font-size:22px;font-weight:800;text-decoration:underline}' +
+                    'h3{font-size:19px;font-weight:800;color:#16a34a;text-decoration:underline}' +
+                    'table{border-collapse:collapse;width:100%}th,td{border:1px solid #d3d9d6;padding:8px}' +
+                    'thead th,thead td{background:#d9ead9;color:#14532d;font-weight:800}',
+                setup: function(ed) {
+                    ed.on('init', update);
+                    ed.on('input change keyup SetContent Undo Redo', update);
+                }
+            });
 
             revert.addEventListener('click', function() {
                 titleIn.value = savedTitle;
-                area.value = savedContent;
-                setErr('errContent', area, false);
-                setErr('errTitle', titleIn, false);
+                var ed = editor();
+                if (ed) ed.setContent(savedContent); else area.value = savedContent;
+                setContentErr(false);
+                setTitleErr(false);
                 update();
             });
 
             form.addEventListener('submit', function(e) {
-                var v = area.value.trim();
+                if (window.tinymce) tinymce.triggerSave();   // copy editor HTML into the textarea
+
                 var t = titleIn.value.trim();
 
-                if (!v) {
+                if (!plainText()) {
                     e.preventDefault();
-                    setErr('errContent', area, true, 'Please write some content.');
+                    setContentErr(true, 'Please write some content.');
                     showMsg('Please fill all required fields correctly.', 'error');
                     return;
                 }
-                if (v.length > maxChars) {
+                if (htmlLength() > maxChars) {
                     e.preventDefault();
-                    setErr('errContent', area, true, 'Content is too long (max ' + maxChars + ' characters).');
+                    setContentErr(true, 'Content is too long (max ' + maxChars + ' characters).');
                     showMsg('Content is too long.', 'error');
                     return;
                 }
                 if (t.length > maxTitle) {
                     e.preventDefault();
-                    setErr('errTitle', titleIn, true, 'Title is too long (max ' + maxTitle + ' characters).');
+                    setTitleErr(true, 'Title is too long (max ' + maxTitle + ' characters).');
                     showMsg('Title is too long.', 'error');
                 }
             });
-
-            update();
 
         })();
     </script>
