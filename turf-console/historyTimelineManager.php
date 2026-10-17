@@ -12,8 +12,8 @@ $userObj = new Users($db);
 // ---------------------------------------------------------------
 // SETTINGS
 // ---------------------------------------------------------------
-$maxChars = 50000;   // max characters allowed in the content
-$maxTitle = 200;     // max characters allowed in the title
+$maxContent = 120000;   // max size of the cleaned HTML (bytes)
+$maxTitle   = 200;      // max characters allowed in the title
 
 // Sections (tabs) of this module: key => label
 // Every section keeps exactly ONE row in history_timeline.
@@ -82,6 +82,134 @@ function historyHtmlUrl($sec)
     return 'turf-console/historyTimelineManager.php?sec=' . urlencode($sec);
 }
 
+// Old plain-text content -> HTML.
+// Timeline tab: every non-empty line ("Year | Text") becomes one paragraph.
+// Other tab: a blank line separates paragraphs, single line breaks stay as <br>.
+// If the content already contains HTML tags it is returned unchanged.
+function historyLegacyToHtml($text, $isTimeline)
+{
+    $text = (string)$text;
+    if (preg_match('/<[a-z][^>]*>/i', $text)) {
+        return $text;
+    }
+    $text = str_replace(array("\r\n", "\r"), "\n", trim($text));
+    if ($text === '') {
+        return '';
+    }
+
+    $out = '';
+    if ($isTimeline) {
+        foreach (explode("\n", $text) as $line) {
+            $line = trim($line);
+            if ($line !== '') {
+                $out .= '<p>' . htmlspecialchars($line, ENT_QUOTES, 'UTF-8') . '</p>';
+            }
+        }
+    } else {
+        foreach (preg_split('/\n\s*\n/', $text) as $part) {
+            $part = trim($part);
+            if ($part !== '') {
+                $out .= '<p>' . nl2br(htmlspecialchars($part, ENT_QUOTES, 'UTF-8')) . '</p>';
+            }
+        }
+    }
+    return $out;
+}
+
+// HTML sanitizer (allow-list). Keeps bold/italic/lists/links/tables, text-align, font-size and list style only.
+function historySanitizeHtml($html)
+{
+    $html = trim((string)$html);
+    if ($html === '') {
+        return '';
+    }
+
+    $allowedTags = array('p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'sub', 'sup', 'span', 'div',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'hr',
+        'a', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th');
+    $dropTags = array('script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button',
+        'textarea', 'select', 'link', 'meta', 'svg', 'math', 'head', 'title', 'xml', 'img');
+
+    $previous = libxml_use_internal_errors(true);
+    $doc = new DOMDocument('1.0', 'UTF-8');
+    $doc->loadHTML('<?xml encoding="utf-8" ?><div>' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+
+    $root = $doc->getElementsByTagName('div')->item(0);
+    if (!$root) {
+        return '';
+    }
+
+    $clean = function (DOMNode $node) use (&$clean, $allowedTags, $dropTags) {
+        $children = array();
+        foreach ($node->childNodes as $child) {
+            $children[] = $child;
+        }
+        foreach ($children as $child) {
+            if ($child->nodeType === XML_TEXT_NODE) {
+                continue;
+            }
+            if ($child->nodeType !== XML_ELEMENT_NODE) {
+                $node->removeChild($child);
+                continue;
+            }
+            $tag = strtolower($child->nodeName);
+            if (in_array($tag, $dropTags, true)) {
+                $node->removeChild($child);
+                continue;
+            }
+            $clean($child);
+            if (!in_array($tag, $allowedTags, true)) {
+                while ($child->firstChild) {
+                    $node->insertBefore($child->firstChild, $child);
+                }
+                $node->removeChild($child);
+                continue;
+            }
+
+            $href = $child->getAttribute('href');
+            $style = $child->getAttribute('style');
+            $colspan = (int)$child->getAttribute('colspan');
+            $rowspan = (int)$child->getAttribute('rowspan');
+            while ($child->attributes->length > 0) {
+                $child->removeAttributeNode($child->attributes->item(0));
+            }
+
+            if ($tag === 'a' && preg_match('#^(https?://|mailto:|tel:)#i', trim($href))) {
+                $child->setAttribute('href', trim($href));
+                $child->setAttribute('target', '_blank');
+                $child->setAttribute('rel', 'noopener noreferrer');
+            }
+            if ($tag === 'td' || $tag === 'th') {
+                if ($colspan > 1) $child->setAttribute('colspan', (string)$colspan);
+                if ($rowspan > 1) $child->setAttribute('rowspan', (string)$rowspan);
+            }
+
+            $safeStyle = '';
+            if ($style !== '' && preg_match('/text-align\s*:\s*(left|right|center|justify)/i', $style, $m)) {
+                $safeStyle .= 'text-align: ' . strtolower($m[1]) . ';';
+            }
+            if ($style !== '' && preg_match('/font-size\s*:\s*(\d+(?:\.\d+)?)(px|pt|em|rem|%)/i', $style, $m) && (float)$m[1] > 0 && (float)$m[1] <= 200) {
+                $safeStyle .= ($safeStyle !== '' ? ' ' : '') . 'font-size: ' . $m[1] . strtolower($m[2]) . ';';
+            }
+            if (($tag === 'ol' || $tag === 'ul') && $style !== '' && preg_match('/list-style-type\s*:\s*(decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|lower-greek|disc|circle|square)/i', $style, $m)) {
+                $safeStyle .= ($safeStyle !== '' ? ' ' : '') . 'list-style-type: ' . strtolower($m[1]) . ';';
+            }
+            if ($safeStyle !== '') {
+                $child->setAttribute('style', $safeStyle);
+            }
+        }
+    };
+    $clean($root);
+
+    $out = '';
+    foreach ($root->childNodes as $child) {
+        $out .= $doc->saveHTML($child);
+    }
+    return trim($out);
+}
+
 // ---------------------------------------------------------------
 // SAVE (every section always uses exactly one row)
 // ---------------------------------------------------------------
@@ -96,17 +224,15 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $title = isset($_POST['report_title']) ? trim($_POST['report_title']) : '';
-    $text  = isset($_POST['content']) ? trim($_POST['content']) : '';
-    // normalise line endings so lines / paragraphs are always separated by "\n"
-    $text  = str_replace("\r\n", "\n", $text);
-    $text  = str_replace("\r", "\n", $text);
+    $title = isset($_POST['report_title']) && is_string($_POST['report_title']) ? trim($_POST['report_title']) : '';
+    $raw   = isset($_POST['content']) && is_string($_POST['content']) ? $_POST['content'] : '';
+    $text  = historySanitizeHtml($raw);
 
     $err = '';
     if ($text === '') {
         $err = 'Content is required.';
-    } elseif (mb_strlen($text) > $maxChars) {
-        $err = 'Content is too long (max ' . $maxChars . ' characters).';
+    } elseif (strlen($text) > $maxContent) {
+        $err = 'Content is too long. Please shorten it.';
     } elseif (mb_strlen($title) > $maxTitle) {
         $err = 'Title is too long (max ' . $maxTitle . ' characters).';
     }
@@ -162,7 +288,7 @@ if (empty($secmsg)) {
     $row = historyGetSectionRow($db, $secKey);
     if ($row) {
         $fTitle = (string)$row['title'];
-        $fText  = (string)$row['content_text'];
+        $fText  = historyLegacyToHtml($row['content_text'], $isTimeline);
         $lastUpdated = $row['report_date'] ? date('d M Y', strtotime($row['report_date'])) : '';
     }
 }
@@ -199,7 +325,7 @@ $design->writeContentPageStyles();
     .ar-tab:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
     .ar-tab.active { background: #0f5c33; border-color: #0f5c33; color: #fff; }
 
-    .ar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); max-width: 900px; margin-bottom: 26px; }
+    .ar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); max-width: 100%; margin-bottom: 26px; }
     .ar-card-title { font-family: inherit; font-size: 17px; font-weight: 600; color: #2b332f; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px solid #eef1ef; }
     .ar-card-title::before, .ar-card-title::after { display: none; content: none; }
 
@@ -210,11 +336,8 @@ $design->writeContentPageStyles();
     .ar-input { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
     .ar-input::placeholder { color: #9aa9a2; }
     .ar-input:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; min-height: 380px; resize: vertical; line-height: 1.6; transition: border-color .15s ease, box-shadow .15s ease; }
-    .ar-textarea::placeholder { color: #9aa9a2; }
-    .ar-textarea:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-input.invalid, .ar-textarea.invalid { border-color: #c0392b; }
-    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .ar-input.invalid { border-color: #c0392b; }
+    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; margin-bottom: 10px; line-height: 1.7; }
     .ar-err { color: #c0392b; font-size: 12px; margin-top: 5px; display: none; }
     .ar-err.show { display: block; }
 
@@ -228,37 +351,22 @@ $design->writeContentPageStyles();
     .ar-updated { font-size: 13px; color: #7a8c84; margin-bottom: 14px; }
     .ar-updated i { color: #0f5c33; margin-right: 4px; }
 
-    /* ---------- LIVE PREVIEW ---------- */
-    .ar-preview { background: #fff; border: 1px solid #e2e6e4; border-radius: 16px; padding: 26px 30px; box-shadow: 0 6px 20px rgba(11, 61, 36, 0.06); }
-    .ar-preview h3 { font-size: 18px; font-weight: 700; color: #2b332f; margin: 0 0 16px; }
-    .ar-preview p { font-style: italic; color: #4b5563; font-size: 14.5px; line-height: 1.9; margin: 0 0 18px !important; text-align: left !important; }
-    .ar-preview > :last-child { margin-bottom: 0 !important; }
-    .ar-preview-empty { color: #9aa9a2; font-size: 14px; }
-    .ar-tl-item { display: flex; gap: 18px; padding: 10px 0; border-bottom: 1px solid #eef1ef; }
-    .ar-tl-item:last-child { border-bottom: none; }
-    .ar-tl-year { flex: 0 0 70px; font-weight: 700; color: #0f5c33; font-size: 15px; }
-    .ar-tl-text { flex: 1; min-width: 0; color: #4b5563; font-size: 14.5px; line-height: 1.7; word-break: break-word; }
-
     html, body { scrollbar-width: none; -ms-overflow-style: none; }
     html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
     @media (min-width: 1920px) {
         .ar-title { font-size: 30px; }
-        .ar-card { max-width: 1100px; padding: 30px; }
+        .ar-card { padding: 30px; }
     }
     @media (max-width: 700px) {
         .ar-title { font-size: 20px; }
         .ar-card { padding: 16px; border-radius: 10px; }
-        .ar-preview { padding: 18px 16px; }
     }
     @media (max-width: 560px) {
         .ar-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
         .ar-subtitle { font-size: 13px; }
         .ar-actions { flex-direction: column; }
         .ar-btn { width: 100%; }
-        .ar-textarea { min-height: 260px; }
-        .ar-tl-item { flex-direction: column; gap: 4px; }
-        .ar-tl-year { flex: none; }
     }
 </style>
 
@@ -283,7 +391,7 @@ $design->writeContentPageStyles();
         <div class="ar-header">
             <div>
                 <h1 class="ar-title">HISTORY</h1>
-                <p class="ar-subtitle"><?php echo htmlspecialchars($secName); ?> &mdash; edit the text shown on the website page</p>
+                <p class="ar-subtitle"><?php echo htmlspecialchars($secName); ?> &mdash; edit the content shown on the website page</p>
             </div>
         </div>
 
@@ -321,22 +429,23 @@ $design->writeContentPageStyles();
 
                 <div class="ar-field">
                     <label for="arTitle">Title <span class="opt">(optional)</span></label>
-                    <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="<?php echo (int)$maxTitle; ?>" placeholder="Enter title (optional)" value="<?php echo htmlspecialchars($fTitle); ?>">
-                    <div class="ar-hint"><span>Leave this field empty to display the default heading on the website.</span></div>
+                    <input type="text" id="arTitle" name="report_title" class="ar-input" maxlength="<?php echo (int)$maxTitle; ?>" placeholder="Enter title (optional)" value="<?php echo htmlspecialchars($fTitle, ENT_QUOTES, 'UTF-8'); ?>">
+                    <div class="ar-hint">Leave this field empty to display the default heading on the website.</div>
                     <div class="ar-err" id="errTitle">Title is too long.</div>
                 </div>
 
                 <div class="ar-field">
                     <label for="arContent">Content <span class="req">*</span></label>
-                    <textarea id="arContent" name="content" class="ar-textarea" placeholder="<?php echo $isTimeline ? '1798 | Enter the event text here' : 'Write the content here...'; ?>"><?php echo htmlspecialchars($fText); ?></textarea>
                     <div class="ar-hint">
                         <?php if ($isTimeline) { ?>
-                            <span>One line = one event. Format: <b>Year | Text</b> (for example, <b>1798 | A two-day race meeting...</b>). The <b>|</b> symbol must be included after the year.</span>
+                            <b>One paragraph = one event.</b> Format: <b>Year | Text</b> (for example, <b>1798 | A two-day race meeting...</b>). Press Enter to start the next event. The <b>|</b> symbol must come right after the year.<br>
                         <?php } else { ?>
-                            <span>Leave a blank line between paragraphs. Each paragraph shows as a separate block on the website.</span>
+                            Each paragraph shows as a separate block on the website.<br>
                         <?php } ?>
-                        <span id="arCount">0 characters</span>
+                        Use the Bold / Italic / Underline toolbar for text styling &nbsp;|&nbsp; Heading 2 = main underlined heading &nbsp;|&nbsp; Heading 3 = green underlined sub-heading<br>
+                        Numbered list arrow = choose "Lower Roman" for (i), (ii), (iii). Tables: make the first row a header row (Table &gt; Row &gt; Row properties &gt; Row type: Header).
                     </div>
+                    <textarea id="arContent" name="content"><?php echo htmlspecialchars($fText, ENT_QUOTES, 'UTF-8'); ?></textarea>
                     <div class="ar-err" id="errContent">Please write some content.</div>
                 </div>
 
@@ -353,32 +462,22 @@ $design->writeContentPageStyles();
 
         </div>
 
-
-        <!-- ===================== LIVE PREVIEW ===================== -->
-        <div class="ar-card">
-            <div class="ar-card-title">Preview</div>
-            <div class="ar-preview" id="arPreview"></div>
-        </div>
-
     </div>
 
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
     <script type="text/javascript">
         (function() {
 
-            var isTimeline = <?php echo json_encode($isTimeline); ?>;
-            var maxChars   = <?php echo (int)$maxChars; ?>;
-            var maxTitle   = <?php echo (int)$maxTitle; ?>;
+            var maxTitle     = <?php echo (int)$maxTitle; ?>;
+            var savedContent = <?php echo json_encode($fText); ?>;
 
             var form    = document.getElementById('arForm');
             var titleIn = document.getElementById('arTitle');
             var area    = document.getElementById('arContent');
-            var counter = document.getElementById('arCount');
-            var preview = document.getElementById('arPreview');
             var revert  = document.getElementById('arRevert');
             var msgBox  = document.getElementById('arMsg');
-            var savedTitle   = titleIn.value;
-            var savedContent = area.value;
+            var savedTitle = titleIn.value;
             var msgTimer = null;
 
             function showMsg(text, type) {
@@ -393,113 +492,61 @@ $design->writeContentPageStyles();
 
             function setErr(errId, inputEl, show, text) {
                 var e = document.getElementById(errId);
+                if (!e) return;
                 if (text) e.textContent = text;
                 e.classList.toggle('show', show);
-                inputEl.classList.toggle('invalid', show);
+                if (inputEl) inputEl.classList.toggle('invalid', show);
             }
 
-            // Preview
-            //  - Timeline tab: one line = one event ("Year | Text")
-            //  - Other tab: blank lines split paragraphs
-            function renderPreview() {
-                var text = area.value.replace(/\r\n?/g, '\n').trim();
-                var title = titleIn.value.trim();
-                preview.innerHTML = '';
-
-                if (text === '') {
-                    var empty = document.createElement('div');
-                    empty.className = 'ar-preview-empty';
-                    empty.textContent = 'Nothing to preview yet.';
-                    preview.appendChild(empty);
-                    return;
-                }
-
-                if (title !== '') {
-                    var h = document.createElement('h3');
-                    h.textContent = title;
-                    preview.appendChild(h);
-                }
-
-                var i;
-                if (isTimeline) {
-                    var lines = text.split('\n');
-                    for (i = 0; i < lines.length; i++) {
-                        var line = lines[i].trim();
-                        if (line === '') continue;
-
-                        var pos = line.indexOf('|');
-                        var item = document.createElement('div');
-                        item.className = 'ar-tl-item';
-
-                        var yr = document.createElement('div');
-                        yr.className = 'ar-tl-year';
-                        var tx = document.createElement('div');
-                        tx.className = 'ar-tl-text';
-
-                        if (pos === -1) {
-                            yr.textContent = '?';
-                            tx.textContent = line + '  (missing "|" after the year)';
-                        } else {
-                            yr.textContent = line.substring(0, pos).trim();
-                            tx.textContent = line.substring(pos + 1).trim();   // textContent keeps it safe from HTML
-                        }
-
-                        item.appendChild(yr);
-                        item.appendChild(tx);
-                        preview.appendChild(item);
-                    }
-                } else {
-                    var parts = text.split(/\n\s*\n/);
-                    for (i = 0; i < parts.length; i++) {
-                        var p = document.createElement('p');
-                        p.textContent = parts[i].trim();
-                        preview.appendChild(p);
-                    }
-                }
-            }
-
-            function update() {
-                counter.textContent = area.value.length + ' characters';
-                if (area.value.trim()) setErr('errContent', area, false);
+            titleIn.addEventListener('input', function() {
                 if (titleIn.value.trim().length <= maxTitle) setErr('errTitle', titleIn, false);
-                renderPreview();
-            }
+            });
 
-            area.addEventListener('input', update);
-            titleIn.addEventListener('input', update);
+            tinymce.init({
+                selector: '#arContent',
+                height: 620,
+                menubar: false,
+                branding: false,
+                promotion: false,
+                plugins: 'lists advlist link table code',
+                toolbar: 'undo redo | blocks fontsize | bold italic underline | alignleft aligncenter alignright | bullist numlist | link table | removeformat | code',
+                block_formats: 'Paragraph=p; Heading 2=h2; Heading 3=h3; Heading 4=h4',
+                font_size_formats: '12px 14px 16px 18px 20px 24px 28px 32px',
+                advlist_number_styles: 'default,lower-roman,upper-roman,lower-alpha',
+                table_header_type: 'sectionCells',
+                paste_data_images: false,
+                paste_remove_styles_if_webkit: true,
+                content_style: 'body { font-family: Arial, sans-serif; font-size: 15px; line-height: 1.7; } table { border-collapse: collapse; width: 100%; } td, th { border: 1px solid #ccc; padding: 6px 8px; }'
+            });
 
             revert.addEventListener('click', function() {
                 titleIn.value = savedTitle;
-                area.value = savedContent;
-                setErr('errContent', area, false);
                 setErr('errTitle', titleIn, false);
-                update();
+                var ed = tinymce.get('arContent');
+                if (ed) ed.setContent(savedContent);
+                setErr('errContent', null, false);
             });
 
             form.addEventListener('submit', function(e) {
-                var v = area.value.trim();
                 var t = titleIn.value.trim();
 
-                if (!v) {
-                    e.preventDefault();
-                    setErr('errContent', area, true, 'Please write some content.');
-                    showMsg('Please fill all required fields correctly.', 'error');
-                    return;
-                }
-                if (v.length > maxChars) {
-                    e.preventDefault();
-                    setErr('errContent', area, true, 'Content is too long (max ' + maxChars + ' characters).');
-                    showMsg('Content is too long.', 'error');
-                    return;
-                }
                 if (t.length > maxTitle) {
                     e.preventDefault();
                     setErr('errTitle', titleIn, true, 'Title is too long (max ' + maxTitle + ' characters).');
                     showMsg('Title is too long.', 'error');
+                    return;
+                }
+
+                // Copy the editor content into the textarea, then check it is not empty
+                tinymce.triggerSave();
+                if (!area.value.replace(/<[^>]*>|&nbsp;|\s/g, '')) {
+                    e.preventDefault();
+                    setErr('errContent', null, true, 'Please write some content.');
+                    showMsg('Please fill all required fields correctly.', 'error');
+                } else {
+                    setErr('errContent', null, false);
                 }
             });
-
-            update();
 
         })();
     </script>

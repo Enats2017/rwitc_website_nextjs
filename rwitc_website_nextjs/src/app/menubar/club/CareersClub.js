@@ -8,9 +8,27 @@ import "./CareersClub.css";
 // Shown when no custom title is set in the admin panel
 const DEFAULT_TITLE = "Career Opportunities in Racing";
 
+// Old content was plain text (blank line = new paragraph).
+// If the saved text has no HTML tags, convert it to <p> blocks.
+function toHtml(text) {
+    const value = String(text || "").trim();
+    if (!value) return "";
+    if (/<[a-z][^>]*>/i.test(value)) return value;
+
+    const escape = (s) =>
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    return value
+        .split(/\n\s*\n/)
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .map((p) => `<p>${escape(p).replace(/\n/g, "<br>")}</p>`)
+        .join("");
+}
+
 export default function CareersClub() {
     const [title, setTitle] = useState(DEFAULT_TITLE);
-    const [paragraphs, setParagraphs] = useState([]);
+    const [html, setHtml] = useState("");
 
     useEffect(() => {
         let active = true;
@@ -20,16 +38,7 @@ export default function CareersClub() {
                 if (!active || !data) return;
 
                 if (data.title) setTitle(data.title);
-
-                if (data.text) {
-                    // A blank line separates paragraphs
-                    const list = String(data.text)
-                        .split(/\n\s*\n/)
-                        .map((p) => p.trim())
-                        .filter(Boolean);
-
-                    setParagraphs(list);
-                }
+                if (data.text) setHtml(toHtml(data.text));
             })
             .catch(() => {});
 
@@ -52,11 +61,13 @@ export default function CareersClub() {
                 </div>
 
                 <div className="aboutCard">
-                    <div className="aboutContent">
-                        {paragraphs.map((text, i) => (
-                            <p key={i}>{text}</p>
-                        ))}
-                    </div>
+                    {/* Content is sanitized on the server (admin panel) before saving */}
+                    {html && (
+                        <div
+                            className="aboutContent guideContent"
+                            dangerouslySetInnerHTML={{ __html: html }}
+                        />
+                    )}
                 </div>
             </div>
         </section>

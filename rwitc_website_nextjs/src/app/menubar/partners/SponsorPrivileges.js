@@ -7,33 +7,41 @@ import "./SponsorPrivileges.css";
 
 const DEFAULT_TITLE = "The Privileges of a Sponsor";
 
-// Line markers used in the admin text
+// Line markers used in the OLD plain-text content
 const HEADING_LINE = /^##\s+/;       // "## A sponsor can"
 const BULLET_LINE = /^[-*•]\s+/;     // "- item"
 const NOTE_PREFIX = /^note:\s*/i;    // "Note: text"
 
-// Converts raw admin text into blocks: heading, list, note, para
-function parseBlocks(rawText) {
-    const lines = String(rawText).replace(/\r\n?/g, "\n").split("\n");
-    const blocks = [];
+const escapeHtml = (s) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// Old content was plain text. If the saved text has no HTML tags,
+// convert it to HTML (heading / list / note / paragraph).
+function toHtml(rawText) {
+    const value = String(rawText || "").trim();
+    if (!value) return "";
+    if (/<[a-z][^>]*>/i.test(value)) return value;
+
+    const lines = value.replace(/\r\n?/g, "\n").split("\n");
+    let html = "";
     let para = [];
-    let list = null;
+    let list = [];
 
     const flushPara = () => {
         if (!para.length) return;
         const text = para.join(" ").trim();
         if (NOTE_PREFIX.test(text)) {
-            blocks.push({ type: "note", text: text.replace(NOTE_PREFIX, "") });
+            html += `<p><strong>Note:</strong> ${escapeHtml(text.replace(NOTE_PREFIX, ""))}</p>`;
         } else {
-            blocks.push({ type: "para", text });
+            html += `<p>${escapeHtml(text)}</p>`;
         }
         para = [];
     };
 
     const flushList = () => {
-        if (!list) return;
-        blocks.push({ type: "list", items: list });
-        list = null;
+        if (!list.length) return;
+        html += `<ul>${list.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
+        list = [];
     };
 
     lines.forEach((line) => {
@@ -48,13 +56,12 @@ function parseBlocks(rawText) {
         if (HEADING_LINE.test(t)) {
             flushPara();
             flushList();
-            blocks.push({ type: "heading", text: t.replace(HEADING_LINE, "") });
+            html += `<h2>${escapeHtml(t.replace(HEADING_LINE, ""))}</h2>`;
             return;
         }
 
         if (BULLET_LINE.test(t)) {
             flushPara();
-            list = list || [];
             list.push(t.replace(BULLET_LINE, ""));
             return;
         }
@@ -66,12 +73,12 @@ function parseBlocks(rawText) {
     flushPara();
     flushList();
 
-    return blocks;
+    return html;
 }
 
 export default function SponsorPrivileges() {
     const [title, setTitle] = useState(DEFAULT_TITLE);
-    const [blocks, setBlocks] = useState([]);
+    const [html, setHtml] = useState("");
 
     useEffect(() => {
         let active = true;
@@ -81,7 +88,7 @@ export default function SponsorPrivileges() {
                 if (!active || !data?.text) return;
 
                 if (data.title) setTitle(data.title);
-                setBlocks(parseBlocks(data.text));
+                setHtml(toHtml(data.text));
             })
             .catch(() => {});
 
@@ -104,37 +111,13 @@ export default function SponsorPrivileges() {
                 </div>
 
                 <div className="aboutCard">
-                    <div className="aboutContent">
-                        {blocks.map((block, i) => {
-                            if (block.type === "heading") {
-                                return (
-                                    <h3 key={i} className="guideSubHeading">
-                                        {block.text}
-                                    </h3>
-                                );
-                            }
-
-                            if (block.type === "list") {
-                                return (
-                                    <ul key={i} className="memberList">
-                                        {block.items.map((item, j) => (
-                                            <li key={j}>{item}</li>
-                                        ))}
-                                    </ul>
-                                );
-                            }
-
-                            if (block.type === "note") {
-                                return (
-                                    <p key={i}>
-                                        <strong>Note:</strong> {block.text}
-                                    </p>
-                                );
-                            }
-
-                            return <p key={i}>{block.text}</p>;
-                        })}
-                    </div>
+                    {/* Content is sanitized on the server (admin panel) before saving */}
+                    {html && (
+                        <div
+                            className="aboutContent guideContent"
+                            dangerouslySetInnerHTML={{ __html: html }}
+                        />
+                    )}
                 </div>
             </div>
         </section>
