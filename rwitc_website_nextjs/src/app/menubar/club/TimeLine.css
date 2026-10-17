@@ -70,9 +70,28 @@
     border: 1px solid #eef1f4;
 }
 
-/* =========================================================
-   TIMELINE
-========================================================= */
+.aboutStatus {
+    color: #374151;
+    font-size: 16px;
+    margin: 0;
+    text-align: center;
+}
+
+.timelineText {
+    margin: 0;
+}
+
+.timelineText strong,
+.timelineText b {
+    font-weight: 700;
+    color: #111827;
+}
+
+.timelineText a {
+    color: #16a34a;
+    text-decoration: underline;
+    word-break: break-word;
+}
 
 .timelineWrap {
     position: relative;
