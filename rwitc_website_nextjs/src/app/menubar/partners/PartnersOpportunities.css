@@ -76,7 +76,7 @@
 .aboutContent {
     display: flex;
     flex-direction: column;
-    gap: 26px;
+    gap: 20px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -95,12 +95,50 @@
     color: #ffffff;
 }
 
-/* "Recap of some key facts:" lead-in line */
-.poLeadLine {
-    font-weight: 700;
+/* RICH TEXT EDITOR CONTENT */
+.cmpRichContent h2,
+.cmpRichContent h3,
+.cmpRichContent h4 {
+    margin: 24px 0 12px;
+    line-height: 1.3;
     color: #111827;
-    text-align: left !important;
 }
+
+.cmpRichContent h2 { font-size: 24px; }
+.cmpRichContent h3 { font-size: 20px; }
+.cmpRichContent h4 { font-size: 17px; }
+
+.cmpRichContent p {
+    margin: 0 0 16px;
+    line-height: 1.8;
+}
+
+.cmpRichContent ul,
+.cmpRichContent ol {
+    margin: 0 0 20px;
+    padding-left: 22px;
+}
+
+.cmpRichContent li {
+    margin-bottom: 10px;
+    line-height: 1.8;
+    color: #374151;
+}
+
+.cmpRichContent a { text-decoration: underline; color: #15803d; }
+
+.cmpRichContent blockquote {
+    margin: 0 0 20px;
+    padding: 8px 18px;
+    border-left: 4px solid #16a34a;
+    background: #f7f9fb;
+    color: #374151;
+}
+
+/* Alignment classes produced by the editor */
+.cmpRichContent .ql-align-center  { text-align: center; }
+.cmpRichContent .ql-align-right   { text-align: right; }
+.cmpRichContent .ql-align-justify { text-align: justify; }
 
 /* TABLET */
 @media (max-width: 992px) {
@@ -113,7 +151,8 @@
         padding: 44px;
     }
 
-    .aboutContent p {
+    .aboutContent p,
+    .cmpRichContent li {
         font-size: 16.5px;
         line-height: 1.85;
     }
@@ -152,10 +191,11 @@
     }
 
     .aboutContent {
-        gap: 20px;
+        gap: 16px;
     }
 
-    .aboutContent p {
+    .aboutContent p,
+    .cmpRichContent li {
         font-size: 15.5px;
         line-height: 1.85;
         text-align: left;
@@ -178,7 +218,8 @@
         padding: 22px 16px;
     }
 
-    .aboutContent p {
+    .aboutContent p,
+    .cmpRichContent li {
         font-size: 14.5px;
         line-height: 1.8;
     }

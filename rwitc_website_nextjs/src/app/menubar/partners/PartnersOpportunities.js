@@ -2,51 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import DOMPurify from "isomorphic-dompurify";
 import { getPartnersOpportunities } from "../../../services/clubService";
 import "./PartnersOpportunities.css";
 
 const DEFAULT_TITLE = "Sponsorships At The RWITC Ltd";
 
-// Line marker used in the admin text: "## Recap of some key facts:"
+const HAS_HTML = /<\/?[a-z][\s\S]*>/i;
 const LEAD_LINE = /^##\s+/;
 
-// Converts raw admin text into blocks: paragraphs and lead lines
-function parseBlocks(rawText) {
-    const lines = String(rawText).replace(/\r\n?/g, "\n").split("\n");
-    const blocks = [];
-    let para = [];
+const escapeHtml = (str) =>
+    str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 
-    const flushPara = () => {
-        if (!para.length) return;
-        blocks.push({ type: "para", text: para.join(" ").trim() });
-        para = [];
-    };
-
-    lines.forEach((line) => {
-        const t = line.trim();
-
-        if (!t) {
-            flushPara();
-            return;
-        }
-
-        if (LEAD_LINE.test(t)) {
-            flushPara();
-            blocks.push({ type: "lead", text: t.replace(LEAD_LINE, "") });
-            return;
-        }
-
-        para.push(t);
-    });
-
-    flushPara();
-
-    return blocks;
+// Old entries were plain text. Convert them to HTML so they still display correctly.
+function legacyTextToHtml(rawText) {
+    return String(rawText)
+        .replace(/\r\n?/g, "\n")
+        .split(/\n\s*\n/)
+        .map((block) => block.trim())
+        .filter(Boolean)
+        .map((block) =>
+            LEAD_LINE.test(block)
+                ? `<h3>${escapeHtml(block.replace(LEAD_LINE, ""))}</h3>`
+                : `<p>${escapeHtml(block).replace(/\n/g, "<br />")}</p>`
+        )
+        .join("");
 }
 
 export default function PartnersOpportunities() {
     const [title, setTitle] = useState(DEFAULT_TITLE);
-    const [blocks, setBlocks] = useState([]);
+    const [html, setHtml] = useState("");
 
     useEffect(() => {
         let active = true;
@@ -56,7 +44,12 @@ export default function PartnersOpportunities() {
                 if (!active || !data?.text) return;
 
                 if (data.title) setTitle(data.title);
-                setBlocks(parseBlocks(data.text));
+
+                const raw = HAS_HTML.test(data.text)
+                    ? data.text
+                    : legacyTextToHtml(data.text);
+
+                setHtml(DOMPurify.sanitize(raw));
             })
             .catch(() => {});
 
@@ -79,17 +72,10 @@ export default function PartnersOpportunities() {
                 </div>
 
                 <div className="aboutCard">
-                    <div className="aboutContent">
-                        {blocks.map((block, i) =>
-                            block.type === "lead" ? (
-                                <p key={i} className="poLeadLine">
-                                    {block.text}
-                                </p>
-                            ) : (
-                                <p key={i}>{block.text}</p>
-                            )
-                        )}
-                    </div>
+                    <div
+                        className="aboutContent cmpRichContent"
+                        dangerouslySetInnerHTML={{ __html: html }}
+                    />
                 </div>
             </div>
         </section>
