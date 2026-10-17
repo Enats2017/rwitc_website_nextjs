@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FaHorseHead } from "react-icons/fa";
+import DOMPurify from "isomorphic-dompurify";
 import { getPartnersOpportunities } from "../../../services/clubService";
 import "./PartnersOpportunities.css";
 
