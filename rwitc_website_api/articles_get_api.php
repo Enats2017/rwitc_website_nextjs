@@ -443,7 +443,21 @@ try {
         // ----------------------------------------------
 
         $postDbFiles = fetchRunRaceFilesByDates($conn, $postRaceDates);
+        // ----------------------------------------------
+        // BATCH: ratings_change table (admin upload)
+        // ----------------------------------------------
 
+        $ratingChangeDates = [];
+
+        $rcResult = fetchByDatesIn(
+            $conn,
+            "SELECT racedate FROM ratings_change WHERE racedate IN (%s)",
+            $postRaceDates
+        );
+
+        while ($row = $rcResult->fetch_assoc()) {
+            $ratingChangeDates[$row["racedate"]] = true;
+        }
         // ----------------------------------------------
         // BATCH: RACEDAY REPORT (1 query instead of N)
         // ----------------------------------------------
@@ -527,6 +541,7 @@ try {
                 ".html";
 
             $ratingChangeAvailable =
+                isset($ratingChangeDates[$date]) ||
                 isFileAvailable(
                     $postDbFiles,
                     $date,

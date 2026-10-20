@@ -195,7 +195,17 @@
     font-weight: 800;
 }
 
-/* TABLET — still fits, just tighter */
+.recordEntry+.recordEntry {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8ec;
+}
+
+.entryLine strong {
+    color: #111827;
+    font-weight: 800;
+}
+
 @media (max-width: 992px) {
 
     .aboutHeading {

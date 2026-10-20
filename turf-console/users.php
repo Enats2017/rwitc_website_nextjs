@@ -2,9 +2,10 @@
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
+date_default_timezone_set('Asia/Kolkata');
 require_once("../bootstrap.php");
 require_once("../lib/dbTools.php");
+require_once("../lib/passwordpolicy.php");
 
 session_start();
 
@@ -93,7 +94,7 @@ if (
 
 
 /* ================================================================
-   SAVE ADMIN - INSERT / UPDATE
+   SAVE USER - INSERT / UPDATE
    ================================================================ */
 
 $form_error = null;
@@ -126,10 +127,15 @@ if (
     $confirm  = isset($_POST['confirm']) ? $_POST['confirm'] : '';
     $edit_id  = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 
+    // Password kitne din baad expire hoga (0 = kabhi nahi)
+    $expiry_days = isset($_POST['password_expiry_days']) ? (int)$_POST['password_expiry_days'] : 0;
+
 
     /* ============================================================
        VALIDATION
        ============================================================ */
+
+    $pwErr = null;
 
     if ($username === '') {
 
@@ -142,13 +148,16 @@ if (
         $form_error = "A valid email address is required.";
     } elseif (!$edit_id && $password === '') {
 
-        $form_error = "Password is required for a new admin.";
+        $form_error = "Password is required for a new user.";
     } elseif ($password !== '' && $password !== $confirm) {
 
         $form_error = "Password and confirm password do not match.";
-    } elseif ($password !== '' && strlen($password) < 8) {
+    } elseif ($password !== '' && ($pwErr = rwPasswordStrengthError($password))) {
 
-        $form_error = "Password must be at least 8 characters.";
+        $form_error = $pwErr;
+    } elseif ($expiry_days < 0 || $expiry_days > 365) {
+
+        $form_error = "Password expiry must be between 0 and 365 days.";
     } else {
 
         try {
@@ -170,7 +179,7 @@ if (
 
             if ($duplicateUsername) {
 
-                $form_error = "This username is already used by another admin.";
+                $form_error = "This username is already used by another user.";
             } else {
 
 
@@ -191,12 +200,12 @@ if (
 
                 if ($duplicateEmail) {
 
-                    $form_error = "This email is already used by another admin.";
+                    $form_error = "This email is already used by another user.";
                 } else {
 
 
                     /* =============================================
-                       UPDATE ADMIN
+                       UPDATE USER
                        ============================================= */
 
                     if ($edit_id) {
@@ -210,11 +219,15 @@ if (
                                 phoneno='" . $db->escape($phoneno) . "',
                                 role='" . $db->escape($role) . "',
                                 user_group_id=" . ($group_id ? $group_id : 'NULL') . ",
-                                active='" . $active . "'";
+                                active='" . $active . "',
+                                password_expiry_days=" . $expiry_days;
 
 
                         /* -----------------------------------------
-                           Password only changes when entered
+                           Password only changes when entered.
+                           Super admin ka diya hua password TEMPORARY hota hai,
+                           isliye user ko next login pe change karna padega.
+                           (Super admin khud apna password badle to temporary nahi)
                            ----------------------------------------- */
 
                         if ($password !== '') {
@@ -222,6 +235,8 @@ if (
                             $hashedPassword = '*' . strtoupper(sha1(sha1($password, true)));
 
                             $sql .= ", password='" . $db->escape($hashedPassword) . "'";
+
+                            $sql .= ", must_change_password=" . ($edit_id === 19 ? 0 : 1) . ", password_changed_at=NOW()";
                         }
 
 
@@ -237,7 +252,7 @@ if (
 
 
                         /* =========================================
-                           INSERT NEW ADMIN
+                           INSERT NEW USER (password hamesha temporary)
                            ========================================= */
 
                         $hashedPassword = '*' . strtoupper(sha1(sha1($password, true)));
@@ -254,7 +269,10 @@ if (
                                 role,
                                 user_group_id,
                                 created,
-                                active
+                                active,
+                                password_expiry_days,
+                                must_change_password,
+                                password_changed_at
                             )
                             VALUES
                             (
@@ -267,7 +285,10 @@ if (
                                 '" . $db->escape($role) . "',
                                 " . ($group_id ? $group_id : 'NULL') . ",
                                 NOW(),
-                                '" . $active . "'
+                                '" . $active . "',
+                                " . $expiry_days . ",
+                                1,
+                                NOW()
                             )";
 
                         $db->insert($sql);
@@ -293,7 +314,7 @@ if (
 
 
 /* ================================================================
-   FETCH ADMIN LIST
+   FETCH USER LIST
    ================================================================ */
 
 $users = array();
@@ -326,7 +347,7 @@ if ($action == 'list') {
 
 
     /* ============================================================
-       ADMIN STATISTICS
+       STATISTICS
        ============================================================ */
 
     $all_admins = $db->getMultiDimensionalArray("SELECT active FROM admins");
@@ -397,7 +418,7 @@ if ($action == 'list') {
 
 
     /* ============================================================
-       FETCH ADMINS + GROUP
+       FETCH USERS + GROUP
        ============================================================ */
 
     $sql =
@@ -417,7 +438,7 @@ if ($action == 'list') {
 
 
 /* ================================================================
-   FETCH SINGLE ADMIN FOR EDIT
+   FETCH SINGLE USER FOR EDIT
    ================================================================ */
 
 $edit_user = null;
@@ -451,7 +472,8 @@ if ($form_error && $_SERVER['REQUEST_METHOD'] == 'POST') {
         'phoneno'       => $_POST['phoneno'],
         'role'          => $_POST['role'],
         'user_group_id' => isset($_POST['user_group_id']) ? $_POST['user_group_id'] : null,
-        'active'        => (isset($_POST['status']) && $_POST['status'] == 'Y') ? 'Y' : 'N'
+        'active'        => (isset($_POST['status']) && $_POST['status'] == 'Y') ? 'Y' : 'N',
+        'password_expiry_days' => isset($_POST['password_expiry_days']) ? (int)$_POST['password_expiry_days'] : 0
     );
 }
 
@@ -558,6 +580,14 @@ function fmtDate($val)
     return date('d M Y', strtotime($val));
 }
 
+function fmtDateTime($val)
+{
+    if (!$val || $val === '0000-00-00 00:00:00') {
+        return '-';
+    }
+
+    return date('d M Y, h:i A', strtotime($val));
+}
 
 function buildPageUrl($p, $search, $status_filter)
 {
@@ -1127,11 +1157,17 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     background:#fafbfa;
 }
 
+.pw-rules{ list-style:none; margin:4px 0 14px; padding:0; font-size:13px; }
+.pw-rules li{ padding:3px 0; color:var(--ink-400); }
+.pw-rules li:before{ content:"\25CB "; }
+.pw-rules li.ok{ color:var(--green-600); font-weight:600; }
+.pw-rules li.ok:before{ content:"\2714 "; }
+
 </style>
 ';
 
 
-$design->startPage("RWITC | Admins");
+$design->startPage("RWITC | Users");
 $design->writeLogoTickerMenu();
 
 ?>
@@ -1143,28 +1179,28 @@ $design->writeLogoTickerMenu();
 
         <div class="alert alert-success">
             <i class="fa fa-check-circle"></i>
-            Admin added successfully.
+            User added successfully. The user must change the password on first login.
         </div>
 
     <?php elseif ($msg == 'updated'): ?>
 
         <div class="alert alert-success">
             <i class="fa fa-check-circle"></i>
-            Admin updated successfully.
+            User updated successfully.
         </div>
 
     <?php elseif ($msg == 'deleted'): ?>
 
         <div class="alert alert-success">
             <i class="fa fa-check-circle"></i>
-            Admin deleted.
+            User deleted.
         </div>
 
     <?php elseif ($msg == 'bulk_deleted'): ?>
 
         <div class="alert alert-success">
             <i class="fa fa-check-circle"></i>
-            Selected admins deleted.
+            Selected users deleted.
         </div>
 
     <?php elseif ($msg == 'error'): ?>
@@ -1203,7 +1239,7 @@ $design->writeLogoTickerMenu();
 
             <div>
 
-                <p class="eyebrow">Admin Management</p>
+                <p class="eyebrow">User Management</p>
 
                 <h1>System Admins</h1>
 
@@ -1213,7 +1249,7 @@ $design->writeLogoTickerMenu();
 
             <a href="turf-console/users.php?action=form" class="btn btn-primary">
                 <i class="fa fa-plus"></i>
-                Add Admin
+                Add User
             </a>
 
         </div>
@@ -1304,13 +1340,13 @@ $design->writeLogoTickerMenu();
 
                 Showing
                 <?php echo (($page - 1) * $per_page) + 1; ?>
-                –
+                -
                 <?php echo min($page * $per_page, $filtered_count); ?>
 
                 of
                 <?php echo $filtered_count; ?>
 
-                admin<?php echo $filtered_count == 1 ? '' : 's'; ?>
+                user<?php echo $filtered_count == 1 ? '' : 's'; ?>
 
             </div>
 
@@ -1332,7 +1368,7 @@ $design->writeLogoTickerMenu();
                     name="bulk_delete"
                     value="1"
                     class="btn btn-danger-ghost"
-                    onclick="return confirm('Delete all selected admins? This cannot be undone.');">
+                    onclick="return confirm('Delete all selected users? This cannot be undone.');">
 
                     <i class="fa fa-trash-o"></i>
 
@@ -1344,7 +1380,7 @@ $design->writeLogoTickerMenu();
 
 
             <!-- =====================================================
-             ADMIN TABLE
+             USER TABLE
              ===================================================== -->
 
             <div class="card">
@@ -1385,7 +1421,7 @@ $design->writeLogoTickerMenu();
                                 <td colspan="8">
                                     <div class="empty">
                                         <i class="fa fa-user"></i>
-                                        No admins found.
+                                        No users found.
                                     </div>
                                 </td>
                             </tr>
@@ -1406,7 +1442,7 @@ $design->writeLogoTickerMenu();
                                 </td>
 
 
-                                <!-- ADMIN NAME -->
+                                <!-- NAME -->
 
                                 <td>
 
@@ -1495,7 +1531,7 @@ $design->writeLogoTickerMenu();
 
                                 <!-- LAST LOGIN -->
 
-                                <td><?php echo fmtDate($u['last_login']); ?></td>
+                                <td><?php echo fmtDateTime($u['last_login']); ?></td>
 
 
                                 <!-- ACTIONS -->
@@ -1515,7 +1551,7 @@ $design->writeLogoTickerMenu();
                                             href="turf-console/users.php?action=delete&id=<?php echo (int)$u['id']; ?>"
                                             class="icon-btn"
                                             title="Delete"
-                                            onclick="return confirm('Delete this admin? This cannot be undone.');">
+                                            onclick="return confirm('Delete this user? This cannot be undone.');">
                                             <i class="fa fa-trash-o"></i>
                                         </a>
 
@@ -1613,7 +1649,7 @@ $design->writeLogoTickerMenu();
 
 
         <!-- =========================================================
-         ADD / EDIT ADMIN
+         ADD / EDIT USER
          ========================================================= -->
 
         <div class="page-head">
@@ -1621,18 +1657,18 @@ $design->writeLogoTickerMenu();
             <div>
 
                 <p class="eyebrow">
-                    <?php echo $edit_user ? 'Edit Admin' : 'New Admin'; ?>
+                    <?php echo $edit_user ? 'Edit User' : 'New User'; ?>
                 </p>
 
                 <h1>
                     <?php
                     echo ($edit_user && !empty($edit_user['firstname']))
                         ? htmlspecialchars($edit_user['firstname'] . ' ' . $edit_user['lastname'])
-                        : 'Add Admin';
+                        : 'Add User';
                     ?>
                 </h1>
 
-                <p>Manage administrator details and user group access.</p>
+                <p>Manage user details and user group access.</p>
 
             </div>
 
@@ -1670,7 +1706,7 @@ $design->writeLogoTickerMenu();
 
                     <h3 class="section-title">Basic Details</h3>
 
-                    <p class="section-desc">Login identity and administrator details.</p>
+                    <p class="section-desc">Login identity and user details.</p>
 
                     <div class="grid-2">
 
@@ -1742,7 +1778,7 @@ $design->writeLogoTickerMenu();
 
 
                 <!-- =================================================
-                 2. SECURITY (moved up)
+                 2. SECURITY
                  ================================================= -->
 
                 <div class="form-section">
@@ -1753,7 +1789,7 @@ $design->writeLogoTickerMenu();
                         <?php
                         echo $edit_user
                             ? 'Leave password blank to keep the current password.'
-                            : 'Set a password for this administrator.';
+                            : 'Set a temporary password for this user.';
                         ?>
                     </p>
 
@@ -1807,10 +1843,81 @@ $design->writeLogoTickerMenu();
 
                     </div>
 
-                    <div class="section-desc" style="margin-bottom:0;">
+                    <ul class="pw-rules" id="pwRulesAdmin">
+                        <li id="ar_len">At least 8 characters</li>
+                        <li id="ar_up">At least 1 uppercase letter (A-Z)</li>
+                        <li id="ar_low">At least 1 lowercase letter (a-z)</li>
+                        <li id="ar_num">At least 1 number (0-9)</li>
+                        <li id="ar_sp">At least 1 special character (@, #, $, ! ...)</li>
+                        <li id="ar_match">Both passwords match</li>
+                    </ul>
+
+                    <div class="section-desc">
                         <i class="fa fa-info-circle"></i>
-                        Minimum 8 characters.
+                        This password is temporary. The user must change it on first login.
                     </div>
+
+                    <div class="grid-2">
+                        <div class="field">
+                            <label>Password expires after (days)</label>
+                            <input
+                                type="number"
+                                name="password_expiry_days"
+                                min="0"
+                                max="365"
+                                placeholder="0 = never expires"
+                                value="<?php echo (int)($edit_user['password_expiry_days'] ?? 0); ?>">
+                            <div class="section-desc" style="margin:6px 0 0;">
+                                After these many days from the last password change, the user has to set a new password. 0 means never.
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        (function() {
+                            var pw = document.getElementById('pwField');
+                            var cf = document.getElementById('pwConfirm');
+                            var form = document.getElementById('form-user');
+
+                            function state() {
+                                var v = pw.value;
+                                return {
+                                    len: v.length >= 8,
+                                    up: /[A-Z]/.test(v),
+                                    low: /[a-z]/.test(v),
+                                    num: /[0-9]/.test(v),
+                                    sp: /[^A-Za-z0-9]/.test(v),
+                                    match: v !== '' && v === cf.value
+                                };
+                            }
+
+                            function render() {
+                                var s = state();
+                                for (var k in s) {
+                                    document.getElementById('ar_' + k).className = s[k] ? 'ok' : '';
+                                }
+                            }
+
+                            pw.addEventListener('input', render);
+                            cf.addEventListener('input', render);
+
+                            form.addEventListener('submit', function(e) {
+                                if (pw.value === '') {
+                                    return; // edit mode me blank allowed, new user pe server rokega
+                                }
+                                var s = state();
+                                for (var k in s) {
+                                    if (!s[k]) {
+                                        e.preventDefault();
+                                        alert('Please meet all password requirements.');
+                                        return;
+                                    }
+                                }
+                            });
+
+                            render();
+                        })();
+                    </script>
 
                 </div>
 
@@ -1825,7 +1932,7 @@ $design->writeLogoTickerMenu();
 
                     <p class="section-desc">
                         Module access is handled by group selection below.
-                        This admin can be assigned permissions from one or more groups.
+                        This user can be assigned permissions from one or more groups.
                     </p>
 
                     <div class="grid-2">
@@ -1869,7 +1976,7 @@ $design->writeLogoTickerMenu();
 
                     <h3 class="section-title">Group Modules</h3>
                     <p class="section-desc">
-                        Select a group, then tick the modules this admin should get from that group.
+                        Select a group, then tick the modules this user should get from that group.
                         You can switch between groups; selections made in every group are saved.
                     </p>
 
@@ -1904,7 +2011,13 @@ $design->writeLogoTickerMenu();
                                         &mdash; modules
                                     </span>
                                 </div>
-
+                                <div style="padding:8px 0 10px;margin-bottom:10px;border-bottom:1px dashed var(--line);">
+                                    <label style="display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--green-900);cursor:pointer;">
+                                        <input type="checkbox" class="checkbox gm-all"
+                                            data-group="<?php echo (int)$gId; ?>">
+                                        Select all modules (<?php echo count($g['mods']); ?>)
+                                    </label>
+                                </div>
                                 <?php foreach ($g['mods'] as $mKey => $mLabel): ?>
                                     <label style="display:inline-flex;align-items:center;gap:6px;margin:0 18px 8px 0;font-weight:500;">
                                         <input type="checkbox" class="checkbox gm-check"
@@ -2038,9 +2151,22 @@ $design->writeLogoTickerMenu();
                                     }
                                 }
 
+                                // "Select all" checkbox ki state sync karo (all / some / none)
+                                function syncAll() {
+                                    var alls = document.querySelectorAll('.gm-all');
+                                    for (var i = 0; i < alls.length; i++) {
+                                        var g = alls[i].getAttribute('data-group');
+                                        var total = document.querySelectorAll('.gm-check[data-group="' + g + '"]').length;
+                                        var on = document.querySelectorAll('.gm-check[data-group="' + g + '"]:checked').length;
+                                        alls[i].checked = (total > 0 && on === total);
+                                        alls[i].indeterminate = (on > 0 && on < total);
+                                    }
+                                }
+
                                 function refresh() {
                                     updateCounts();
                                     renderSummary();
+                                    syncAll();
                                 }
 
                                 select.addEventListener('change', showPanel);
@@ -2048,6 +2174,20 @@ $design->writeLogoTickerMenu();
                                 var checks = document.querySelectorAll('.gm-check');
                                 for (var j = 0; j < checks.length; j++) {
                                     checks[j].addEventListener('change', refresh);
+                                }
+
+                                // Select all: us group ke saare modules ek saath tick / untick
+                                var allBoxes = document.querySelectorAll('.gm-all');
+                                for (var a = 0; a < allBoxes.length; a++) {
+                                    allBoxes[a].addEventListener('change', function() {
+                                        var g = this.getAttribute('data-group');
+                                        var state = this.checked;
+                                        var items = document.querySelectorAll('.gm-check[data-group="' + g + '"]');
+                                        for (var x = 0; x < items.length; x++) {
+                                            items[x].checked = state;
+                                        }
+                                        refresh();
+                                    });
                                 }
 
                                 // On load (edit mode): auto-select the first group that already has ticked modules
@@ -2076,7 +2216,7 @@ $design->writeLogoTickerMenu();
 
                     <button type="submit" class="btn btn-primary">
                         <i class="fa fa-save"></i>
-                        Save Admin
+                        Save User
                     </button>
 
                 </div>

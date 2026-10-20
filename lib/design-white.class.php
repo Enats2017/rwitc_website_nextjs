@@ -36,13 +36,7 @@ class Design
 
         $main_file = 'assets/css/main.css';
 
-        //echo $_SERVER['DOCUMENT_ROOT'];exit;
-
-        //$mtime = filemtime($_SERVER['DOCUMENT_ROOT'] .'/rwitc_website/assets/css/main.css');
-
-        // $mtime = filemtime(DIR_BASE . 'assets/css/main.css');
         $mtime = filemtime(__DIR__ . '/../assets/css/main.css');
-        // $mtime = filemtime(SITE_ROOT . 'assets/css/main.css');
 
         $main_css = $main_file . '?version=' . $mtime;
 
@@ -53,8 +47,6 @@ class Design
 <!DOCTYPE html>
 
 <html>
-
-
 
     <head>
 
@@ -84,8 +76,6 @@ class Design
 
     <meta name="google-site-verification" content="40YqU8CUU2lplCO_m0t500_1r2UDSmkQIeXtJCfQQGw" />
 
-
-
     <meta property="og:url" content="{$metaOGUrl}" />
 
     <meta property="og:type" content="article" />
@@ -95,8 +85,6 @@ class Design
     <meta property="og:description" content="{$metaOGDescription}" />
 
     <meta property="og:image" content="{$metaOGImage}" />
-
-    
 
     <!-- <script type="text/javascript" src="assets/gz_files/rwitc.min.js"></script>
 
@@ -108,15 +96,11 @@ class Design
 
     <link rel="stylesheet" href="assets/css/owl.carousel.css">
 
-
-
       <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.js"></script>
 
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 
       <link href="assets/css/jquery.countdown.css" rel="stylesheet" type="text/css">
-
-    
 
     <script type="text/javascript" src="js/superfish.js"></script>
 
@@ -124,12 +108,7 @@ class Design
 
     <script type="text/javascript" src="js/jquery.vticker-min.js"></script>
 
-       
-
-
        <script type="text/javascript" src="assets/js/jquery.marquee.js"></script> 
-
-
 
     <script type="text/javascript" src="assets/js/owl.carousel.min.js"></script>
 
@@ -151,23 +130,11 @@ class Design
 
     <script src="index.js"></script>
 
-
-
-
-
     <script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
-
-
 
        <link rel="stylesheet" href="assets/css/bootstrap.min.css">
 
-
-
            <link rel="stylesheet" href="assets/css/flipclock.css">
-
-
-
-
 
     <link rel="stylesheet" type="text/css" href="assets/css/superfish.css" media="screen">
 
@@ -191,8 +158,6 @@ class Design
 
 	 $(window).resize(sidebar_sticky_update);
 
-
-
     function sidebar_sticky_update(){
 
         var viewportWidth = $(window).width();
@@ -214,10 +179,6 @@ class Design
    /*HCTObj = new jQuery.noConflict();
 
    HCTObj(function(){
-
-
-
-
 
 });
 
@@ -353,8 +314,6 @@ class Design
 
         });
 
-
-
         $('#password').focus(function(){
 
             if ($(this).val() == "Password") {
@@ -375,23 +334,17 @@ class Design
 
         });
 
-
-
         });
 
     </script>
 
     <script type="text/javascript">
 
-
-
   var _gaq = _gaq || [];
 
   _gaq.push(['_setAccount', 'UA-28228814-1']);
 
   _gaq.push(['_trackPageview']);
-
-
 
   (function() {
 
@@ -403,8 +356,6 @@ class Design
 
   })();
 
-
-
 </script>
 
 <meta name="google-site-verification" content="ENeGh2_Z_Q82czmvYSwqrfw3hrhJS1GFORSYktDgCXs" />
@@ -414,10 +365,186 @@ class Design
 <body>
 
 PAGESTART;
+
+        // Agar user ko password change karna compulsory hai to popup dikhao
+        // (aur baaki page band kar do, taaki popup ke bina kuch na khule)
+        $this->forcePasswordModal();
     }
 
 
+    /**
+     * FORCE PASSWORD CHANGE POPUP
+     * index.php login ke time $_SESSION['force_pw_change'] = 1 set karta hai
+     * (temporary password ya expired password).
+     * Jab tak user naya password set nahi karta, baaki page render hi nahi hota.
+     */
+    function forcePasswordModal()
+    {
+        if (empty($_SESSION['force_pw_change']) || empty($_SESSION['uid'])) {
+            return;
+        }
 
+        $uname = htmlspecialchars(isset($_SESSION['username']) ? $_SESSION['username'] : '', ENT_QUOTES, 'UTF-8');
+
+        $html = <<<'PWMODAL'
+<style type="text/css">
+html.rwLock, html.rwLock body { overflow: hidden !important; height: 100%; }
+#rwPwOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(4,22,12,.55); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; font-family: 'Inter','Segoe UI',Arial,sans-serif; }
+#rwPwBox { background: #fff; border-radius: 16px; width: 100%; max-width: 420px; padding: 22px 24px 16px; box-shadow: 0 20px 60px rgba(0,0,0,.35); box-sizing: border-box; max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+#rwPwBox::-webkit-scrollbar { display: none; }
+#rwPwBox h3 { margin: 0 0 4px; font-family: 'Source Serif 4', Georgia, serif; font-size: 22px; line-height: 1.2; color: #0b3d20; font-weight: 600; }
+#rwPwBox .rwPwSub { margin: 0 0 6px; font-size: 12.5px; line-height: 1.4; color: #667066; }
+#rwPwBox label { display: block; font-size: 12.5px; font-weight: 600; margin: 10px 0 5px; color: #17251c; }
+#rwPwBox .rwPwWrap { position: relative; }
+#rwPwBox input[type=text], #rwPwBox input[type=password] { width: 100%; height: 40px; padding: 0 44px 0 12px; border: 1px solid #e2e1d8; border-radius: 10px; font-family: inherit; font-size: 14px; box-sizing: border-box; outline: none; background: #fff; color: #17251c; }
+#rwPwBox input[type=password]:focus, #rwPwBox input[type=text]:focus { border-color: #0b6d2a; box-shadow: 0 0 0 3px rgba(11,109,42,.1); }
+#rwPwBox input[readonly] { background: #f1f3f1; color: #667066; padding-right: 12px; }
+#rwPwBox .rwEye { position: absolute; top: 50%; right: 4px; transform: translateY(-50%); width: 34px; height: 34px; border: 0; background: transparent; color: #667066; font-size: 15px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 0; }
+#rwPwBox .rwEye:hover { color: #0b6d2a; background: #f1f3f1; }
+#rwPwRules { list-style: none; margin: 12px 0 2px; padding: 0; font-size: 12.5px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
+#rwPwRules li { color: #8a938d; line-height: 1.35; }
+#rwPwRules li:before { content: "\25CB "; }
+#rwPwRules li.ok { color: #0b6d2a; font-weight: 600; }
+#rwPwRules li.ok:before { content: "\2714 "; }
+#rwPwMsg { font-size: 12.5px; color: #b3261e; margin-top: 8px; min-height: 16px; }
+#rwPwBtn { width: 100%; height: 42px; border: 0; border-radius: 999px; background: linear-gradient(135deg,#0b3d20 0%,#0b6d2a 100%); color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+#rwPwBtn:disabled { opacity: .45; cursor: not-allowed; }
+#rwPwLogout { display: block; text-align: center; margin-top: 10px; font-size: 12.5px; color: #667066; text-decoration: underline; }
+@media (max-width: 380px) {
+  #rwPwBox { padding: 18px 16px 12px; }
+  #rwPwBox h3 { font-size: 19px; }
+  #rwPwRules { grid-template-columns: 1fr; }
+}
+@media (max-height: 620px) {
+  #rwPwBox { padding-top: 14px; padding-bottom: 10px; }
+  #rwPwBox .rwPwSub { display: none; }
+  #rwPwBox label { margin: 6px 0 4px; }
+  #rwPwBox input[type=text], #rwPwBox input[type=password] { height: 36px; }
+  #rwPwRules { margin-top: 8px; }
+  #rwPwBtn { height: 38px; }
+}
+</style>
+<div id="rwPwOverlay">
+  <div id="rwPwBox">
+    <h3>Please change your password</h3>
+    <p class="rwPwSub">Your current password is temporary or has expired. You must set a new password to continue.</p>
+
+    <label>Username</label>
+    <input type="text" value="__UNAME__" readonly>
+
+    <label>New Password</label>
+    <div class="rwPwWrap">
+      <input type="password" id="rwNewPw" autocomplete="new-password">
+      <button type="button" class="rwEye" data-target="rwNewPw" title="Show / hide password"><i class="fa fa-eye"></i></button>
+    </div>
+
+    <label>Confirm New Password</label>
+    <div class="rwPwWrap">
+      <input type="password" id="rwConfPw" autocomplete="new-password">
+      <button type="button" class="rwEye" data-target="rwConfPw" title="Show / hide password"><i class="fa fa-eye"></i></button>
+    </div>
+
+    <ul id="rwPwRules">
+      <li id="rwr_len">At least 8 characters</li>
+      <li id="rwr_up">1 uppercase letter (A-Z)</li>
+      <li id="rwr_low">1 lowercase letter (a-z)</li>
+      <li id="rwr_num">1 number (0-9)</li>
+      <li id="rwr_sp">1 special character (@ # $ !)</li>
+      <li id="rwr_match">Both passwords match</li>
+    </ul>
+
+    <div id="rwPwMsg"></div>
+    <button type="button" id="rwPwBtn" disabled>Change Password</button>
+    <a id="rwPwLogout" href="turf-console/index.php?q=logout">Cancel &amp; Logout</a>
+  </div>
+</div>
+<script>
+(function () {
+    
+    document.documentElement.className += ' rwLock';
+
+    var np = document.getElementById('rwNewPw');
+    var cp = document.getElementById('rwConfPw');
+    var btn = document.getElementById('rwPwBtn');
+    var msg = document.getElementById('rwPwMsg');
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { e.preventDefault(); }
+    });
+
+    var eyes = document.querySelectorAll('#rwPwBox .rwEye');
+    for (var i = 0; i < eyes.length; i++) {
+        eyes[i].addEventListener('click', function () {
+            var input = document.getElementById(this.getAttribute('data-target'));
+            var icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa fa-eye';
+            }
+        });
+    }
+
+    function check() {
+        var v = np.value;
+        var res = {
+            len: v.length >= 8,
+            up: /[A-Z]/.test(v),
+            low: /[a-z]/.test(v),
+            num: /[0-9]/.test(v),
+            sp: /[^A-Za-z0-9]/.test(v),
+            match: v !== '' && v === cp.value
+        };
+        var all = true;
+        for (var k in res) {
+            document.getElementById('rwr_' + k).className = res[k] ? 'ok' : '';
+            if (!res[k]) { all = false; }
+        }
+        btn.disabled = !all;
+    }
+
+    np.addEventListener('input', check);
+    cp.addEventListener('input', check);
+
+    btn.addEventListener('click', function () {
+        btn.disabled = true;
+        msg.style.color = '#667066';
+        msg.textContent = 'Saving...';
+
+        var body = 'new_password=' + encodeURIComponent(np.value) +
+                   '&confirm_password=' + encodeURIComponent(cp.value);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'turf-console/changePassword.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) { return; }
+            var r = null;
+            try { r = JSON.parse(xhr.responseText); } catch (e) {}
+            if (r && r.ok) {
+                msg.style.color = '#0b6d2a';
+                msg.textContent = r.message + ' Redirecting...';
+                setTimeout(function () { window.location.reload(); }, 900);
+            } else {
+                msg.style.color = '#b3261e';
+                msg.textContent = (r && r.message) ? r.message : 'Something went wrong. Try again.';
+                check();
+            }
+        };
+        xhr.send(body);
+    });
+})();
+</script>
+PWMODAL;
+
+        echo str_replace('__UNAME__', $uname, $html);
+
+        // Popup ke baad page ka baaki content kabhi render nahi hoga
+        echo '</body></html>';
+        exit;
+    }
 
 
     function liveBoxes()
@@ -437,8 +564,6 @@ PAGESTART;
 
             echo <<< MEDIA_TIPS
 
-
-
 <ul id="rightLinkslive" class="clearfix rightLinkslive">
 
     <li>
@@ -452,8 +577,6 @@ PAGESTART;
         </a>
 
     </li>
-
-
 
     <li>
 
@@ -493,8 +616,6 @@ PAGESTART;
 
 </ul>
 
-
-
 MEDIA_TIPS;
         }
     }
@@ -511,10 +632,7 @@ MEDIA_TIPS;
         $raceObj = new Racedata($db);
 
         $oddsbox = $raceObj->getconfig_datas(1);
-
         $finalresbox = $raceObj->getconfig_datas(3);
-
-
 
         if ($oddsbox == 'Y') {
 
@@ -535,8 +653,6 @@ MEDIA_TIPS;
                  </div>-->
 
                  <br />
-
-
 
                 <script type='text/javascript'>
 
@@ -598,8 +714,6 @@ MEDIA_TIPS;
 
                  updateOdds();
 
-
-
                  </script>
 
 ODDS_CONTENT;
@@ -610,8 +724,6 @@ ODDS_CONTENT;
             //if (FINALRESBOX) {
 
             echo <<< FINAL_CONTENT
-
-
 
                 <script type='text/javascript'>
 
@@ -632,8 +744,6 @@ ODDS_CONTENT;
                         console.log(data);
 
                         /*$(".final_div").html('');*/
-
-            
 
                         $(".final_div").html(data);
 
@@ -684,21 +794,15 @@ FINAL_CONTENT;
 
         require_once('race.class.php');
 
-
-
         echo <<<TICKER
 
    <!-- Fixed navbar -->
 
     <div id="header">
 
-
-
             <!-- <div class="container"> -->
 
                 <div class="navbar-header logo">
-
-
 
                     <a class="navbar-brand" href="https://www.rwitc.com/"><img src="assets/images/logo.png"></a>
 
@@ -744,11 +848,7 @@ FINAL_CONTENT;
 
                     <!--<ul class="nav navbar-nav">
 
-                        
-
                         <li><p id="title">ROYAL WESTERN INDIA TURF CLUB</p></li>
-
-                        
 
                     </ul>-->
 
@@ -822,21 +922,11 @@ FINAL_CONTENT;
 
                     </div>
 
-
-
                 <!-- </div> -->
-
-
 
             </div>
 
-
-
-
-
     </div>
-
-
 
 TICKER;
 
@@ -862,11 +952,7 @@ TICKER;
 
      <div id="header">
 
-
-
                 <div class="navbar-header logo">
-
-
 
                     <a class="navbar-brand" href="turf-console/dashboard.php"><img src="assets/images/logo.png"></a>
 
@@ -907,8 +993,6 @@ TICKER;
                 </div>
 
                 <div class="navbar-collapse collapse ">
-
-                    
 
                     <div class="rightlogo">
  
@@ -978,15 +1062,7 @@ TICKER;
 
                     </div>
 
-
-
                 </div>
-
-
-
-
-
-
 
     </div>
 
@@ -1034,7 +1110,6 @@ TICKER;
 
         <!-- Fixed navbar -->
 
-        
         <div class="navbar navbar-inverse" style="display: none !important;" >
 
             <div class="navbar-header">
@@ -1601,11 +1676,12 @@ MENU;
         $activeAllModules = ($currentPage === 'allModules.php') ? ' active' : '';
         $activeDashboard  = ($currentPage === 'dashboard.php') ? ' active' : '';
 
-        $dashboardMenuHtml = $isSuperAdmin
-            ? '<li class="' . trim($activeDashboard) . '" id="navDashboard">
-                        <a href="turf-console/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-                    </li>'
-            : '';
+        // $dashboardMenuHtml = $isSuperAdmin
+        //     ? '<li class="' . trim($activeDashboard) . '" id="navDashboard">
+        //                 <a href="turf-console/dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
+        //             </li>'
+        //     : '';
+        $dashboardMenuHtml = '';
 
         echo <<< LEFTPANEL
 
@@ -1853,19 +1929,13 @@ STYLES;
 
         $finalresbox = $raceObj->getconfig_datas(3);
 
-
-
         echo '<div id="rightArea" class="col-lg-3">';
-
-
 
         if ($linkbox == 'Y') {
 
             //if (LINKSBOX) {
 
             echo <<< MEDIA_TIPS
-
-
 
 MEDIA_TIPS;
         }
@@ -1876,8 +1946,6 @@ MEDIA_TIPS;
 
             echo <<< ODDS_CONTENT
 
-
-
 ODDS_CONTENT;
         }
 
@@ -1887,14 +1955,8 @@ ODDS_CONTENT;
 
             echo <<< FINAL_CONTENT
 
-
-
 FINAL_CONTENT;
         }
-
-
-
-
 
         self::rightSponsor();
 

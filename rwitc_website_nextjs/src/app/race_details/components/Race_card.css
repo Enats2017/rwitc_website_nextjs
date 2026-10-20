@@ -15,11 +15,14 @@
 .racecardPage .docBadge { display: inline-block; padding: 12px 32px; border-radius: 999px; margin-top: 20px; background: #16a34a; color: #ffffff; font-size: 20px; font-weight: 800; }
 
 /* CONTAINER (bordered card) */
-.racecardPage .docContainer { position: relative; width: 100%; max-width: 1140px; margin: 0 auto; padding: 28px 32px 32px; border: 1px solid #e2e2e2; border-radius: 12px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05); box-sizing: border-box; overflow: hidden; }
+.racecardPage .docContainer { position: relative; width: 100%; max-width: 1140px; margin: 0 auto; padding: 84px 32px 32px; border: 1px solid #e2e2e2; border-radius: 12px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05); box-sizing: border-box; overflow: hidden; }
 
-/* DOWNLOAD BUTTON */
-.racecardPage .docDownloadBtn { position: absolute; top: 20px; right: 24px; background: #c9c2a8; color: #1a1a1a; padding: 6px 14px; border: none; border-radius: 4px; font-size: 12px; font-weight: 700; text-decoration: none; z-index: 2; }
-.racecardPage .docDownloadBtn:hover { background: #bdb494; cursor: pointer; text-decoration: underline; }
+/* DOCUMENT ACTIONS (Home + Download) */
+.racecardPage .docActions { position: absolute; top: 20px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center; }
+.racecardPage .docActionBtn { display: flex; flex: 0 1 260px; align-items: center; justify-content: center; gap: 12px; width: 260px; max-width: calc(50% - 6px); height: 54px; box-sizing: border-box; padding: 0 14px; border: none; border-radius: 8px; background: #c9c2a8; color: #000; font-size: 16px; font-weight: 700; text-decoration: none; z-index: 2; cursor: pointer; transition: .2s ease; }
+.racecardPage .docHomeBtn { flex-basis: 180px; width: 180px; }
+.racecardPage .docActionBtn:hover { background: #bdb494; text-decoration: underline; }
+.racecardPage .docHomeBtn svg { flex: 0 0 auto; font-size: 20px; }
 
 /* HEADER */
 .racecardPage .docHeader { text-align: center; margin-bottom: 28px; }
@@ -82,8 +85,11 @@
     .racecardPage .sectionDivider { max-width: 320px; gap: 12px; }
     .racecardPage .dividerIcon { font-size: 18px; }
     .racecardPage .docBadge { font-size: 16px; padding: 10px 24px; }
-    .racecardPage .docContainer { padding: 60px 12px 22px; }
-    .racecardPage .docDownloadBtn { top: 14px; right: 12px; }
+    .racecardPage .docContainer { padding: 66px 12px 22px; }
+    .racecardPage .docActions { top: 14px; left: 12px; right: 12px; }
+    .racecardPage .docActionBtn { flex-basis: 260px; height: 44px; gap: 6px; font-size: 12px; }
+    .racecardPage .docHomeBtn { flex-basis: 140px; width: 140px; }
+    .racecardPage .docHomeBtn svg { font-size: 16px; }
     .racecardPage .docWatermark { font-size: 24px; letter-spacing: 2px; }
     .racecardPage .docHint, .racecardPage .docClub { font-size: 13px; }
     .racecardPage .docHorseTop { flex-wrap: wrap; }
@@ -97,7 +103,7 @@
     .racecardPage .aboutHeading { font-size: 22px; }
     .racecardPage .sectionDivider { max-width: 240px; }
     .racecardPage .docBadge { font-size: 15px; padding: 9px 20px; }
-    .racecardPage .docContainer { padding: 56px 8px 18px; }
+    .racecardPage .docContainer { padding: 66px 8px 18px; }
     .racecardPage .docRaceBar { padding: 12px 14px; }
     .racecardPage .docHorseCard { padding: 12px; }
 }

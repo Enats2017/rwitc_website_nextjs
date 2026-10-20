@@ -481,20 +481,30 @@ OR
         }
     }
 
-    /*
-     * API FALLBACK
-     *
-     * Only call the API if at least one requested post-cutoff file
-     * was NOT found in the local run_races folder.
-     *
-     * Current API:
-     *   s3_bucket_get_api.php
-     *
-     * is GET-only and returns the S3-backed file list after syncing
-     * S3 data into run_race_details.
-     *
-     * We call it once for the whole request instead of once per date.
-     */
+    if (!empty($postCutoffDates)) {
+
+        $rcPlaceholders = implode(',', array_fill(0, count($postCutoffDates), '?'));
+        $rcTypes        = str_repeat('s', count($postCutoffDates));
+
+        $rcStmt = $conn->prepare(
+            "SELECT DISTINCT racedate FROM ratings_change WHERE racedate IN ({$rcPlaceholders})"
+        );
+
+        if ($rcStmt === false) {
+            throw new Exception($conn->error);
+        }
+
+        $rcStmt->bind_param($rcTypes, ...$postCutoffDates);
+        $rcStmt->execute();
+        $rcResult = $rcStmt->get_result();
+
+        while ($row = $rcResult->fetch_assoc()) {
+            $postCutoffFileDates['rating_change'][substr((string) $row['racedate'], 0, 10)] = true;
+        }
+
+        $rcStmt->close();
+    }
+
     $apiFallbackNeeded = false;
 
     foreach ($postCutoffDates as $date) {

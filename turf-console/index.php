@@ -2,7 +2,7 @@
 
 error_reporting(1);
 ini_set('display_errors', 'On');
-
+date_default_timezone_set('Asia/Kolkata');
 require_once("../bootstrap.php");
 require_once("../lib/users.class.php");
 require_once("../lib/userchecks.php");
@@ -37,6 +37,13 @@ if (preg_match('/uri=(.+)/is', $uri, $matches)) {
 session_start();
 
 $q = getParameterString('q', '', $db, true);
+
+$msg = "";
+
+/* Password-change popup (login page par hi dikhta hai) */
+$showPwModal = false;
+$pwModalUser = '';
+$pwModalRedirect = '';
 
 
 /*
@@ -73,9 +80,6 @@ if (isset($_SESSION['login_id']) || $q == "logout") {
 }
 
 
-$msg = "";
-
-
 /*
 |--------------------------------------------------------------------------
 | LOGIN
@@ -86,68 +90,30 @@ if ($q == "login-user") {
 
     try {
 
-        $username = getParameterString(
-            'username',
-            '',
-            $db,
-            true
-        );
-
-        $password = getParameterString(
-            'password',
-            '',
-            $db,
-            true
-        );
+        $username = getParameterString('username', '', $db, true);
+        $password = getParameterString('password', '', $db, true);
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Basic Validation
-        |--------------------------------------------------------------------------
-        */
+        /* Basic Validation */
 
         if ($username == '' || $password == '') {
 
-            throw new Exception(
-                "Username and password are required."
-            );
+            throw new Exception("Username and password are required.");
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | 1. FIRST CHECK ADMINS TABLE
-        |--------------------------------------------------------------------------
-        */
+        /* 1. FIRST CHECK ADMINS TABLE */
 
-        $userDetails = $siteuser->checkAdminUser(
-            $username,
-            $password
-        );
+        $userDetails = $siteuser->checkAdminUser($username, $password);
 
         $isSiteUser = false;
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | 2. IF NOT ADMIN, CHECK USERS TABLE
-        |--------------------------------------------------------------------------
-        */
+        /* 2. IF NOT ADMIN, CHECK USERS TABLE */
 
         if (empty($userDetails)) {
 
-            /*
-             * For normal users:
-             *
-             * username field from login form
-             * is treated as EMAIL.
-             */
-
-            $userDetails = $siteuser->checkSiteUser(
-                $username,
-                $password
-            );
+            $userDetails = $siteuser->checkSiteUser($username, $password);
 
             if (!empty($userDetails)) {
 
@@ -156,30 +122,17 @@ if ($q == "login-user") {
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | LOGIN FAILED
-        |--------------------------------------------------------------------------
-        */
+        /* LOGIN FAILED */
 
         if (empty($userDetails)) {
 
-            throw new Exception(
-                "Login failed. Incorrect username or password"
-            );
+            throw new Exception("Login failed. Incorrect username or password");
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | ACCOUNT STATUS
-        |--------------------------------------------------------------------------
-        */
+        /* ACCOUNT STATUS */
 
-        if (
-            isset($userDetails['active']) &&
-            $userDetails['active'] == 'N'
-        ) {
+        if (isset($userDetails['active']) && $userDetails['active'] == 'N') {
 
             throw new RWITC_exception(
                 "Your account has been deactivated. Kindly contact the web admin"
@@ -187,286 +140,225 @@ if ($q == "login-user") {
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | COOKIES
-        |--------------------------------------------------------------------------
-        */
+        /* COOKIES */
 
         if (isset($userDetails['email'])) {
 
-            setcookie(
-                "username",
-                $userDetails['email'],
-                time() + 60 * 60 * 24,
-                "/"
-            );
+            setcookie("username", $userDetails['email'], time() + 60 * 60 * 24, "/");
         }
 
         if (isset($userDetails['id'])) {
 
-            setcookie(
-                "uid",
-                $userDetails['id'],
-                time() + 60 * 60 * 24,
-                "/"
-            );
+            setcookie("uid", $userDetails['id'], time() + 60 * 60 * 24, "/");
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | COMMON SESSION
-        |--------------------------------------------------------------------------
-        */
+        /* COMMON SESSION */
 
-        $_SESSION['uid'] =
-            isset($userDetails['id'])
-            ? $userDetails['id']
-            : 0;
+        $_SESSION['uid'] = isset($userDetails['id']) ? $userDetails['id'] : 0;
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | USERNAME
-        |--------------------------------------------------------------------------
-        */
+        /* USERNAME */
 
         if (isset($userDetails['username'])) {
 
-            $_SESSION['username'] =
-                $userDetails['username'];
-        } elseif (
-            isset($userDetails['firstname']) ||
-            isset($userDetails['lastname'])
-        ) {
+            $_SESSION['username'] = $userDetails['username'];
+        } elseif (isset($userDetails['firstname']) || isset($userDetails['lastname'])) {
 
-            $_SESSION['username'] =
-                trim(
-                    (isset($userDetails['firstname'])
-                        ? $userDetails['firstname']
-                        : '') .
-                        ' ' .
-                        (isset($userDetails['lastname'])
-                            ? $userDetails['lastname']
-                            : '')
-                );
+            $_SESSION['username'] = trim(
+                (isset($userDetails['firstname']) ? $userDetails['firstname'] : '') .
+                    ' ' .
+                    (isset($userDetails['lastname']) ? $userDetails['lastname'] : '')
+            );
         } else {
 
             $_SESSION['username'] = $username;
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | ROLE
-        |--------------------------------------------------------------------------
-        */
+        /* ROLE */
 
-        $_SESSION['role'] =
-            isset($userDetails['role'])
-            ? $userDetails['role']
-            : 'SITE-USER';
+        $_SESSION['role'] = isset($userDetails['role']) ? $userDetails['role'] : 'SITE-USER';
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | OLD ADMIN PERMISSIONS
-        |
-        | Existing admin pages still use these session values.
-        |--------------------------------------------------------------------------
-        */
+        /* OLD ADMIN PERMISSIONS (existing admin pages still use these) */
 
-        $_SESSION['articles'] =
-            isset($userDetails['articles'])
-            ? $userDetails['articles']
-            : 'N';
-
-        $_SESSION['race_history'] =
-            isset($userDetails['race_history'])
-            ? $userDetails['race_history']
-            : 'N';
-
-        $_SESSION['send_mailer'] =
-            isset($userDetails['send_mailer'])
-            ? $userDetails['send_mailer']
-            : 'N';
-
-        $_SESSION['rating_change'] =
-            isset($userDetails['rating_change'])
-            ? $userDetails['rating_change']
-            : 'N';
-
-        $_SESSION['gallery'] =
-            isset($userDetails['gallery'])
-            ? $userDetails['gallery']
-            : 'N';
-
-        $_SESSION['video'] =
-            isset($userDetails['video'])
-            ? $userDetails['video']
-            : 'N';
-
-        $_SESSION['dividends'] =
-            isset($userDetails['dividends'])
-            ? $userDetails['dividends']
-            : 'N';
-
-        $_SESSION['stewards_report'] =
-            isset($userDetails['stewards_report'])
-            ? $userDetails['stewards_report']
-            : 'N';
-
-        $_SESSION['race_day_report'] =
-            isset($userDetails['race_day_report'])
-            ? $userDetails['race_day_report']
-            : 'N';
-
-        $_SESSION['calendar'] =
-            isset($userDetails['calendar'])
-            ? $userDetails['calendar']
-            : 'N';
-
-        $_SESSION['prakash_gosavi'] =
-            isset($userDetails['prakash_gosavi'])
-            ? $userDetails['prakash_gosavi']
-            : 'N';
-
-        $_SESSION['shiven_surendranath'] =
-            isset($userDetails['shiven_surendranath'])
-            ? $userDetails['shiven_surendranath']
-            : 'N';
-
-        $_SESSION['polls'] =
-            isset($userDetails['polls'])
-            ? $userDetails['polls']
-            : 'N';
-
-        $_SESSION['adminusers'] =
-            isset($userDetails['adminusers'])
-            ? $userDetails['adminusers']
-            : 'N';
-
-        $_SESSION['workingManager'] =
-            isset($userDetails['workingManager'])
-            ? $userDetails['workingManager']
-            : 'N';
-
-        $_SESSION['bannerManager'] =
-            isset($userDetails['bannerManager'])
-            ? $userDetails['bannerManager']
-            : 'N';
-
-        $_SESSION['tickerManager'] =
-            isset($userDetails['tickerManager'])
-            ? $userDetails['tickerManager']
-            : 'N';
-
-        $_SESSION['sponsorManager'] =
-            isset($userDetails['sponsorManager'])
-            ? $userDetails['sponsorManager']
-            : 'N';
-
-        $_SESSION['sponsorofthedayManager'] =
-            isset($userDetails['sponsorofthedayManager'])
-            ? $userDetails['sponsorofthedayManager']
-            : 'N';
-
-        $_SESSION['horseweightManager'] =
-            isset($userDetails['horseweightManager'])
-            ? $userDetails['horseweightManager']
-            : 'N';
-
-        $_SESSION['racedataManager'] =
-            isset($userDetails['racedataManager'])
-            ? $userDetails['racedataManager']
-            : 'N';
-
-        $_SESSION['configManager'] =
-            isset($userDetails['configManager'])
-            ? $userDetails['configManager']
-            : 'N';
-
-        $_SESSION['mailManager'] =
-            isset($userDetails['mailManager'])
-            ? $userDetails['mailManager']
-            : 'N';
-
-        $_SESSION['homepopup'] =
-            isset($userDetails['homepopup'])
-            ? $userDetails['homepopup']
-            : 'N';
+        $_SESSION['articles']               = isset($userDetails['articles']) ? $userDetails['articles'] : 'N';
+        $_SESSION['race_history']           = isset($userDetails['race_history']) ? $userDetails['race_history'] : 'N';
+        $_SESSION['send_mailer']            = isset($userDetails['send_mailer']) ? $userDetails['send_mailer'] : 'N';
+        $_SESSION['rating_change']          = isset($userDetails['rating_change']) ? $userDetails['rating_change'] : 'N';
+        $_SESSION['gallery']                = isset($userDetails['gallery']) ? $userDetails['gallery'] : 'N';
+        $_SESSION['video']                  = isset($userDetails['video']) ? $userDetails['video'] : 'N';
+        $_SESSION['dividends']              = isset($userDetails['dividends']) ? $userDetails['dividends'] : 'N';
+        $_SESSION['stewards_report']        = isset($userDetails['stewards_report']) ? $userDetails['stewards_report'] : 'N';
+        $_SESSION['race_day_report']        = isset($userDetails['race_day_report']) ? $userDetails['race_day_report'] : 'N';
+        $_SESSION['calendar']               = isset($userDetails['calendar']) ? $userDetails['calendar'] : 'N';
+        $_SESSION['prakash_gosavi']         = isset($userDetails['prakash_gosavi']) ? $userDetails['prakash_gosavi'] : 'N';
+        $_SESSION['shiven_surendranath']    = isset($userDetails['shiven_surendranath']) ? $userDetails['shiven_surendranath'] : 'N';
+        $_SESSION['polls']                  = isset($userDetails['polls']) ? $userDetails['polls'] : 'N';
+        $_SESSION['adminusers']             = isset($userDetails['adminusers']) ? $userDetails['adminusers'] : 'N';
+        $_SESSION['workingManager']         = isset($userDetails['workingManager']) ? $userDetails['workingManager'] : 'N';
+        $_SESSION['bannerManager']          = isset($userDetails['bannerManager']) ? $userDetails['bannerManager'] : 'N';
+        $_SESSION['tickerManager']          = isset($userDetails['tickerManager']) ? $userDetails['tickerManager'] : 'N';
+        $_SESSION['sponsorManager']         = isset($userDetails['sponsorManager']) ? $userDetails['sponsorManager'] : 'N';
+        $_SESSION['sponsorofthedayManager'] = isset($userDetails['sponsorofthedayManager']) ? $userDetails['sponsorofthedayManager'] : 'N';
+        $_SESSION['horseweightManager']     = isset($userDetails['horseweightManager']) ? $userDetails['horseweightManager'] : 'N';
+        $_SESSION['racedataManager']        = isset($userDetails['racedataManager']) ? $userDetails['racedataManager'] : 'N';
+        $_SESSION['configManager']          = isset($userDetails['configManager']) ? $userDetails['configManager'] : 'N';
+        $_SESSION['mailManager']            = isset($userDetails['mailManager']) ? $userDetails['mailManager'] : 'N';
+        $_SESSION['homepopup']              = isset($userDetails['homepopup']) ? $userDetails['homepopup'] : 'N';
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | NORMAL USER GROUP PERMISSIONS
-        |--------------------------------------------------------------------------
-        */
-
-        /*
-        |--------------------------------------------------------------------------
-        | USER GROUP PERMISSIONS
-        |--------------------------------------------------------------------------
-        */
+        /* USER GROUP PERMISSIONS */
 
         if ($isSiteUser) {
 
-            /*
-     * NORMAL SITE USER
-     */
-
-            loadUserPermissions(
-                $db,
-                (int)$userDetails['id']
-            );
+            loadUserPermissions($db, (int)$userDetails['id']);
         } else {
 
-            /*
-     * ADMIN USER
-     *
-     */
-
-            loadAdminPermissions(
-                $db,
-                (int)$userDetails['id']
-            );
+            loadAdminPermissions($db, (int)$userDetails['id']);
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | LOGIN SUCCESS
+        | FORCE PASSWORD CHANGE (temporary password / expired password)
+        |--------------------------------------------------------------------------
+        | Agar super admin ka diya hua password temporary hai (must_change_password = 1)
+        | ya password ki expiry ho gayi hai, to session me flag lagta hai.
+        | Design::startPage() is flag ko dekhkar popup dikhata hai.
+        */
+
+        $_SESSION['force_pw_change'] = 0;
+
+        if (!$isSiteUser) {
+
+            $pwRow = $db->getSingleRowAssoc(
+                "SELECT must_change_password,
+                        password_expiry_days,
+                        COALESCE(password_changed_at, created) AS pw_since
+                 FROM admins
+                 WHERE id = " . (int)$userDetails['id']
+            );
+
+            if ($pwRow) {
+
+                $forceChange = ((int)$pwRow['must_change_password'] === 1);
+                $expiryDays  = (int)$pwRow['password_expiry_days'];
+
+                if (
+                    !$forceChange &&
+                    $expiryDays > 0 &&
+                    !empty($pwRow['pw_since']) &&
+                    (strtotime($pwRow['pw_since']) + ($expiryDays * 86400)) < time()
+                ) {
+                    $forceChange = true;
+                }
+
+                if ($forceChange) {
+                    $_SESSION['force_pw_change'] = 1;
+                }
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SUPER ADMIN (uid 19): login ke baad sidebar ka pehla group selected dikhe
         |--------------------------------------------------------------------------
         */
 
-        header(
-            "refresh:2;url=" . $uri
-        );
+        if (
+            !$isSiteUser &&
+            (int)$_SESSION['uid'] === 19 &&
+            strtoupper((string)$_SESSION['role']) === 'ADMIN' &&
+            basename((string)parse_url($uri, PHP_URL_PATH)) === 'dashboard.php' &&
+            strpos($uri, 'grp=') === false
+        ) {
 
-        $safeUri = htmlspecialchars(
-            $uri,
-            ENT_QUOTES,
-            'UTF-8'
-        );
+            $firstGroupId = 0;
 
-        $msg =
-            "Login Successful.. Redirecting " .
-            "<a href='" .
-            $safeUri .
-            "'>Here</a> in 2 secs";
+            $allGroups = $db->getMultiDimensionalArray(
+                "SELECT user_group_id, permission FROM user_group ORDER BY name ASC"
+            );
+
+            if (is_array($allGroups)) {
+
+                // Design class load na ho to bhi code na phate
+                $catalog = class_exists('Design') ? Design::moduleCatalog() : array();
+
+                foreach ($allGroups as $g) {
+
+                    $p = @unserialize($g['permission']);
+
+                    if (!is_array($p) || empty($p['access']) || !is_array($p['access'])) {
+                        continue;
+                    }
+
+                    foreach ($p['access'] as $k) {
+
+                        if (empty($catalog) || isset($catalog[$k])) {
+                            $firstGroupId = (int)$g['user_group_id'];
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            if ($firstGroupId > 0) {
+
+                $uri = "dashboard.php?grp=" . $firstGroupId;
+            }
+        }
+
+        /* LAST LOGIN: har successful login pe date + time save karo */
+
+        if (!$isSiteUser) {
+
+            try {
+
+                $db->update(
+                    "UPDATE admins
+                     SET last_login = '" . date('Y-m-d H:i:s') . "'
+                     WHERE id = " . (int)$userDetails['id']
+                );
+            } catch (Exception $e) {
+                // last login save na ho to bhi login chalta rahe
+            }
+        }
+        /* LOGIN SUCCESS */
+
+        if (!empty($_SESSION['force_pw_change'])) {
+
+            /*
+            | Temporary / expired password:
+            | dashboard par redirect NAHI karna. Isi login page par popup dikhana hai
+            | (piche ka page blur rahega).
+            */
+
+            $showPwModal     = true;
+            $pwModalUser     = $_SESSION['username'];
+            $pwModalRedirect = $uri;
+        } else {
+
+            header("refresh:2;url=" . $uri);
+
+            $safeUri = htmlspecialchars($uri, ENT_QUOTES, 'UTF-8');
+
+            $msg =
+                "Login Successful.. Redirecting " .
+                "<a href='" . $safeUri . "'>Here</a> in 2 secs";
+        }
     } catch (RWITC_exception $rwitc_err) {
 
         session_destroy();
 
-        $msg =
-            $rwitc_err->getMessage();
+        $msg = $rwitc_err->getMessage();
     } catch (Exception $err) {
 
         session_destroy();
 
-        $msg =
-            $err->getMessage();
+        $msg = $err->getMessage();
     }
 }
 
@@ -477,16 +369,26 @@ if ($q == "login-user") {
 |--------------------------------------------------------------------------
 */
 
-$pageTitle =
-    "RWITC | " .
-    CURRENT_SEASON .
-    " - Admin Login";
+/* Agar popup wali login ke baad page reload ho gaya, to popup phir dikhao */
 
-$isSuccess =
-    (strpos($msg, "Login Successful") !== false);
+if (
+    !$showPwModal &&
+    $q != 'logout' &&
+    $q != 'login-user' &&
+    !empty($_SESSION['uid']) &&
+    !empty($_SESSION['force_pw_change'])
+) {
 
-$isLogoutMsg =
-    (strpos($msg, "successfully logged out") !== false);
+    $showPwModal     = true;
+    $pwModalUser     = isset($_SESSION['username']) ? $_SESSION['username'] : '';
+    $pwModalRedirect = $uri;
+}
+
+$pageTitle = "RWITC | " . CURRENT_SEASON . " - Admin Login";
+
+$isSuccess = (strpos($msg, "Login Successful") !== false);
+
+$isLogoutMsg = (strpos($msg, "successfully logged out") !== false);
 
 ?>
 <!DOCTYPE html>
@@ -1164,13 +1066,83 @@ $isLogoutMsg =
                 margin-bottom: 16px;
             }
         }
+        /* ---------- LOGIN PASSWORD EYE ICON ---------- */
+
+        .rwField .rwPwField {
+            position: relative;
+        }
+
+        .rwField .rwPwField input {
+            padding-right: 50px;
+        }
+
+        .rwEyeLogin {
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            border: 0;
+            background: transparent;
+            color: var(--rw-muted);
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .rwEyeLogin:hover {
+            color: var(--rw-green);
+            background: #f1f3f1;
+        }
+        /* ---------- FORCE PASSWORD CHANGE POPUP ---------- */
+
+html.rwLock, html.rwLock body { overflow: hidden !important; height: 100%; }
+#rwPwOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(4,22,12,.55); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; font-family: 'Inter','Segoe UI',Arial,sans-serif; }
+#rwPwBox { background: #fff; border-radius: 16px; width: 100%; max-width: 420px; padding: 22px 24px 16px; box-shadow: 0 20px 60px rgba(0,0,0,.35); box-sizing: border-box; max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+#rwPwBox::-webkit-scrollbar { display: none; }
+#rwPwBox h3 { margin: 0 0 4px; font-family: 'Source Serif 4', Georgia, serif; font-size: 22px; line-height: 1.2; color: #0b3d20; font-weight: 600; }
+#rwPwBox .rwPwSub { margin: 0 0 6px; font-size: 12.5px; line-height: 1.4; color: #667066; }
+#rwPwBox label { display: block; font-size: 12.5px; font-weight: 600; margin: 10px 0 5px; color: #17251c; }
+#rwPwBox .rwPwWrap { position: relative; }
+#rwPwBox input[type=text], #rwPwBox input[type=password] { width: 100%; height: 40px; padding: 0 44px 0 12px; border: 1px solid #e2e1d8; border-radius: 10px; font-family: inherit; font-size: 14px; box-sizing: border-box; outline: none; background: #fff; color: #17251c; }
+#rwPwBox input[type=password]:focus, #rwPwBox input[type=text]:focus { border-color: #0b6d2a; box-shadow: 0 0 0 3px rgba(11,109,42,.1); }
+#rwPwBox input[readonly] { background: #f1f3f1; color: #667066; padding-right: 12px; }
+#rwPwBox .rwEye { position: absolute; top: 50%; right: 4px; transform: translateY(-50%); width: 34px; height: 34px; border: 0; background: transparent; color: #667066; font-size: 15px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 0; }
+#rwPwBox .rwEye:hover { color: #0b6d2a; background: #f1f3f1; }
+#rwPwRules { list-style: none; margin: 12px 0 2px; padding: 0; font-size: 12.5px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
+#rwPwRules li { color: #8a938d; line-height: 1.35; }
+#rwPwRules li:before { content: "\25CB "; }
+#rwPwRules li.ok { color: #0b6d2a; font-weight: 600; }
+#rwPwRules li.ok:before { content: "\2714 "; }
+#rwPwMsg { font-size: 12.5px; color: #b3261e; margin-top: 8px; min-height: 16px; }
+#rwPwBtn { width: 100%; height: 42px; border: 0; border-radius: 999px; background: linear-gradient(135deg,#0b3d20 0%,#0b6d2a 100%); color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; margin-top: 6px; }
+#rwPwBtn:disabled { opacity: .45; cursor: not-allowed; }
+#rwPwLogout { display: block; text-align: center; margin-top: 10px; font-size: 12.5px; color: #667066; text-decoration: underline; }
+@media (max-width: 380px) {
+  #rwPwBox { padding: 18px 16px 12px; }
+  #rwPwBox h3 { font-size: 19px; }
+  #rwPwRules { grid-template-columns: 1fr; }
+}
+@media (max-height: 620px) {
+  #rwPwBox { padding-top: 14px; padding-bottom: 10px; }
+  #rwPwBox .rwPwSub { display: none; }
+  #rwPwBox label { margin: 6px 0 4px; }
+  #rwPwBox input[type=text], #rwPwBox input[type=password] { height: 36px; }
+  #rwPwRules { margin-top: 8px; }
+  #rwPwBtn { height: 38px; }
+}
     </style>
 
 </head>
 
 <body>
 
-    <div class="rwAdminAuth">
+    <div class="rwAdminAuth<?php echo $showPwModal ? ' rwBlur' : ''; ?>" id="rwPageWrap">
 
 
         <!-- LEFT PANEL -->
@@ -1418,12 +1390,25 @@ $isLogoutMsg =
                             Password
                         </label>
 
-                        <input
-                            type="password"
-                            id="rw-password"
-                            name="password"
-                            autocomplete="current-password"
-                            required>
+                        <div class="rwPwField">
+
+                            <input
+                                type="password"
+                                id="rw-password"
+                                name="password"
+                                autocomplete="current-password"
+                                required>
+
+                            <button
+                                type="button"
+                                class="rwEyeLogin"
+                                id="rwEyeLogin"
+                                title="Show / hide password"
+                                aria-label="Show or hide password">
+                                <i class="fa fa-eye"></i>
+                            </button>
+
+                        </div>
 
                     </div>
 
@@ -1499,6 +1484,144 @@ $isLogoutMsg =
         </div>
 
     </div>
+    <script>
+        (function() {
+            var btn = document.getElementById('rwEyeLogin');
+            var input = document.getElementById('rw-password');
+
+            if (!btn || !input) {
+                return;
+            }
+
+            btn.addEventListener('click', function() {
+                var icon = btn.querySelector('i');
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'fa fa-eye-slash';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'fa fa-eye';
+                }
+            });
+        })();
+    </script>
+<?php if ($showPwModal) { ?>
+
+<div id="rwPwOverlay">
+  <div id="rwPwBox">
+    <h3>Please change your password</h3>
+    <p class="rwPwSub">Your current password is temporary or has expired. You must set a new password to continue.</p>
+
+    <label>Username</label>
+    <input type="text" value="<?php echo htmlspecialchars($pwModalUser, ENT_QUOTES, 'UTF-8'); ?>" readonly>
+
+    <label>New Password</label>
+    <div class="rwPwWrap">
+      <input type="password" id="rwNewPw" autocomplete="new-password">
+      <button type="button" class="rwEye" data-target="rwNewPw" title="Show / hide password"><i class="fa fa-eye"></i></button>
+    </div>
+
+    <label>Confirm New Password</label>
+    <div class="rwPwWrap">
+      <input type="password" id="rwConfPw" autocomplete="new-password">
+      <button type="button" class="rwEye" data-target="rwConfPw" title="Show / hide password"><i class="fa fa-eye"></i></button>
+    </div>
+
+    <ul id="rwPwRules">
+      <li id="rwr_len">At least 8 characters</li>
+      <li id="rwr_up">1 uppercase letter (A-Z)</li>
+      <li id="rwr_low">1 lowercase letter (a-z)</li>
+      <li id="rwr_num">1 number (0-9)</li>
+      <li id="rwr_sp">1 special character (@ # $ !)</li>
+      <li id="rwr_match">Both passwords match</li>
+    </ul>
+
+    <div id="rwPwMsg"></div>
+    <button type="button" id="rwPwBtn" disabled>Change Password</button>
+    <a id="rwPwLogout" href="index.php?q=logout">Cancel &amp; Logout</a>
+  </div>
+</div>
+<script>
+(function () {
+    var redirectTo = <?php echo json_encode($pwModalRedirect); ?>;
+    document.documentElement.className += ' rwLock';
+
+    var np = document.getElementById('rwNewPw');
+    var cp = document.getElementById('rwConfPw');
+    var btn = document.getElementById('rwPwBtn');
+    var msg = document.getElementById('rwPwMsg');
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { e.preventDefault(); }
+    });
+
+    var eyes = document.querySelectorAll('#rwPwBox .rwEye');
+    for (var i = 0; i < eyes.length; i++) {
+        eyes[i].addEventListener('click', function () {
+            var input = document.getElementById(this.getAttribute('data-target'));
+            var icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa fa-eye';
+            }
+        });
+    }
+
+    function check() {
+        var v = np.value;
+        var res = {
+            len: v.length >= 8,
+            up: /[A-Z]/.test(v),
+            low: /[a-z]/.test(v),
+            num: /[0-9]/.test(v),
+            sp: /[^A-Za-z0-9]/.test(v),
+            match: v !== '' && v === cp.value
+        };
+        var all = true;
+        for (var k in res) {
+            document.getElementById('rwr_' + k).className = res[k] ? 'ok' : '';
+            if (!res[k]) { all = false; }
+        }
+        btn.disabled = !all;
+    }
+
+    np.addEventListener('input', check);
+    cp.addEventListener('input', check);
+
+    btn.addEventListener('click', function () {
+        btn.disabled = true;
+        msg.style.color = '#667066';
+        msg.textContent = 'Saving...';
+
+        var body = 'new_password=' + encodeURIComponent(np.value) +
+                   '&confirm_password=' + encodeURIComponent(cp.value);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'changePassword.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) { return; }
+            var r = null;
+            try { r = JSON.parse(xhr.responseText); } catch (e) {}
+            if (r && r.ok) {
+                msg.style.color = '#0b6d2a';
+                msg.textContent = r.message + ' Redirecting...';
+                setTimeout(function () { window.location.href = redirectTo; }, 900);
+            } else {
+                msg.style.color = '#b3261e';
+                msg.textContent = (r && r.message) ? r.message : 'Something went wrong. Try again.';
+                check();
+            }
+        };
+        xhr.send(body);
+    });
+})();
+</script>
+    <?php } ?>
 
 </body>
 

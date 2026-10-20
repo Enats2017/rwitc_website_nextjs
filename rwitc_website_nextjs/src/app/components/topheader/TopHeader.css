@@ -214,11 +214,11 @@ body::-webkit-scrollbar {
 .navItem {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     color: rgba(255, 255, 255, .85);
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 600;
-    padding: 14px 16px;
+    padding: 16px 18px;
     text-decoration: none;
     background: none;
     border: none;
@@ -231,11 +231,11 @@ body::-webkit-scrollbar {
 .navItemIcon {
     display: flex;
     align-items: center;
-    font-size: 14px;
+    font-size: 18px;
 }
 
 .navItemChevron {
-    font-size: 8px;
+    font-size: 10px;
     margin-left: 2px;
 }
 
@@ -624,6 +624,22 @@ body::-webkit-scrollbar {
 
 .mobileSubMenu.open {
     grid-template-rows: 1fr;
+}
+
+@media (min-width: 993px) and (max-width: 1250px) {
+    .navLinks {
+        padding: 0 10px;
+    }
+
+    .navItem {
+        font-size: 15px;
+        padding: 14px 10px;
+        gap: 7px;
+    }
+
+    .navItemIcon {
+        font-size: 15px;
+    }
 }
 
 /* ================= RESPONSIVE ================= */

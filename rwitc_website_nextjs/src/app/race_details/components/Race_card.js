@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { getRaceCard } from "../../../services/racecardService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
-import { FaHorseHead } from "react-icons/fa";
+import { FaHome, FaHorseHead } from "react-icons/fa";
 import "./Race_card.css";
 const MONTHS = {
     jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
@@ -395,19 +396,27 @@ export default function RaceCard() {
 
             <div className="docContainer">
 
-                <button
-                    type="button"
-                    className="docDownloadBtn"
-                    onClick={() => {
-                        if (downloadAvailable && downloadFile) {
-                            window.open(downloadFile, "_blank", "noopener,noreferrer");
-                        } else {
-                            alert("No download file found for this date. Showing data below.");
-                        }
-                    }}
-                >
-                    Download Race Card
-                </button>
+                <div className="docActions">
+                    <Link href="/" className="docActionBtn docHomeBtn">
+                        <FaHome aria-hidden="true" />
+                        <span>Home</span>
+                    </Link>
+
+                    {/* DOWNLOAD BUTTON */}
+                    <button
+                        type="button"
+                        className="docActionBtn docDownloadBtn"
+                        onClick={() => {
+                            if (downloadAvailable && downloadFile) {
+                                window.open(downloadFile, "_blank", "noopener,noreferrer");
+                            } else {
+                                alert("No download file found for this date. Showing data below.");
+                            }
+                        }}
+                    >
+                        Download Race Card
+                    </button>
+                </div>
 
                 {/* Header block only applies to the structured (DB) view */}
                 {!isHtmlMode && (

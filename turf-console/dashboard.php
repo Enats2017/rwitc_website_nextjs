@@ -124,7 +124,12 @@ if (empty($secmsg) && !$isGroupView && isset($_GET['menu'])) {
 | PAGE TITLE
 |--------------------------------------------------------------------------
 */
-
+$isSuperAdminUser = (
+    isset($_SESSION['uid']) &&
+    (int)$_SESSION['uid'] === 19 &&
+    isset($_SESSION['role']) &&
+    strtoupper((string)$_SESSION['role']) === 'ADMIN'
+);
 $pageTitle = 'Dashboard';
 
 
@@ -431,6 +436,12 @@ $design->writeContentPageStyles();
                     </a>
                 <?php } ?>
 
+            </div>
+
+        <?php } elseif ($isSuperAdminUser) { ?>
+
+            <div class="message">
+                Please select a group from the left panel to view its modules.
             </div>
 
         <?php } else { ?>
