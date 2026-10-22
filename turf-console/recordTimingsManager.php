@@ -7,17 +7,13 @@ require_once('../lib/permissions.php');
 session_start();
 $userObj = new Users($db);
 
-// ---------------------------------------------------------------
 // SETTINGS
-// ---------------------------------------------------------------
 $pageTitleText = 'Best Timings';
 $moduleKey     = 'record_timings';
 $pageFile      = 'recordTimingsManager.php';
 $sessionKey    = 'record_timings_form';
 
-// ---------------------------------------------------------------
 // LOGIN + MODULE ACCESS CHECK
-// ---------------------------------------------------------------
 $secmsg = '';
 if (!isAdminlogin()) {
     $secmsg = 'You do not have access to this page.';
@@ -36,9 +32,7 @@ $flash     = isset($_SESSION[$sessionKey . '_flash']['text']) ? $_SESSION[$sessi
 $flashType = isset($_SESSION[$sessionKey . '_flash']['type']) ? $_SESSION[$sessionKey . '_flash']['type'] : '';
 unset($_SESSION[$sessionKey . '_flash']);
 
-// ---------------------------------------------------------------
 // HELPERS
-// ---------------------------------------------------------------
 function rtSetFlash($text, $type)
 {
     global $sessionKey;
@@ -51,8 +45,8 @@ function rtH($v)
 }
 
 /**
- * Common fields (horse, weight, date, min, sec, notes) ko validate + clean karta hai.
- * Success: array, Error: null (aur $err me message).
+ * Validates and cleans common fields (horse, weight, date, minutes, seconds, and notes).
+ * Returns an array on success or null on failure, with an error message in $err.
  */
 function rtClean($src, &$err)
 {
@@ -112,24 +106,20 @@ function rtClean($src, &$err)
     );
 }
 
-// ---------------------------------------------------------------
 // WHICH TRACK (mumbai | pune)
-// ---------------------------------------------------------------
 $trackReq = ($_SERVER['REQUEST_METHOD'] === 'POST')
     ? (isset($_POST['track']) ? $_POST['track'] : '')
     : (isset($_GET['track']) ? $_GET['track'] : '');
 $track = ($trackReq === 'pune') ? 'pune' : 'mumbai';
 
-// Table bana hai ya nahi
+// Check whether the required database table exists
 $tableOk = false;
 if ($secmsg === '') {
     $chk     = $db->getMultiDimensionalArray("SHOW TABLES LIKE 'record_timings'");
     $tableOk = !empty($chk);
 }
 
-// ---------------------------------------------------------------
 // POST ACTIONS: save_rows | add | delete
-// ---------------------------------------------------------------
 if (empty($secmsg) && $tableOk && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $redirect = $pageFile . '?track=' . $track;
@@ -168,7 +158,7 @@ if (empty($secmsg) && $tableOk && $_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($err !== '') {
-                // Koi bhi row galat ho to kuch save nahi hota
+                // If any row contains invalid data, no changes are saved
                 rtSetFlash('Nothing was saved. ' . $err, 'error');
             } else {
                 foreach ($clean as $id => $c) {
@@ -244,9 +234,7 @@ if (empty($secmsg) && $tableOk && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// ---------------------------------------------------------------
 // PAGE DATA
-// ---------------------------------------------------------------
 $bySurface = array('main' => array(), 'monsoon' => array());
 
 if ($secmsg === '' && $tableOk) {
@@ -262,8 +250,9 @@ if ($secmsg === '' && $tableOk) {
 }
 
 /**
- * Ek editable block print karta hai (Mumbai = 1 block, Pune = 2 blocks).
- * Table ki jagah CSS-grid rows: badi screen pe table jaisa, chhoti screen pe card jaisa.
+ * Renders an editable block (one block for Mumbai and two blocks for Pune).
+ * Uses CSS grid rows instead of a table to provide a table-like layout
+ * on larger screens and a card-like layout on smaller screens.
  */
 function rtRenderTable($rows, $title)
 {
@@ -366,12 +355,12 @@ $design->writeContentPageStyles();
 .rt-tab:hover{border-color:#0f5c33;color:#0f5c33}
 .rt-tab.active{background:#0f5c33;border-color:#0f5c33;color:#fff}
 
-/* card: container-query ke liye width yahin se naapi jaati hai */
+/* Card: The container query measures the available width of this element */
 .rt-card{background:#fff;border:1px solid #e2e6e4;border-radius:12px;padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.03);margin-bottom:24px;container-type:inline-size;container-name:rt;min-width:0;max-width:100%}
 .rt-block{margin-bottom:22px}.rt-block:last-of-type{margin-bottom:0}
 .rt-block-title{background:#e6f4ec;color:#0b3d24;font-size:17px;font-weight:800;padding:13px 16px;border-radius:8px 8px 0 0;line-height:1.3}
 
-/* ---------- GRID ROWS (wide screen = table jaisa) ---------- */
+/* ---------- GRID ROWS (table-like layout on wide screens) ---------- */
 .rt-grid{border:1px solid #e2e6e4;border-top:0;border-radius:0 0 8px 8px;overflow:hidden}
 .rt-cols{display:grid;grid-template-columns:104px minmax(0,1.5fr) 78px 142px 60px 92px minmax(0,1.5fr) 84px;gap:8px;align-items:center;padding:8px 10px}
 .rt-head{background:#f3f8f5;border-bottom:1px solid #dfe8e2;font-size:13px;font-weight:700;color:#0b3d24;text-align:center;line-height:1.25}
@@ -395,7 +384,7 @@ $design->writeContentPageStyles();
 .rt-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;font-size:14.5px;font-weight:700;border-radius:8px;border:1px solid transparent;cursor:pointer;background:#0f5c33;color:#fff;max-width:100%}
 .rt-btn:hover{background:#1a7a45}
 
-/* ---------- ADD FORM (kabhi bahar nahi jaata: auto-fit grid) ---------- */
+/* ---------- ADD FORM (auto-fit grid prevents content overflow) ---------- */
 .rt-add-title{background:#e6f4ec;color:#0b3d24;font-size:17px;font-weight:800;padding:13px 16px;border-radius:8px 8px 0 0}
 .rt-add{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;align-items:end;padding:16px;border:1px solid #e2e6e4;border-top:0;border-radius:0 0 8px 8px}
 .rt-add>div{min-width:0}
@@ -405,7 +394,7 @@ $design->writeContentPageStyles();
 .rt-warn{background:#fff3cd;border:1px solid #ffe08a;border-radius:8px;padding:14px 16px;font-size:14px;margin-bottom:16px}
 html,body{scrollbar-width:none;-ms-overflow-style:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
 
-/* ---------- CARD MODE: jab card ki width kam ho (laptop + sidebar / tablet / mobile) ---------- */
+/* ---------- CARD MODE: Used when the card width is limited (laptop with sidebar, tablet, or mobile) ---------- */
 @container rt (max-width: 940px){
   .rt-head{display:none}
   .rt-grid{border:0;border-radius:0}
@@ -448,38 +437,6 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}html::-webkit-scrollbar,b
             <a class="rt-tab <?php echo $track === 'pune' ? 'active' : ''; ?>" href="turf-console/<?php echo rtH($pageFile); ?>?track=pune">Pune</a>
         </div>
 
-        <!-- Delete ke liye alag form (buttons "form" attribute se isse judte hain) -->
-        <form id="rtDeleteForm" method="post" action="turf-console/<?php echo rtH($pageFile); ?>">
-            <input type="hidden" name="csrf" value="<?php echo rtH($csrf); ?>">
-            <input type="hidden" name="action" value="delete">
-            <input type="hidden" name="track" value="<?php echo rtH($track); ?>">
-        </form>
-
-        <!-- EDIT + SAVE ALL -->
-        <form id="rtForm" method="post" action="turf-console/<?php echo rtH($pageFile); ?>">
-            <input type="hidden" name="csrf" value="<?php echo rtH($csrf); ?>">
-            <input type="hidden" name="action" value="save_rows">
-            <input type="hidden" name="track" value="<?php echo rtH($track); ?>">
-
-            <div class="rt-card">
-                <?php if ($track === 'mumbai') { ?>
-
-                    <?php rtRenderTable($bySurface['main'], 'Best Timings By Indian Horses On The Mumbai Race Track'); ?>
-
-                <?php } else { ?>
-
-                    <?php rtRenderTable($bySurface['main'], 'Pune Race Track - Main Track'); ?>
-                    <?php rtRenderTable($bySurface['monsoon'], 'Pune Race Track - Monsoon Track'); ?>
-
-                <?php } ?>
-
-                <div class="rt-save-bar">
-                    <button type="submit" class="rt-btn"><i class="fas fa-save"></i> Save Changes</button>
-                    <span class="rt-hint"><i class="fas fa-eye"></i> Eye icon: show / hide that record on the website. Click "Save Changes" after editing.</span>
-                </div>
-            </div>
-        </form>
-
         <!-- ADD CUSTOM DISTANCE -->
         <form method="post" action="turf-console/<?php echo rtH($pageFile); ?>">
             <input type="hidden" name="csrf" value="<?php echo rtH($csrf); ?>">
@@ -513,12 +470,45 @@ html,body{scrollbar-width:none;-ms-overflow-style:none}html::-webkit-scrollbar,b
             </div>
         </form>
 
+        <!-- Separate form for deletion; buttons are connected using the "form" attribute -->
+        <form id="rtDeleteForm" method="post" action="turf-console/<?php echo rtH($pageFile); ?>">
+            <input type="hidden" name="csrf" value="<?php echo rtH($csrf); ?>">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="track" value="<?php echo rtH($track); ?>">
+        </form>
+
+        <!-- EDIT + SAVE ALL -->
+        <form id="rtForm" method="post" action="turf-console/<?php echo rtH($pageFile); ?>">
+            <input type="hidden" name="csrf" value="<?php echo rtH($csrf); ?>">
+            <input type="hidden" name="action" value="save_rows">
+            <input type="hidden" name="track" value="<?php echo rtH($track); ?>">
+
+            <div class="rt-card">
+                <?php if ($track === 'mumbai') { ?>
+
+                    <?php rtRenderTable($bySurface['main'], 'Best Timings By Indian Horses On The Mumbai Race Track'); ?>
+
+                <?php } else { ?>
+
+                    <?php rtRenderTable($bySurface['main'], 'Pune Race Track - Main Track'); ?>
+                    <?php rtRenderTable($bySurface['monsoon'], 'Pune Race Track - Monsoon Track'); ?>
+
+                <?php } ?>
+
+                <div class="rt-save-bar">
+                    <button type="submit" class="rt-btn"><i class="fas fa-save"></i> Save Changes</button>
+                    <span class="rt-hint"><i class="fas fa-eye"></i> Eye icon: show / hide that record on the website. Click "Save Changes" after editing.</span>
+                </div>
+            </div>
+        </form>
+
+
     <?php } ?>
 </div>
 
 <script>
 (function () {
-    // Eye icon: website pe dikhana / chhupana
+    // Eye icon: Show or hide the record on the website
     var eyes = document.querySelectorAll('.rt-eye');
     for (var i = 0; i < eyes.length; i++) {
         eyes[i].addEventListener('click', function () {
