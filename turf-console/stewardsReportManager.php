@@ -119,23 +119,7 @@ $design->js = '
 $design->css = '
   <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
   ';
-$design->jqueryJs = "
-    jQuery.browser = {};
-    (function () {
-        jQuery.browser.msie = false;
-        jQuery.browser.version = 0;
-        if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
-            jQuery.browser.msie = true;
-            jQuery.browser.version = RegExp.$1;
-        }
-    })();
-    $('#report_date').datepicker({
-            showOn: 'button',
-            buttonImage: 'images/calendar.gif',
-            buttonImageOnly: true,
-            dateFormat : 'yy-mm-dd'
-        });
-  ";
+$design->jqueryJs = '';
 $design->startPage("$pageTitle");
 
 $design->writeLogoTickerMenu();
@@ -287,6 +271,22 @@ $design->openDiv("leftArea", "col-lg-9");
         max-width: 100%;
         box-sizing: border-box;
     }
+    .report-form-table input[type="date"] {
+        border: 1px solid #e2e6e4;
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-size: 14px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        font-family: inherit;
+        color: #2b332f;
+    }
+
+    .report-form-table input[type="date"]:focus {
+        outline: none;
+        border-color: #1a7a45;
+    }
 
     .report-form-table input[type="submit"],
     .report-form-table input[type="reset"] {
@@ -430,7 +430,7 @@ $design->openDiv("leftArea", "col-lg-9");
     }
 </style>
 
-<?php 
+<?php
 if (isset($_SESSION['report_msg'])) {
     $msg = $_SESSION['report_msg'];
     unset($_SESSION['report_msg']);
@@ -440,7 +440,7 @@ if (isset($_SESSION['report_msg'])) {
     <div class="message" id="successMsg">
         <?php echo $msg; ?>
     </div>
-     <script>
+    <script>
         setTimeout(function() {
             var el = document.getElementById('successMsg');
             if (el) el.style.display = 'none';
@@ -481,7 +481,7 @@ if (isset($_SESSION['report_msg'])) {
                             $date = date("Y-m-d", strtotime($reportDetails['racedate']));
                         }
                         ?>
-                        <td class="alignLeft"><input type="text" name="date" id="report_date" value="<?php echo $date; ?>" /></td>
+                        <td class="alignLeft"> <input type="date" name="date" id="report_date" value="<?php echo htmlspecialchars($date, ENT_QUOTES, 'UTF-8'); ?>" required /></td>
                     </tr>
                     <tr>
                         <th>Title</th>

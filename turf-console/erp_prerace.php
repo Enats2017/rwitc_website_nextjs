@@ -87,8 +87,6 @@
   $pageTitle ='Mumbai Racecource Availibility prerace Manager';        
   $design = new Design();
   $design->js='
-  <script type="text/javascript" src="js/jquery.ui.core.min.js"></script>    
-    <script type="text/javascript" src="js/jquery.ui.datepicker.min.js"></script>
     <script type="text/javascript">
         function confirmDelete(preraceID) {
             alert(delete-prerace);
@@ -99,8 +97,7 @@
         }
     </script>
   ';
-  $design->css ='
-  <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
+  $design->css ='    
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style type="text/css">
   #infoWrapper.col-lg-12 {
@@ -134,10 +131,10 @@
   .prerace-form-wrap { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); max-width: 700px; }
   .prerace-form-wrap .form-row { margin-bottom: 20px; }
   .prerace-form-wrap label.form-label { display: block; font-size: 14px; font-weight: 600; color: #2b332f; margin-bottom: 8px; }
-  .prerace-form-wrap input[type="text"] {
+  .prerace-form-wrap input[type="text"], .prerace-form-wrap input[type="date"] {
     width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit;
   }
-  .prerace-form-wrap input[type="text"]:focus { outline: none; border-color: #1a7a45; }
+  .prerace-form-wrap input[type="text"]:focus, .prerace-form-wrap input[type="date"]:focus { outline: none; border-color: #1a7a45; }
   .prerace-form-wrap .form-actions { padding-top: 6px; }
   .prerace-form-wrap input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 10px 22px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
   .prerace-form-wrap input[type="submit"]:hover { background: #0c4a29; }
@@ -162,23 +159,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
   }
   </style>
   ';
-  $design->jqueryJs = "
-    jQuery.browser = {};
-    (function () {
-        jQuery.browser.msie = false;
-        jQuery.browser.version = 0;
-        if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
-            jQuery.browser.msie = true;
-            jQuery.browser.version = RegExp.$1;
-        }
-    })();
-    $('#prerace_date').datepicker({
-            showOn: 'button',
-            buttonImage: 'images/calendar.gif',
-            buttonImageOnly: true,
-            dateFormat : 'yy-mm-dd'
-        });
-  "; 
+  $design->jqueryJs = ''; 
   $design->startPage("$pageTitle");  
   $design->writeLogoTickerMenu();
   $design->openDiv("contentWrapper");
@@ -210,7 +191,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                     <input type="hidden" name="q" value="add-prerace" />
                     <div class="form-row">
                         <label class="form-label" for="prerace_date">Date</label>
-                        <input type="text" name="date" id='prerace_date' value="" />
+                        <input type="date" name="date" id="prerace_date" value="" required />
                     </div>
                     <div class="form-actions">
                         <input type="submit" name="submit" value="Save" />

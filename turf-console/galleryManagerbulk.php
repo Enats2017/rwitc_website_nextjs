@@ -165,8 +165,6 @@ if (isAdminlogin()) {
 	$pageTitle ='Gallery Manager';        
 	$design = new Design();
 	$design->js='
-	<script type="text/javascript" src="js/jquery.ui.core.min.js"></script>    
-		<script type="text/javascript" src="js/jquery.ui.datepicker.min.js"></script>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 		<script type="text/javascript">
 				function confirmDelete(imageID,sponsorID) {
@@ -177,25 +175,8 @@ if (isAdminlogin()) {
 				}
 		</script>
 	';
-	$design->css ='
-		<link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
-	';
+	$design->css ='';
 	$design->jqueryJs = "
-		jQuery.browser = {};
-		(function () {
-			jQuery.browser.msie = false;
-			jQuery.browser.version = 0;
-			if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
-				jQuery.browser.msie = true;
-				jQuery.browser.version = RegExp.$1;
-			}
-		})();
-		$('#image_date').datepicker({
-			showOn: 'button',
-			buttonImage: 'images/calendar.gif',
-			buttonImageOnly: true,
-			dateFormat : 'yy-mm-dd'
-		});
 		$('.sponsorList').click(function() {  
 			if ($('#image_date').val()) {
 				$.ajax( {
@@ -280,6 +261,7 @@ $design->openDiv("leftArea","col-lg-9");
 .gallery-form-table th { text-align: left; padding: 10px 8px; color: #2b332f; vertical-align: top; width: 20%; font-weight: 600; font-size: 13.5px; }
 .gallery-form-table td { padding: 10px 8px; }
 .gallery-form-table input[type="text"],
+.gallery-form-table input[type="date"],
 .gallery-form-table input[type="file"] {
     border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px;
     width: 100%; max-width: 100%; box-sizing: border-box;
@@ -359,7 +341,7 @@ $design->openDiv("leftArea","col-lg-9");
 				<tr>
 					<th>Date</th>
 					<td class="alignLeft">
-						<input type="text" name="date" id='image_date' />
+						<input type="date" name="date" id="image_date" required />
 					</td>
 				</tr>
 				<tr>         

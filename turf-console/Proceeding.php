@@ -150,7 +150,7 @@ $design->writeContentPageStyles();
 
                     <div class="agm-field">
                         <label for="agmDate">Date <span class="req">*</span></label>
-                        <input type="text" id="agmDate" name="proceeding_date" class="agm-input" placeholder="YYYY-MM-DD" maxlength="10" inputmode="numeric" autocomplete="off">
+                        <input type="date" id="agmDate" name="proceeding_date" class="agm-input" placeholder="YYYY-MM-DD" maxlength="10" inputmode="numeric" autocomplete="off">
                         <div class="agm-hint"><span>Format: YYYY-MM-DD (e.g. 2026-10-07)</span></div>
                         <div class="agm-err" id="errDate">Please enter a valid date in YYYY-MM-DD format.</div>
                     </div>

@@ -347,108 +347,565 @@ $design->writeContentPageStyles();
 
 ?>
 <style type="text/css">
-    .message { background: #fff3cd; border: 1px solid #ffe08a; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; }
-    .message.success { background: #e3f6ea; border-color: #a9dcbd; color: #0f5c33; }
-    .message.error { background: #fde8e8; border-color: #f5b5b5; color: #a12626; }
-    .submenu { display: none; }
+    .message {
+        background: #fff3cd;
+        border: 1px solid #ffe08a;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
 
-    .ar-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-    .ar-header > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; }
-    .ar-title { font-size: 24px; font-weight: 700; color: #2b332f; margin: 0; }
-    .ar-subtitle { font-size: 14px; color: #7a8c84; margin: 0; }
+    .message.success {
+        background: #e3f6ea;
+        border-color: #a9dcbd;
+        color: #0f5c33;
+    }
 
-    .ar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); max-width: 820px; margin-bottom: 26px; }
-    .ar-card.wide { max-width: 100%; }
-    .ar-card-title { font-family: inherit; font-size: 17px; font-weight: 600; color: #2b332f; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px solid #eef1ef; }
-    .ar-card-title::before, .ar-card-title::after { display: none; content: none; }
-    .ar-card-title .ar-count { font-size: 13px; font-weight: 500; color: #7a8c84; margin-left: 8px; }
-    .ar-card.editing { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.10); }
+    .message.error {
+        background: #fde8e8;
+        border-color: #f5b5b5;
+        color: #a12626;
+    }
 
-    .ar-field { margin-bottom: 18px; min-width: 0; }
-    .ar-field label { display: block; font-size: 13px; font-weight: 600; color: #2b332f; margin-bottom: 6px; }
-    .ar-field label .req { color: #c0392b; }
-    .ar-input { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
-    .ar-input::placeholder { color: #9aa9a2; }
-    .ar-input:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; display: flex; justify-content: space-between; gap: 10px; }
-    .ar-input.invalid, .ar-drop.invalid { border-color: #c0392b; }
-    .ar-err { color: #c0392b; font-size: 12px; margin-top: 5px; display: none; }
-    .ar-err.show { display: block; }
+    .submenu {
+        display: none;
+    }
 
-    .ar-drop { border: 2px dashed #b9c4be; border-radius: 12px; padding: 32px 16px; text-align: center; cursor: pointer; background: #f8faf9; transition: all .15s ease; }
-    .ar-drop:hover, .ar-drop.dragover { border-color: #1a7a45; background: #eef7f1; }
-    .ar-drop-icon { font-size: 32px; color: #0f5c33; margin-bottom: 10px; }
-    .ar-drop-text { font-size: 15px; font-weight: 500; color: #2b332f; margin: 0 0 4px; }
-    .ar-drop-text span { color: #0f5c33; text-decoration: underline; }
-    .ar-drop-sub { font-size: 12px; color: #7a8c84; margin: 0; }
-    .ar-file-input { display: none; }
+    .ar-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
 
-    .ar-file-box { display: none; align-items: center; gap: 12px; margin-top: 12px; padding: 12px 14px; border: 1px solid #e2e6e4; border-radius: 10px; background: #fff; }
-    .ar-file-box.show { display: flex; }
-    .ar-file-ico { width: 38px; height: 38px; border-radius: 9px; background: #0f5c33; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
-    .ar-file-info { flex: 1; min-width: 0; }
-    .ar-file-name { font-size: 14px; font-weight: 500; color: #2b332f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ar-file-size { font-size: 12px; color: #7a8c84; }
-    .ar-file-remove { border: none; background: #fde8e8; color: #a12626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 13px; flex-shrink: 0; }
-    .ar-file-remove:hover { background: #f9d0d0; }
+    .ar-header>div {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
 
-    .ar-current { margin-top: 12px; padding: 10px 14px; border-radius: 10px; background: #eef7f1; border: 1px solid #cfe6d8; font-size: 13px; color: #2b332f; word-break: break-all; }
-    .ar-current a { color: #0f5c33; font-weight: 600; }
+    .ar-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2b332f;
+        margin: 0;
+    }
 
-    .ar-actions { display: flex; gap: 10px; margin-top: 8px; padding-top: 18px; border-top: 1px solid #eef1ef; flex-wrap: wrap; }
-    .ar-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; font-size: 15px; font-weight: 600; font-family: inherit; border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all .15s ease; text-decoration: none; }
-    .ar-btn-primary { background: #0f5c33; color: #fff; }
-    .ar-btn-primary:hover { background: #1a7a45; box-shadow: 0 4px 10px rgba(15, 92, 51, 0.25); color: #fff; }
-    .ar-btn-secondary { background: #fff; color: #2b332f; border-color: #d3d9d6; }
-    .ar-btn-secondary:hover { border-color: #7a8c84; color: #2b332f; }
+    .ar-subtitle {
+        font-size: 14px;
+        color: #7a8c84;
+        margin: 0;
+    }
+
+    .ar-card {
+        background: #fff;
+        border: 1px solid #e2e6e4;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        max-width: 820px;
+        margin-bottom: 26px;
+    }
+
+    .ar-card.wide {
+        max-width: 100%;
+    }
+
+    .ar-card-title {
+        font-family: inherit;
+        font-size: 17px;
+        font-weight: 600;
+        color: #2b332f;
+        margin: 0 0 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #eef1ef;
+    }
+
+    .ar-card-title::before,
+    .ar-card-title::after {
+        display: none;
+        content: none;
+    }
+
+    .ar-card-title .ar-count {
+        font-size: 13px;
+        font-weight: 500;
+        color: #7a8c84;
+        margin-left: 8px;
+    }
+
+    .ar-card.editing {
+        border-color: #1a7a45;
+        box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.10);
+    }
+
+    .ar-field {
+        margin-bottom: 18px;
+        min-width: 0;
+    }
+
+    .ar-field label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2b332f;
+        margin-bottom: 6px;
+    }
+
+    .ar-field label .req {
+        color: #c0392b;
+    }
+
+    .ar-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+        font-size: 15px;
+        font-family: inherit;
+        color: #2b332f;
+        background: #fff;
+        border: 1px solid #d3d9d6;
+        border-radius: 8px;
+        outline: none;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .ar-input::placeholder {
+        color: #9aa9a2;
+    }
+
+    .ar-input:focus {
+        border-color: #1a7a45;
+        box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15);
+    }
+
+    .ar-hint {
+        font-size: 12px;
+        color: #7a8c84;
+        margin-top: 6px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .ar-input.invalid,
+    .ar-drop.invalid {
+        border-color: #c0392b;
+    }
+
+    .ar-err {
+        color: #c0392b;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .ar-err.show {
+        display: block;
+    }
+
+    .ar-drop {
+        border: 2px dashed #b9c4be;
+        border-radius: 12px;
+        padding: 32px 16px;
+        text-align: center;
+        cursor: pointer;
+        background: #f8faf9;
+        transition: all .15s ease;
+    }
+
+    .ar-drop:hover,
+    .ar-drop.dragover {
+        border-color: #1a7a45;
+        background: #eef7f1;
+    }
+
+    .ar-drop-icon {
+        font-size: 32px;
+        color: #0f5c33;
+        margin-bottom: 10px;
+    }
+
+    .ar-drop-text {
+        font-size: 15px;
+        font-weight: 500;
+        color: #2b332f;
+        margin: 0 0 4px;
+    }
+
+    .ar-drop-text span {
+        color: #0f5c33;
+        text-decoration: underline;
+    }
+
+    .ar-drop-sub {
+        font-size: 12px;
+        color: #7a8c84;
+        margin: 0;
+    }
+
+    .ar-file-input {
+        display: none;
+    }
+
+    .ar-file-box {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+        padding: 12px 14px;
+        border: 1px solid #e2e6e4;
+        border-radius: 10px;
+        background: #fff;
+    }
+
+    .ar-file-box.show {
+        display: flex;
+    }
+
+    .ar-file-ico {
+        width: 38px;
+        height: 38px;
+        border-radius: 9px;
+        background: #0f5c33;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .ar-file-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ar-file-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #2b332f;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ar-file-size {
+        font-size: 12px;
+        color: #7a8c84;
+    }
+
+    .ar-file-remove {
+        border: none;
+        background: #fde8e8;
+        color: #a12626;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .ar-file-remove:hover {
+        background: #f9d0d0;
+    }
+
+    .ar-current {
+        margin-top: 12px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: #eef7f1;
+        border: 1px solid #cfe6d8;
+        font-size: 13px;
+        color: #2b332f;
+        word-break: break-all;
+    }
+
+    .ar-current a {
+        color: #0f5c33;
+        font-weight: 600;
+    }
+
+    .ar-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+        padding-top: 18px;
+        border-top: 1px solid #eef1ef;
+        flex-wrap: wrap;
+    }
+
+    .ar-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px 22px;
+        font-size: 15px;
+        font-weight: 600;
+        font-family: inherit;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all .15s ease;
+        text-decoration: none;
+    }
+
+    .ar-btn-primary {
+        background: #0f5c33;
+        color: #fff;
+    }
+
+    .ar-btn-primary:hover {
+        background: #1a7a45;
+        box-shadow: 0 4px 10px rgba(15, 92, 51, 0.25);
+        color: #fff;
+    }
+
+    .ar-btn-secondary {
+        background: #fff;
+        color: #2b332f;
+        border-color: #d3d9d6;
+    }
+
+    .ar-btn-secondary:hover {
+        border-color: #7a8c84;
+        color: #2b332f;
+    }
 
     /* ---------- LIST TABLE ---------- */
-    .ar-table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .ar-table { width: 100%; border-collapse: collapse; min-width: 480px; }
-    .ar-table th { text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: #0f5c33; background: #f3f6f4; padding: 11px 12px; border-bottom: 1px solid #e2e6e4; white-space: nowrap; }
-    .ar-table td { font-size: 14px; color: #2b332f; padding: 12px; border-bottom: 1px solid #eef1ef; vertical-align: middle; }
-    .ar-table tr:hover td { background: #f8faf9; }
-    .ar-table tr.is-editing td { background: #eef7f1; }
-    .ar-t-file { display: flex; align-items: center; gap: 10px; font-weight: 600; word-break: break-word; }
-    .ar-t-file i { color: #c0392b; font-size: 18px; flex-shrink: 0; }
-    .ar-act { display: flex; gap: 6px; flex-wrap: nowrap; }
-    .ar-icon-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #d3d9d6; background: #fff; color: #2b332f; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; text-decoration: none; transition: all .15s ease; padding: 0; }
-    .ar-icon-btn:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
-    .ar-icon-btn.del:hover { border-color: #c0392b; color: #a12626; background: #fde8e8; }
-    .ar-act form { margin: 0; }
-    .ar-empty { text-align: center; padding: 30px 10px; color: #7a8c84; font-size: 14px; }
+    .ar-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .ar-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 480px;
+    }
+
+    .ar-table th {
+        text-align: left;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        color: #0f5c33;
+        background: #f3f6f4;
+        padding: 11px 12px;
+        border-bottom: 1px solid #e2e6e4;
+        white-space: nowrap;
+    }
+
+    .ar-table td {
+        font-size: 14px;
+        color: #2b332f;
+        padding: 12px;
+        border-bottom: 1px solid #eef1ef;
+        vertical-align: middle;
+    }
+
+    .ar-table tr:hover td {
+        background: #f8faf9;
+    }
+
+    .ar-table tr.is-editing td {
+        background: #eef7f1;
+    }
+
+    .ar-t-file {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .ar-t-file i {
+        color: #c0392b;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .ar-act {
+        display: flex;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
+    .ar-icon-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid #d3d9d6;
+        background: #fff;
+        color: #2b332f;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+        text-decoration: none;
+        transition: all .15s ease;
+        padding: 0;
+    }
+
+    .ar-icon-btn:hover {
+        border-color: #1a7a45;
+        color: #0f5c33;
+        background: #eef7f1;
+    }
+
+    .ar-icon-btn.del:hover {
+        border-color: #c0392b;
+        color: #a12626;
+        background: #fde8e8;
+    }
+
+    .ar-act form {
+        margin: 0;
+    }
+
+    .ar-empty {
+        text-align: center;
+        padding: 30px 10px;
+        color: #7a8c84;
+        font-size: 14px;
+    }
 
     /* ---------- PAGINATION ---------- */
-    .ar-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
-    .ar-pager-info { font-size: 13px; color: #7a8c84; }
-    .ar-pages { display: flex; gap: 6px; flex-wrap: wrap; }
-    .ar-page { min-width: 36px; height: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d3d9d6; border-radius: 8px; background: #fff; color: #2b332f; font-size: 14px; font-weight: 500; text-decoration: none; transition: all .15s ease; }
-    .ar-page:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
-    .ar-page.current { background: #0f5c33; border-color: #0f5c33; color: #fff; }
-    .ar-page.disabled { opacity: .45; pointer-events: none; }
-    .ar-page.dots { border: none; background: none; pointer-events: none; }
+    .ar-pager {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+    }
 
-    html, body { scrollbar-width: none; -ms-overflow-style: none; }
-    html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+    .ar-pager-info {
+        font-size: 13px;
+        color: #7a8c84;
+    }
+
+    .ar-pages {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .ar-page {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #d3d9d6;
+        border-radius: 8px;
+        background: #fff;
+        color: #2b332f;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all .15s ease;
+    }
+
+    .ar-page:hover {
+        border-color: #1a7a45;
+        color: #0f5c33;
+        background: #eef7f1;
+    }
+
+    .ar-page.current {
+        background: #0f5c33;
+        border-color: #0f5c33;
+        color: #fff;
+    }
+
+    .ar-page.disabled {
+        opacity: .45;
+        pointer-events: none;
+    }
+
+    .ar-page.dots {
+        border: none;
+        background: none;
+        pointer-events: none;
+    }
+
+    html,
+    body {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+    }
 
     @media (min-width: 1920px) {
-        .ar-title { font-size: 30px; }
-        .ar-card { max-width: 980px; padding: 30px; }
-        .ar-card.wide { max-width: 100%; }
+        .ar-title {
+            font-size: 30px;
+        }
+
+        .ar-card {
+            max-width: 980px;
+            padding: 30px;
+        }
+
+        .ar-card.wide {
+            max-width: 100%;
+        }
     }
 
     @media (max-width: 700px) {
-        .ar-title { font-size: 20px; }
-        .ar-card { padding: 16px; border-radius: 10px; }
-        .ar-drop { padding: 24px 12px; }
+        .ar-title {
+            font-size: 20px;
+        }
+
+        .ar-card {
+            padding: 16px;
+            border-radius: 10px;
+        }
+
+        .ar-drop {
+            padding: 24px 12px;
+        }
     }
 
     @media (max-width: 560px) {
-        .ar-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
-        .ar-subtitle { font-size: 13px; }
-        .ar-actions { flex-direction: column; }
-        .ar-btn { width: 100%; }
-        .ar-pager { flex-direction: column; align-items: flex-start; }
+        .ar-header {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            gap: 8px;
+        }
+
+        .ar-subtitle {
+            font-size: 13px;
+        }
+
+        .ar-actions {
+            flex-direction: column;
+        }
+
+        .ar-btn {
+            width: 100%;
+        }
+
+        .ar-pager {
+            flex-direction: column;
+            align-items: flex-start;
+        }
     }
 </style>
 
@@ -507,9 +964,8 @@ $design->writeContentPageStyles();
                 <?php } ?>
 
                 <div class="ar-field">
-                    <label for="arDate">Date <span class="req">*</span></label>
-                    <input type="text" id="arDate" name="report_date" class="ar-input" placeholder="YYYY-MM-DD" maxlength="10" inputmode="numeric" autocomplete="off" value="<?php echo htmlspecialchars($fDate); ?>">
-                    <div class="ar-hint"><span>Format: YYYY-MM-DD (e.g. 2026-10-07)</span></div>
+                    <label for="arDate">Date <span class="req">*</span></label><input type="date" id="arDate" name="report_date" class="ar-input" value="<?php echo htmlspecialchars($fDate, ENT_QUOTES, 'UTF-8'); ?>" required>
+                    <div class="ar-hint"><span>Select a date from the calendar.</span></div>
                     <div class="ar-err" id="errDate">Please enter a valid date in YYYY-MM-DD format.</div>
                 </div>
 
@@ -677,16 +1133,16 @@ $design->writeContentPageStyles();
 
             var existingFile = <?php echo json_encode($fS3Url !== ''); ?>;
 
-            var form     = document.getElementById('arForm');
-            var dateIn   = document.getElementById('arDate');
-            var drop     = document.getElementById('arDrop');
-            var fileIn   = document.getElementById('arFile');
-            var fileBox  = document.getElementById('arFileBox');
+            var form = document.getElementById('arForm');
+            var dateIn = document.getElementById('arDate');
+            var drop = document.getElementById('arDrop');
+            var fileIn = document.getElementById('arFile');
+            var fileBox = document.getElementById('arFileBox');
             var fileName = document.getElementById('arFileName');
             var fileSize = document.getElementById('arFileSize');
-            var fileRem  = document.getElementById('arFileRemove');
+            var fileRem = document.getElementById('arFileRemove');
             var resetBtn = document.getElementById('arReset');
-            var msgBox   = document.getElementById('arMsg');
+            var msgBox = document.getElementById('arMsg');
             var msgTimer = null;
 
             function $(id) {
@@ -753,17 +1209,11 @@ $design->writeContentPageStyles();
                 return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
             }
 
-            // Date auto-format while typing
-            dateIn.addEventListener('input', function() {
-                var digits = this.value.replace(/\D/g, '').slice(0, 8);
-                var out = digits;
-                if (digits.length > 6) {
-                    out = digits.slice(0, 4) + '-' + digits.slice(4, 6) + '-' + digits.slice(6);
-                } else if (digits.length > 4) {
-                    out = digits.slice(0, 4) + '-' + digits.slice(4);
+            // Validate the selected date
+            dateIn.addEventListener('change', function() {
+                if (isValidDate(this.value)) {
+                    setErr('errDate', this, false);
                 }
-                this.value = out;
-                if (isValidDate(out)) setErr('errDate', this, false);
             });
 
             // File: click and drag/drop

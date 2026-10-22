@@ -358,7 +358,20 @@ if ($q == "login-user") {
 
         session_destroy();
 
-        $msg = $err->getMessage();
+        $safeMessages = array(
+            "Username and password are required.",
+            "Login failed. Incorrect username or password"
+        );
+
+        if (in_array($err->getMessage(), $safeMessages, true)) {
+
+            $msg = $err->getMessage();
+        } else {
+
+            error_log('Admin login error: ' . $err->getMessage());
+
+            $msg = "Something went wrong while signing in. Please try again, or contact the web admin if it continues.";
+        }
     }
 }
 

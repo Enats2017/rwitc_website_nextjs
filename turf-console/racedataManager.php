@@ -66,8 +66,6 @@ $pageTitle ='Reset Race Data Manager';
 $design = new Design();  
 
 $design->js='
-<script type="text/javascript" src="assets/js/jquery.ui.core.min.js"></script>    
-<script type="text/javascript" src="assets/js/jquery.ui.datepicker.min.js"></script>
 <script type="text/javascript">
     function confirmDelete(calendarID) {
         if (confirm ("Are you sure ?")){
@@ -76,8 +74,7 @@ $design->js='
     }
 </script>
 ';
-$design->css ='
-<link type="text/css" href="assets/css/jquery.ui.all.css" rel="stylesheet" />    
+$design->css ='    
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style type="text/css">
 #infoWrapper.col-lg-12 {
@@ -110,10 +107,10 @@ $design->css ='
 .racedata-form-wrap { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); max-width: 700px; }
 .racedata-form-wrap .form-row { margin-bottom: 20px; }
 .racedata-form-wrap label.form-label { display: block; font-size: 14px; font-weight: 600; color: #2b332f; margin-bottom: 8px; }
-.racedata-form-wrap input[type="text"], .racedata-form-wrap select {
+.racedata-form-wrap input[type="text"], .racedata-form-wrap input[type="date"], .racedata-form-wrap select {
   width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit;
 }
-.racedata-form-wrap input[type="text"]:focus, .racedata-form-wrap select:focus { outline: none; border-color: #1a7a45; }
+.racedata-form-wrap input[type="text"]:focus, .racedata-form-wrap input[type="date"]:focus, .racedata-form-wrap select:focus { outline: none; border-color: #1a7a45; }
 .racedata-form-wrap .form-actions { padding-top: 6px; }
 .racedata-form-wrap input[type="submit"] { background: #0f5c33; color: #fff; border: none; padding: 10px 22px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
 .racedata-form-wrap input[type="submit"]:hover { background: #0c4a29; }
@@ -139,12 +136,6 @@ $design->jqueryJs = "
             jQuery.browser.version = RegExp.$1;
         }
     })();
-    $('#race_date').datepicker({
-            showOn: 'button',
-            buttonImage: 'images/calendar.gif',
-            buttonImageOnly: true,
-            dateFormat : 'yy-mm-dd'
-        });
         $('#race_type').change(function() {
             console.log('ininin');
             type = $(this).val();
@@ -218,7 +209,7 @@ $design->openDiv("leftArea",'col-lg-9');
 	<form enctype="multipart/form-data" name="racedataimageForm" method="post" action="turf-console/racedataManager.php">
 		<div class="form-row">
                 <label class="form-label" for="race_date">Race Date</label>
-                	<input type="text" name="race_date" value="" id="race_date" />
+                	<input type="date" name="race_date" value="" id="race_date" required />
         </div>
         <div class="form-row">
                 <label class="form-label" for="race_type">Pre / Post Race Type</label>

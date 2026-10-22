@@ -129,7 +129,7 @@
   .avail-form-wrap { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); max-width: 700px; }
   .avail-form-wrap .form-row { margin-bottom: 20px; }
   .avail-form-wrap label.form-label { display: block; font-size: 14px; font-weight: 600; color: #2b332f; margin-bottom: 8px; }
-  .avail-form-wrap input[type="text"] {
+  .avail-form-wrap input[type="date"] {
     width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit;
   }
   .avail-form-wrap input[type="text"]:focus { outline: none; border-color: #1a7a45; }
@@ -218,7 +218,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
                             $date = date("Y-m-d",strtotime($calendarDetails['racedate']));
                         }
                     ?>
-                    <input type="text" name="date" id='calendar_date' value="<?php echo $date; ?>" />
+                    <input type="date" name="date" id='calendar_date' value="<?php echo $date; ?>" placeholder="yyyy-mm-dd" maxlength="10" autocomplete="off"/>
                 </div>
                 <div class="form-actions">
                     <input type="submit" name="submit" value="Save" />

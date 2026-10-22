@@ -530,7 +530,7 @@ if (isset($_SESSION['dividend_msg'])) {
                             $date = date("Y-m-d", strtotime($dividendDetails['div_date']));
                         }
                         ?>
-                        <td class="alignLeft"><input type="text" name="date" id='dividend_date' value="<?php echo $date; ?>" /></td>
+                        <td class="alignLeft"><input type="date" name="date" id='dividend_date' value="<?php echo $date; ?>" placeholder="yyyy-mm-dd" maxlength="10" autocomplete="off" /></td>
                     </tr>
                     <tr>
                         <th>Centre</th>

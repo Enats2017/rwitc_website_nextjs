@@ -42,8 +42,6 @@ require_once("../lib/userchecks.php");
   $pageTitle ='Videos Manager';
   $design = new Design();
   $design->js='
-  <script type="text/javascript" src="js/jquery.ui.core.min.js"></script>
-    <script type="text/javascript" src="js/jquery.ui.datepicker.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script type="text/javascript">
         function confirmDelete(reportID) {
@@ -54,28 +52,8 @@ require_once("../lib/userchecks.php");
     </script>
   ';
 
-  $design->css ='
-  <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />
-  ';
-
-  $design->jqueryJs = "
-    jQuery.browser = {};
-    (function () {
-        jQuery.browser.msie = false;
-        jQuery.browser.version = 0;
-        if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
-            jQuery.browser.msie = true;
-            jQuery.browser.version = RegExp.$1;
-        }
-    })();
-
-    $('#racedate').datepicker({
-            showOn: 'button',
-            buttonImage: 'images/calendar.gif',
-            buttonImageOnly: true,
-            dateFormat : 'yy-mm-dd'
-        });
-  ";
+  $design->css ='';
+  $design->jqueryJs = '';
   $design->startPage("$pageTitle");
   $design->writeLogoTickerMenu();
   $design->openDiv("contentWrapper");
@@ -149,7 +127,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
     color: #2b332f;
     margin-bottom: 6px;
 }
-.video-form-field input[type="text"] {
+.video-form-field input[type="text"],
+.video-form-field input[type="date"] {
     width: 100%;
     box-sizing: border-box;
     border: 1px solid #e2e6e4;
@@ -215,7 +194,7 @@ table.videos-table tr:hover td { background: #e6f4ec; }
             <div class="video-form-grid">
                 <div class="video-form-field">
                     <label for="racedate">Race Date</label>
-                    <input type="text" name="racedate" id="racedate" />
+                    <input type="date" name="racedate" id="racedate" required />
                 </div>
                 <div class="video-form-field">
                     <label for="chan">Channel</label>

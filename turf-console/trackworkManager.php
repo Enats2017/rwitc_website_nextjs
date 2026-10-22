@@ -117,9 +117,6 @@ $design = new Design();
 
 $design->js = '
 <script type="text/javascript" src="https://cdn.ckeditor.com/4.8.0/full-all/ckeditor.js"></script>
-<link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
-<script type="text/javascript" src="js/jquery.ui.core.min.js"></script>    
-<script type="text/javascript" src="js/jquery.ui.datepicker.min.js"></script>
      
     
 <script type="text/javascript">
@@ -169,6 +166,7 @@ $design->css = '
 .trackwork-form-wrap input[type="text"] {
   width: 100%; border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit;
 }
+.trackwork-form-wrap input[type="date"] { width: 100%; max-width: 240px; border: 1px solid #e2e6e4; border-radius: 6px; padding: 8px 10px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit; }
 .trackwork-form-wrap input[type="submit"], .trackwork-form-wrap input[type="reset"] { background: #0f5c33; color: #fff; border: none; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 8px; }
 .trackwork-form-wrap input[type="reset"] { background: #fff; color: #2b332f; border: 1px solid #e2e6e4; }
 .trackwork-form-wrap input[type="checkbox"] { width: 17px; height: 17px; accent-color: #0f5c33; cursor: pointer; }
@@ -199,23 +197,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 }
 </style>
 ';
-$design->jqueryJs = "
-jQuery.browser = {};
-    (function () {
-        jQuery.browser.msie = false;
-        jQuery.browser.version = 0;
-        if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
-            jQuery.browser.msie = true;
-            jQuery.browser.version = RegExp.$1;
-        }
-    })();
-$(\"#trackwork_date\").datepicker({
-            showOn: 'button',
-            buttonImage: 'images/calendar.gif',
-            buttonImageOnly: true,
-            dateFormat : 'yy-mm-dd'
-        });
-";
+$design->jqueryJs = '';
 $design->startPage("$pageTitle");
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
@@ -254,7 +236,7 @@ $design->openDiv("leftArea", 'col-lg-9');
                             $trackworkDate = date("Y-m-d", strtotime($trackworkDetails['trackwork_date']));
                         }
                         ?>
-                        <td class="alignLeft"><input type="text" name="trackwork_date" id='trackwork_date' value="<?php echo   $trackworkDate; ?>" /></td>
+                        <td class="alignLeft"><input type="date" name="trackwork_date" id="trackwork_date" value="<?php echo $trackworkDate; ?>" required /></td>
                     </tr>
                     <tr>
                         <th>TrackWork</th>

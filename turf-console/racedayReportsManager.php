@@ -112,8 +112,6 @@ $design = new Design();
 
 
 $design->js = '
-  <script type="text/javascript" src="js/jquery.ui.core.min.js"></script>    
-    <script type="text/javascript" src="js/jquery.ui.datepicker.min.js"></script>
     <script type="text/javascript">
         function confirmDelete(reportID) {
             if (confirm ("Are you sure ?")){
@@ -122,8 +120,7 @@ $design->js = '
         }
     </script>
   ';
-$design->css = '
-  <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" /> 
+$design->css = ' 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style type="text/css">
   .navi {
@@ -235,10 +232,12 @@ $design->css = '
   .report-form-wrap { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); max-width: 700px; }
   .report-form-wrap .form-row { margin-bottom: 20px; }
   .report-form-wrap label.form-label { display: block; font-size: 14px; font-weight: 600; color: #2b332f; margin-bottom: 8px; }
-  .report-form-wrap input[type="text"] {
+  .report-form-wrap input[type="text"],
+  .report-form-wrap input[type="date"] {
     width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit;
   }
-  .report-form-wrap input[type="text"]:focus { outline: none; border-color: #1a7a45; }
+  .report-form-wrap input[type="text"]:focus,
+  .report-form-wrap input[type="date"]:focus { outline: none; border-color: #1a7a45; }
   .report-form-wrap input[type="file"] {
     width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 9px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; background: #f9faf9;
   }
@@ -272,23 +271,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
   </style>   
   ';
-$design->jqueryJs = "
-    jQuery.browser = {};
-    (function () {
-        jQuery.browser.msie = false;
-        jQuery.browser.version = 0;
-        if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
-            jQuery.browser.msie = true;
-            jQuery.browser.version = RegExp.$1;
-        }
-    })();
-    $('#report_date').datepicker({
-            showOn: 'button',
-            buttonImage: 'images/calendar.gif',
-            buttonImageOnly: true,
-            dateFormat : 'yy-mm-dd'
-        });
-  ";
+$design->jqueryJs = '';
 $design->startPage("$pageTitle");
 
 $design->writeLogoTickerMenu();
@@ -344,7 +327,7 @@ if (isset($_SESSION['report_msg'])) {
             $date = date("Y-m-d", strtotime($reportDetails['racedate']));
           }
           ?>
-          <input type="text" name="date" id='report_date' value="<?php echo $date; ?>" />
+          <input type="date" name="date" id="report_date" value="<?php echo $date; ?>" required />
         </div>
         <div class="form-row">
           <label class="form-label" for="reportFile">Upload File</label>

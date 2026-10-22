@@ -252,8 +252,6 @@ if (isAdminlogin()) {
 $pageTitle = 'Gallery Manager';
 $design = new Design();
 $design->js = '
-  <script type="text/javascript" src="js/jquery.ui.core.min.js"></script>    
-    <script type="text/javascript" src="js/jquery.ui.datepicker.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script type="text/javascript">
         function confirmDelete(imageID,sponsorID) {
@@ -264,29 +262,8 @@ $design->js = '
         }
     </script>
   ';
-$design->css = '
-  <link type="text/css" href="css/jquery.ui.all.css" rel="stylesheet" />    
-  ';
-
+$design->css = '';
 $design->jqueryJs = "
-jQuery.browser = {};
-(function () {
-    jQuery.browser.msie = false;
-    jQuery.browser.version = 0;
-    if (navigator.userAgent.match(/MSIE ([0-9]+)\\./)) {
-        jQuery.browser.msie = true;
-        jQuery.browser.version = RegExp.\$1;
-    }
-})();
-
-if ($('#image_date').length) {
-    $('#image_date').datepicker({
-        showOn: 'button',
-        buttonImage: 'images/calendar.gif',
-        buttonImageOnly: true,
-        dateFormat: 'yy-mm-dd'
-    });
-}
 
 $('.sponsorList').click(function() {
     if ($('#image_date').val()) {
@@ -759,6 +736,7 @@ $design->openDiv("leftArea", "col-lg-9");
     }
 
     .gallery-form-table input[type="text"],
+    .gallery-form-table input[type="date"],
     .gallery-form-table input[type="file"],
     .gallery-form-table select {
         border: 1px solid #e2e6e4;
@@ -828,7 +806,8 @@ $design->openDiv("leftArea", "col-lg-9");
             align-items: stretch;
         }
 
-        .gallery-search-row input[type="text"] {
+        .gallery-search-row input[type="text"],
+        .gallery-search-row input[type="date"] {
             width: 100%;
         }
 
@@ -888,7 +867,7 @@ $design->openDiv("leftArea", "col-lg-9");
     }
 </style>
 
-<?php 
+<?php
 if (isset($_SESSION['gallery_msg'])) {
     $msg = $_SESSION['gallery_msg'];
     unset($_SESSION['gallery_msg']);
@@ -935,7 +914,7 @@ if (isset($_SESSION['gallery_msg'])) {
                             <tr>
                                 <th>Date</th>
                                 <td class="alignLeft">
-                                    <input type="text" name="date" id='image_date' />
+                                    <input type="date" name="date" id="image_date" required />
                                     <a class="sponsorList" style="cursor: pointer;">Get Sponsor List</a>
                                 </td>
                             </tr>
@@ -1030,7 +1009,7 @@ if (isset($_SESSION['gallery_msg'])) {
     </div>
 
     <script type="text/javascript">
-        document.getElementById('viewImagesBtn').addEventListener('click', function (e) {
+        document.getElementById('viewImagesBtn').addEventListener('click', function(e) {
             e.preventDefault();
 
             var d = document.getElementById('search_image_date').value;
@@ -1091,7 +1070,7 @@ if (isset($_SESSION['gallery_msg'])) {
                                 echo "<div class='thumb-wrap'>";
 
                                 if ($sponsorID == 1) {
-                                   $imgSrc = (strpos($raceDayImage['filename'], 'http') === 0) ? $raceDayImage['filename'] : GALLERY_BASE . "/$dirname/" . $raceDayImage['filename'];
+                                    $imgSrc = (strpos($raceDayImage['filename'], 'http') === 0) ? $raceDayImage['filename'] : GALLERY_BASE . "/$dirname/" . $raceDayImage['filename'];
                                     echo "<img src='" . $imgSrc . "' alt='' />";
                                 }
                                 if ($sponsorID > 1) {

@@ -1639,6 +1639,35 @@ MENU;
 
         $catalog = self::moduleCatalog();
 
+        if ($currentPage === 'dashboard.php' && isset($_GET['grp'])) {
+            $_SESSION['active_grp'] = (int)$_GET['grp'];
+        }
+        $rememberedGrp = isset($_SESSION['active_grp']) ? (int)$_SESSION['active_grp'] : 0;
+
+        $pageModules = array();
+        foreach ($catalog as $mKey => $mInfo) {
+            if (basename($mInfo[1]) === $currentPage) {
+                $pageModules[] = $mKey;
+            }
+        }
+
+        $matchGroups = array();
+        if (!empty($pageModules)) {
+            foreach ($sgRows as $sgTmp) {
+                $permTmp = @unserialize($sgTmp['permission']);
+                if (!is_array($permTmp) || empty($permTmp['access']) || !is_array($permTmp['access'])) {
+                    continue;
+                }
+                if (count(array_intersect($pageModules, $permTmp['access'])) > 0) {
+                    $matchGroups[] = (int)$sgTmp['user_group_id'];
+                }
+            }
+        }
+
+        $activeGroupId = 0;
+        if (!empty($matchGroups)) {
+            $activeGroupId = in_array($rememberedGrp, $matchGroups, true) ? $rememberedGrp : $matchGroups[0];
+        }
         foreach ($sgRows as $sg) {
 
             $perm = @unserialize($sg['permission']);
@@ -1662,7 +1691,10 @@ MENU;
             $gName = htmlspecialchars($sg['name']);
             $gIcon = (isset($perm['icon']) && preg_match('/^fa-[a-z0-9-]+$/', (string)$perm['icon'])) ? $perm['icon'] : 'fa-folder-open';
 
-            $isActiveGroup = ($currentPage === 'dashboard.php' && isset($_GET['grp']) && (int)$_GET['grp'] === $gid);
+            $isActiveGroup = (
+                $gid === $activeGroupId ||
+                ($currentPage === 'dashboard.php' && isset($_GET['grp']) && (int)$_GET['grp'] === $gid)
+            );
 
             $sidebarGroupsHtml .= '
         <li class="' . ($isActiveGroup ? 'active' : '') . '" id="navSg' . $gid . '">

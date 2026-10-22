@@ -145,6 +145,8 @@ $design->css ='
   .poll-form-wrap input[type="text"] {
     width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit;
   }
+  .poll-form-wrap input[type="date"] { width: 100%; border: 1px solid #e2e6e4; border-radius: 8px; padding: 10px 12px; font-size: 14px; color: #2b332f; box-sizing: border-box; font-family: inherit;}
+  .poll-form-wrap input[type="date"]:focus { outline: none; border-color: #1a7a45;}
   .poll-form-wrap input[type="text"]:focus { outline: none; border-color: #1a7a45; }
   .poll-form-wrap input[type="text"]:disabled { background: #f5f4ee; color: #7a8c84; }
   .poll-form-wrap .checkbox-row { display: flex; align-items: center; gap: 8px; }
@@ -192,23 +194,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
   </style>
 ';
 
-$design->jqueryJs = "
-  jQuery.browser = {};
-  (function () {
-    jQuery.browser.msie = false;
-    jQuery.browser.version = 0;
-    if (navigator.userAgent.match(/MSIE ([0-9]+)\./)) {
-      jQuery.browser.msie = true;
-      jQuery.browser.version = RegExp.$1;
-    }
-  })();
-  $('#polldate').datepicker({
-      showOn: 'button',
-      buttonImage: 'images/calendar.gif',
-      buttonImageOnly: true,
-      dateFormat : 'yy-mm-dd'
-    });
-";
+$design->jqueryJs = '';
 $design->startPage("$pageTitle");
 $design->writeLogoTickerMenu();
 $design->openDiv("contentWrapper");
@@ -282,7 +268,7 @@ $pollDetails = $poll->getALLPolls()
       <div class="form-title">Add New Poll</div>
       <div class="form-row">
         <label class="form-label" for="polldate">Poll Date</label>
-        <input type="text" name="polldate" id="polldate" />
+        <input type="date" name="polldate" id="polldate" required />
       </div>
       <div class="form-row">
         <label class="form-label" for="question">Question</label>
