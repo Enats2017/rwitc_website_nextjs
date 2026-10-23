@@ -100,14 +100,27 @@ if ($security->serveCache($cacheKey)) {
  */
 function formatSweepstakeRow(array $row): array
 {
+    $filename = (string)$row["filename"];
+
+    if (strpos($filename, "http") === 0) {
+
+        // S3-hosted file: send visitors through our own stream URL so the S3 address stays hidden.
+        $streamBase = rtrim(WEBSITE_API_BASE_URL, "/") . "/sweepstake_stream.php/";
+        $publicName = basename(urldecode((string)parse_url($filename, PHP_URL_PATH)));
+        $fileUrl    = $streamBase . (int)$row["id"] . "/" . rawurlencode($publicName);
+    } else {
+
+        // Old local file (not a full URL): keep using the static sweepstake folder URL.
+        $fileUrl = STATIC_SWEEPSTAKE_URL . $filename;
+    }
+
     return [
         "id"             => $row["id"],
         "date"           => $row["sweepstake_date"],
         "formatted_date" => date("d M Y", strtotime($row["sweepstake_date"])),
         "title"          => $row["title"],
         "comments"       => $row["comments"],
-        "filename"       => $row["filename"],
-        "file_url"       => STATIC_SWEEPSTAKE_URL . $row["filename"],
+        "file_url"       => $fileUrl,
     ];
 }
 

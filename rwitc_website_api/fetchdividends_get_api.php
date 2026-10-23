@@ -95,7 +95,7 @@ try {
     // queries + PHP-side lookup array build. Same rows, same order.
 
     $dividendsSql = "
-        SELECT d.div_date, d.filename, c.centre
+        SELECT d.id, d.div_date, d.filename, c.centre
         FROM dividends d
         INNER JOIN centres c ON c.id = d.centreid
         ORDER BY d.centreid ASC, d.div_date DESC
@@ -107,17 +107,34 @@ try {
         throw new Exception($conn->error);
     }
 
-    // $baseUrl = "https://rwitc.com/staticpages/dividends/";
+    // Old local files keep using the static dividends folder URL
     $baseUrl = STATIC_DIVIDENDS_URL;
+
+    // S3 files go through our own stream URL so the S3 address stays hidden
+    $streamBase = rtrim(WEBSITE_API_BASE_URL, "/") . "/dividends_stream.php/";
+
     $events = [];
 
     while ($row = $dividendsResult->fetch_assoc()) {
+
+        $filename = trim((string)$row["filename"]);
+
+        if (stripos($filename, "http") === 0) {
+
+            // S3-hosted file: stream URL (id + public file name)
+            $publicName = basename(urldecode((string)parse_url($filename, PHP_URL_PATH)));
+            $fileUrl    = $streamBase . (int)$row["id"] . "/" . rawurlencode($publicName);
+        } else {
+
+            // Old local file (not a full URL): direct static folder URL, same as before
+            $fileUrl = $baseUrl . $filename;
+        }
+
         $events[] = [
             "className" => $row["centre"],
             "title"     => $row["centre"],
             "start"     => $row["div_date"],
-            // "url"       => $baseUrl . $row["filename"]
-            "url"       => (strpos($row["filename"], 'http') === 0) ? $row["filename"] : $baseUrl . $row["filename"]
+            "url"       => $fileUrl
         ];
     }
 

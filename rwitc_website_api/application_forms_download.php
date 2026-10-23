@@ -3,22 +3,24 @@
 /**
  * Application Forms / Chart / Prospectus - open endpoint
  *
- *   GET application_forms_download.php?id=<form id>     -> a form from the Forms list
- *   GET application_forms_download.php?doc=chart        -> the Chart PDF
- *   GET application_forms_download.php?doc=prospectus   -> the Prospectus PDF
+ *   GET application_forms_download.php/<form id>/<file name>   -> a form from the Forms list
+ *   GET application_forms_download.php/chart/CHART.pdf         -> the Chart PDF
+ *   GET application_forms_download.php/prospectus/PROSPECTUS.pdf -> the Prospectus PDF
+ *
+ * The old query-string links still work:
+ *   ?id=<form id>, ?doc=chart, ?doc=prospectus
  *
  * The visitor never supplies an S3 key. Forms are looked up in the database
  * by numeric id (active + under uploads/ApplicationForms/ only); chart and
  * prospectus map to the fixed keys the admin pages overwrite on every upload.
  *
- * The browser is 302-redirected to a short-lived pre-signed S3 URL with
- * "inline" disposition: PDFs open in the browser tab, DOC/DOCX (which
- * browsers cannot display) download as usual.
+ * The file is streamed by this script, so the browser only ever sees our own
+ * URL and never the S3 address. PDFs open in the browser tab, DOC/DOCX
+ * (which browsers cannot display) download as usual.
  *
  * Why not s3_set_url.php?  That helper accepts ANY ?key= and would let a
  * visitor read every object in the bucket.
  */
-
 require_once __DIR__ . "/config/config.php";
 require_once __DIR__ . "/../vendor/autoload.php";
 
@@ -51,7 +53,24 @@ $contentTypes = [
     "doc"  => "application/msword",
     "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 ];
+// Read the clean path form:
+//   /application_forms_download.php/<id>/<file name>
+//   /application_forms_download.php/chart/CHART.pdf
+$uriPath   = (string)parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+$marker    = "application_forms_download.php/";
+$markerPos = strpos($uriPath, $marker);
 
+if ($markerPos !== false) {
+
+    $segments = explode("/", substr($uriPath, $markerPos + strlen($marker)));
+    $first    = isset($segments[0]) ? strtolower(trim(urldecode($segments[0]))) : "";
+
+    if ($first !== "" && ctype_digit($first)) {
+        $_GET["id"] = $first;
+    } elseif ($first !== "") {
+        $_GET["doc"] = $first;
+    }
+}
 $id  = null;
 $doc = isset($_GET["doc"]) ? strtolower(trim((string)$_GET["doc"])) : null;
 
@@ -149,17 +168,44 @@ try {
     $asciiName   = preg_replace('/[^\x20-\x7E]/', "_", $name);
     $disposition = 'inline; filename="' . $asciiName . '"; filename*=UTF-8\'\'' . rawurlencode($name);
 
-    $command = $s3->getCommand("GetObject", [
-        "Bucket"                     => AWS_BUCKET,
-        "Key"                        => $key,
-        "ResponseContentType"        => $contentTypes[$ext],
-        "ResponseContentDisposition" => $disposition
-    ]);
+    // Read the file from S3 on the server side (the browser never sees the S3 address).
+    try {
+        $s3Object = $s3->getObject([
+            "Bucket" => AWS_BUCKET,
+            "Key"    => $key
+        ]);
+    } catch (Aws\Exception\AwsException $e) {
 
-    $signed = (string)$s3->createPresignedRequest($command, "+5 minutes")->getUri();
+        if ($e->getStatusCode() === 404) {
+            formsFail(404, "File not found.");
+        }
 
-    header("Cache-Control: no-store");
-    header("Location: " . $signed, true, 302);
+        throw $e;
+    }
+
+    // Clear any accidental output before sending the file.
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    header("Content-Type: " . $contentTypes[$ext]);
+    header("Content-Disposition: " . $disposition);
+    if (isset($s3Object["ContentLength"])) {
+        header("Content-Length: " . $s3Object["ContentLength"]);
+    }
+    header("Cache-Control: public, max-age=300");
+    header("X-Content-Type-Options: nosniff");
+
+    if ($_SERVER["REQUEST_METHOD"] !== "HEAD") {
+
+        $body = $s3Object["Body"];
+
+        while (!$body->eof()) {
+            echo $body->read(8192);
+            flush();
+        }
+    }
+
     exit;
 } catch (Throwable $error) {
 

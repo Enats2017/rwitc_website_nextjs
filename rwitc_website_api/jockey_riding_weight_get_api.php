@@ -48,9 +48,9 @@ if ($security->serveCache($cacheKey)) {
 try {
 
     // -------------------------------------------------------
-    // 1) Pehle rwitc_upload/static/RIDINGWEIGHT.HTM (old page jaisa)
-    //    Is file me heading + saari tables already hoti hain,
-    //    isliye as_on null bhejte hain.
+    // 1) First, rwitc_upload/static/RIDINGWEIGHT.HTM (same as the old page)
+    //    This file already contains the heading and all tables,
+    //    so we send as_on as null.
     // -------------------------------------------------------
     $localFile = rtrim((string) RIDING_WEIGHT_LOCAL_PATH, "/\\") . "/RIDINGWEIGHT.HTM";
 
@@ -72,9 +72,9 @@ try {
     } else {
 
         // ---------------------------------------------------
-        // 2) Fallback: DB se riding weight rows
-        //    NOTE: table/column names apne DB schema ke
-        //    hisaab se yahan adjust kar lena.
+        // 2) Fallback: riding weight rows from the database
+        //    NOTE: adjust the table and column names here to
+        //    match your database schema.
         // ---------------------------------------------------
 
         $asOn = null;

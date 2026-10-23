@@ -49,10 +49,10 @@ if ($security->serveCache($cacheKey)) {
 try {
 
     // -------------------------------------------------------
-    // 1) S3 (run_race_details ki latest row) - ERP ab yahin push karta hai
-    // 2) run_races/jockey_statistics.html (purana local file)
+    // 1) S3 (latest row from run_race_details) - ERP now pushes data here
+    // 2) run_races/jockey_statistics.html (legacy local file)
     // 3) DB fallback
-    // Heading + table dono HTML me hote hain, isliye as_on null.
+    // The heading and table both appear in the HTML, so as_on is null.
     // -------------------------------------------------------
     $s3Html    = getLatestS3Html($conn, "jockey_statistics");
     $localFile = rtrim((string) RUN_RACES_LOCAL_PATH, "/\\") . "/jockey_statistics.html";

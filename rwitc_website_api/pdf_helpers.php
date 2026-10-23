@@ -65,3 +65,18 @@ function pdfContentType($fileName)
 
     return isset($map[$ext]) ? $map[$ext] : 'application/octet-stream';
 }
+
+function applicationFormFileName($title, $fileType, $source = '')
+{
+    $name = trim(preg_replace('/[^A-Za-z0-9]+/', '_', (string)$title), '_');
+    if ($name === '') {
+        $name = 'Application_Form';
+    }
+
+    $ext = strtolower(preg_replace('/[^A-Za-z0-9]/', '', (string)$fileType));
+    if ($ext === '' && $source !== '') {
+        $ext = strtolower(preg_replace('/[^A-Za-z0-9]/', '', pathinfo((string)$source, PATHINFO_EXTENSION)));
+    }
+
+    return $ext !== '' ? $name . '.' . $ext : $name;
+}

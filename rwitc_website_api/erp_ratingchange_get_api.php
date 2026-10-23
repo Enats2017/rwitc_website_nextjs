@@ -160,7 +160,7 @@ function ensureUtf8Html($content)
     );
 }
 
-// ratings_change table se is date ki saari filenames (latest pehle)
+// all filenames for this date from the ratings_change table (latest first)
 function getRatingChangeFilenames($conn, $date)
 {
     $names = [];

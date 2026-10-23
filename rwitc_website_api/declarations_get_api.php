@@ -215,14 +215,14 @@ function ensureUtf8Html($content)
 {
     $content = (string) $content;
 
-    // Agar already valid UTF-8 hai to touch mat karo
+    // If it is already valid UTF-8, do not change it.
     if (mb_check_encoding($content, "UTF-8")) {
         return $content;
     }
 
     $converted = mb_convert_encoding($content, "UTF-8", "Windows-1252");
 
-    // File ke andar purana charset meta ho to UTF-8 se replace karo
+    // If the file contains an older charset meta tag, replace it with UTF-8.
     $converted = preg_replace(
         '/<meta[^>]+charset[^>]*>/i',
         '<meta charset="UTF-8">',
@@ -529,7 +529,7 @@ if ($raceType === "" && $type !== "") {
 // Source priority:
 //   1. Local run_races Declarations_<date>.htm
 //   2. S3 .htm file (registered .html key ka .htm version)
-// Koi .html fallback nahi hai.
+// There is no .html fallback.
 // ============================================================
 
 if (

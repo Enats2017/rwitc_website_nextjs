@@ -8,7 +8,7 @@
  * Returns the ACTIVE forms uploaded from the admin panel
  * (turf-console/applicationFormsManager.php), ordered by the admin
  * "Display Order". The S3 key is never exposed: every row carries a
- * `download_url` that points to application_forms_download.php?id=<id>.
+ * `download_url` that points to application_forms_download.php/<id>/<file name>.
  *
  * Response: { success, data: [ {id,title,file_type,file_size,sort_order,download_url} ], error }
  */
@@ -44,7 +44,7 @@ try {
     $prefix = "uploads/ApplicationForms/";
 
     $result = $conn->query(
-        "SELECT id, title, source, file_type, file_size, sort_order
+        "SELECT id, title, source, original_file_name, file_type, file_size, sort_order
          FROM application_forms
          WHERE is_active = 1
            AND source <> ''
@@ -63,14 +63,19 @@ try {
         if (strpos((string)$row["source"], $prefix) !== 0) {
             continue;
         }
-
+        // Public file name shown in the URL: the uploaded file name, or the title as fallback.
+        $publicName = trim((string)$row["original_file_name"]);
+        if ($publicName === "") {
+            $publicName = (string)$row["title"] . "." . strtolower((string)$row["file_type"]);
+        }
+        $publicName = preg_replace('/[\x00-\x1F\x7F"\\\\\/]+/', "", $publicName);
         $forms[] = [
             "id"           => (int)$row["id"],
             "title"        => (string)$row["title"],
             "file_type"    => strtolower((string)$row["file_type"]),
             "file_size"    => (int)$row["file_size"],
             "sort_order"   => (int)$row["sort_order"],
-            "download_url" => $baseUrl . "/application_forms_download.php?id=" . (int)$row["id"]
+            "download_url" => $baseUrl . "/application_forms_download.php/" . (int)$row["id"] . "/" . rawurlencode($publicName)
         ];
     }
 

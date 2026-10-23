@@ -636,7 +636,7 @@ if ($date !== "" && $date > "2022-10-14") {
 
             $htmlContent = false;
 
-            // ---------- 1. OLD LOCAL .htm FILE (pehle yahi check hoga) ----------
+            // ---------- 1. OLD LOCAL .htm FILE (this is checked here first) ----------
             $localFile = rtrim(
                 RUN_RACES_LOCAL_PATH,
                 "/\\"

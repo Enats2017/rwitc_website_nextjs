@@ -36,7 +36,7 @@ if (isset($_GET['id'])) {
 }
 
 
-// ------------------ LIST CASE (existing code same rahega) ------------------
+// ------------------ LIST CASE (existing code remains the same) ------------------
 if (!isset($_GET['page'])) {
     $page = 1;
 } else {
