@@ -240,7 +240,7 @@
     justify-content: center;
     font-size: 26px;
     padding-left: 4px; /* play icon ko visually center karne ke liye */
-    pointer-events: none; /* click nahi hoga, sirf UI */
+    pointer-events: none; /* click will not work; UI only */
 }
 
 @media (max-width: 768px) {

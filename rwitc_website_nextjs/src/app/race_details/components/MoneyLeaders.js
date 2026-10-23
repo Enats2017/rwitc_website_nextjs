@@ -120,7 +120,10 @@ export default function MoneyLeaders() {
                             </button>
                         ))}
                     </div>
-
+                    {!loading && !error && (
+                        <div className="moneyLeadersSwipeHint">
+                        </div>
+                    )}
                     <div className="moneyLeadersContentWrapper">
                         {loading && (
                             <div className="moneyLeadersLoaderOverlay">

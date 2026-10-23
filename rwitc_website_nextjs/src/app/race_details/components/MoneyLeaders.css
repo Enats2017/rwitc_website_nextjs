@@ -24,8 +24,15 @@
 }
 
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .moneyLeadersTabs {
@@ -64,7 +71,9 @@
     width: 100%;
     background: #fff;
     border-radius: 18px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
     border: 1px solid #eef1f4;
     min-height: 200px;
 }
@@ -74,6 +83,15 @@
     border: none;
     display: block;
     min-height: 200px;
+}
+
+.moneyLeadersSwipeHint {
+    display: none;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #16a34a;
+    margin-bottom: 10px;
 }
 
 .moneyLeadersStateBox {
@@ -108,7 +126,9 @@
 }
 
 @keyframes moneyLeadersSpin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .moneyLeadersUpdatedAt {
@@ -120,17 +140,63 @@
 }
 
 @media (max-width: 992px) {
-    .moneyLeadersCard { padding: 36px; }
+    .moneyLeadersCard {
+        padding: 36px;
+    }
 }
 
 @media (max-width: 768px) {
-    .moneyLeadersPage { padding: 30px 14px 70px; }
-    .moneyLeadersCard { padding: 24px 18px; border-radius: 22px; width: 100%; }
-    .moneyLeadersTabs { gap: 8px; margin-bottom: 20px; }
-    .moneyLeadersTabBtn { flex: 1 1 auto; padding: 10px 14px; font-size: 13px; text-align: center; }
+    .moneyLeadersPage {
+        padding: 30px 14px 70px;
+    }
+
+    .moneyLeadersCard {
+        padding: 24px 18px;
+        border-radius: 22px;
+        width: 100%;
+    }
+
+    .moneyLeadersTabs {
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .moneyLeadersTabBtn {
+        flex: 1 1 auto;
+        padding: 10px 14px;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .moneyLeadersSwipeHint {
+        display: block;
+    }
+
+    .moneyLeadersFrame {
+        min-width: 640px;
+    }
+
+    .moneyLeadersContentWrapper::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .moneyLeadersContentWrapper::-webkit-scrollbar-track {
+        background: #eef1f4;
+    }
+
+    .moneyLeadersContentWrapper::-webkit-scrollbar-thumb {
+        background: #16a34a;
+        border-radius: 999px;
+    }
 }
 
 @media (max-width: 480px) {
-    .moneyLeadersCard { padding: 18px 14px; }
-    .moneyLeadersTabBtn { padding: 9px 10px; font-size: 12px; }
+    .moneyLeadersCard {
+        padding: 18px 14px;
+    }
+
+    .moneyLeadersTabBtn {
+        padding: 9px 10px;
+        font-size: 12px;
+    }
 }

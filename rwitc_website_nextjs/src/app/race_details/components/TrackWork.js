@@ -34,7 +34,7 @@ export default function TrackWork() {
     const urlHorse = searchParams.get("horsename") || "";
     const urlQ = searchParams.get("q");
 
-    // CHANGE 1: URL me date nahi hai to EMPTY rahega (auto aaj ki date nahi)
+    // CHANGE 1: If there is no date in the URL, it remains empty (not automatically set to today's date)
     const [inputDate, setInputDate] = useState(() => (urlDate ? toInputDate(urlDate) : ""));
     const [appliedDate, setAppliedDate] = useState(() => (urlDate ? toInputDate(urlDate) : ""));
     const [appliedId, setAppliedId] = useState(urlId || null);
@@ -52,7 +52,7 @@ export default function TrackWork() {
     const [found, setFound] = useState(false);
     const [trackworkHtml, setTrackworkHtml] = useState("");
 
-    // CHANGE 2: date ya id nahi hai to fetch hi mat karo
+    // CHANGE 2: If there is no date or ID, do not fetch at all.
     useEffect(() => {
         if (!appliedDate && !appliedId) {
             setFound(false);
@@ -95,7 +95,7 @@ export default function TrackWork() {
         };
     }, [appliedDate, appliedId, activeHorseName]);
 
-    // CHANGE 3: horse search ka API wala part alag function (router.push ke bina)
+    // CHANGE 3: the horse search API portion is in a separate function (without router.push)
     const fetchHorseMatches = async (term) => {
         setShowSuggestions(false);
         setHorseSearchLoading(true);
@@ -118,7 +118,7 @@ export default function TrackWork() {
         }
     };
 
-    // CHANGE 4: URL me ?q=byhorse&horsename=xxx ho to page load pe list auto aa jaye
+    // CHANGE 4: if the URL contains ?q=byhorse&horsename=xxx, the list should appear automatically on page load
     useEffect(() => {
         if (urlQ === "byhorse" && urlHorse.trim()) {
             fetchHorseMatches(urlHorse.trim());
@@ -166,8 +166,8 @@ export default function TrackWork() {
             return;
         }
 
-        // CHANGE 5: horse search pe purana selected trackwork hata do,
-        // sirf dates ki list dikhe
+        // CHANGE 5: clear the previously selected trackwork on horse search,
+        // and show only the list of dates
         setAppliedDate("");
         setAppliedId(null);
         setInputDate("");

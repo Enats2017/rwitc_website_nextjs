@@ -12,7 +12,7 @@ const MONTHS = {
     jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12"
 };
 
-/* Koi bhi date format -> YYYY-MM-DD */
+/* Any date format -> YYYY-MM-DD */
 function toIsoDate(raw) {
     const s = String(raw || "").trim();
     if (!s) return "";
@@ -27,7 +27,7 @@ function toIsoDate(raw) {
     return "";
 }
 
-/* Performance profile page ke race result jaisa hi URL banata hai:
+/* Builds a URL similar to the performance profile race result page:
    /race_details?type=performanceProfile&horsename=..&race_no=..&race_date=..&view=raceResult */
 function openRaceResult(raceNo, isoDate, horseName) {
     if (!raceNo || !isoDate) return;

@@ -23,7 +23,7 @@ function formatTime(min, sec) {
     return m > 0 ? `${m} m ${sec} secs` : `${sec} secs.`;
 }
 
-/* Notes: (bracket wala hissa) bold, baaki normal. Plain text, koi HTML inject nahi hota. */
+/* Notes: (the bracketed section) is bold, the rest is normal. Plain text; no HTML injection occurs. */
 function Notes({ text }) {
     if (!text) return null;
     const parts = String(text).split(/(\([^)]*\))/g).filter(Boolean);
