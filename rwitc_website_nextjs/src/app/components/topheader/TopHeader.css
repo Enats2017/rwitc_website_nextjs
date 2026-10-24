@@ -415,6 +415,7 @@ body::-webkit-scrollbar {
     max-width: 80%;
     height: auto;
     max-height: 100vh;
+    max-height: 100dvh;
     background: #00000099;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -425,14 +426,21 @@ body::-webkit-scrollbar {
     transition: left .35s ease;
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
     border-radius: 0 14px 14px 0;
 }
 
 .mobileMenu::-webkit-scrollbar {
-    display: none;
-    width: 0;
+    width: 5px;
+}
+
+.mobileMenu::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, .12);
+    border-radius: 8px;
+}
+
+.mobileMenu::-webkit-scrollbar-thumb {
+    background: #f5a623;
+    border-radius: 8px;
 }
 
 .mobileMenu.open {
@@ -567,16 +575,24 @@ body::-webkit-scrollbar {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    padding: 0 0 0 18px;
+    padding: 0 4px 0 18px;
     max-height: 250px;
     overflow-y: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 .mobileDropdownInner::-webkit-scrollbar {
-    display: none;
-    width: 0;
+    width: 5px;
+}
+
+.mobileDropdownInner::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, .15);
+    border-radius: 8px;
+}
+
+.mobileDropdownInner::-webkit-scrollbar-thumb {
+    background: #f5a623;
+    border-radius: 8px;
 }
 
 .mobileDropdownLink {
@@ -726,5 +742,16 @@ body::-webkit-scrollbar {
 
     .logo img {
         width: 46px;
+    }
+}
+
+/* Firefox only: it ignores ::-webkit-scrollbar, so use the standard properties here */
+@supports not selector(::-webkit-scrollbar) {
+
+    .mobileMenu,
+    .mobileDropdownInner,
+    .navSubMenu {
+        scrollbar-width: thin;
+        scrollbar-color: #f5a623 rgba(255, 255, 255, .15);
     }
 }

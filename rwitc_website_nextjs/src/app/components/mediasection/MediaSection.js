@@ -194,6 +194,7 @@ export default function MediaSection() {
                     {/* PRE-RACE */}
                     <div className="infoBox">
                         <h3 className="infoBoxTitle">Pre-Race</h3>
+                        <div className="infoTableWrap">
                         <table className="infoTable">
                             <thead>
                                 <tr>
@@ -230,6 +231,7 @@ export default function MediaSection() {
                                 ))}
                             </tbody>
                         </table>
+                        </div>
                         <div className="viewArchives">
                             <Link href="/race_details?type=archives" prefetch={false}>View Archives</Link>
                         </div>
@@ -237,6 +239,7 @@ export default function MediaSection() {
                     {/* POST-RACE */}
                     <div className="infoBox">
                         <h3 className="infoBoxTitle">Post-Race</h3>
+                        <div className="infoTableWrap">
                         <table className="infoTable">
                             <thead>
                                 <tr>
@@ -282,7 +285,7 @@ export default function MediaSection() {
                                 ))}
                             </tbody>
                         </table>
-
+                        </div>
                         <div className="viewArchives">
                             <Link href="/race_details?type=archives" prefetch={false}>View Archives</Link>
                         </div>
@@ -290,6 +293,7 @@ export default function MediaSection() {
                     {/* TRACK WORK */}
                     <div className="infoBox">
                         <h3 className="infoBoxTitle">Track Work</h3>
+                        <div className="infoTableWrap">
                         <table className="infoTable trackWorkTable">
                             <tbody>
                                 {groupedTrackWork.map((row, rowIndex) => (
@@ -321,6 +325,7 @@ export default function MediaSection() {
                                 ))}
                             </tbody>
                         </table>
+                        </div>
                         <div className="viewArchives">
                             <Link href="/race_details?type=archives" prefetch={false}>View Archives</Link>
                         </div>

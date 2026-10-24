@@ -314,6 +314,25 @@
     text-align: center;
     letter-spacing: .3px;
 }
+/* Scroll wrapper: fallback when a table is wider than the card */
+.infoTableWrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.infoTableWrap::-webkit-scrollbar {
+    height: 5px;
+}
+
+.infoTableWrap::-webkit-scrollbar-track {
+    background: #e8f2ea;
+}
+
+.infoTableWrap::-webkit-scrollbar-thumb {
+    background: #0b6d2a;
+    border-radius: 8px;
+}
 
 /* TABLE */
 .infoTable {
@@ -445,6 +464,10 @@
     .infoBox {
         flex: 1 1 calc(50% - 8px);
     }
+
+    .infoBox:last-child {
+        flex: 1 1 100%;
+    }
 }
 
 @media(max-width:992px) {
@@ -452,7 +475,10 @@
         margin-top: 0;
         border-radius: 30px 30px 0 0;
     }
-
+    /* One card per row on tablets, so Post-Race never gets squeezed */
+    .infoBox {
+        flex: 1 1 100%;
+    }
     .mediaContainer {
         flex-wrap: wrap;
     }
@@ -540,6 +566,28 @@
         width: 16px;
         height: 16px;
     }
+        /* Compact table so 4 date columns fit without cutting */
+    .infoTable thead th {
+        font-size: 14px;
+        padding: 10px 4px;
+        white-space: nowrap;
+    }
+
+    .infoTable tbody td {
+        padding: 12px 4px;
+    }
+
+    .rowLabel {
+        font-size: 14px;
+        white-space: normal;
+        line-height: 1.25;
+        padding-left: 14px !important;
+        padding-right: 6px !important;
+    }
+
+    .trackWorkTable td {
+        font-size: 15px;
+    }
 }
 
 @media(max-width:480px) {
@@ -568,5 +616,18 @@
 
     .viewArchives {
         padding: 14px;
+    }
+
+    .infoTable thead th {
+        font-size: 13px;
+        padding: 9px 3px;
+    }
+
+    .rowLabel {
+        font-size: 13px;
+    }
+
+    .trackWorkTable td {
+        font-size: 14px;
     }
 }

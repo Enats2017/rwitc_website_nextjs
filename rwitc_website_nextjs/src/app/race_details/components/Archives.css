@@ -465,3 +465,129 @@
         min-height: 100px;
     }
 }
+/* =========================================================
+   MOBILE / TABLET FIX
+   Everything is scoped under .archivesSection so other calendar
+   stylesheets (same class names) cannot override it.
+========================================================= */
+
+/* Swipe hint and scroll wrapper (hint is hidden on larger screens) */
+.archivesSection .archivesSwipeHint {
+    display: none;
+}
+
+.archivesSection .calendarScroll {
+    width: 100%;
+}
+
+/* ---------- TABLET + PHONE: nothing may be clipped ---------- */
+@media (max-width: 992px) {
+
+    /* The card no longer scrolls sideways, the calendar wrapper does (phone only) */
+    .archivesSection .archivesCard {
+        overflow: visible;
+    }
+
+    /* Plain toolbar, no sticky / fixed width hack */
+    .archivesSection .calendarToolbar {
+        position: static;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Let every level grow with its content */
+    .archivesSection .calendarGrid,
+    .archivesSection .calendarWeek,
+    .archivesSection .dayCell,
+    .archivesSection .dayEvents {
+        height: auto;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .archivesSection .calendarWeek {
+        grid-auto-rows: auto;
+        align-items: stretch;
+    }
+
+    .archivesSection .dayCell {
+        aspect-ratio: auto;
+        min-height: 90px;
+        padding: 6px;
+    }
+
+    .archivesSection .dayEvents {
+        flex: 0 0 auto;
+    }
+
+    /* Pills: never squeezed, long names wrap instead of being cut */
+    .archivesSection .eventPill {
+        flex-shrink: 0;
+        height: auto;
+        min-height: 24px;
+        padding: 4px 4px;
+        font-size: 11px;
+        line-height: 1.25;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: break-word;
+    }
+}
+
+/* ---------- TABLET ONLY: fit the full week, no side scroll ---------- */
+@media (min-width: 601px) and (max-width: 992px) {
+
+    .archivesSection .weekdayRow,
+    .archivesSection .calendarGrid {
+        min-width: 0;
+    }
+}
+
+/* ---------- PHONE: calendar scrolls sideways inside its own wrapper ---------- */
+@media (max-width: 600px) {
+
+    .archivesSection .archivesSwipeHint {
+        display: block;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: #16a34a;
+        margin-bottom: 10px;
+    }
+
+    .archivesSection .calendarScroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 8px;
+    }
+
+    .archivesSection .weekdayRow,
+    .archivesSection .calendarGrid {
+        min-width: 680px;
+    }
+
+    .archivesSection .dayCell {
+        min-height: 96px;
+    }
+
+    .archivesSection .eventPill {
+        font-size: 10.5px;
+    }
+
+    /* Always-visible slim scrollbar */
+    .archivesSection .calendarScroll::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .archivesSection .calendarScroll::-webkit-scrollbar-track {
+        background: #eef1f4;
+        border-radius: 10px;
+    }
+
+    .archivesSection .calendarScroll::-webkit-scrollbar-thumb {
+        background: #16a34a;
+        border-radius: 10px;
+    }
+}

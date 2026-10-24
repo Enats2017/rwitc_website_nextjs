@@ -270,6 +270,7 @@ export default function Archives() {
                     <div className="archivesLoading">Loading archives…</div>
                 ) : (
                     <>
+                        <div className="calendarScroll">
                         <div className="weekdayRow">
                             {WEEKDAYS.map((day) => (
                                 <div className="weekdayCell" key={day}>{day}</div>
@@ -321,6 +322,8 @@ export default function Archives() {
                                     })}
                                 </div>
                             ))}
+                        </div>
+
                         </div>
                     </>
                 )}
