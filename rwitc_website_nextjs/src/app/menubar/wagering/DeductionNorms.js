@@ -8,6 +8,13 @@ import "./DeductionNorms.css";
 // Fixed page heading (title field is removed from the admin panel)
 const PAGE_TITLE = "Deduction Norms";
 
+// Wrap every <table> in a scroll container so wide tables never break the layout
+function wrapTables(raw) {
+    return String(raw)
+        .replace(/<table/gi, '<div class="tableScroll"><table')
+        .replace(/<\/table>/gi, "</table></div>");
+}
+
 export default function DeductionNorms() {
     const [html, setHtml] = useState("");
 
@@ -17,7 +24,7 @@ export default function DeductionNorms() {
         getDeductionNorms()
             .then((data) => {
                 if (!active || !data || data.exists === false) return;
-                if (data.text) setHtml(String(data.text));
+                if (data.text) setHtml(wrapTables(data.text));
             })
             .catch(() => {});
 

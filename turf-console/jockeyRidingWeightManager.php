@@ -15,7 +15,7 @@ $userObj = new Users($db);
 
 $pdfType    = 'jockey_riding_weight';
 $pdfTitle   = "Jockey's Riding Weight";
-$moduleKey  = 'jockey_riding_weight';
+$moduleKey  = 'jockey_riding_weight_docs';
 $pageFile   = 'jockeyRidingWeightManager.php';
 $s3Folder   = 'uploads/club/';
 $sessionKey = 'menupdf_' . $pdfType;

@@ -1,285 +1,52 @@
 /* =========================================================
-   DEDUCTION NORMS PAGE
+   DEDUCTION NORMS PAGE — fully responsive (final)
 ========================================================= */
 
 .aboutPage {
     width: 100%;
     background: #f7f9fb;
     min-height: 100vh;
-    padding: 60px 20px 90px;
+    min-height: 100dvh;
+    padding: clamp(32px, 6vw, 60px) clamp(12px, 3vw, 20px) clamp(56px, 9vw, 90px);
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.aboutContainer {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
     box-sizing: border-box;
 }
 
-/* HEADING */
+/* ---------- HEADING ---------- */
 .aboutTitleWrap {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 44px;
-}
-
-/* =========================================================
-   RICH TEXT CONTENT (HTML saved from the admin editor)
-========================================================= */
-
-.aboutContent.guideContent {
-    display: block;
-    width: 100%;
-    min-width: 0;
-}
-
-.guideContent p {
-    color: #374151;
-    font-size: 16.5px;
-    font-style: normal;
-    margin: 0 0 22px;
-    line-height: 1.85;
-    text-align: justify;
-    letter-spacing: .1px;
-}
-
-.guideContent p:last-child {
-    margin-bottom: 0;
-}
-
-.guideContent> :first-child {
-    margin-top: 0;
-}
-
-/* Heading 2 = main underlined heading */
-.guideContent h2 {
-    font-size: 21px;
-    font-weight: 800;
-    font-style: normal;
-    color: #111827;
-    text-decoration: underline;
-    line-height: 1.5;
-    margin: 0 0 22px;
-}
-
-/* Heading 3 = green underlined sub-heading */
-.guideContent h3 {
-    font-size: 19px;
-    font-weight: 800;
-    font-style: normal;
-    color: #16a34a;
-    text-decoration: underline;
-    margin: 28px 0 14px;
-}
-
-.guideContent h4 {
-    font-size: 17px;
-    font-weight: 700;
-    font-style: normal;
-    color: #0b3d24;
-    margin: 24px 0 10px;
-}
-
-.guideContent strong,
-.guideContent b {
-    font-style: normal;
-    font-weight: 700;
-    color: #111827;
-}
-
-/* Lists (roman style comes from the editor's list style) */
-.guideContent ol,
-.guideContent ul {
-    margin: 0 0 22px;
-    padding-left: 34px;
-}
-
-.guideContent li {
-    color: #374151;
-    font-size: 16.5px;
-    font-style: normal;
-    line-height: 1.85;
-    text-align: justify;
-    margin-bottom: 12px;
-    padding-left: 6px;
-}
-
-.guideContent a {
-    color: #16a34a;
-    text-decoration: underline;
-    word-break: break-word;
-}
-
-/* Tables: green header row, bold first column, green bold second column */
-.guideContent table {
-    width: 100%;
-    max-width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    margin: 0 0 26px;
-    border: 1px solid #e5e9ec;
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-.guideContent th,
-.guideContent td {
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    box-sizing: border-box;
-    vertical-align: middle;
-    padding: 12px 10px;
-    line-height: 1.5;
-    border-bottom: 1px solid #eef1f4;
-    border-right: 1px solid #f2f5f7;
-}
-
-.guideContent thead th,
-.guideContent thead td {
-    background: #d9ead9;
-    color: #14532d;
-    font-size: 14px;
-    font-weight: 800;
-    text-align: center;
-    border-bottom: 1px solid #cfe4cf;
-    border-right: 1px solid #b9d6b9;
-}
-
-.guideContent tbody td {
-    font-size: 15px;
-    color: #374151;
-    text-align: center;
-}
-
-.guideContent tbody td:first-child {
-    width: 68%;
-    font-weight: 700;
-    color: #111827;
-    text-align: left;
-}
-
-.guideContent tbody td:nth-child(2) {
-    font-weight: 800;
-    color: #16a34a;
-}
-
-.guideContent th:last-child,
-.guideContent td:last-child {
-    border-right: none;
-}
-
-.guideContent tbody tr:last-child td {
-    border-bottom: none;
-}
-
-@media (max-width: 992px) {
-
-    .guideContent p,
-    .guideContent li {
-        font-size: 15.5px;
-        line-height: 1.8;
-    }
-
-    .guideContent h2 {
-        font-size: 19px;
-    }
-
-    .guideContent h3 {
-        font-size: 17px;
-    }
-
-    .guideContent th,
-    .guideContent td {
-        padding: 10px 8px;
-    }
-
-    .guideContent thead th,
-    .guideContent thead td,
-    .guideContent tbody td {
-        font-size: 14px;
-    }
-}
-
-@media (max-width: 768px) {
-
-    .guideContent p,
-    .guideContent li {
-        font-size: 14.5px;
-        line-height: 1.8;
-        text-align: left;
-    }
-
-    .guideContent h2 {
-        font-size: 17px;
-    }
-
-    .guideContent h3 {
-        font-size: 15.5px;
-    }
-
-    .guideContent h4 {
-        font-size: 15px;
-    }
-
-    .guideContent ol,
-    .guideContent ul {
-        padding-left: 24px;
-    }
-
-    .guideContent th,
-    .guideContent td {
-        padding: 8px 6px;
-    }
-
-    .guideContent thead th,
-    .guideContent thead td,
-    .guideContent tbody td {
-        font-size: 12.5px;
-    }
-}
-
-@media (max-width: 480px) {
-
-    .guideContent p,
-    .guideContent li {
-        font-size: 14px;
-    }
-
-    .guideContent h2 {
-        font-size: 15.5px;
-    }
-
-    .guideContent h3 {
-        font-size: 14.5px;
-    }
-
-    .guideContent th,
-    .guideContent td {
-        padding: 7px 5px;
-    }
-
-    .guideContent thead th,
-    .guideContent thead td,
-    .guideContent tbody td {
-        font-size: 11.5px;
-    }
+    margin-bottom: clamp(24px, 4vw, 44px);
 }
 
 .aboutHeading {
-    font-size: 40px;
+    font-size: clamp(22px, 5vw, 40px);
     font-weight: 800;
     color: #0d3b1f;
     letter-spacing: .3px;
-    position: relative;
-    padding-bottom: 16px;
+    line-height: 1.2;
+    padding-bottom: clamp(10px, 1.6vw, 16px);
+    margin: 0;
     text-align: center;
+    overflow-wrap: break-word;
 }
 
-/* SECTION DIVIDER */
+/* ---------- DIVIDER ---------- */
 .sectionDivider {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 18px;
-    margin-top: 0px;
+    gap: clamp(10px, 2vw, 18px);
     width: 100%;
-    max-width: 480px;
+    max-width: clamp(220px, 60vw, 480px);
 }
 
 .dividerLine {
@@ -297,351 +64,388 @@
 }
 
 .dividerIcon {
-    font-size: 22px;
+    font-size: clamp(18px, 2.5vw, 22px);
     color: #0d3b1f;
     flex-shrink: 0;
 }
 
-/* CONTENT CARD */
+/* ---------- CARD ---------- */
 .aboutCard {
-    width: 92%;
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     background: #ffffff;
-    border-radius: 28px;
-    padding: 60px;
+    border-radius: clamp(18px, 3vw, 28px);
+    padding: clamp(18px, 5vw, 60px);
     box-shadow: 0 18px 45px rgba(0, 0, 0, .07);
     border: 1px solid #eef1f4;
     box-sizing: border-box;
     overflow: hidden;
+    animation: fadeUp .6s ease both;
 }
 
 .aboutContent {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
 }
 
-.aboutContent p {
+/* =========================================================
+   RICH TEXT CONTENT (HTML saved from the admin editor)
+========================================================= */
+
+.guideContent {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.guideContent > :first-child {
+    margin-top: 0;
+}
+
+.guideContent > :last-child {
+    margin-bottom: 0;
+}
+
+/* Paragraphs */
+.guideContent p {
     color: #374151;
-    font-size: 16.5px;
-    line-height: 1.85;
+    font-size: clamp(14px, 1.2vw + 11px, 16.5px);
+    font-style: normal;
+    margin: 0 0 clamp(14px, 2vw, 22px);
+    line-height: 1.8;
     text-align: justify;
     letter-spacing: .1px;
 }
 
-.aboutContent p strong {
+/* Heading 2 = main underlined heading */
+.guideContent h2 {
+    font-size: clamp(16px, 1.6vw + 11px, 21px);
+    font-weight: 800;
+    font-style: normal;
+    color: #111827;
+    text-decoration: underline;
+    line-height: 1.45;
+    margin: 0 0 clamp(14px, 2vw, 22px);
+}
+
+/* Heading 3 = green underlined sub-heading */
+.guideContent h3 {
+    font-size: clamp(14.5px, 1.4vw + 10px, 19px);
+    font-weight: 800;
+    font-style: normal;
+    color: #16a34a;
+    text-decoration: underline;
+    line-height: 1.45;
+    margin: clamp(18px, 2.5vw, 28px) 0 clamp(10px, 1.4vw, 14px);
+}
+
+.guideContent h4 {
+    font-size: clamp(14px, 1vw + 10px, 17px);
+    font-weight: 700;
+    font-style: normal;
+    color: #0b3d24;
+    line-height: 1.45;
+    margin: clamp(16px, 2vw, 24px) 0 10px;
+}
+
+.guideContent strong,
+.guideContent b {
+    font-style: normal;
+    font-weight: 700;
     color: #111827;
 }
 
-.aboutContent p::selection {
+.guideContent p::selection,
+.guideContent li::selection {
     background: #16a34a;
     color: #ffffff;
 }
 
-.dnMainHeading {
-    font-size: 21px;
-    font-weight: 800;
-    color: #111827;
-    text-decoration: underline;
-    line-height: 1.5;
+/* Lists */
+.guideContent ol,
+.guideContent ul {
+    margin: 0 0 clamp(14px, 2vw, 22px);
+    padding-left: clamp(22px, 3vw, 34px);
 }
 
-.dnUnderlineHeading {
-    font-size: 19px;
-    font-weight: 800;
+.guideContent li {
+    color: #374151;
+    font-size: clamp(14px, 1.2vw + 11px, 16.5px);
+    font-style: normal;
+    line-height: 1.8;
+    text-align: justify;
+    margin-bottom: clamp(8px, 1.2vw, 12px);
+    padding-left: 6px;
+}
+
+.guideContent li > ol,
+.guideContent li > ul {
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+.guideContent a {
     color: #16a34a;
     text-decoration: underline;
-    margin-top: 6px;
+    word-break: break-word;
 }
 
-.dnSignOff {
-    margin-top: 10px;
+/* Media safety */
+.guideContent img,
+.guideContent video,
+.guideContent iframe {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.guideContent pre {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
 }
 
 /* =========================================================
    TABLES
-
-   Why the header text was "overlapping" on phone:
-   somewhere the project's global CSS (reset/tailwind/normalize)
-   sets a rule like `table th, table td { white-space: nowrap }`
-   or similar, further up the cascade. With table-layout:fixed
-   and a narrow column, a nowrap header refuses to break onto a
-   second line — it just keeps drawing past its own column's
-   edge, straight on top of the next column's text. That's the
-   visual "overlap".
-
-   Fix: force the wrap behaviour back on with !important so
-   nothing further up the cascade can win, on top of the
-   <colgroup> in the JSX (inline styles, so no CSS class can
-   override those column widths either).
+   - JSX wraps every <table> in .tableScroll (sideways scroll
+     on small screens, never breaks the page)
+   - Table display values are FORCED with !important, because
+     global CSS / editor HTML was turning th/td into blocks
+     (header became half width, rows got stacked)
 ========================================================= */
 
-.statsTableWrap {
+.guideContent .tableScroll {
+    display: block;
     width: 100%;
     max-width: 100%;
     min-width: 0;
+    margin: 0 0 clamp(16px, 2.2vw, 26px);
     overflow-x: auto;
     overflow-y: hidden;
-    border-radius: 16px;
     border: 1px solid #e5e9ec;
+    border-radius: 16px;
     box-sizing: border-box;
     -webkit-overflow-scrolling: touch;
 }
 
-.statsTable {
-    width: 100%;
-    max-width: 100%;
-    min-width: 420px;
-    border-collapse: collapse;
-    table-layout: fixed !important;
+.guideContent table {
+    display: table !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 440px;
+    height: auto !important;
+    border-collapse: collapse !important;
+    table-layout: auto !important;
+    margin: 0 !important;
+    border: none !important;
+    box-sizing: border-box;
 }
 
-.statsTable th,
-.statsTable td {
+.guideContent thead {
+    display: table-header-group !important;
+}
+
+.guideContent tbody {
+    display: table-row-group !important;
+}
+
+.guideContent tfoot {
+    display: table-footer-group !important;
+}
+
+.guideContent tr {
+    display: table-row !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+.guideContent colgroup {
+    display: table-column-group !important;
+}
+
+.guideContent col {
+    display: table-column !important;
+}
+
+.guideContent th,
+.guideContent td {
+    display: table-cell !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    float: none !important;
     white-space: normal !important;
-    overflow-wrap: break-word !important;
-    word-break: break-word !important;
-    box-sizing: border-box !important;
+    overflow-wrap: break-word;
+    word-break: normal;
+    box-sizing: border-box;
     vertical-align: middle;
-}
-
-.statsTable thead th {
-    background: #d9ead9;
-    color: #14532d;
-    font-size: 14px;
-    font-weight: 800;
-    padding: 12px 10px;
-    text-align: center;
-    line-height: 1.35;
-    border-bottom: 1px solid #cfe4cf;
-    border-right: 1px solid #b9d6b9;
-}
-
-.statsTable thead th:last-child {
-    border-right: none;
-}
-
-.statsTable tbody td {
-    padding: 12px 10px;
-    text-align: center;
-    font-size: 15px;
-    color: #374151;
+    padding: clamp(8px, 1vw, 12px) clamp(8px, 1.2vw, 12px) !important;
     line-height: 1.5;
     border-bottom: 1px solid #eef1f4;
     border-right: 1px solid #f2f5f7;
 }
 
-.statsTable tbody td:last-child {
-    border-right: none;
+/* Editor puts <p> inside cells: remove spacing, inherit look */
+.guideContent th p,
+.guideContent td p {
+    margin: 0 !important;
+    padding: 0;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    color: inherit !important;
+    line-height: inherit;
+    text-align: inherit !important;
+    letter-spacing: 0;
 }
 
-.statsTable tbody td.colOdds {
+.guideContent th strong,
+.guideContent td strong,
+.guideContent th b,
+.guideContent td b {
+    color: inherit;
+}
+
+/* Header row (green) */
+.guideContent thead th,
+.guideContent thead td,
+.guideContent tr:first-child > th {
+    background: #d9ead9 !important;
+    color: #14532d !important;
+    font-size: clamp(11.5px, .5vw + 10px, 14px);
+    font-weight: 800;
+    text-align: center !important;
+    border-bottom: 1px solid #cfe4cf;
+    border-right: 1px solid #b9d6b9;
+}
+
+/* Body cells */
+.guideContent tbody td {
+    font-size: clamp(12px, .6vw + 10px, 15px);
+    color: #374151;
+    text-align: center;
+}
+
+/* First column: bold + left aligned + wider */
+.guideContent tr > th:first-child,
+.guideContent tr > td:first-child {
+    width: 62% !important;
+}
+
+.guideContent tbody td:first-child {
     font-weight: 700;
     color: #111827;
     text-align: left;
 }
 
-.statsTable tbody td.colPercent {
+/* Second column: green bold */
+.guideContent tbody td:nth-child(2) {
     font-weight: 800;
     color: #16a34a;
 }
 
-.statsTable tbody tr:last-child td {
+.guideContent th:last-child,
+.guideContent td:last-child {
+    border-right: none;
+}
+
+.guideContent tbody tr:last-child td,
+.guideContent table tr:last-child td {
     border-bottom: none;
 }
 
-.statsTable tbody tr:hover {
+.guideContent tbody tr:hover {
     background: #f7faf7;
 }
 
 /* =========================================================
-   ROMAN NUMERAL LIST (i, ii, iii...)
+   BREAKPOINTS
 ========================================================= */
 
-.dnRomanList {
-    list-style: lower-roman;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin: 0;
-    padding-left: 30px;
-    min-width: 0;
+/* Large desktop / TV */
+@media (min-width: 1600px) {
+    .aboutContainer,
+    .aboutCard {
+        max-width: 1320px;
+    }
 }
 
-.dnRomanList li {
-    color: #374151;
-    font-size: 16.5px;
-    line-height: 1.85;
-    text-align: justify;
-    padding-left: 6px;
-}
-
-/* TABLET */
+/* Tablet */
 @media (max-width: 992px) {
-
-    .aboutHeading {
-        font-size: 32px;
+    .guideContent table {
+        min-width: 420px;
     }
-
-    .aboutCard {
-        padding: 44px;
-    }
-
-    .aboutContent p,
-    .dnRomanList li {
-        font-size: 15.5px;
-        line-height: 1.8;
-    }
-
-    .dnMainHeading {
-        font-size: 19px;
-    }
-
-    .dnUnderlineHeading {
-        font-size: 17px;
-    }
-
-    .statsTable thead th,
-    .statsTable tbody td {
-        font-size: 14px;
-        padding: 10px 8px;
-    }
-
 }
 
-/* MOBILE — table stays a normal 2-column table; the wrapper
-   scrolls sideways if the columns need more room than the
-   screen has. No restacking, no card view. */
+/* Mobile */
 @media (max-width: 768px) {
-
-    .aboutPage {
-        padding: 40px 14px 70px;
-    }
-
-    .aboutTitleWrap {
-        margin-bottom: 30px;
-    }
-
-    .aboutHeading {
-        font-size: 26px;
-        padding-bottom: 12px;
-    }
-
-    .sectionDivider {
-        max-width: 320px;
-        gap: 12px;
-        margin-top: 20px;
-    }
-
-    .dividerIcon {
-        font-size: 18px;
-    }
-
-    .aboutCard {
-        padding: 26px 18px;
-        border-radius: 22px;
-    }
-
-    .aboutContent {
-        gap: 18px;
-    }
-
-    .aboutContent p,
-    .dnRomanList li {
-        font-size: 14.5px;
-        line-height: 1.8;
+    .guideContent p,
+    .guideContent li {
         text-align: left;
     }
 
-    .dnMainHeading {
-        font-size: 17px;
+    .guideContent table {
+        min-width: 380px;
     }
-
-    .dnUnderlineHeading {
-        font-size: 15.5px;
-    }
-
-    .dnRomanList {
-        padding-left: 22px;
-        gap: 12px;
-    }
-
-    .statsTable {
-        min-width: 400px;
-    }
-
-    .statsTable thead th,
-    .statsTable tbody td {
-        font-size: 12.5px;
-        padding: 8px 6px;
-    }
-
 }
 
-/* SMALL MOBILE */
+/* Small mobile */
 @media (max-width: 480px) {
-
-    .aboutHeading {
-        font-size: 22px;
+    .guideContent table {
+        min-width: 340px;
     }
 
-    .sectionDivider {
-        max-width: 240px;
+    .guideContent ol,
+    .guideContent ul {
+        padding-left: 20px;
     }
+}
 
+/* Very small phones (320px) */
+@media (max-width: 360px) {
     .aboutCard {
-        padding: 20px 14px;
+        padding: 16px 12px;
     }
 
-    .aboutContent p,
-    .dnRomanList li {
-        font-size: 14px;
+    .guideContent table {
+        min-width: 310px;
     }
-
-    .dnMainHeading {
-        font-size: 15.5px;
-    }
-
-    .dnUnderlineHeading {
-        font-size: 14.5px;
-    }
-
-    .statsTable {
-        min-width: 360px;
-    }
-
-    .statsTable thead th,
-    .statsTable tbody td {
-        font-size: 11.5px;
-        padding: 7px 5px;
-    }
-
 }
 
-/* SCROLL ANIMATION */
-.aboutCard {
-    animation: fadeUp .6s ease both;
+/* Landscape phones */
+@media (max-height: 500px) and (orientation: landscape) {
+    .aboutPage {
+        padding-top: 24px;
+    }
 }
+
+/* =========================================================
+   ANIMATION + SCROLLBAR
+========================================================= */
 
 @keyframes fadeUp {
     from {
         opacity: 0;
         transform: translateY(30px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* CUSTOM SCROLLBAR */
+@media (prefers-reduced-motion: reduce) {
+    .aboutCard {
+        animation: none;
+    }
+}
+
 ::-webkit-scrollbar {
     width: 10px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {

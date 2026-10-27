@@ -107,6 +107,12 @@
     background: #0b3d24;
 }
 
+.afcOpenBtnLarge {
+    padding: 14px 28px;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
 .afcPdfFrame {
     display: block;
     width: 100%;
@@ -114,6 +120,36 @@
     border: 1px solid #e2e6e4;
     border-radius: 8px;
     background: #fff;
+}
+
+/* Phone / tablet fallback box (replaces iframe) */
+.afcMobileBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    padding: 20px 10px;
+}
+
+.afcMobileIcon {
+    font-size: 64px;
+    color: #dc2626;
+}
+
+.afcMobileTitle {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0d3b1f;
+}
+
+.afcMobileText {
+    margin: 0;
+    max-width: 420px;
+    color: #374151;
+    font-size: 15.5px;
+    line-height: 1.7;
 }
 
 @media (max-width: 992px) {
@@ -173,6 +209,11 @@
         width: 100%;
         justify-content: center;
     }
+
+    .afcOpenBtnLarge {
+        width: 100%;
+        max-width: 320px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -186,6 +227,10 @@
 
     .aboutCard {
         padding: 22px 16px;
+    }
+
+    .afcMobileTitle {
+        font-size: 19px;
     }
 }
 
