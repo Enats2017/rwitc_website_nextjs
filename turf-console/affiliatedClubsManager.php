@@ -12,11 +12,13 @@ use Aws\Exception\AwsException;
 session_start();
 $userObj = new Users($db);
 
+$pdfType     = 'affiliated_clubs';              // same value as the key in pdf_registry.php
 $pageTitle   = 'Affiliated Clubs with RWITC';
 $moduleKey   = 'affiliated_clubs';
 $pageFile    = 'affiliatedClubsManager.php';
-$s3Folder    = 'uploads/AffiliatedClubs/';
-$maxFileSize = 20 * 1024 * 1024;   // 20 MB
+$s3Folder    = 'uploads/club/';                 // must match s3_folder in pdf_registry.php
+$maxFileSize = 20 * 1024 * 1024;                // 20 MB
+$sessionKey  = 'menupdf_' . $pdfType;
 
 $secmsg = '';
 if (!isAdminlogin()) {
@@ -25,54 +27,55 @@ if (!isAdminlogin()) {
     $secmsg = 'You do not have access to this module.';
 }
 
-if (empty($_SESSION['afc_csrf'])) {
-    $_SESSION['afc_csrf'] = bin2hex(random_bytes(16));
+if (empty($_SESSION[$sessionKey . '_csrf'])) {
+    $_SESSION[$sessionKey . '_csrf'] = bin2hex(random_bytes(16));
 }
-$csrf = $_SESSION['afc_csrf'];
-$flash = isset($_SESSION['afc_flash']['text']) ? $_SESSION['afc_flash']['text'] : '';
-$flashType = isset($_SESSION['afc_flash']['type']) ? $_SESSION['afc_flash']['type'] : '';
-unset($_SESSION['afc_flash']);
+$csrf      = $_SESSION[$sessionKey . '_csrf'];
+$flash     = $_SESSION[$sessionKey . '_flash']['text'] ?? '';
+$flashType = $_SESSION[$sessionKey . '_flash']['type'] ?? '';
+unset($_SESSION[$sessionKey . '_flash']);
 
-function afcSetFlash($text, $type)
+function menuPdfSetFlash($text, $type)
 {
-    $_SESSION['afc_flash'] = array('text' => $text, 'type' => $type);
+    global $sessionKey;
+    $_SESSION[$sessionKey . '_flash'] = ['text' => $text, 'type' => $type];
 }
 
-function afcS3Client()
+function menuPdfS3Client()
 {
-    return new S3Client(array(
-        'version' => 'latest',
-        'region' => AWS_REGION,
-        'credentials' => array('key' => AWS_ACCESS_KEY_ID, 'secret' => AWS_SECRET_ACCESS_KEY)
-    ));
+    return new S3Client([
+        'version'     => 'latest',
+        'region'      => AWS_REGION,
+        'credentials' => ['key' => AWS_ACCESS_KEY_ID, 'secret' => AWS_SECRET_ACCESS_KEY]
+    ]);
 }
 
-function afcKeyFromUrl($url)
+function menuPdfKeyFromUrl($url)
 {
     global $s3Folder;
     $path = urldecode((string) parse_url((string) $url, PHP_URL_PATH));
-    $pos = strpos($path, $s3Folder);
+    $pos  = strpos($path, $s3Folder);
     return $pos === false ? '' : substr($path, $pos);
 }
 
-function afcDeleteFromS3($url)
+function menuPdfDeleteFromS3($url)
 {
-    $key = afcKeyFromUrl($url);
+    $key = menuPdfKeyFromUrl($url);
     if ($key === '') return;
     try {
-        afcS3Client()->deleteObject(array('Bucket' => AWS_BUCKET, 'Key' => $key));
+        menuPdfS3Client()->deleteObject(['Bucket' => AWS_BUCKET, 'Key' => $key]);
     } catch (AwsException $e) {
         error_log('AFFILIATED_CLUBS_OLD_FILE_DELETE_ERROR | ' . $e->getMessage());
     }
 }
 
 // Validates the PDF and uploads it to S3. Returns the file URL ('' on failure, $error is set).
-function afcUpload($tmpFile, &$error)
+function menuPdfUpload($tmpFile, &$error)
 {
     global $s3Folder;
 
-    $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mime = $finfo->file($tmpFile);
+    $finfo  = new finfo(FILEINFO_MIME_TYPE);
+    $mime   = $finfo->file($tmpFile);
     $header = file_get_contents($tmpFile, false, null, 0, 5);
     if ($mime !== 'application/pdf' || $header !== '%PDF-') {
         $error = 'Invalid PDF file.';
@@ -82,13 +85,13 @@ function afcUpload($tmpFile, &$error)
     // Unique key per upload so browsers/CDN never show a cached old PDF
     $key = $s3Folder . 'affiliated_clubs_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.pdf';
     try {
-        $result = afcS3Client()->putObject(array(
-            'Bucket' => AWS_BUCKET,
-            'Key' => $key,
-            'SourceFile' => $tmpFile,
-            'ContentType' => 'application/pdf',
+        $result = menuPdfS3Client()->putObject([
+            'Bucket'             => AWS_BUCKET,
+            'Key'                => $key,
+            'SourceFile'         => $tmpFile,
+            'ContentType'        => 'application/pdf',
             'ContentDisposition' => 'inline'
-        ));
+        ]);
         return isset($result['ObjectURL']) ? (string) $result['ObjectURL'] : '';
     } catch (AwsException $e) {
         error_log('AFFILIATED_CLUBS_UPLOAD_ERROR | ' . $e->getMessage());
@@ -97,10 +100,16 @@ function afcUpload($tmpFile, &$error)
     }
 }
 
-// SAVE (the table always holds exactly one row: id = 1)
+function menuPdfLabel($url)
+{
+    $name = basename(urldecode((string) parse_url((string) $url, PHP_URL_PATH)));
+    return $name === '' ? 'affiliated_clubs.pdf' : $name;
+}
+
+// SAVE (only one row is kept for this type in club_menu_pdf)
 if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf']) || !hash_equals($csrf, (string) $_POST['csrf'])) {
-        afcSetFlash('Invalid request. Please try again.', 'error');
+        menuPdfSetFlash('Invalid request. Please try again.', 'error');
         header('Location: ' . $pageFile);
         exit;
     }
@@ -117,35 +126,54 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($error === '') {
-        $newUrl = afcUpload($_FILES['clubsFile']['tmp_name'], $error);
+        $newUrl = menuPdfUpload($_FILES['clubsFile']['tmp_name'], $error);
         if ($error === '' && $newUrl !== '') {
             try {
-                $old = $db->getSingleRowAssoc("SELECT file_url FROM affiliated_clubs WHERE id = 1");
-                $oldUrl = ($old && !empty($old['file_url'])) ? (string) $old['file_url'] : '';
-                $originalName = basename((string) $_FILES['clubsFile']['name']);
-
-                // Always id = 1: inserts the first time, updates every time after
-                $db->query(
-                    "INSERT INTO affiliated_clubs (id, file_url, file_name)
-                     VALUES (1, '" . $db->escape($newUrl) . "', '" . $db->escape($originalName) . "')
-                     ON DUPLICATE KEY UPDATE file_url = VALUES(file_url), file_name = VALUES(file_name)"
+                $rows = $db->getMultiDimensionalArray(
+                    "SELECT id, file_url FROM club_menu_pdf WHERE `type` = '" . $pdfType . "' ORDER BY id ASC"
                 );
+                $keepId  = !empty($rows) ? (int) $rows[0]['id'] : 0;
+                $oldUrls = [];
 
-                // Remove the previous file from S3 so only one PDF is kept
-                if ($oldUrl !== '' && afcKeyFromUrl($oldUrl) !== afcKeyFromUrl($newUrl)) {
-                    afcDeleteFromS3($oldUrl);
+                // Collect extra rows (if any) so only one entry stays for this type
+                foreach ($rows as $row) {
+                    if ((int) $row['id'] !== $keepId && !empty($row['file_url'])) {
+                        $oldUrls[] = $row['file_url'];
+                    }
                 }
 
-                afcSetFlash('Affiliated Clubs PDF was updated successfully.', 'success');
+                if ($keepId > 0) {
+                    if (!empty($rows[0]['file_url'])) {
+                        $oldUrls[] = (string) $rows[0]['file_url'];
+                    }
+                    $db->update(
+                        "UPDATE club_menu_pdf SET file_url = '" . $db->escape($newUrl) . "', `date` = CURDATE(), updated_at = NOW()
+                         WHERE id = " . $keepId . " AND `type` = '" . $pdfType . "'"
+                    );
+                    $db->query("DELETE FROM club_menu_pdf WHERE `type` = '" . $pdfType . "' AND id <> " . $keepId);
+                } else {
+                    $db->insert(
+                        "INSERT INTO club_menu_pdf (`type`, file_url, `date`) VALUES ('" . $pdfType . "', '" . $db->escape($newUrl) . "', CURDATE())"
+                    );
+                }
+
+                // Remove previous file(s) from S3 so only one PDF is kept
+                foreach (array_unique($oldUrls) as $oldUrl) {
+                    if (menuPdfKeyFromUrl($oldUrl) !== menuPdfKeyFromUrl($newUrl)) {
+                        menuPdfDeleteFromS3($oldUrl);
+                    }
+                }
+
+                menuPdfSetFlash('Affiliated Clubs PDF was updated successfully.', 'success');
             } catch (Exception $e) {
                 error_log('AFFILIATED_CLUBS_DB_ERROR | ' . $e->getMessage());
-                afcSetFlash('Database error. Could not save the PDF.', 'error');
+                menuPdfSetFlash('Database error. Could not save the PDF.', 'error');
             }
         } else {
-            afcSetFlash($error !== '' ? $error : 'Could not upload the PDF. Please try again.', 'error');
+            menuPdfSetFlash($error !== '' ? $error : 'Could not upload the PDF. Please try again.', 'error');
         }
     } else {
-        afcSetFlash($error, 'error');
+        menuPdfSetFlash($error, 'error');
     }
 
     header('Location: ' . $pageFile);
@@ -155,7 +183,9 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // LOAD CURRENT FILE
 $row = null;
 if (empty($secmsg)) {
-    $row = $db->getSingleRowAssoc("SELECT file_url, file_name, updated_at FROM affiliated_clubs WHERE id = 1");
+    $row = $db->getSingleRowAssoc(
+        "SELECT id, file_url, `date`, updated_at FROM club_menu_pdf WHERE `type` = '" . $pdfType . "' ORDER BY id ASC LIMIT 1"
+    );
     if (!$row || empty($row['file_url'])) {
         $row = null;
     }
@@ -205,14 +235,16 @@ $design->writeContentPageStyles();
         <div class="ar-card-title">Current File</div>
         <?php if (!$row) { ?>
             <div class="ar-empty">No PDF uploaded yet.</div>
-        <?php } else { ?>
+        <?php } else {
+            $lastUpdated = !empty($row['updated_at']) ? $row['updated_at'] : (!empty($row['date']) ? $row['date'] : '');
+        ?>
             <div class="ar-table-wrap">
                 <table class="ar-table">
                     <thead><tr><th>File</th><th style="width:190px">Last Updated</th><th style="width:80px;text-align:center">View</th></tr></thead>
                     <tbody>
                         <tr>
-                            <td><div class="ar-t-file"><i class="fas fa-file-pdf"></i><span><?php echo htmlspecialchars($pageTitle); ?><br><small style="font-weight:400;color:#7a8c84"><?php echo htmlspecialchars((string) $row['file_name']); ?></small></span></div></td>
-                            <td><?php echo !empty($row['updated_at']) ? htmlspecialchars(date('d M Y, h:i A', strtotime($row['updated_at']))) : '—'; ?></td>
+                            <td><div class="ar-t-file"><i class="fas fa-file-pdf"></i><span><?php echo htmlspecialchars($pageTitle); ?><br><small style="font-weight:400;color:#7a8c84"><?php echo htmlspecialchars(menuPdfLabel($row['file_url'])); ?></small></span></div></td>
+                            <td><?php echo $lastUpdated !== '' ? htmlspecialchars(date('d M Y, h:i A', strtotime($lastUpdated))) : '—'; ?></td>
                             <td style="text-align:center"><a class="ar-icon-btn" title="View PDF" target="_blank" rel="noopener noreferrer" href="<?php echo htmlspecialchars($row['file_url']); ?>"><i class="fas fa-eye"></i></a></td>
                         </tr>
                     </tbody>

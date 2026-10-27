@@ -113,4 +113,9 @@ return [
         's3_folder'    => 'uploads/club/',
         'display_name' => 'Standard_Timings.pdf',
     ],
+
+    'affiliated_clubs' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'Affiliated_Clubs_with_RWITC.pdf',
+    ],
 ];

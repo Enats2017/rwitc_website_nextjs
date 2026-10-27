@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FaHorseHead, FaFilePdf } from "react-icons/fa";
-import { getAffiliatedClubs } from "@/services/AffiliatedClubsService";
+import { getPdfLinks } from "@/services/pdfService";
 import "./AffiliatedClubs.css";
 
 // Detects phones/tablets where inline PDF iframes cannot be scrolled
@@ -21,19 +21,29 @@ function detectTouchDevice() {
 }
 
 export default function AffiliatedClubs() {
-    const [data, setData] = useState(null);
+    const [fileUrl, setFileUrl] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [isTouch, setIsTouch] = useState(false);
 
     useEffect(() => {
         let active = true;
 
-        getAffiliatedClubs()
-            .then((result) => {
-                if (active) setData(result);
+        // The link is served through pdf_stream.php, so the S3 url is never exposed
+        getPdfLinks()
+            .then((links) => {
+                if (!active) return;
+                if (links.affiliated_clubs) {
+                    setFileUrl(links.affiliated_clubs);
+                } else {
+                    setError("Affiliated clubs PDF is not available right now.");
+                }
+                setLoading(false);
             })
             .catch((loadError) => {
-                if (active) setError(loadError.message);
+                if (!active) return;
+                setError(loadError.message || "Failed to load affiliated clubs.");
+                setLoading(false);
             });
 
         return () => {
@@ -64,7 +74,7 @@ export default function AffiliatedClubs() {
                 <div className="aboutCard">
                     {error ? (
                         <p role="alert">{error}</p>
-                    ) : !data ? (
+                    ) : loading ? (
                         <p role="status">Loading affiliated clubs...</p>
                     ) : isTouch ? (
                         <div className="afcMobileBox">
@@ -76,7 +86,7 @@ export default function AffiliatedClubs() {
                             </p>
                             <a
                                 className="afcOpenBtn afcOpenBtnLarge"
-                                href={data.fileUrl}
+                                href={fileUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -88,7 +98,7 @@ export default function AffiliatedClubs() {
                             <div className="afcToolbar">
                                 <a
                                     className="afcOpenBtn"
-                                    href={data.fileUrl}
+                                    href={fileUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -98,7 +108,7 @@ export default function AffiliatedClubs() {
 
                             <iframe
                                 className="afcPdfFrame"
-                                src={data.fileUrl}
+                                src={fileUrl}
                                 title="Affiliated Clubs with RWITC"
                             />
                         </div>
