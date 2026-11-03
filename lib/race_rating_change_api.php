@@ -20,7 +20,7 @@ class Itemapi {
 
 	public function __construct() {
 
-	    $this->conn = new mysqli('localhost', 'rwitc_erp', 'S4Y@3tAZ@GvLJ1', 'rwitc_website');
+	    $this->conn = new mysqli('localhost', 'app_user', 'ho{HslC)jWaky${L', 'rwitc_website');
 
 	    if ($this->conn->connect_error) {
 

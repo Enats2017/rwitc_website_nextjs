@@ -52,6 +52,9 @@ if (IS_LOCAL) {
     // Ratings HTM file
     define("RATINGS_FILE_URL", "http://localhost/rwitc_upload/static/RATINGS.HTM");
 
+    // Website colours folder (jockey image sync)
+    define("COLOURS_DIR", "C:/xampp/htdocs/rwitc_website/image/colours");
+
 } else {
 
     // ----------------------------------------------------
@@ -69,48 +72,27 @@ if (IS_LOCAL) {
     );
 
     // Raceday Report .HTM files - public URL
-    define(
-        "RACEDAY_REPORT_PUBLIC_BASE",
-        "https://rwitc.com/staticpages/racedayreports/"
-    );
+    define(  "RACEDAY_REPORT_PUBLIC_BASE",  "https://rwitc.com/staticpages/racedayreports/");
 
     // Sweepstake .htm files public URL
-    define(
-        "STATIC_SWEEPSTAKE_URL",
-        "https://rwitc.com/staticpages/sweepstakes/"
-    );
+    define( "STATIC_SWEEPSTAKE_URL", "https://rwitc.com/staticpages/sweepstakes/");
 
     // Dividends .htm files public URL
-    define(
-        "STATIC_DIVIDENDS_URL",
-        "https://rwitc.com/staticpages/dividends/"
-    );
+    define( "STATIC_DIVIDENDS_URL", "https://rwitc.com/staticpages/dividends/");
 
-    define(
-        "RATINGSCHANGE_LOCAL_PATH",
-        realpath(__DIR__ . "/../../staticpages/ratingschange")
-    );
+    define( "RATINGSCHANGE_LOCAL_PATH", realpath(__DIR__ . "/../../staticpages/ratingschange"));
 
-    define(
-        "STATIC_LIVE_URL",
-        "https://www.rwitc.com/rwitc_upload/static/live/"
-    );
+    define( "STATIC_LIVE_URL", "https://www.rwitc.com/rwitc_upload/static/live/");
 
-    define(
-        "RIDING_WEIGHT_LOCAL_PATH",
-        realpath(__DIR__ . "/../../rwitc_upload/static")
-    );
+    define( "RIDING_WEIGHT_LOCAL_PATH", realpath(__DIR__ . "/../../rwitc_upload/static"));
 
-    define(
-        "RECORD_TIMINGS_LOCAL_PATH",
-        realpath(__DIR__ . "/../../horseracing")
-    );
+    define( "RECORD_TIMINGS_LOCAL_PATH", realpath(__DIR__ . "/../../horseracing"));
 
     // Ratings HTM file
-    define(
-        "RATINGS_FILE_URL",
-        "https://rwitc.com/rwitc_upload/static/RATINGS.HTM"
-    );
+    define( "RATINGS_FILE_URL", "https://rwitc.com/rwitc_upload/static/RATINGS.HTM");
+
+    // Website colours folder (jockey image sync)
+    define("COLOURS_DIR", realpath(__DIR__ . "/../../colours"));
 }
 
 define("RATINGSCHANGE_S3_PREFIX", "staticpages/ratingschange/");

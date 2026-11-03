@@ -7,11 +7,21 @@ import { getRaceCard } from "../../../services/racecardService";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import { FaHome, FaHorseHead } from "react-icons/fa";
 import "./Race_card.css";
+import { COLOURS_URL } from "../../../services/api";
 const MONTHS = {
     jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
     jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12"
 };
 
+function fixColourPaths(html) {
+    const raw = String(html || "");
+    if (!COLOURS_URL) return raw;
+
+    return raw.replace(
+        /(src\s*=\s*["']?)\s*\.?[\\/]*colours[\\/]/gi,
+        `$1${COLOURS_URL}/`
+    );
+}
 /* Any date format -> YYYY-MM-DD */
 function toIsoDate(raw) {
     const s = String(raw || "").trim();
@@ -243,7 +253,16 @@ export default function RaceCard() {
         const iframe = e.target;
         const doc = iframe.contentWindow?.document;
         if (!doc || !doc.body) return;
-
+        /* Backup: fix colour image paths directly in the iframe DOM (local only) */
+        if (COLOURS_URL) {
+            doc.querySelectorAll("img").forEach((img) => {
+                const src = img.getAttribute("src") || "";
+                const m = src.match(/^\.?[\\/]*colours[\\/](.+)$/i);
+                if (m) {
+                    img.setAttribute("src", `${COLOURS_URL}/${m[1]}`);
+                }
+            });
+        }
         doc.querySelectorAll(".race_no_data").forEach((el) => {
             el.querySelectorAll("th").forEach((th) => {
                 th.style.setProperty("background", "#16a34a", "important");
@@ -453,7 +472,7 @@ export default function RaceCard() {
                     <div className="docArchiveScroll">
                         <iframe
                             className="docArchiveHtml"
-                            srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACECARD, rawHtml)}
+                            srcDoc={formatArchiveHtml(ARCHIVE_STYLES_RACECARD, fixColourPaths(rawHtml))}
                             title="Race Card"
                             sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
                             scrolling="no"

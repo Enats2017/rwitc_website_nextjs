@@ -26,6 +26,11 @@ if (preg_match('/uri=(.+)/is', $uri, $matches)) {
 
     $uri = getParameterString("uri", "dashboard.php");
 }
+$uri = rawurldecode($uri);
+
+if (preg_match('#^(https?:)?//#i', $uri) || preg_match('/[\r\n]/', $uri)) {
+    $uri = 'dashboard.php';
+}
 
 
 /*
@@ -1079,6 +1084,7 @@ $isLogoutMsg = (strpos($msg, "successfully logged out") !== false);
                 margin-bottom: 16px;
             }
         }
+
         /* ---------- LOGIN PASSWORD EYE ICON ---------- */
 
         .rwField .rwPwField {
@@ -1112,43 +1118,233 @@ $isLogoutMsg = (strpos($msg, "successfully logged out") !== false);
             color: var(--rw-green);
             background: #f1f3f1;
         }
+
         /* ---------- FORCE PASSWORD CHANGE POPUP ---------- */
 
-html.rwLock, html.rwLock body { overflow: hidden !important; height: 100%; }
-#rwPwOverlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(4,22,12,.55); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; font-family: 'Inter','Segoe UI',Arial,sans-serif; }
-#rwPwBox { background: #fff; border-radius: 16px; width: 100%; max-width: 420px; padding: 22px 24px 16px; box-shadow: 0 20px 60px rgba(0,0,0,.35); box-sizing: border-box; max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
-#rwPwBox::-webkit-scrollbar { display: none; }
-#rwPwBox h3 { margin: 0 0 4px; font-family: 'Source Serif 4', Georgia, serif; font-size: 22px; line-height: 1.2; color: #0b3d20; font-weight: 600; }
-#rwPwBox .rwPwSub { margin: 0 0 6px; font-size: 12.5px; line-height: 1.4; color: #667066; }
-#rwPwBox label { display: block; font-size: 12.5px; font-weight: 600; margin: 10px 0 5px; color: #17251c; }
-#rwPwBox .rwPwWrap { position: relative; }
-#rwPwBox input[type=text], #rwPwBox input[type=password] { width: 100%; height: 40px; padding: 0 44px 0 12px; border: 1px solid #e2e1d8; border-radius: 10px; font-family: inherit; font-size: 14px; box-sizing: border-box; outline: none; background: #fff; color: #17251c; }
-#rwPwBox input[type=password]:focus, #rwPwBox input[type=text]:focus { border-color: #0b6d2a; box-shadow: 0 0 0 3px rgba(11,109,42,.1); }
-#rwPwBox input[readonly] { background: #f1f3f1; color: #667066; padding-right: 12px; }
-#rwPwBox .rwEye { position: absolute; top: 50%; right: 4px; transform: translateY(-50%); width: 34px; height: 34px; border: 0; background: transparent; color: #667066; font-size: 15px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; padding: 0; }
-#rwPwBox .rwEye:hover { color: #0b6d2a; background: #f1f3f1; }
-#rwPwRules { list-style: none; margin: 12px 0 2px; padding: 0; font-size: 12.5px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; }
-#rwPwRules li { color: #8a938d; line-height: 1.35; }
-#rwPwRules li:before { content: "\25CB "; }
-#rwPwRules li.ok { color: #0b6d2a; font-weight: 600; }
-#rwPwRules li.ok:before { content: "\2714 "; }
-#rwPwMsg { font-size: 12.5px; color: #b3261e; margin-top: 8px; min-height: 16px; }
-#rwPwBtn { width: 100%; height: 42px; border: 0; border-radius: 999px; background: linear-gradient(135deg,#0b3d20 0%,#0b6d2a 100%); color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; margin-top: 6px; }
-#rwPwBtn:disabled { opacity: .45; cursor: not-allowed; }
-#rwPwLogout { display: block; text-align: center; margin-top: 10px; font-size: 12.5px; color: #667066; text-decoration: underline; }
-@media (max-width: 380px) {
-  #rwPwBox { padding: 18px 16px 12px; }
-  #rwPwBox h3 { font-size: 19px; }
-  #rwPwRules { grid-template-columns: 1fr; }
-}
-@media (max-height: 620px) {
-  #rwPwBox { padding-top: 14px; padding-bottom: 10px; }
-  #rwPwBox .rwPwSub { display: none; }
-  #rwPwBox label { margin: 6px 0 4px; }
-  #rwPwBox input[type=text], #rwPwBox input[type=password] { height: 36px; }
-  #rwPwRules { margin-top: 8px; }
-  #rwPwBtn { height: 38px; }
-}
+        html.rwLock,
+        html.rwLock body {
+            overflow: hidden !important;
+            height: 100%;
+        }
+
+        #rwPwOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(4, 22, 12, .55);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        }
+
+        #rwPwBox {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            padding: 22px 24px 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+            box-sizing: border-box;
+            max-height: calc(100vh - 24px);
+            max-height: calc(100dvh - 24px);
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        #rwPwBox::-webkit-scrollbar {
+            display: none;
+        }
+
+        #rwPwBox h3 {
+            margin: 0 0 4px;
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 22px;
+            line-height: 1.2;
+            color: #0b3d20;
+            font-weight: 600;
+        }
+
+        #rwPwBox .rwPwSub {
+            margin: 0 0 6px;
+            font-size: 12.5px;
+            line-height: 1.4;
+            color: #667066;
+        }
+
+        #rwPwBox label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            margin: 10px 0 5px;
+            color: #17251c;
+        }
+
+        #rwPwBox .rwPwWrap {
+            position: relative;
+        }
+
+        #rwPwBox input[type=text],
+        #rwPwBox input[type=password] {
+            width: 100%;
+            height: 40px;
+            padding: 0 44px 0 12px;
+            border: 1px solid #e2e1d8;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            background: #fff;
+            color: #17251c;
+        }
+
+        #rwPwBox input[type=password]:focus,
+        #rwPwBox input[type=text]:focus {
+            border-color: #0b6d2a;
+            box-shadow: 0 0 0 3px rgba(11, 109, 42, .1);
+        }
+
+        #rwPwBox input[readonly] {
+            background: #f1f3f1;
+            color: #667066;
+            padding-right: 12px;
+        }
+
+        #rwPwBox .rwEye {
+            position: absolute;
+            top: 50%;
+            right: 4px;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border: 0;
+            background: transparent;
+            color: #667066;
+            font-size: 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        #rwPwBox .rwEye:hover {
+            color: #0b6d2a;
+            background: #f1f3f1;
+        }
+
+        #rwPwRules {
+            list-style: none;
+            margin: 12px 0 2px;
+            padding: 0;
+            font-size: 12.5px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px 12px;
+        }
+
+        #rwPwRules li {
+            color: #8a938d;
+            line-height: 1.35;
+        }
+
+        #rwPwRules li:before {
+            content: "\25CB ";
+        }
+
+        #rwPwRules li.ok {
+            color: #0b6d2a;
+            font-weight: 600;
+        }
+
+        #rwPwRules li.ok:before {
+            content: "\2714 ";
+        }
+
+        #rwPwMsg {
+            font-size: 12.5px;
+            color: #b3261e;
+            margin-top: 8px;
+            min-height: 16px;
+        }
+
+        #rwPwBtn {
+            width: 100%;
+            height: 42px;
+            border: 0;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #0b3d20 0%, #0b6d2a 100%);
+            color: #fff;
+            font-family: inherit;
+            font-size: 14.5px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        #rwPwBtn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        #rwPwLogout {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12.5px;
+            color: #667066;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 380px) {
+            #rwPwBox {
+                padding: 18px 16px 12px;
+            }
+
+            #rwPwBox h3 {
+                font-size: 19px;
+            }
+
+            #rwPwRules {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-height: 620px) {
+            #rwPwBox {
+                padding-top: 14px;
+                padding-bottom: 10px;
+            }
+
+            #rwPwBox .rwPwSub {
+                display: none;
+            }
+
+            #rwPwBox label {
+                margin: 6px 0 4px;
+            }
+
+            #rwPwBox input[type=text],
+            #rwPwBox input[type=password] {
+                height: 36px;
+            }
+
+            #rwPwRules {
+                margin-top: 8px;
+            }
+
+            #rwPwBtn {
+                height: 38px;
+            }
+        }
     </style>
 
 </head>
@@ -1519,121 +1715,131 @@ html.rwLock, html.rwLock body { overflow: hidden !important; height: 100%; }
             });
         })();
     </script>
-<?php if ($showPwModal) { ?>
+    <?php if ($showPwModal) { ?>
 
-<div id="rwPwOverlay">
-  <div id="rwPwBox">
-    <h3>Please change your password</h3>
-    <p class="rwPwSub">Your current password is temporary or has expired. You must set a new password to continue.</p>
+        <div id="rwPwOverlay">
+            <div id="rwPwBox">
+                <h3>Please change your password</h3>
+                <p class="rwPwSub">Your current password is temporary or has expired. You must set a new password to continue.</p>
 
-    <label>Username</label>
-    <input type="text" value="<?php echo htmlspecialchars($pwModalUser, ENT_QUOTES, 'UTF-8'); ?>" readonly>
+                <label>Username</label>
+                <input type="text" value="<?php echo htmlspecialchars($pwModalUser, ENT_QUOTES, 'UTF-8'); ?>" readonly>
 
-    <label>New Password</label>
-    <div class="rwPwWrap">
-      <input type="password" id="rwNewPw" autocomplete="new-password">
-      <button type="button" class="rwEye" data-target="rwNewPw" title="Show / hide password"><i class="fa fa-eye"></i></button>
-    </div>
+                <label>New Password</label>
+                <div class="rwPwWrap">
+                    <input type="password" id="rwNewPw" autocomplete="new-password">
+                    <button type="button" class="rwEye" data-target="rwNewPw" title="Show / hide password"><i class="fa fa-eye"></i></button>
+                </div>
 
-    <label>Confirm New Password</label>
-    <div class="rwPwWrap">
-      <input type="password" id="rwConfPw" autocomplete="new-password">
-      <button type="button" class="rwEye" data-target="rwConfPw" title="Show / hide password"><i class="fa fa-eye"></i></button>
-    </div>
+                <label>Confirm New Password</label>
+                <div class="rwPwWrap">
+                    <input type="password" id="rwConfPw" autocomplete="new-password">
+                    <button type="button" class="rwEye" data-target="rwConfPw" title="Show / hide password"><i class="fa fa-eye"></i></button>
+                </div>
 
-    <ul id="rwPwRules">
-      <li id="rwr_len">At least 8 characters</li>
-      <li id="rwr_up">1 uppercase letter (A-Z)</li>
-      <li id="rwr_low">1 lowercase letter (a-z)</li>
-      <li id="rwr_num">1 number (0-9)</li>
-      <li id="rwr_sp">1 special character (@ # $ !)</li>
-      <li id="rwr_match">Both passwords match</li>
-    </ul>
+                <ul id="rwPwRules">
+                    <li id="rwr_len">At least 8 characters</li>
+                    <li id="rwr_up">1 uppercase letter (A-Z)</li>
+                    <li id="rwr_low">1 lowercase letter (a-z)</li>
+                    <li id="rwr_num">1 number (0-9)</li>
+                    <li id="rwr_sp">1 special character (@ # $ !)</li>
+                    <li id="rwr_match">Both passwords match</li>
+                </ul>
 
-    <div id="rwPwMsg"></div>
-    <button type="button" id="rwPwBtn" disabled>Change Password</button>
-    <a id="rwPwLogout" href="index.php?q=logout">Cancel &amp; Logout</a>
-  </div>
-</div>
-<script>
-(function () {
-    var redirectTo = <?php echo json_encode($pwModalRedirect); ?>;
-    document.documentElement.className += ' rwLock';
+                <div id="rwPwMsg"></div>
+                <button type="button" id="rwPwBtn" disabled>Change Password</button>
+                <a id="rwPwLogout" href="index.php?q=logout">Cancel &amp; Logout</a>
+            </div>
+        </div>
+        <script>
+            (function() {
+                var redirectTo = <?php echo json_encode($pwModalRedirect); ?>;
+                document.documentElement.className += ' rwLock';
 
-    var np = document.getElementById('rwNewPw');
-    var cp = document.getElementById('rwConfPw');
-    var btn = document.getElementById('rwPwBtn');
-    var msg = document.getElementById('rwPwMsg');
+                var np = document.getElementById('rwNewPw');
+                var cp = document.getElementById('rwConfPw');
+                var btn = document.getElementById('rwPwBtn');
+                var msg = document.getElementById('rwPwMsg');
 
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') { e.preventDefault(); }
-    });
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                    }
+                });
 
-    var eyes = document.querySelectorAll('#rwPwBox .rwEye');
-    for (var i = 0; i < eyes.length; i++) {
-        eyes[i].addEventListener('click', function () {
-            var input = document.getElementById(this.getAttribute('data-target'));
-            var icon = this.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fa fa-eye-slash';
-            } else {
-                input.type = 'password';
-                icon.className = 'fa fa-eye';
-            }
-        });
-    }
+                var eyes = document.querySelectorAll('#rwPwBox .rwEye');
+                for (var i = 0; i < eyes.length; i++) {
+                    eyes[i].addEventListener('click', function() {
+                        var input = document.getElementById(this.getAttribute('data-target'));
+                        var icon = this.querySelector('i');
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            icon.className = 'fa fa-eye-slash';
+                        } else {
+                            input.type = 'password';
+                            icon.className = 'fa fa-eye';
+                        }
+                    });
+                }
 
-    function check() {
-        var v = np.value;
-        var res = {
-            len: v.length >= 8,
-            up: /[A-Z]/.test(v),
-            low: /[a-z]/.test(v),
-            num: /[0-9]/.test(v),
-            sp: /[^A-Za-z0-9]/.test(v),
-            match: v !== '' && v === cp.value
-        };
-        var all = true;
-        for (var k in res) {
-            document.getElementById('rwr_' + k).className = res[k] ? 'ok' : '';
-            if (!res[k]) { all = false; }
-        }
-        btn.disabled = !all;
-    }
+                function check() {
+                    var v = np.value;
+                    var res = {
+                        len: v.length >= 8,
+                        up: /[A-Z]/.test(v),
+                        low: /[a-z]/.test(v),
+                        num: /[0-9]/.test(v),
+                        sp: /[^A-Za-z0-9]/.test(v),
+                        match: v !== '' && v === cp.value
+                    };
+                    var all = true;
+                    for (var k in res) {
+                        document.getElementById('rwr_' + k).className = res[k] ? 'ok' : '';
+                        if (!res[k]) {
+                            all = false;
+                        }
+                    }
+                    btn.disabled = !all;
+                }
 
-    np.addEventListener('input', check);
-    cp.addEventListener('input', check);
+                np.addEventListener('input', check);
+                cp.addEventListener('input', check);
 
-    btn.addEventListener('click', function () {
-        btn.disabled = true;
-        msg.style.color = '#667066';
-        msg.textContent = 'Saving...';
+                btn.addEventListener('click', function() {
+                    btn.disabled = true;
+                    msg.style.color = '#667066';
+                    msg.textContent = 'Saving...';
 
-        var body = 'new_password=' + encodeURIComponent(np.value) +
-                   '&confirm_password=' + encodeURIComponent(cp.value);
+                    var body = 'new_password=' + encodeURIComponent(np.value) +
+                        '&confirm_password=' + encodeURIComponent(cp.value);
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'changePassword.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState !== 4) { return; }
-            var r = null;
-            try { r = JSON.parse(xhr.responseText); } catch (e) {}
-            if (r && r.ok) {
-                msg.style.color = '#0b6d2a';
-                msg.textContent = r.message + ' Redirecting...';
-                setTimeout(function () { window.location.href = redirectTo; }, 900);
-            } else {
-                msg.style.color = '#b3261e';
-                msg.textContent = (r && r.message) ? r.message : 'Something went wrong. Try again.';
-                check();
-            }
-        };
-        xhr.send(body);
-    });
-})();
-</script>
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', 'changePassword.php', true);
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState !== 4) {
+                            return;
+                        }
+                        var r = null;
+                        try {
+                            r = JSON.parse(xhr.responseText);
+                        } catch (e) {}
+                        if (r && r.ok) {
+                            msg.style.color = '#0b6d2a';
+                            msg.textContent = r.message + ' Redirecting...';
+                            setTimeout(function() {
+                                window.location.href = redirectTo;
+                            }, 900);
+                        } else {
+                            msg.style.color = '#b3261e';
+                            msg.textContent = (r && r.message) ? r.message : 'Something went wrong. Try again.';
+                            check();
+                        }
+                    };
+                    xhr.send(body);
+                });
+            })();
+        </script>
     <?php } ?>
 
 </body>
