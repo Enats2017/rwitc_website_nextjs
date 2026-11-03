@@ -26,7 +26,13 @@ export async function getRaceMedia() {
 }
 
 export async function getRaceDayStatus() {
-    const fallback = { raceDay: false, today: "", mediaTipsUrl: "", updatesUrl: "" };
+    const fallback = {
+        raceDay: false,
+        today: "",
+        mediaTipsUrl: "",
+        updatesUrl: "",
+        notices: [],
+    };
     try {
         const res = await fetch(
             `${API_URL}/race_day_status_get.php`,
