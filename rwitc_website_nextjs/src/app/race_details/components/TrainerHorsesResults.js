@@ -48,11 +48,9 @@ export default function TrainerHorsesResults() {
     }, [trainerName]);
 
     function formatOwnership(horse) {
-        const decodeHtml = (value) => { const textarea = document.createElement("textarea"); textarea.innerHTML = value || ""; return textarea.value; };
-        return [horse.OWNERSHIP, horse.OWNERSHIP1, horse.OWNERSHIP2, horse.OWNERSHIP3]
-            .map((part) => decodeHtml(part).trim())
-            .filter(Boolean)
-            .join(" ");
+        const textarea = document.createElement("textarea");
+        textarea.innerHTML = horse.RACE_CARD_NAME || "";
+        return textarea.value.trim();
     }
 
     return (

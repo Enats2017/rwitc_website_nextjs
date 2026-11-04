@@ -117,7 +117,7 @@ try {
 
     $horsesSql = "
         SELECT h.HORSESEQ, h.HORSENM, h.AGE, h.SEX, h.COLOR, h.SIRE, h.DAM,
-               h.OWNERSHIP, h.OWNERSHIP1, h.OWNERSHIP2, h.OWNERSHIP3,
+               h.RACE_CARD_NAME,
                h.DAMNAT, h.RATING
         FROM horse_erp h
         INNER JOIN erp_trainers t ON t.TRAINER = h.TRAINER
@@ -148,7 +148,9 @@ try {
         if ($row["RATING"] == 0 || $row["RATING"] == "") {
             $row["RATING"] = "NR";
         }
-
+        if ($row["RACE_CARD_NAME"] === null) {
+            $row["RACE_CARD_NAME"] = "";
+        }
         $horses[] = $row;
     }
 

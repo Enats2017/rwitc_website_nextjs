@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FaChevronLeft, FaChevronRight, FaCalendarAlt } from "react-icons/fa";
+import {
+    FaChevronLeft,
+    FaChevronRight,
+    FaCalendarAlt,
+    FaHorseHead,
+} from "react-icons/fa";
 import { API_URL } from "../../../services/api";
 import { formatArchiveHtml, handleArchiveIframeLoad } from "../../../utils/archiveHtmlHelper";
 import "./MockRaceResult.css";
@@ -14,12 +19,6 @@ const COLOR_PALETTE = [
     "#7c3aed", "#0891b2", "#dc2626", "#65a30d",
 ];
 
-/*
- * Styles injected into the single Mock Race Result document view.
- * Rendered inside a sandboxed iframe (srcDoc) so these styles stay
- * isolated and can never clash with the app's own global CSS —
- * exactly like Handicaps' ARCHIVE_STYLES block.
- */
 const MOCK_RESULT_DOCUMENT_STYLES = `
 <style>
     html,
@@ -89,6 +88,12 @@ const MOCK_RESULT_DOCUMENT_STYLES = `
     }
 
     .download {
+        display: none !important;
+    }
+
+    /* The page already has the "Mock Race Result" heading, so hide only the
+       duplicate "Race Result" title inside the HTML (the "Mock Race N" line stays) */
+    .pageHeading h3.clearfix {
         display: none !important;
     }
 
@@ -191,16 +196,6 @@ const MOCK_RESULT_DOCUMENT_STYLES = `
 </style>
 `;
 
-/*
- * Builds the URL used to actually fetch one Mock Race Result's HTML.
- *
- *  - DB/S3 sourced events: rebuild the fetch URL from our own,
- *    already-correct API_URL constant + id, instead of trusting the
- *    absolute URL the PHP API generated (which can end up as
- *    http:// on some proxy setups and get blocked as Mixed Content).
- *  - Local-file sourced events: use the URL the API gave us, but
- *    force it to https:// as a safety net.
- */
 function buildMockDetailFetchUrl({ id, src }) {
     if (id) {
         return `${API_URL}/mock_race_result_calendar_api.php?open=1&id=${encodeURIComponent(
@@ -221,10 +216,58 @@ function buildMockDetailFetchUrl({ id, src }) {
     return "";
 }
 
+function toHttps(url) {
+    if (!url || typeof url !== "string") {
+        return "";
+    }
+
+    return url.trim().replace(/^http:\/\//i, "https://");
+}
+
 /*
- * Builds the internal route for a calendar event, mirroring how
- * Archives.js sends handicaps/declarations/etc. into /race_details.
+ * Mock_Race_Result_1_2026-11-04.html  ->  Mock_Race_Result_2026-11-04.htm
  */
+function deriveHtmUrl(htmlUrl) {
+    if (!htmlUrl || typeof htmlUrl !== "string") {
+        return "";
+    }
+
+    const match = htmlUrl
+        .trim()
+        .match(
+            /^(.*\/Mock_Race_Result)_\d+_(\d{4}-\d{2}-\d{2})\.html?(\?.*)?$/i
+        );
+
+    if (!match) {
+        return "";
+    }
+
+    return toHttps(`${match[1]}_${match[2]}.htm`);
+}
+
+/*
+ * The ERP puts <a class='download' href='...htm'> inside the generated HTML.
+ */
+function extractHtmUrlFromHtml(rawHtml) {
+    if (
+        !rawHtml ||
+        typeof rawHtml !== "string" ||
+        typeof DOMParser === "undefined"
+    ) {
+        return "";
+    }
+
+    try {
+        const doc = new DOMParser().parseFromString(rawHtml, "text/html");
+        const link = doc.querySelector("a.download");
+        const href = link ? link.getAttribute("href") : "";
+
+        return toHttps(href || "");
+    } catch (error) {
+        return "";
+    }
+}
+
 function buildMockHref(event) {
     const params = new URLSearchParams();
 
@@ -241,6 +284,18 @@ function buildMockHref(event) {
         params.set("id", String(event.id));
     } else if (event?.url) {
         params.set("src", encodeURIComponent(event.url));
+    }
+
+    // HTM download link: API field first, otherwise derive it from the HTML url
+    const htmUrl = toHttps(
+        event?.htmFileUrl ||
+            event?.htm_file_url ||
+            event?.htmUrl ||
+            deriveHtmUrl(event?.url || event?.fileUrl || "")
+    );
+
+    if (htmUrl) {
+        params.set("htm", htmUrl);
     }
 
     return `/race_details?${params.toString()}`;
@@ -283,9 +338,7 @@ function buildMonthMatrix(year, month) {
     return weeks;
 }
 
-/**
- * Fetch Mock Race Result calendar events directly from the API.
- */
+
 async function fetchMockRaceResults(year, month) {
     const monthNumber = month + 1;
 
@@ -314,17 +367,57 @@ async function fetchMockRaceResults(year, month) {
     return Array.isArray(json.data) ? json.data : [];
 }
 
-/*
- * Single Mock Race Result document view.
- * Fetches one race's HTML and renders it inside a sandboxed iframe —
- * same technique, same look as Handicaps' archive HTML view.
- */
-function MockRaceResultDetail({ id, src, title }) {
+function MockRaceResultDetail({ id, src, htm }) {
     const router = useRouter();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [html, setHtml] = useState("");
+
+    // HTM download url: URL param -> link inside the HTML -> derived from src
+    const htmUrl = useMemo(() => {
+        const fromParam = toHttps(htm || "");
+
+        if (fromParam) {
+            return fromParam;
+        }
+
+        const fromHtml = extractHtmUrlFromHtml(html);
+
+        if (fromHtml) {
+            return fromHtml;
+        }
+
+        if (src) {
+            try {
+                return deriveHtmUrl(decodeURIComponent(src));
+            } catch (err) {
+                return "";
+            }
+        }
+
+        return "";
+    }, [htm, html, src]);
+
+    function handleDownload() {
+        if (!htmUrl) {
+            alert("No download file found for this result.");
+            return;
+        }
+
+        const dateMatch = htmUrl.match(/Mock_Race_Result_(\d{4}-\d{2}-\d{2})\.html?/i);
+
+        if (!dateMatch) {
+            alert("No download file found for this result.");
+            return;
+        }
+
+        const downloadUrl = `${API_URL}/mock_race_result_download_api.php?date=${encodeURIComponent(
+            dateMatch[1]
+        )}`;
+
+        window.open(downloadUrl, "_blank", "noopener,noreferrer");
+    }
 
     useEffect(() => {
         let cancelled = false;
@@ -383,21 +476,40 @@ function MockRaceResultDetail({ id, src, title }) {
     }, [id, src]);
 
     return (
-        <section className="raceResultSection docPage">
-            <div className="docBadgeWrap">
-                <span className="docBadge">
-                    {title || "Mock Race Result"}
-                </span>
+        <section className="raceResultSection docPage mockDetailPage">
+            {/* PAGE HEADING (same style as Handicaps) */}
+            <div className="mockTitleWrap">
+                <h1 className="mockHeading">Mock Race Result</h1>
+
+                <div className="mockDivider">
+                    <span className="mockDividerLine mockDividerLineLeft" />
+                    <FaHorseHead
+                        className="mockDividerIcon"
+                        aria-hidden="true"
+                    />
+                    <span className="mockDividerLine mockDividerLineRight" />
+                </div>
             </div>
 
             <div className="docContainer">
-                <button
-                    type="button"
-                    className="docBackBtn"
-                    onClick={() => router.back()}
-                >
-                    ← Back to calendar
-                </button>
+                <div className="mockDocActions">
+                    <button
+                        type="button"
+                        className="mockActionBtn mockBackBtn"
+                        onClick={() => router.back()}
+                    >
+                        <FaChevronLeft aria-hidden="true" />
+                        <span>Back to calendar</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        className="mockActionBtn mockDownloadBtn"
+                        onClick={handleDownload}
+                    >
+                        Download Mock Race Result
+                    </button>
+                </div>
 
                 {loading && (
                     <div className="docStateBox">
@@ -422,7 +534,7 @@ function MockRaceResultDetail({ id, src, title }) {
                     <iframe
                         className="docArchiveHtml"
                         srcDoc={formatArchiveHtml(MOCK_RESULT_DOCUMENT_STYLES, html)}
-                        title={title || "Mock Race Result"}
+                        title="Mock Race Result"
                         sandbox="allow-same-origin allow-scripts allow-top-navigation allow-forms"
                         onLoad={handleArchiveIframeLoad}
                     />
@@ -432,27 +544,9 @@ function MockRaceResultDetail({ id, src, title }) {
     );
 }
 
-export default function MockRaceResult() {
+function MockRaceCalendar() {
     const router = useRouter();
-    const searchParams = useSearchParams();
 
-    const detailId = searchParams.get("id");
-    const detailSrc = searchParams.get("src");
-    const detailTitle = searchParams.get("title");
-
-    // Came here via a calendar click → show the single document,
-    // same as Handicaps rendering one date's HTML.
-    if (detailId || detailSrc) {
-        return (
-            <MockRaceResultDetail
-                id={detailId}
-                src={detailSrc}
-                title={detailTitle}
-            />
-        );
-    }
-
-    // Otherwise: the calendar itself.
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -804,4 +898,24 @@ export default function MockRaceResult() {
             </div>
         </section>
     );
+}
+
+export default function MockRaceResult() {
+    const searchParams = useSearchParams();
+
+    const detailId = searchParams.get("id");
+    const detailSrc = searchParams.get("src");
+    const detailHtm = searchParams.get("htm");
+
+    if (detailId || detailSrc) {
+        return (
+            <MockRaceResultDetail
+                id={detailId}
+                src={detailSrc}
+                htm={detailHtm}
+            />
+        );
+    }
+
+    return <MockRaceCalendar />;
 }

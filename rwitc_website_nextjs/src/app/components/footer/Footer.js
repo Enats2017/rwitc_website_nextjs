@@ -125,7 +125,7 @@ export default function Footer() {
             </div>
 
             <div className="footerBottom">
-                <span>© 2026 ROYAL WESTERN INDIA TURF CLUB PRIVATE LIMITED. ALL RIGHTS RESERVED.</span>
+                <span>© 2026 ROYAL WESTERN INDIA TURF CLUB LIMITED. ALL RIGHTS RESERVED.</span>
                 <span className="footerLinks">
                     <a href="#">Privacy Policy</a>
                     <span className="footerDivider">|</span>
