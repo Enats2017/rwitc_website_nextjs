@@ -106,7 +106,7 @@ return [
 
     'record_timings' => [
         's3_folder'    => 'uploads/club/',
-        'display_name' => null,   // original uploaded file name (with extension) is used
+        'display_name' => null,
     ],
 
     'standard_timings' => [
@@ -117,5 +117,15 @@ return [
     'affiliated_clubs' => [
         's3_folder'    => 'uploads/club/',
         'display_name' => 'Affiliated_Clubs_with_RWITC.pdf',
+    ],
+
+        'term_condition' => [
+        's3_folder'    => 'uploads/footer/',
+        'display_name' => null,
+    ],
+
+    'privacy_policy' => [
+        's3_folder'    => 'uploads/footer/',
+        'display_name' => null,
     ],
 ];

@@ -1,5 +1,6 @@
 "use client";
 import { UPLOAD_URL } from "../../../services/api";
+import { getFooterDocuments, getAppLinks } from "../../../services/Footerservice";
 import { useEffect, useState } from "react";
 import "./Footer.css";
 import { FaFacebookF, FaInstagram, FaYoutube, FaXTwitter, FaApple, FaLocationDot } from "react-icons/fa6";
@@ -58,6 +59,9 @@ async function fetchCityWeather(city) {
 export default function Footer() {
     // Weather data stored per city name, e.g. { PUNE: {...}, MUMBAI: {...} }
     const [weatherData, setWeatherData] = useState({});
+    // Document urls uploaded from the admin panel (empty string until loaded / when not uploaded)
+    const [footerDocs, setFooterDocs] = useState({ term_condition: "", privacy_policy: "" });
+    const [appLinks, setAppLinks] = useState({ android: "", ios: "" });
 
     useEffect(() => {
         let cancelled = false;
@@ -83,6 +87,27 @@ export default function Footer() {
         };
     }, []);
 
+    // Load the Privacy Policy and Terms & Conditions document links
+    useEffect(() => {
+        let active = true;
+        getFooterDocuments().then((docs) => {
+            if (active) setFooterDocs(docs);
+        });
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    // Load the Android / iOS app download links
+    useEffect(() => {
+        let active = true;
+        getAppLinks().then((links) => {
+            if (active) setAppLinks(links);
+        });
+        return () => {
+            active = false;
+        };
+    }, []);
     return (
         <footer className="footer">
             <div className="footerTop">
@@ -143,27 +168,35 @@ export default function Footer() {
                         })}
                     </div>
 
-                    {/* RIGHT - APP (Android + iOS) */}
+                    {/* RIGHT - APP (a button is shown only when its link is saved in the admin panel) */}
                     <div className="footerApp">
-                        <p className="getAppText">Get our app</p>
-                        <div className="appIconsRow">
-                            <a href="https://play.google.com/store/apps/details?id=com.nabil_shah.test"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="appCircle"
-                                aria-label="Get it on Google Play"
-                            >
-                                <img src={`${UPLOAD_URL}/android.png`} alt="Get Our App - Android" />
-                            </a>
-                            <a href="#"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="appCircle"
-                                aria-label="Download on the App Store"
-                            >
-                                <FaApple className="appleIcon" />
-                            </a>
-                        </div>
+                        {(appLinks.android || appLinks.ios) && (
+                            <>
+                                <p className="getAppText">Get our app</p>
+                                <div className="appIconsRow">
+                                    {appLinks.android && (
+                                        <a href={appLinks.android}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="appCircle"
+                                            aria-label="Get it on Google Play"
+                                        >
+                                            <img src={`${UPLOAD_URL}/android.png`} alt="Get Our App - Android" />
+                                        </a>
+                                    )}
+                                    {appLinks.ios && (
+                                        <a href={appLinks.ios}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="appCircle"
+                                            aria-label="Download on the App Store"
+                                        >
+                                            <FaApple className="appleIcon" />
+                                        </a>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -171,9 +204,21 @@ export default function Footer() {
             <div className="footerBottom">
                 <span>© 2026 ROYAL WESTERN INDIA TURF CLUB LIMITED. ALL RIGHTS RESERVED.</span>
                 <span className="footerLinks">
-                    <a href="#">Privacy Policy</a>
+                    <a
+                        href={footerDocs.privacy_policy || "#"}
+                        target={footerDocs.privacy_policy ? "_blank" : undefined}
+                        rel={footerDocs.privacy_policy ? "noopener noreferrer" : undefined}
+                    >
+                        Privacy Policy
+                    </a>
                     <span className="footerDivider">|</span>
-                    <a href="#">Terms &amp; Conditions</a>
+                    <a
+                        href={footerDocs.term_condition || "#"}
+                        target={footerDocs.term_condition ? "_blank" : undefined}
+                        rel={footerDocs.term_condition ? "noopener noreferrer" : undefined}
+                    >
+                        Terms &amp; Conditions
+                    </a>
                 </span>
             </div>
         </footer>

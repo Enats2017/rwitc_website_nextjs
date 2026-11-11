@@ -51,6 +51,7 @@ function pdfContentType($fileName)
         'html' => 'text/html; charset=UTF-8',
         'txt'  => 'text/plain; charset=UTF-8',
         'csv'  => 'text/csv; charset=UTF-8',
+        'rtf'  => 'application/rtf',
         'doc'  => 'application/msword',
         'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'xls'  => 'application/vnd.ms-excel',

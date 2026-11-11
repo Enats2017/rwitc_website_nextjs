@@ -115,15 +115,13 @@ try {
     // TRAINERNM, using a bound parameter instead of string
     // interpolation. Same rows, same order.
 
-    $horsesSql = "
-        SELECT h.HORSESEQ, h.HORSENM, h.AGE, h.SEX, h.COLOR, h.SIRE, h.DAM,
-               h.RACE_CARD_NAME,
-               h.DAMNAT, h.RATING
-        FROM horse_erp h
-        INNER JOIN erp_trainers t ON t.TRAINER = h.TRAINER
-        WHERE t.TRAINERNM = ?
-        ORDER BY h.HORSENM
-    ";
+        $horsesSql = "
+            SELECT h.HORSESEQ, h.HORSENM, h.AGE, h.SEX, h.COLOR, h.SIRE, h.DAM, h.OWNERSHIP, h.RACE_CARD_NAME, h.DAMNAT, h.RATING
+            FROM horse_erp h
+            INNER JOIN erp_trainers t ON t.TRAINER = h.TRAINER
+            WHERE t.TRAINERNM = ?
+            ORDER BY h.HORSENM
+        ";
 
     $stmt = $conn->prepare($horsesSql);
 
@@ -150,6 +148,9 @@ try {
         }
         if ($row["RACE_CARD_NAME"] === null) {
             $row["RACE_CARD_NAME"] = "";
+        }
+        if ($row["OWNERSHIP"] === null) {
+            $row["OWNERSHIP"] = "";
         }
         $horses[] = $row;
     }

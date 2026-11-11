@@ -47,10 +47,36 @@ export default function TrainerHorsesResults() {
 
     }, [trainerName]);
 
-    function formatOwnership(horse) {
+    function decodeHtml(text) {
         const textarea = document.createElement("textarea");
-        textarea.innerHTML = horse.RACE_CARD_NAME || "";
-        return textarea.value.trim();
+        textarea.innerHTML = text;
+        return textarea.value;
+    }
+
+    // Decode HTML entities repeatedly until the text stops changing
+    function decodeHtmlFully(text) {
+        let prev = text;
+
+        for (let i = 0; i < 5; i++) {
+            const next = decodeHtml(prev);
+            if (next === prev) break;
+            prev = next;
+        }
+
+        return prev;
+    }
+
+    function formatOwnership(horse) {
+        const text = decodeHtmlFully(horse.OWNERSHIP || "");
+
+        return text
+            // "Ltd &'s" -> "Ltd's" (remove stray ampersand and spaces before the apostrophe)
+            .replace(/\s*&\s*(['\u2018\u2019\u02BC\u2032`\u00B4])\s*s\b/gi, "$1s")
+            // "Ltd 's" -> "Ltd's" (remove spaces before the apostrophe)
+            .replace(/[\s\u200B\uFEFF]+(['\u2018\u2019\u02BC\u2032`\u00B4])s\b/gi, "$1s")
+            // Collapse multiple spaces
+            .replace(/\s{2,}/g, " ")
+            .trim();
     }
 
     return (
@@ -86,29 +112,33 @@ export default function TrainerHorsesResults() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {horses.map((horse, i) => (
-                                        <tr key={horse.HORSESEQ}>
-                                            <td>{i + 1}</td>
-                                            <td className="thAlignLeft">
+                                    {horses.map((horse, i) => {
 
-                                                <Link href={`/race_details?type=performanceProfile&as_values=${encodeURIComponent(horse.HORSENM)}&horseseq=${horse.HORSESEQ}`}
-                                                >
-                                                    {horse.HORSENM}
-                                                </Link>
-                                            </td>
-                                            <td>{horse.RATING}</td>
-                                            <td>{horse.COLOR} {horse.SEX} {horse.AGE}</td>
-                                            <td className="thAlignLeft">
-                                                <p className="thSire">{horse.SIRE}-</p>
-                                                <Link
-                                                    href={`/race_details/?type=foalRecords&mareName=${encodeURIComponent(horse.DAM)}&damnat=${horse.DAMNAT || ""}`}
-                                                >
-                                                    {horse.DAM} {horse.DAMNAT ? `[${horse.DAMNAT}]` : ""}
-                                                </Link>
-                                            </td>
-                                            <td className="thAlignLeft">{formatOwnership(horse)}</td>
-                                        </tr>
-                                    ))}
+                                        // TEMP DEBUG: check raw ownership value in browser console (F12). Remove after the issue is fixed.
+                                        console.log(JSON.stringify(horse.OWNERSHIP));
+
+                                        return (
+                                            <tr key={horse.HORSESEQ}>
+                                                <td>{i + 1}</td>
+                                                <td className="thAlignLeft">
+                                                    <Link href={`/race_details?type=performanceProfile&as_values=${encodeURIComponent(horse.HORSENM)}&horseseq=${horse.HORSESEQ}`}>
+                                                        {horse.HORSENM}
+                                                    </Link>
+                                                </td>
+                                                <td>{horse.RATING}</td>
+                                                <td>{horse.COLOR} {horse.SEX} {horse.AGE}</td>
+                                                <td className="thAlignLeft">
+                                                    <p className="thSire">{horse.SIRE}-</p>
+                                                    <Link
+                                                        href={`/race_details/?type=foalRecords&mareName=${encodeURIComponent(horse.DAM)}&damnat=${horse.DAMNAT || ""}`}
+                                                    >
+                                                        {horse.DAM} {horse.DAMNAT ? `[${horse.DAMNAT}]` : ""}
+                                                    </Link>
+                                                </td>
+                                                <td className="thAlignLeft">{formatOwnership(horse)}</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
