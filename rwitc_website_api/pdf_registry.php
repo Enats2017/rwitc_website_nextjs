@@ -119,7 +119,7 @@ return [
         'display_name' => 'Affiliated_Clubs_with_RWITC.pdf',
     ],
 
-        'term_condition' => [
+    'term_condition' => [
         's3_folder'    => 'uploads/footer/',
         'display_name' => null,
     ],

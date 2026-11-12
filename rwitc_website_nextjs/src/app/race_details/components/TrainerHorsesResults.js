@@ -67,16 +67,23 @@ export default function TrainerHorsesResults() {
     }
 
     function formatOwnership(horse) {
-        const text = decodeHtmlFully(horse.OWNERSHIP || "");
-
-        return text
-            // "Ltd &'s" -> "Ltd's" (remove stray ampersand and spaces before the apostrophe)
+        let text = decodeHtmlFully(horse.OWNERSHIP || "")
             .replace(/\s*&\s*(['\u2018\u2019\u02BC\u2032`\u00B4])\s*s\b/gi, "$1s")
-            // "Ltd 's" -> "Ltd's" (remove spaces before the apostrophe)
             .replace(/[\s\u200B\uFEFF]+(['\u2018\u2019\u02BC\u2032`\u00B4])s\b/gi, "$1s")
-            // Collapse multiple spaces
             .replace(/\s{2,}/g, " ")
             .trim();
+        const commaCount = (text.match(/,/g) || []).length;
+        if (commaCount >= 2) {
+            const lastComma = text.lastIndexOf(",");
+            const head = text.slice(0, lastComma).trim();
+            const tail = text.slice(lastComma + 1).trim();
+
+            if (tail && !tail.startsWith("&")) {
+                text = `${head} & ${tail}`;
+            }
+        }
+
+        return text;
     }
 
     return (

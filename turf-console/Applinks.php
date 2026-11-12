@@ -13,7 +13,7 @@ $pageFile   = 'Applinks.php';
 $maxUrlLen  = 500;
 $sessionKey = 'Applinks';
 
-// Platforms managed from this page (key is stored in club_menu_pdf.type, the url in club_menu_pdf.file_url)
+// Platforms managed from this page (key is stored in app_links.type, the url in app_links.url)
 $platforms = array(
     'app_android_url' => array('title' => 'Android App (Google Play)', 'icon' => 'fab fa-android', 'placeholder' => 'https://play.google.com/store/apps/details?id=...'),
     'app_ios_url'     => array('title' => 'iOS App (Apple App Store)', 'icon' => 'fab fa-apple',   'placeholder' => 'https://apps.apple.com/in/app/...')
@@ -90,27 +90,27 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         foreach ($platforms as $key => $info) {
             $value = $newValues[$key];
-            $existing = $db->getMultiDimensionalArray("SELECT id FROM club_menu_pdf WHERE `type` = '" . $key . "' ORDER BY id ASC");
+            $existing = $db->getMultiDimensionalArray("SELECT id FROM app_links WHERE `type` = '" . $key . "' ORDER BY id ASC");
 
             if ($value === '') {
                 // Empty field: remove the row so the button is hidden on the website
                 if (!empty($existing)) {
-                    $db->query("DELETE FROM club_menu_pdf WHERE `type` = '" . $key . "'");
+                    $db->query("DELETE FROM app_links WHERE `type` = '" . $key . "'");
                 }
                 continue;
             }
 
             if (!empty($existing)) {
                 $keepId = (int) $existing[0]['id'];
-                $db->update("UPDATE club_menu_pdf SET file_url = '" . $db->escape($value) . "', `date` = CURDATE() WHERE id = " . $keepId . " AND `type` = '" . $key . "'");
+                $db->update("UPDATE app_links SET url = '" . $db->escape($value) . "', `updated` = NOW() WHERE id = " . $keepId . " AND `type` = '" . $key . "'");
                 // Remove duplicate rows of this type, only one row is kept
                 foreach ($existing as $i => $old) {
                     if ($i > 0) {
-                        $db->query("DELETE FROM club_menu_pdf WHERE id = " . (int) $old['id'] . " AND `type` = '" . $key . "'");
+                        $db->query("DELETE FROM app_links WHERE id = " . (int) $old['id'] . " AND `type` = '" . $key . "'");
                     }
                 }
             } else {
-                $db->insert("INSERT INTO club_menu_pdf (`type`, file_url, `date`) VALUES ('" . $key . "', '" . $db->escape($value) . "', CURDATE())");
+                $db->insert("INSERT INTO app_links (`type`, url, `created`, `updated`) VALUES ('" . $key . "', '" . $db->escape($value) . "', NOW(), NOW())");
             }
         }
         alSetFlash('App download links were saved successfully.', 'success');
@@ -128,7 +128,7 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
 $rows = array();
 if (empty($secmsg)) {
     foreach ($platforms as $key => $info) {
-        $rows[$key] = $db->getSingleRowAssoc("SELECT id, file_url, `date` FROM club_menu_pdf WHERE `type` = '" . $key . "' ORDER BY id ASC LIMIT 1");
+        $rows[$key] = $db->getSingleRowAssoc("SELECT id, url, `created`, `updated` FROM app_links WHERE `type` = '" . $key . "' ORDER BY id ASC LIMIT 1");
     }
 }
 
@@ -167,7 +167,7 @@ $design->writeContentPageStyles();
                 if ($oldValues !== null && isset($oldValues[$key])) {
                     $current = $oldValues[$key];
                 } else {
-                    $current = !empty($rows[$key]) ? $rows[$key]['file_url'] : '';
+                    $current = !empty($rows[$key]) ? $rows[$key]['url'] : '';
                 }
             ?>
                 <div class="ar-field">
@@ -197,14 +197,14 @@ $design->writeContentPageStyles();
                 ?>
                     <tr>
                         <td><div class="ar-plat"><i class="<?php echo htmlspecialchars($info['icon']); ?>"></i> <?php echo htmlspecialchars($info['title']); ?></div></td>
-                        <?php if (!$r || $r['file_url'] === '') { ?>
+                        <?php if (!$r || $r['url'] === '') { ?>
                             <td><span class="ar-badge none">Hidden</span></td>
                             <td colspan="3"><span style="color:#7a8c84">No link saved.</span></td>
                         <?php } else { ?>
                             <td><span class="ar-badge">Shown</span></td>
-                            <td class="ar-url"><?php echo htmlspecialchars($r['file_url']); ?></td>
-                            <td><?php echo !empty($r['date']) ? htmlspecialchars(date('d M Y', strtotime($r['date']))) : '&mdash;'; ?></td>
-                            <td style="text-align:center"><a class="ar-icon-btn" title="Open link" target="_blank" rel="noopener noreferrer" href="<?php echo htmlspecialchars($r['file_url']); ?>"><i class="fas fa-up-right-from-square"></i></a></td>
+                            <td class="ar-url"><?php echo htmlspecialchars($r['url']); ?></td>
+                            <td><?php echo !empty($r['updated']) ? htmlspecialchars(date('d M Y', strtotime($r['updated']))) : '&mdash;'; ?></td>
+                            <td style="text-align:center"><a class="ar-icon-btn" title="Open link" target="_blank" rel="noopener noreferrer" href="<?php echo htmlspecialchars($r['url']); ?>"><i class="fas fa-up-right-from-square"></i></a></td>
                         <?php } ?>
                     </tr>
                 <?php } ?>

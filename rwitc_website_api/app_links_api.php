@@ -53,7 +53,7 @@ if ($security->serveCache("app_links_latest")) {
 
 try {
 
-    // Response key => "type" value saved by turf-console/Applinks.php in club_menu_pdf
+    // Response key => "type" value saved by turf-console/Applinks.php in the app_links table
     $types = [
         "android" => "app_android_url",
         "ios"     => "app_ios_url"
@@ -65,7 +65,7 @@ try {
 
         $typeSql = $conn->real_escape_string($type);
 
-        $result = $conn->query("SELECT file_url FROM club_menu_pdf WHERE `type` = '" . $typeSql . "' ORDER BY `date` DESC, id DESC LIMIT 1");
+        $result = $conn->query("SELECT url FROM app_links WHERE `type` = '" . $typeSql . "' ORDER BY `updated` DESC, id DESC LIMIT 1");
 
         if ($result === false) {
             throw new Exception($conn->error);
@@ -76,7 +76,7 @@ try {
             continue;
         }
 
-        $url    = trim((string)$row['file_url']);
+        $url    = trim((string)$row['url']);
         $scheme = strtolower((string)parse_url($url, PHP_URL_SCHEME));
 
         // Only http / https links are sent to the website

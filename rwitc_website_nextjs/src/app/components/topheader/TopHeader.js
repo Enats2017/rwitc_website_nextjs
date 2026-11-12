@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import "./TopHeader.css";
 import { getPdfLinks } from "../../../services/pdfService";
+import { getFeatureLinks } from "../../../services/FeatureLinksService";
 import { API_URL, UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL, STATIC_URL } from "../../../services/api";
 import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay, FaHome, FaUniversity, FaHorseHead, FaTags, FaUsers, FaStar, FaHandshake, FaCloudDownloadAlt, FaImages, } from "react-icons/fa";
 
@@ -99,6 +100,15 @@ export default function TopHeader() {
     const [hoverNav, setHoverNav] = useState(null);
     const [pdfLinks, setPdfLinks] = useState({});
     const getPdfHref = (type, fallbackHref) => pdfLinks[type] || fallbackHref;
+    // Live Stream url uploaded from the admin panel (empty string until loaded / when not uploaded)
+    const [liveStreamUrl, setLiveStreamUrl] = useState("");
+    useEffect(() => {
+        let active = true;
+        getFeatureLinks().then((links) => {
+            if (active) { setLiveStreamUrl(links.live_stream || ""); }
+        });
+        return () => { active = false; };
+    }, []);
     // Returns menu items for a PDF type that has many entries (example: AGM notices).
     // Uses the database entries when available, otherwise the old static items.
     const getPdfMenuItems = (type, fallbackItems) => {
@@ -336,11 +346,13 @@ export default function TopHeader() {
                         <span className="calendarButtonText">Gallery</span>
                     </Link> */}
 
-                    <a href="https://play.rwitc.com/" target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
-                        <FaPlay className="headerLiveBtnIcon" />
-                        <span className="headerLiveBtnText">Live Stream</span>
-                        <span className="headerLiveBtnTextShort">Live</span>
-                    </a>
+                    {liveStreamUrl && (
+                        <a href={liveStreamUrl} target="_blank" rel="noopener noreferrer" className="headerLiveBtn" aria-label="Watch Live Stream">
+                            <FaPlay className="headerLiveBtnIcon" />
+                            <span className="headerLiveBtnText">Live Stream</span>
+                            <span className="headerLiveBtnTextShort">Live</span>
+                        </a>
+                    )}
                 </div>
 
             </div>

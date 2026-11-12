@@ -45,3 +45,19 @@ export async function getRaceDayStatus() {
         return fallback;
     }
 }
+
+export async function getTickerText() {
+    try {
+        const res = await fetch(`${API_URL}/home_ticker_text_api.php`, {
+            method: "GET",
+            cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const text = json && json.data && json.data.text;
+        return typeof text === "string" ? text : "";
+    } catch (err) {
+        console.warn("getTickerText failed:", err.message);
+        return "";
+    }
+}

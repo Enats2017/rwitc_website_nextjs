@@ -8,7 +8,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import { getMedia, getRaceMedia } from "../../../services/mediaService";
+import { getMedia, getRaceMedia, getTickerText } from "../../../services/mediaService";
 
 // Converts any date/datetime value coming from the API ("2026-07-20",
 // "2026-07-20 00:00:00", or an ISO string) into a clean "YYYY-MM-DD"
@@ -49,6 +49,7 @@ export default function MediaSection() {
 
     const [media, setMedia] = useState([]);
     const [raceMedia, setRaceMedia] = useState({ preRace: [], postRace: [], trackWork: [] });
+    const [tickerText, setTickerText] = useState("");
     useEffect(() => {
         async function loadData() {
             const mediaData = await getMedia();
@@ -60,6 +61,14 @@ export default function MediaSection() {
         loadData();
     }, []);
 
+    useEffect(() => {
+        let active = true;
+        getTickerText().then((text) => {
+            if (active) setTickerText(text);
+        });
+        return () => { active = false; };
+    }, []);
+    
     const video = [...media].reverse().find(item => item.type == 2);
     const images = media.filter(item => item.type == 1);
     // video is there or not
@@ -181,13 +190,14 @@ export default function MediaSection() {
                         )
                     }
                 </div>
-                {/* RUNNING TICKER */}
-                <div className="newsTicker">
-                    <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" className="tickerLogo" draggable="false" />
-                    <div className="tickerTrack">
-                        <p> A view of Royal Western India&apos;s Turf Club&apos;s new clubhouse, which aims to embody the perfect fusion of heritage, classic charm and contemporary luxury. </p>
+                {tickerText && (
+                    <div className="newsTicker">
+                        <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" className="tickerLogo" draggable="false" />
+                        <div className="tickerTrack">
+                            <p>{tickerText}</p>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* INFO BOXES */}
                 <div className="infoBoxes">
