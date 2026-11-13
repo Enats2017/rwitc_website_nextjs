@@ -76,7 +76,12 @@ if (empty($secmsg)) {
         if (isset($cities[$saved])) {
             $currentCity = $saved;
         }
-        $lastUpdated = !empty($row['updated']) ? date('d M Y, h:i A', strtotime($row['updated'])) : '';
+        $lastUpdated = '';
+        if (!empty($row['updated'])) {
+            $dt = new DateTime($row['updated'], new DateTimeZone('UTC'));
+            $dt->setTimezone(new DateTimeZone('Asia/Kolkata'));
+            $lastUpdated = $dt->format('d M Y, h:i A');
+        }
     }
 }
 
