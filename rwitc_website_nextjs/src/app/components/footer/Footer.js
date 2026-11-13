@@ -1,6 +1,6 @@
 "use client";
 import { UPLOAD_URL } from "../../../services/api";
-import { getFooterDocuments, getAppLinks } from "../../../services/Footerservice";
+import { getFooterDocuments, getAppLinks, getWeatherCity } from "../../../services/Footerservice";
 import { useEffect, useState } from "react";
 import "./Footer.css";
 import { FaFacebookF, FaInstagram, FaYoutube, FaXTwitter, FaApple, FaLocationDot } from "react-icons/fa6";
@@ -57,37 +57,41 @@ async function fetchCityWeather(city) {
 }
 
 export default function Footer() {
-    // Weather data stored per city name, e.g. { PUNE: {...}, MUMBAI: {...} }
     const [weatherData, setWeatherData] = useState({});
-    // Document urls uploaded from the admin panel (empty string until loaded / when not uploaded)
     const [footerDocs, setFooterDocs] = useState({ term_condition: "", privacy_policy: "" });
     const [appLinks, setAppLinks] = useState({ android: "", ios: "" });
+    const [weatherCity, setWeatherCity] = useState("");
 
     useEffect(() => {
+        let active = true;
+        getWeatherCity().then((city) => {
+            if (active) setWeatherCity(city);
+        });
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!weatherCity) return;
         let cancelled = false;
 
         async function loadWeather() {
-            const results = await Promise.all(
-                WEATHER_CITIES.map((city) =>
-                    fetchCityWeather(city).catch(() => null)
-                )
-            );
+            const city = WEATHER_CITIES.find((c) => c.name === weatherCity);
+            if (!city) return;
+
+            const result = await fetchCityWeather(city).catch(() => null);
             if (cancelled) return;
 
-            const map = {};
-            results.forEach((r) => {
-                if (r) map[r.name] = r;
-            });
-            setWeatherData(map);
+            setWeatherData(result ? { [result.name]: result } : {});
         }
 
         loadWeather();
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [weatherCity]);
 
-    // Load the Privacy Policy and Terms & Conditions document links
     useEffect(() => {
         let active = true;
         getFooterDocuments().then((docs) => {
@@ -98,7 +102,6 @@ export default function Footer() {
         };
     }, []);
 
-    // Load the Android / iOS app download links
     useEffect(() => {
         let active = true;
         getAppLinks().then((links) => {
@@ -133,9 +136,8 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* MIDDLE - WEATHER (Pune + Mumbai stacked together) */}
                     <div className="weatherInline">
-                        {WEATHER_CITIES.map((city) => {
+                        {WEATHER_CITIES.filter((city) => city.name === weatherCity).map((city) => {
                             const w = weatherData[city.name];
                             return (
                                 <div className="weatherRow" key={city.name}>

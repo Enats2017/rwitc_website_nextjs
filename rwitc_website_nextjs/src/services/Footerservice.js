@@ -32,3 +32,23 @@ export async function getAppLinks() {
         return empty;
     }
 }
+
+export async function getWeatherCity() {
+    const fallback = "PUNE";
+
+    try {
+        const res = await fetch(`${API_URL}/weather_city_api.php`, {
+            method: "GET",
+            cache: "no-store",
+        });
+        if (!res.ok) return fallback;
+
+        const json = await res.json();
+        const city = json && json.data && json.data.city;
+
+        return city === "PUNE" || city === "MUMBAI" ? city : fallback;
+    } catch (error) {
+        console.error("Weather city request failed:", error);
+        return fallback;
+    }
+}

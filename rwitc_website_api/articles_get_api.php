@@ -296,8 +296,8 @@ function isFileAvailable(array $dbFiles, $date, $dbType, $url)
 
 try {
 
-    $runRacesBaseUrl = rtrim(RUN_RACES_BASE_URL, "/") . "/";
-    // $runRacesBaseUrl = "http://localhost/run_races/";
+    // $runRacesBaseUrl = rtrim(RUN_RACES_BASE_URL, "/") . "/";
+    $runRacesBaseUrl = "http://localhost/run_races/";
 
     // ==================================================
     // PRE-RACE

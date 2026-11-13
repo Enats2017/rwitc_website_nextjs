@@ -12,7 +12,7 @@
 // ============================================================
 
 // Set this to false when deploying to the live server
-define("IS_LOCAL", false);
+define("IS_LOCAL", true);
 
 if (IS_LOCAL) {
 

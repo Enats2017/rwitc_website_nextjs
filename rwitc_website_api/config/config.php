@@ -1,14 +1,14 @@
 <?php
 
 $host = "localhost";
-$user = "app_user";
-// $user = "root";
+// $user = "app_user";
+$user = "root";
 
 // LIVE
-$password = 'ho{HslC)jWaky${L';
+// $password = 'ho{HslC)jWaky${L';
 
 // LOCAL
-// $password = "";
+$password = "";
 $database = "rwitc_website";
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
@@ -45,10 +45,10 @@ require_once __DIR__ . "/run_races_config.php";
 
 // ENVIRONMENT FILE
 // LIVE
-$envFile = __DIR__ . "/../../.env.local";
+// $envFile = __DIR__ . "/../../.env.local";
 
 // LOCAL
-// $envFile = __DIR__ . "/../../rwitc_website_nextjs/.env.local";
+$envFile = __DIR__ . "/../../rwitc_website_nextjs/.env.local";
 
 if (!file_exists($envFile)) {
 
