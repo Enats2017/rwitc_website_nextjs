@@ -66,26 +66,58 @@ export default function TrainerHorsesResults() {
         return prev;
     }
 
-    function formatOwnership(horse) {
-        let text = decodeHtmlFully(horse.OWNERSHIP || "")
-            .replace(/\s*&\s*(['\u2018\u2019\u02BC\u2032`\u00B4])\s*s\b/gi, "$1s")
-            .replace(/[\s\u200B\uFEFF]+(['\u2018\u2019\u02BC\u2032`\u00B4])s\b/gi, "$1s")
-            .replace(/\s{2,}/g, " ")
-            .trim();
-        const commaCount = (text.match(/,/g) || []).length;
-        if (commaCount >= 2) {
-            const lastComma = text.lastIndexOf(",");
-            const head = text.slice(0, lastComma).trim();
-            const tail = text.slice(lastComma + 1).trim();
+    // function formatOwnership(horse) {
+    //     let text = decodeHtmlFully(horse.OWNERSHIP || "")
+    //         .replace(/\s*&\s*(['\u2018\u2019\u02BC\u2032`\u00B4])\s*s\b/gi, "$1s")
+    //         .replace(/[\s\u200B\uFEFF]+(['\u2018\u2019\u02BC\u2032`\u00B4])s\b/gi, "$1s")
+    //         .replace(/\s{2,}/g, " ")
+    //         .trim();
+    //     const commaCount = (text.match(/,/g) || []).length;
+    //     if (commaCount >= 2) {
+    //         const lastComma = text.lastIndexOf(",");
+    //         const head = text.slice(0, lastComma).trim();
+    //         const tail = text.slice(lastComma + 1).trim();
 
-            if (tail && !tail.startsWith("&")) {
-                text = `${head} & ${tail}`;
-            }
+    //         if (tail && !tail.startsWith("&")) {
+    //             text = `${head} & ${tail}`;
+    //         }
+    //     }
+
+    //     return text;
+    // }
+    // Returns only the representative name: the text before "rep." in the OWNERSHIP string
+    // Data format: "Rep Name rep. Owner Name &'s"
+    function formatRepresentative(horse) {
+        const text = decodeHtmlFully(horse.OWNERSHIP || "")
+            .replace(/[\s\u200B\uFEFF]+/g, " ")
+            .trim();
+
+        // Explode on "rep."
+        const parts = text.split(/\s+rep\.\s*/i);
+
+        // No "rep." in the text means no representative
+        if (parts.length < 2) return "";
+
+        return parts[0].trim();
+    }
+    function formatRaceCardName(text) {
+        if (!text) return "";
+
+        const names = text
+            .split(",")
+            .map(name => name.trim())
+            .filter(Boolean);
+
+        if (names.length <= 1) {
+            return names.join("");
         }
 
-        return text;
-    }
+        if (names.length === 2) {
+            return `${names[0]} & ${names[1]}`;
+        }
 
+        return `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}`;
+    }
     return (
         <section className="trainerHorsesSection">
             <div className="thWrap">
@@ -121,8 +153,18 @@ export default function TrainerHorsesResults() {
                                 <tbody>
                                     {horses.map((horse, i) => {
 
-                                        // TEMP DEBUG: check raw ownership value in browser console (F12). Remove after the issue is fixed.
-                                        console.log(JSON.stringify(horse.OWNERSHIP));
+                                        // // TEMP DEBUG: check raw ownership value in browser console (F12). Remove after the issue is fixed.
+                                        // console.log(JSON.stringify(horse.OWNERSHIP));
+                                        const representative = formatRepresentative(horse);
+                                        const raceCardName = formatRaceCardName(horse.RACE_CARD_NAME);
+
+                                        // "Rep Name rep. Race Card Name" or only "Race Card Name"
+                                        let ownershipText = raceCardName;
+                                        if (representative) {
+                                            ownershipText = raceCardName
+                                                ? `${representative} rep. ${raceCardName}`
+                                                : `${representative} rep.`;
+                                        }
 
                                         return (
                                             <tr key={horse.HORSESEQ}>
@@ -142,7 +184,7 @@ export default function TrainerHorsesResults() {
                                                         {horse.DAM} {horse.DAMNAT ? `[${horse.DAMNAT}]` : ""}
                                                     </Link>
                                                 </td>
-                                                <td className="thAlignLeft">{formatOwnership(horse)}</td>
+                                                <td className="thAlignLeft">{ownershipText}</td>
                                             </tr>
                                         );
                                     })}
