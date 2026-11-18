@@ -4,6 +4,7 @@ import Link from "next/link";
 import "./TopHeader.css";
 import { getPdfLinks } from "../../../services/pdfService";
 import { getFeatureLinks } from "../../../services/FeatureLinksService";
+import { getWebsiteLogos } from "../../../services/websitelogoService";
 import { API_URL, UPLOAD_URL, NEWS_URL, NEW_URL, RWITC_UPLOAD_URL, STATIC_URL } from "../../../services/api";
 import { FaBars, FaTimes, FaCalendarAlt, FaChevronDown, FaPlay, FaHome, FaUniversity, FaHorseHead, FaTags, FaUsers, FaStar, FaHandshake, FaCloudDownloadAlt, FaImages, } from "react-icons/fa";
 
@@ -109,6 +110,21 @@ export default function TopHeader() {
         });
         return () => { active = false; };
     }, []);
+
+    // Header logo uploaded from the admin panel (falls back to the old static logo until one is uploaded)
+    const [headerLogo, setHeaderLogo] = useState("");
+    const [logoLoaded, setLogoLoaded] = useState(false);
+    useEffect(() => {
+        let active = true;
+        getWebsiteLogos().then((logos) => {
+            if (active) {
+                setHeaderLogo(logos.header_logo || `${UPLOAD_URL}/rwitc_logo_white.png`);
+                setLogoLoaded(true);
+            }
+        });
+        return () => { active = false; };
+    }, []);
+
     // Returns menu items for a PDF type that has many entries (example: AGM notices).
     // Uses the database entries when available, otherwise the old static items.
     const getPdfMenuItems = (type, fallbackItems) => {
@@ -327,7 +343,7 @@ export default function TopHeader() {
                 </button>
                 <Link href="/" className="brandLink">
                     <div className="logo">
-                        <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC Logo" draggable="false" />
+                        {logoLoaded && <img src={headerLogo} alt="RWITC Logo" draggable="false" />}
                     </div>
                     <div className="clubInfo">
                         <h1 className="clubNameShort">Royal Western India Turf Club Ltd.</h1>
@@ -421,7 +437,7 @@ export default function TopHeader() {
             <div className={`mobileMenu ${menuOpen ? "open" : ""}`}>
                 <div className="mobileMenuHeader">
                     <div className="mobileMenuBrand">
-                        <img src={`${UPLOAD_URL}/rwitc_logo_white.png`} alt="RWITC" className="mobileLogo" />
+                        {logoLoaded && <img src={headerLogo} alt="RWITC" className="mobileLogo" />}
                         <div className="mobileClubInfo">
                             <h2 className="mobileClubNameShort">RWITC</h2>
                             <p className="mobileClubNameFull">Royal Western India Turf Club Ltd</p>

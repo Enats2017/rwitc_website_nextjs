@@ -68,7 +68,9 @@ body::-webkit-scrollbar {
     text-decoration: none;
     cursor: pointer;
 }
-
+.logo {
+    min-width: 80px;
+}
 .logo img {
     width: 80px;
     height: auto;
@@ -673,6 +675,10 @@ body::-webkit-scrollbar {
         gap: 10px;
     }
 
+    .logo {
+        min-width: 54px;
+    }
+
     .logo img {
         width: 54px;
     }
@@ -739,7 +745,9 @@ body::-webkit-scrollbar {
     /* .clubNameShort {
         font-size: 16px;
     } */
-
+    .logo {
+        min-width: 46px;
+    }
     .logo img {
         width: 46px;
     }

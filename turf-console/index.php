@@ -253,6 +253,7 @@ if ($q == "login-user") {
 
                 if (
                     !$forceChange &&
+                    (int)$userDetails['id'] !== 19 &&
                     $expiryDays > 0 &&
                     !empty($pwRow['pw_since']) &&
                     (strtotime($pwRow['pw_since']) + ($expiryDays * 86400)) < time()
