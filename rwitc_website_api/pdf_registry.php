@@ -42,7 +42,6 @@ return [
         'menu_title'   => '{label} Annual Report',
     ],
 
-
     'scrutinizer_report_agm' => [
         's3_folder'    => 'uploads/club/',
         'display_name' => null,
@@ -127,5 +126,15 @@ return [
     'privacy_policy' => [
         's3_folder'    => 'uploads/footer/',
         'display_name' => null,
+    ],
+
+    'prospectus' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'PROSPECTUS.pdf',
+    ],
+
+    'chart' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'CHART.pdf',
     ],
 ];

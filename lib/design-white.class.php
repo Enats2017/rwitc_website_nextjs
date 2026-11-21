@@ -2406,18 +2406,16 @@ BOXES;
 
         foreach ($sponsor_datas as $skey => $svalue) {
 
-            $link = $svalue['link'];
+            $imgSrc = (strpos($svalue['source'], 'http') === 0)
+                ? $svalue['source']
+                : 'images/sponsors/' . $svalue['source'];
+
+            $imgTag = '<img src="' . $imgSrc . '" alt="' . htmlspecialchars($svalue['title']) . '" title="' . htmlspecialchars($svalue['title']) . '" style="margin-left: 14px; margin-right: 14px;" />';
 
             if ($svalue['link'] != '') {
-
-                $sponsors .= '<a href="' . $link . '">';
-
-                $sponsors .= '<img src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '"  style="margin-left: 14px; margin-right: 14px;"/>';
-
-                $sponsors .= '<a>';
+                $sponsors .= '<a href="' . $svalue['link'] . '">' . $imgTag . '</a>';
             } else {
-
-                $sponsors .= '<img src="images/sponsors/' . $svalue['source'] . '" alt="' . $svalue['title'] . '" title="' . $svalue['title'] . '" style="margin-left: 14px; margin-right: 14px;" />';
+                $sponsors .= $imgTag;
             }
         }
 

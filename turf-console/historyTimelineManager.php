@@ -1,5 +1,10 @@
 <?php
 
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: 0");
+
 include_once('../bootstrap.php');
 require_once("../lib/users.class.php");
 require_once("../lib/userchecks.php");
@@ -59,6 +64,14 @@ if (isset($_SESSION['history_flash'])) {
 // ---------------------------------------------------------------
 // HELPERS
 // ---------------------------------------------------------------
+// Clear History API cache after successful save
+$cacheFile = __DIR__ . '/../rwitc_website_api/cache/history_' . $secKey . '.json';
+
+if (file_exists($cacheFile)) {
+    @unlink($cacheFile);
+}
+
+historySetFlash('Content updated successfully.', 'success');
 function historySetFlash($text, $type)
 {
     $_SESSION['history_flash'] = array('text' => $text, 'type' => $type);
@@ -124,11 +137,59 @@ function historySanitizeHtml($html)
         return '';
     }
 
-    $allowedTags = array('p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'sub', 'sup', 'span', 'div',
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'hr',
-        'a', 'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th');
-    $dropTags = array('script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button',
-        'textarea', 'select', 'link', 'meta', 'svg', 'math', 'head', 'title', 'xml', 'img');
+    $allowedTags = array(
+        'p',
+        'br',
+        'strong',
+        'b',
+        'em',
+        'i',
+        'u',
+        's',
+        'sub',
+        'sup',
+        'span',
+        'div',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'ul',
+        'ol',
+        'li',
+        'blockquote',
+        'hr',
+        'a',
+        'table',
+        'thead',
+        'tbody',
+        'tfoot',
+        'tr',
+        'td',
+        'th'
+    );
+    $dropTags = array(
+        'script',
+        'style',
+        'iframe',
+        'object',
+        'embed',
+        'form',
+        'input',
+        'button',
+        'textarea',
+        'select',
+        'link',
+        'meta',
+        'svg',
+        'math',
+        'head',
+        'title',
+        'xml',
+        'img'
+    );
 
     $previous = libxml_use_internal_errors(true);
     $doc = new DOMDocument('1.0', 'UTF-8');
@@ -310,63 +371,298 @@ $design->writeContentPageStyles();
 
 ?>
 <style type="text/css">
-    .message { background: #fff3cd; border: 1px solid #ffe08a; padding: 12px 16px; border-radius: 8px; margin-bottom: 15px; font-size: 15px; }
-    .message.success { background: #e3f6ea; border-color: #a9dcbd; color: #0f5c33; }
-    .message.error { background: #fde8e8; border-color: #f5b5b5; color: #a12626; }
-    .submenu { display: none; }
+    .message {
+        background: #fff3cd;
+        border: 1px solid #ffe08a;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 15px;
+    }
 
-    .ar-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-    .ar-header > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; }
-    .ar-title { font-size: 24px; font-weight: 700; color: #2b332f; margin: 0; }
-    .ar-subtitle { font-size: 14px; color: #7a8c84; margin: 0; }
+    .message.success {
+        background: #e3f6ea;
+        border-color: #a9dcbd;
+        color: #0f5c33;
+    }
 
-    .ar-tabs { display: flex; gap: 8px; margin-bottom: 22px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
-    .ar-tab { flex: 0 0 auto; padding: 9px 16px; border: 1px solid #d3d9d6; border-radius: 8px; background: #fff; color: #2b332f; font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: all .15s ease; }
-    .ar-tab:hover { border-color: #1a7a45; color: #0f5c33; background: #eef7f1; }
-    .ar-tab.active { background: #0f5c33; border-color: #0f5c33; color: #fff; }
+    .message.error {
+        background: #fde8e8;
+        border-color: #f5b5b5;
+        color: #a12626;
+    }
 
-    .ar-card { background: #fff; border: 1px solid #e2e6e4; border-radius: 12px; padding: 24px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03); max-width: 100%; margin-bottom: 26px; }
-    .ar-card-title { font-family: inherit; font-size: 17px; font-weight: 600; color: #2b332f; margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px solid #eef1ef; }
-    .ar-card-title::before, .ar-card-title::after { display: none; content: none; }
+    .submenu {
+        display: none;
+    }
 
-    .ar-field { margin-bottom: 18px; min-width: 0; }
-    .ar-field label { display: block; font-size: 13px; font-weight: 600; color: #2b332f; margin-bottom: 6px; }
-    .ar-field label .req { color: #c0392b; }
-    .ar-field label .opt { color: #7a8c84; font-weight: 500; }
-    .ar-input { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 15px; font-family: inherit; color: #2b332f; background: #fff; border: 1px solid #d3d9d6; border-radius: 8px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
-    .ar-input::placeholder { color: #9aa9a2; }
-    .ar-input:focus { border-color: #1a7a45; box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15); }
-    .ar-input.invalid { border-color: #c0392b; }
-    .ar-hint { font-size: 12px; color: #7a8c84; margin-top: 6px; margin-bottom: 10px; line-height: 1.7; }
-    .ar-err { color: #c0392b; font-size: 12px; margin-top: 5px; display: none; }
-    .ar-err.show { display: block; }
+    .ar-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
 
-    .ar-actions { display: flex; gap: 10px; margin-top: 8px; padding-top: 18px; border-top: 1px solid #eef1ef; flex-wrap: wrap; }
-    .ar-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; font-size: 15px; font-weight: 600; font-family: inherit; border-radius: 8px; border: 1px solid transparent; cursor: pointer; transition: all .15s ease; text-decoration: none; }
-    .ar-btn-primary { background: #0f5c33; color: #fff; }
-    .ar-btn-primary:hover { background: #1a7a45; box-shadow: 0 4px 10px rgba(15, 92, 51, 0.25); color: #fff; }
-    .ar-btn-secondary { background: #fff; color: #2b332f; border-color: #d3d9d6; }
-    .ar-btn-secondary:hover { border-color: #7a8c84; color: #2b332f; }
+    .ar-header>div {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
 
-    .ar-updated { font-size: 13px; color: #7a8c84; margin-bottom: 14px; }
-    .ar-updated i { color: #0f5c33; margin-right: 4px; }
+    .ar-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2b332f;
+        margin: 0;
+    }
 
-    html, body { scrollbar-width: none; -ms-overflow-style: none; }
-    html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+    .ar-subtitle {
+        font-size: 14px;
+        color: #7a8c84;
+        margin: 0;
+    }
+
+    .ar-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 22px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+
+    .ar-tab {
+        flex: 0 0 auto;
+        padding: 9px 16px;
+        border: 1px solid #d3d9d6;
+        border-radius: 8px;
+        background: #fff;
+        color: #2b332f;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all .15s ease;
+    }
+
+    .ar-tab:hover {
+        border-color: #1a7a45;
+        color: #0f5c33;
+        background: #eef7f1;
+    }
+
+    .ar-tab.active {
+        background: #0f5c33;
+        border-color: #0f5c33;
+        color: #fff;
+    }
+
+    .ar-card {
+        background: #fff;
+        border: 1px solid #e2e6e4;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        max-width: 100%;
+        margin-bottom: 26px;
+    }
+
+    .ar-card-title {
+        font-family: inherit;
+        font-size: 17px;
+        font-weight: 600;
+        color: #2b332f;
+        margin: 0 0 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #eef1ef;
+    }
+
+    .ar-card-title::before,
+    .ar-card-title::after {
+        display: none;
+        content: none;
+    }
+
+    .ar-field {
+        margin-bottom: 18px;
+        min-width: 0;
+    }
+
+    .ar-field label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2b332f;
+        margin-bottom: 6px;
+    }
+
+    .ar-field label .req {
+        color: #c0392b;
+    }
+
+    .ar-field label .opt {
+        color: #7a8c84;
+        font-weight: 500;
+    }
+
+    .ar-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+        font-size: 15px;
+        font-family: inherit;
+        color: #2b332f;
+        background: #fff;
+        border: 1px solid #d3d9d6;
+        border-radius: 8px;
+        outline: none;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .ar-input::placeholder {
+        color: #9aa9a2;
+    }
+
+    .ar-input:focus {
+        border-color: #1a7a45;
+        box-shadow: 0 0 0 3px rgba(26, 122, 69, 0.15);
+    }
+
+    .ar-input.invalid {
+        border-color: #c0392b;
+    }
+
+    .ar-hint {
+        font-size: 12px;
+        color: #7a8c84;
+        margin-top: 6px;
+        margin-bottom: 10px;
+        line-height: 1.7;
+    }
+
+    .ar-err {
+        color: #c0392b;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    .ar-err.show {
+        display: block;
+    }
+
+    .ar-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+        padding-top: 18px;
+        border-top: 1px solid #eef1ef;
+        flex-wrap: wrap;
+    }
+
+    .ar-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px 22px;
+        font-size: 15px;
+        font-weight: 600;
+        font-family: inherit;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all .15s ease;
+        text-decoration: none;
+    }
+
+    .ar-btn-primary {
+        background: #0f5c33;
+        color: #fff;
+    }
+
+    .ar-btn-primary:hover {
+        background: #1a7a45;
+        box-shadow: 0 4px 10px rgba(15, 92, 51, 0.25);
+        color: #fff;
+    }
+
+    .ar-btn-secondary {
+        background: #fff;
+        color: #2b332f;
+        border-color: #d3d9d6;
+    }
+
+    .ar-btn-secondary:hover {
+        border-color: #7a8c84;
+        color: #2b332f;
+    }
+
+    .ar-updated {
+        font-size: 13px;
+        color: #7a8c84;
+        margin-bottom: 14px;
+    }
+
+    .ar-updated i {
+        color: #0f5c33;
+        margin-right: 4px;
+    }
+
+    html,
+    body {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+    }
 
     @media (min-width: 1920px) {
-        .ar-title { font-size: 30px; }
-        .ar-card { padding: 30px; }
+        .ar-title {
+            font-size: 30px;
+        }
+
+        .ar-card {
+            padding: 30px;
+        }
     }
+
     @media (max-width: 700px) {
-        .ar-title { font-size: 20px; }
-        .ar-card { padding: 16px; border-radius: 10px; }
+        .ar-title {
+            font-size: 20px;
+        }
+
+        .ar-card {
+            padding: 16px;
+            border-radius: 10px;
+        }
     }
+
     @media (max-width: 560px) {
-        .ar-header { flex-direction: column; align-items: flex-start; margin-bottom: 14px; gap: 8px; }
-        .ar-subtitle { font-size: 13px; }
-        .ar-actions { flex-direction: column; }
-        .ar-btn { width: 100%; }
+        .ar-header {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            gap: 8px;
+        }
+
+        .ar-subtitle {
+            font-size: 13px;
+        }
+
+        .ar-actions {
+            flex-direction: column;
+        }
+
+        .ar-btn {
+            width: 100%;
+        }
     }
 </style>
 
@@ -398,7 +694,7 @@ $design->writeContentPageStyles();
         <div class="ar-tabs">
             <?php foreach ($sections as $tKey => $tLabel) { ?>
                 <a class="ar-tab<?php echo $tKey === $secKey ? ' active' : ''; ?>"
-                   href="<?php echo htmlspecialchars(historyHtmlUrl($tKey)); ?>">
+                    href="<?php echo htmlspecialchars(historyHtmlUrl($tKey)); ?>">
                     <?php echo htmlspecialchars($tLabel); ?>
                 </a>
             <?php } ?>
@@ -469,14 +765,14 @@ $design->writeContentPageStyles();
     <script type="text/javascript">
         (function() {
 
-            var maxTitle     = <?php echo (int)$maxTitle; ?>;
+            var maxTitle = <?php echo (int)$maxTitle; ?>;
             var savedContent = <?php echo json_encode($fText); ?>;
 
-            var form    = document.getElementById('arForm');
+            var form = document.getElementById('arForm');
             var titleIn = document.getElementById('arTitle');
-            var area    = document.getElementById('arContent');
-            var revert  = document.getElementById('arRevert');
-            var msgBox  = document.getElementById('arMsg');
+            var area = document.getElementById('arContent');
+            var revert = document.getElementById('arRevert');
+            var msgBox = document.getElementById('arMsg');
             var savedTitle = titleIn.value;
             var msgTimer = null;
 

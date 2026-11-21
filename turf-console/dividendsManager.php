@@ -1,4 +1,10 @@
 <?php
+
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: 0");
+
 include_once('../bootstrap.php');
 require_once('../lib/dividends.class.php');
 require_once('../lib/pagination.class.php');
@@ -73,6 +79,10 @@ if (isAdminlogin()) {
 
                         if ($s3_url != '') {
                             $id = $dividendObj->insertDividend($date, $centreid, $s3_url);
+                            $cacheFile = __DIR__ . '/../rwitc_website_api/cache/dividends_get.json';
+                            if (file_exists($cacheFile)) {
+                                @unlink($cacheFile);
+                            }
                             $_SESSION['dividend_msg'] = 'Dividend Uploaded Successfully!';
                             header("Location: dividendsManager.php");
                             exit;
@@ -120,6 +130,10 @@ if (isAdminlogin()) {
             try {
                 // unlink($base . DIVIDENDS_BASE . "/" . $dividendDetails['filename']);
                 $dividendObj->deleteDividendByID($dividendID);
+                $cacheFile = __DIR__ . '/../rwitc_website_api/cache/dividends_get.json';
+                if (file_exists($cacheFile)) {
+                    @unlink($cacheFile);
+                }
                 $_SESSION['dividend_msg'] = 'Dividend Deleted Successfully!';
                 header("Location: dividendsManager.php");
                 exit;
@@ -129,6 +143,11 @@ if (isAdminlogin()) {
         }
         // fetch all articles
         $alldividend = $dividendObj->getAlldividends();
+        // Sort by date (newest first) across all centres
+        usort($alldividend, function ($a, $b) {
+            $cmp = strtotime($b['div_date']) - strtotime($a['div_date']);
+            return $cmp !== 0 ? $cmp : ((int)$b['id'] - (int)$a['id']);
+        });
 
         // ==== display-only pagination: getAlldividends() itself is untouched,
         // we just slice the already-returned array for the current page ====

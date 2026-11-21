@@ -1,4 +1,8 @@
 <?php
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: 0");
 include_once('../bootstrap.php');
 require_once('../lib/users.class.php');
 require_once('../lib/userchecks.php');
@@ -78,7 +82,8 @@ function rulesRacingUpload($tmpFile, &$error) {
             'Bucket' => AWS_BUCKET,
             'Key' => $s3Folder . 'Rules_of_Racing.pdf',
             'SourceFile' => $tmpFile,
-            'ContentType' => 'application/pdf'
+            'ContentType' => 'application/pdf',
+            'CacheControl' => 'no-cache, no-store, must-revalidate, max-age=0'
         ));
         return isset($result['ObjectURL']) ? $result['ObjectURL'] : '';
     } catch (AwsException $e) {

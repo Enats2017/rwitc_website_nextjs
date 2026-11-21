@@ -1,6 +1,9 @@
 <?php
 
 header("Content-Type: application/json; charset=UTF-8");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET");
 
@@ -28,7 +31,7 @@ $handle = @fopen($logDir . "/api_logs.txt", "a+");
 $security = new ApiSecurity($handle, [
     "rate_limit"     => 60,
     "rate_window"    => 60,
-    "cache_ttl"      => 30,
+    "cache_ttl"      => 0,
     "cache_dir"      => __DIR__ . "/cache",
     "rate_limit_dir" => __DIR__ . "/rate_limits",
     "api_tag"        => "about_rwitc_get"

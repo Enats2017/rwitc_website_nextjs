@@ -1,4 +1,8 @@
 <?php
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: 0");
 include_once('../bootstrap.php');
 require_once('../lib/users.class.php');
 require_once('../lib/userchecks.php');
@@ -42,7 +46,14 @@ function jockeyWtSetFlash($text, $type) {
     global $sessionKey;
     $_SESSION[$sessionKey . '_flash'] = array('text' => $text, 'type' => $type);
 }
+function clearPdfLinksApiCache()
+{
+    $cacheFile = __DIR__ . '/../rwitc_website_api/cache/pdf_links_latest.json';
 
+    if (file_exists($cacheFile)) {
+        @unlink($cacheFile);
+    }
+}
 function jockeyWtS3Client() {
     return new S3Client(array(
         'version' => 'latest',
@@ -97,7 +108,8 @@ function jockeyWtUpload($file, $allowedExt, &$error) {
             'Bucket' => AWS_BUCKET,
             'Key' => $s3Folder . 'Jockeys_Riding_Weight.' . $ext,
             'SourceFile' => $tmp,
-            'ContentType' => pdfContentType($orig)
+            'ContentType' => pdfContentType($orig),
+            'CacheControl' => 'no-cache, no-store, must-revalidate, max-age=0'
         ));
         return isset($result['ObjectURL']) ? $result['ObjectURL'] : '';
     } catch (AwsException $e) {
@@ -134,6 +146,7 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!empty($existing)) {
                     $keepId = (int) $existing[0]['id'];
                     $db->update("UPDATE club_menu_pdf SET file_url = '" . $db->escape($newUrl) . "', `date` = CURDATE() WHERE id = " . $keepId . " AND `type` = '" . $pdfType . "'");
+                    clearPdfLinksApiCache();
                     // Remove old duplicate rows and old files (different name or extension)
                     foreach ($existing as $i => $old) {
                         if ($i > 0) {
@@ -146,6 +159,7 @@ if (empty($secmsg) && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     jockeyWtSetFlash($pdfTitle . ' was updated successfully.', 'success');
                 } else {
                     $db->insert("INSERT INTO club_menu_pdf (`type`, file_url, `date`) VALUES ('" . $pdfType . "', '" . $db->escape($newUrl) . "', CURDATE())");
+                    clearPdfLinksApiCache();
                     jockeyWtSetFlash($pdfTitle . ' was saved successfully.', 'success');
                 }
             } catch (Exception $e) {

@@ -193,7 +193,7 @@ try {
     if (isset($s3Object["ContentLength"])) {
         header("Content-Length: " . $s3Object["ContentLength"]);
     }
-    header("Cache-Control: public, max-age=300");
+    header("Cache-Control: no-cache, must-revalidate");
     header("X-Content-Type-Options: nosniff");
 
     if ($_SERVER["REQUEST_METHOD"] !== "HEAD") {

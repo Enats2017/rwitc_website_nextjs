@@ -66,58 +66,101 @@ export default function TrainerHorsesResults() {
         return prev;
     }
 
-    // function formatOwnership(horse) {
-    //     let text = decodeHtmlFully(horse.OWNERSHIP || "")
-    //         .replace(/\s*&\s*(['\u2018\u2019\u02BC\u2032`\u00B4])\s*s\b/gi, "$1s")
-    //         .replace(/[\s\u200B\uFEFF]+(['\u2018\u2019\u02BC\u2032`\u00B4])s\b/gi, "$1s")
-    //         .replace(/\s{2,}/g, " ")
-    //         .trim();
-    //     const commaCount = (text.match(/,/g) || []).length;
-    //     if (commaCount >= 2) {
-    //         const lastComma = text.lastIndexOf(",");
-    //         const head = text.slice(0, lastComma).trim();
-    //         const tail = text.slice(lastComma + 1).trim();
-
-    //         if (tail && !tail.startsWith("&")) {
-    //             text = `${head} & ${tail}`;
-    //         }
-    //     }
-
-    //     return text;
-    // }
-    // Returns only the representative name: the text before "rep." in the OWNERSHIP string
-    // Data format: "Rep Name rep. Owner Name &'s"
-    function formatRepresentative(horse) {
-        const text = decodeHtmlFully(horse.OWNERSHIP || "")
+    function cleanText(text) {
+        return decodeHtmlFully(text || "")
             .replace(/[\s\u200B\uFEFF]+/g, " ")
             .trim();
-
-        // Explode on "rep."
-        const parts = text.split(/\s+rep\.\s*/i);
-
-        // No "rep." in the text means no representative
-        if (parts.length < 2) return "";
-
-        return parts[0].trim();
     }
-    function formatRaceCardName(text) {
-        if (!text) return "";
 
-        const names = text
+    function norm(text) {
+        return (text || "").replace(/\s+/g, " ").trim().toLowerCase();
+    }
+
+    // "A, B, C" -> "A, B & C"
+    function joinWithAnd(list) {
+        if (list.length <= 1) return list.join("");
+        if (list.length === 2) return `${list[0]} & ${list[1]}`;
+        return `${list.slice(0, -1).join(", ")} & ${list[list.length - 1]}`;
+    }
+
+    // Shows RACE_CARD_NAME (in order) and attaches representatives from OWNERSHIP.
+    // If OWNERSHIP ends with "&'s", a "'s" is added at the very end of the final text.
+    //
+    // RACE_CARD_NAME: "Company1, Owner, Owner, Company2, Owner"
+    // OWNERSHIP:      "RepA & RepB rep.  Company1, Owner, Owner, RepC rep.  Company2, Owner &'s"
+    // Output:         "RepA & RepB rep. Company1, Owner, Owner, RepC rep. Company2 & Owner's"
+    function formatOwnership(horse) {
+        const raceCard = cleanText(horse.RACE_CARD_NAME)
             .split(",")
-            .map(name => name.trim())
+            .map(s => s.trim())
             .filter(Boolean);
 
-        if (names.length <= 1) {
-            return names.join("");
+        const ownershipRaw = cleanText(horse.OWNERSHIP);
+
+        // Check if OWNERSHIP ends with "&'s" (possessive marker)
+        const possessiveRegex = /\s*&\s*['\u2018\u2019\u02BC\u2032`\u00B4]\s*s\s*$/i;
+        const hasPossessive = possessiveRegex.test(ownershipRaw);
+        const possessive = hasPossessive ? "'s" : "";
+
+        const ownership = ownershipRaw.replace(possessiveRegex, "").trim();
+
+        // No race card name: show cleaned OWNERSHIP as fallback
+        if (!raceCard.length) {
+            const items = ownership.split(",").map(s => s.trim()).filter(Boolean);
+            return joinWithAnd(items) + possessive;
         }
 
-        if (names.length === 2) {
-            return `${names[0]} & ${names[1]}`;
+        // repFor[index in raceCard] = representative text for that company
+        const repFor = {};
+
+        const segs = ownership.split(/\s+rep\.\s*/i);
+
+        if (segs.length > 1) {
+            const items = segs.map(s => s.split(",").map(x => x.trim()).filter(Boolean));
+            const last = segs.length - 1;
+
+            // Find each company (first item after every "rep.") inside the race card list
+            const compIdx = [];
+            let ok = true;
+
+            for (let s = 1; s <= last; s++) {
+                const company = items[s][0] || "";
+                const idx = raceCard.findIndex(
+                    (n, j) => norm(n) === norm(company) && !compIdx.includes(j)
+                );
+                if (idx === -1) {
+                    ok = false;
+                    break;
+                }
+                compIdx.push(idx);
+            }
+
+            if (ok) {
+                for (let s = 0; s < last; s++) {
+                    // Items of this segment that can contain owners + the reps of the next company
+                    const list = s === 0 ? items[0] : items[s].slice(1);
+
+                    // How many owners are in this segment (taken from race card order)
+                    const ownersCount = s === 0
+                        ? compIdx[0]
+                        : compIdx[s] - compIdx[s - 1] - 1;
+
+                    const reps = list.slice(ownersCount);
+
+                    if (reps.length) {
+                        repFor[compIdx[s]] = reps.join(", ");
+                    }
+                }
+            }
         }
 
-        return `${names.slice(0, -1).join(", ")} & ${names[names.length - 1]}`;
+        const parts = raceCard.map((name, j) =>
+            repFor[j] ? `${repFor[j]} rep. ${name}` : name
+        );
+
+        return joinWithAnd(parts) + possessive;
     }
+
     return (
         <section className="trainerHorsesSection">
             <div className="thWrap">
@@ -153,18 +196,7 @@ export default function TrainerHorsesResults() {
                                 <tbody>
                                     {horses.map((horse, i) => {
 
-                                        // // TEMP DEBUG: check raw ownership value in browser console (F12). Remove after the issue is fixed.
-                                        // console.log(JSON.stringify(horse.OWNERSHIP));
-                                        const representative = formatRepresentative(horse);
-                                        const raceCardName = formatRaceCardName(horse.RACE_CARD_NAME);
-
-                                        // "Rep Name rep. Race Card Name" or only "Race Card Name"
-                                        let ownershipText = raceCardName;
-                                        if (representative) {
-                                            ownershipText = raceCardName
-                                                ? `${representative} rep. ${raceCardName}`
-                                                : `${representative} rep.`;
-                                        }
+                                        const ownershipText = formatOwnership(horse);
 
                                         return (
                                             <tr key={horse.HORSESEQ}>

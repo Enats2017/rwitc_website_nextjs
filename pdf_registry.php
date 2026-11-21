@@ -55,4 +55,86 @@ return [
         'multiple'     => true,
         'menu_title'   => 'Scrutinizer Report-{label} EGM',
     ],
+
+    'scrutinizer_report' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => null,
+        'multiple'     => true,
+        'menu_title'   => 'Scrutinizer Report-{label}',
+    ],
+
+    'egm_notice' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'EGM_Notice.pdf',
+    ],
+
+    'working_group' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'Working_Group.pdf',
+    ],
+
+    'medication_rules' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'Medication_Rules.pdf',
+    ],
+
+    'rules_of_racing' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'Rules_of_Racing.pdf',
+    ],
+
+    'racing_calendar' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'Racing_Calendar.pdf',
+    ],   
+    
+    'jockey_riding_weight' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => null,   // original uploaded file name (with extension) is used
+    ],
+
+    'memorandum_articles' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'Memorandum_Articles_of_Association.pdf',
+    ],
+
+    'ready_reckoner' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'Ready_Reckoner.txt',
+    ],
+
+    'record_timings' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => null,
+    ],
+
+    'standard_timings' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'Standard_Timings.pdf',
+    ],
+
+    'affiliated_clubs' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'Affiliated_Clubs_with_RWITC.pdf',
+    ],
+
+    'term_condition' => [
+        's3_folder'    => 'uploads/footer/',
+        'display_name' => null,
+    ],
+
+    'privacy_policy' => [
+        's3_folder'    => 'uploads/footer/',
+        'display_name' => null,
+    ],
+
+    'prospectus' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'PROSPECTUS.pdf',
+    ],
+
+    'chart' => [
+        's3_folder'    => 'uploads/club/',
+        'display_name' => 'CHART.pdf',
+    ],
 ];

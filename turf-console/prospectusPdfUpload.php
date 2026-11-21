@@ -19,9 +19,19 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-/* CONFIGURATION */
+// Admin page must never be cached
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
-define('PROSPECTUS_S3_KEY', 'uploads/ApplicationForms/PROSPECTUS.pdf');
+/* CONFIGURATION (for the Chart page change only these 5 lines and the form field name stays the same) */
+
+define('DOC_TYPE', 'prospectus');                       // club_menu_pdf.type
+define('DOC_TITLE', 'Prospectus');                      // shown on the page
+define('DOC_MODULE', 'prospectus_pdf_upload');          // permission module key
+define('DOC_S3_KEY', 'uploads/club/Prospectus.pdf');    // fixed S3 key, replaced on every upload
+define('DOC_FILE_NAME', 'PROSPECTUS.pdf');              // name shown when the PDF is opened
+
 define('PROSPECTUS_MAX_SIZE', 10 * 1024 * 1024);
 
 /* ADMIN AUTHENTICATION */
@@ -31,10 +41,7 @@ if (!isAdminlogin()) {
     exit('Please log in to access this page.');
 }
 
-if (
-    !function_exists('hasModuleAccess') ||
-    !hasModuleAccess('prospectus_pdf_upload')
-) {
+if (!function_exists('hasModuleAccess') || !hasModuleAccess(DOC_MODULE)) {
     http_response_code(403);
     exit('You do not have permission to access this page.');
 }
@@ -54,42 +61,13 @@ $s3Client = new S3Client(array(
 
 function prospectusEscape($value)
 {
-    return htmlspecialchars(
-        (string) $value,
-        ENT_QUOTES,
-        'UTF-8'
-    );
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
-function prospectusObjectExists($s3Client)
+function prospectusIstDate()
 {
-    try {
-        $s3Client->headObject(array(
-            'Bucket' => AWS_BUCKET,
-            'Key' => PROSPECTUS_S3_KEY
-        ));
-
-        return true;
-
-    } catch (AwsException $e) {
-
-        $status = $e->getStatusCode();
-        $code = $e->getAwsErrorCode();
-
-        if (
-            $status === 404 ||
-            $code === 'NoSuchKey' ||
-            $code === 'NotFound'
-        ) {
-            return false;
-        }
-
-        error_log('Prospectus S3 check failed: ' . $e->getMessage());
-
-        throw new RuntimeException(
-            'Unable to check the current Prospectus PDF.'
-        );
-    }
+    $dt = new DateTime('now', new DateTimeZone('Asia/Kolkata'));
+    return $dt->format('Y-m-d');
 }
 
 /* CSRF TOKEN */
@@ -104,14 +82,14 @@ $message = '';
 $messageType = 'success';
 $fileExists = false;
 $lastModified = null;
+$fileSizeText = '';
+$viewUrl = '';
 
 /* UPLOAD PDF */
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $postedToken = isset($_POST['csrf_token'])
-        ? (string) $_POST['csrf_token']
-        : '';
+    $postedToken = isset($_POST['csrf_token']) ? (string) $_POST['csrf_token'] : '';
 
     if (!hash_equals($csrfToken, $postedToken)) {
         http_response_code(403);
@@ -120,10 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
 
-        if (
-            !isset($_FILES['prospectus_pdf']) ||
-            !is_array($_FILES['prospectus_pdf'])
-        ) {
+        if (!isset($_FILES['prospectus_pdf']) || !is_array($_FILES['prospectus_pdf'])) {
             throw new RuntimeException('Please select a PDF file.');
         }
 
@@ -142,49 +117,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             throw new RuntimeException(
-                isset($errors[$file['error']])
-                    ? $errors[$file['error']]
-                    : 'Upload failed.'
+                isset($errors[$file['error']]) ? $errors[$file['error']] : 'Upload failed.'
             );
         }
 
-        if (
-            empty($file['tmp_name']) ||
-            !is_uploaded_file($file['tmp_name'])
-        ) {
+        if (empty($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
             throw new RuntimeException('Invalid uploaded file.');
         }
 
-        if (
-            $file['size'] <= 0 ||
-            $file['size'] > PROSPECTUS_MAX_SIZE
-        ) {
-            throw new RuntimeException(
-                'PDF size must be between 1 byte and 10 MB.'
-            );
+        if ($file['size'] <= 0 || $file['size'] > PROSPECTUS_MAX_SIZE) {
+            throw new RuntimeException('PDF size must be between 1 byte and 10 MB.');
         }
 
-        $extension = strtolower(
-            pathinfo(basename($file['name']), PATHINFO_EXTENSION)
-        );
+        $extension = strtolower(pathinfo(basename($file['name']), PATHINFO_EXTENSION));
 
         if ($extension !== 'pdf') {
             throw new RuntimeException('Only PDF files are allowed.');
         }
 
         if (!class_exists('finfo')) {
-            throw new RuntimeException(
-                'File validation is unavailable on the server.'
-            );
+            throw new RuntimeException('File validation is unavailable on the server.');
         }
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($file['tmp_name']);
 
         if ($mime !== 'application/pdf') {
-            throw new RuntimeException(
-                'The uploaded file is not a valid PDF.'
-            );
+            throw new RuntimeException('The uploaded file is not a valid PDF.');
         }
 
         $handle = fopen($file['tmp_name'], 'rb');
@@ -200,22 +159,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException('Invalid PDF document.');
         }
 
-        /*
-         * Uploading to the same key replaces the existing object.
-         */
-
-        $s3Client->putObject(array(
+        // 1) Upload to S3 (same key, so the old PDF is replaced)
+        $result = $s3Client->putObject(array(
             'Bucket' => AWS_BUCKET,
-            'Key' => PROSPECTUS_S3_KEY,
+            'Key' => DOC_S3_KEY,
             'SourceFile' => $file['tmp_name'],
             'ContentType' => 'application/pdf',
-            'ContentDisposition' => 'inline; filename="PROSPECTUS.pdf"',
+            'ContentDisposition' => 'inline; filename="' . DOC_FILE_NAME . '"',
             'CacheControl' => 'no-cache, must-revalidate'
         ));
 
+        $newUrl = isset($result['ObjectURL'])
+            ? (string) $result['ObjectURL']
+            : $s3Client->getObjectUrl(AWS_BUCKET, DOC_S3_KEY);
+
+        // 2) Save the S3 url in club_menu_pdf (one row per type: insert first time, update after)
+        $type = DOC_TYPE;
+        $existing = $db->getSingleRowAssoc(
+            "SELECT id FROM club_menu_pdf WHERE `type` = '" . $type . "' ORDER BY id ASC LIMIT 1"
+        );
+
+        if ($existing) {
+            $db->update(
+                "UPDATE club_menu_pdf
+                 SET file_url = '" . $db->escape($newUrl) . "',
+                     `date` = '" . prospectusIstDate() . "'
+                 WHERE id = " . (int) $existing['id'] . " AND `type` = '" . $type . "'"
+            );
+
+            // Remove accidental duplicate rows of this type
+            $db->query(
+                "DELETE FROM club_menu_pdf WHERE `type` = '" . $type . "' AND id <> " . (int) $existing['id']
+            );
+        } else {
+            $db->insert(
+                "INSERT INTO club_menu_pdf (`type`, `label`, file_url, `date`)
+                 VALUES ('" . $type . "', '', '" . $db->escape($newUrl) . "', '" . prospectusIstDate() . "')"
+            );
+        }
+
         $_SESSION['prospectus_pdf_flash'] = array(
             'type' => 'success',
-            'message' => 'Prospectus PDF uploaded successfully. The previous PDF has been replaced.'
+            'message' => DOC_TITLE . ' PDF uploaded successfully. The previous PDF has been replaced.'
         );
 
         header('Location: ' . $_SERVER['SCRIPT_NAME']);
@@ -223,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } catch (Throwable $e) {
 
-        error_log('Prospectus PDF upload error: ' . $e->getMessage());
+        error_log(DOC_TITLE . ' PDF upload error: ' . $e->getMessage());
 
         if ($e instanceof RuntimeException) {
             $message = $e->getMessage();
@@ -247,30 +232,49 @@ if (isset($_SESSION['prospectus_pdf_flash'])) {
     unset($_SESSION['prospectus_pdf_flash']);
 }
 
-/* CURRENT FILE STATUS */
+/* CURRENT FILE STATUS (from the table row, time from S3 in India time) */
 
 try {
 
-    $fileExists = prospectusObjectExists($s3Client);
+    $row = $db->getSingleRowAssoc(
+        "SELECT id, file_url FROM club_menu_pdf WHERE `type` = '" . DOC_TYPE . "' ORDER BY id ASC LIMIT 1"
+    );
 
-    if ($fileExists) {
+    if ($row && !empty($row['file_url'])) {
 
         $head = $s3Client->headObject(array(
             'Bucket' => AWS_BUCKET,
-            'Key' => PROSPECTUS_S3_KEY
+            'Key' => DOC_S3_KEY
         ));
 
-        $lastModified = isset($head['LastModified'])
-            ? $head['LastModified']->format('d M Y, h:i A')
-            : null;
+        $fileExists = true;
+        $viewVersion = time();
+
+        if (isset($head['LastModified'])) {
+            $viewVersion = $head['LastModified']->getTimestamp();
+
+            // S3 returns UTC, convert to India time
+            $dt = new DateTime('@' . $viewVersion);
+            $dt->setTimezone(new DateTimeZone('Asia/Kolkata'));
+            $lastModified = $dt->format('d M Y, h:i:s A');
+        }
+
+        if (isset($head['ContentLength'])) {
+            $bytes = (int) $head['ContentLength'];
+            $fileSizeText = $bytes >= 1024 * 1024
+                ? number_format($bytes / (1024 * 1024), 2) . ' MB'
+                : number_format($bytes / 1024, 1) . ' KB';
+        }
+
+        $viewUrl = (string) $row['file_url'] . '?v=' . $viewVersion;
     }
 
 } catch (Throwable $e) {
 
-    error_log('Prospectus PDF status error: ' . $e->getMessage());
+    error_log(DOC_TITLE . ' PDF status error: ' . $e->getMessage());
 
     if ($message === '') {
-        $message = 'Unable to verify the current S3 file status.';
+        $message = 'Unable to verify the current file status.';
         $messageType = 'error';
     }
 }
@@ -287,7 +291,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
 $design->css = '';
 $design->jqueryJs = '';
 
-$design->startPage('Prospectus PDF Upload');
+$design->startPage(DOC_TITLE . ' PDF Upload');
 $design->writeLogoTickerMenu();
 
 $design->openDiv('contentWrapper');
@@ -326,39 +330,45 @@ $design->writeContentPageStyles();
 .prospectus-root {
     --green: #0f5c33;
     --green-dark: #0b4627;
+    --green-mid: #1a7a45;
     --green-light: #e8f5ed;
+    --green-soft: #f3f9f5;
     --text: #1f2f26;
     --muted: #6f7f75;
     --border: #e1e8e3;
+    --danger: #c0372b;
     position: relative;
+    max-width: 860px;
     color: var(--text);
     font-family: inherit;
 }
 
+/* ---------- Header ---------- */
 .prospectus-header {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 24px;
+    gap: 16px;
+    margin-bottom: 26px;
 }
 
 .prospectus-header-icon {
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    background: var(--green-light);
-    color: var(--green);
-    font-size: 22px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-dark));
+    color: #fff;
+    font-size: 23px;
+    box-shadow: 0 6px 14px rgba(15, 92, 51, .22);
 }
 
 .prospectus-header h2 {
     margin: 0;
     color: var(--text);
-    font-size: 25px;
+    font-size: 26px;
     font-weight: 700;
 }
 
@@ -366,38 +376,88 @@ $design->writeContentPageStyles();
     margin: 5px 0 0;
     color: var(--muted);
     font-size: 14px;
+    line-height: 1.5;
 }
 
+/* ---------- Message ---------- */
+.prospectus-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.prospectus-message i {
+    margin-top: 2px;
+    font-size: 16px;
+}
+
+.prospectus-message.success {
+    background: var(--green-light);
+    border: 1px solid #b7ddc5;
+    color: var(--green);
+}
+
+.prospectus-message.error {
+    background: #fff1f0;
+    border: 1px solid #f0c4c4;
+    color: #a32121;
+}
+
+/* ---------- Card ---------- */
 .prospectus-card {
-    padding: 25px;
+    padding: 26px;
     margin-bottom: 22px;
     background: #fff;
     border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: 0 2px 8px rgba(20,40,28,.04);
+    border-radius: 16px;
+    box-shadow: 0 4px 14px rgba(20, 40, 28, .05);
 }
 
 .prospectus-card h3 {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 0 0 18px;
-    padding-bottom: 15px;
+    margin: 0 0 20px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--border);
     color: var(--green);
     font-size: 16px;
     font-weight: 700;
 }
 
+/* ---------- Current file status ---------- */
 .prospectus-status {
     display: flex;
     align-items: flex-start;
-    gap: 14px;
-    padding: 17px;
-    margin-bottom: 22px;
+    gap: 16px;
+    padding: 18px;
+    margin-bottom: 26px;
     border: 1px solid var(--border);
-    border-radius: 10px;
-    background: #fafcfb;
+    border-radius: 12px;
+    background: var(--green-soft);
+}
+
+.prospectus-status-icon {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    background: #fdecea;
+    color: var(--danger);
+    font-size: 20px;
+}
+
+.prospectus-status-icon.is-ok {
+    background: #e4f7eb;
+    color: #176b3d;
 }
 
 .prospectus-status-body {
@@ -405,37 +465,19 @@ $design->writeContentPageStyles();
     flex: 1 1 auto;
 }
 
-.prospectus-status-icon {
-    width: 42px;
-    height: 42px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9px;
-    background: #fdecea;
-    color: #c0372b;
-    font-size: 19px;
-}
-
 .prospectus-status h4 {
-    margin: 1px 0 5px;
-    font-size: 14px;
+    margin: 1px 0 6px;
+    font-size: 15px;
     font-weight: 700;
-}
-
-.prospectus-status p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1.6;
+    color: var(--text);
     overflow-wrap: anywhere;
 }
 
 .prospectus-badge {
-    display: inline-block;
-    margin-top: 8px;
-    padding: 5px 9px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
     border-radius: 20px;
     font-size: 11px;
     font-weight: 700;
@@ -451,11 +493,38 @@ $design->writeContentPageStyles();
     color: #856404;
 }
 
+.prospectus-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin-top: 12px;
+}
+
+.prospectus-status p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.prospectus-status p i {
+    width: 14px;
+    margin-right: 4px;
+    color: var(--green-mid);
+}
+
+.prospectus-view-row {
+    margin-top: 14px;
+}
+
+/* ---------- Upload form ---------- */
 .prospectus-label {
     display: block;
-    margin-bottom: 9px;
+    margin-bottom: 10px;
     font-size: 13px;
     font-weight: 700;
+    color: var(--text);
 }
 
 .prospectus-file-input {
@@ -470,28 +539,35 @@ $design->writeContentPageStyles();
 .prospectus-dropzone {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 20px;
-    border: 2px dashed #c9d6ce;
-    border-radius: 11px;
-    background: #f5faf7;
+    gap: 16px;
+    padding: 24px 22px;
+    border: 2px dashed #c3d3c9;
+    border-radius: 14px;
+    background: var(--green-soft);
     cursor: pointer;
     transition: .2s ease;
 }
 
 .prospectus-dropzone:hover,
 .prospectus-dropzone.is-drag {
-    border-color: var(--green);
+    border-color: var(--green-mid);
     background: #eaf4ee;
+}
+
+.prospectus-dropzone.has-file {
+    border-style: solid;
+    border-color: var(--green-mid);
+    background: var(--green-light);
 }
 
 .prospectus-file-input:focus-visible + .prospectus-dropzone {
     outline: 3px solid #b7ddc5;
+    outline-offset: 2px;
 }
 
 .prospectus-upload-icon {
-    width: 44px;
-    height: 44px;
+    width: 50px;
+    height: 50px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -499,7 +575,8 @@ $design->writeContentPageStyles();
     border-radius: 50%;
     background: #fff;
     color: var(--green);
-    font-size: 19px;
+    font-size: 20px;
+    box-shadow: 0 2px 8px rgba(20, 40, 28, .08);
 }
 
 .prospectus-file-text {
@@ -510,6 +587,7 @@ $design->writeContentPageStyles();
     display: block;
     font-size: 14px;
     font-weight: 700;
+    color: var(--text);
     overflow-wrap: anywhere;
 }
 
@@ -521,57 +599,56 @@ $design->writeContentPageStyles();
     line-height: 1.6;
 }
 
-.prospectus-warning {
-    display: flex;
-    gap: 10px;
-    margin-top: 17px;
-    padding: 12px 14px;
+.prospectus-inline-error {
+    margin-top: 10px;
+    padding: 10px 14px;
     border-radius: 9px;
-    background: #fff8e7;
-    color: #805b10;
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-.prospectus-message {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding: 14px 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.prospectus-message.success {
-    background: #e8f5ed;
-    border: 1px solid #b7ddc5;
-    color: #0f5c33;
-}
-
-.prospectus-message.error {
     background: #fff1f0;
     border: 1px solid #f0c4c4;
     color: #a32121;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.prospectus-inline-error[hidden] {
+    display: none;
+}
+
+.prospectus-warning {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 13px 15px;
+    border-radius: 10px;
+    background: #fff8e7;
+    color: #805b10;
+    font-size: 12.5px;
+    line-height: 1.6;
+}
+
+.prospectus-warning i {
+    margin-top: 3px;
 }
 
 .prospectus-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
 }
 
+/* ---------- Buttons ---------- */
 .prospectus-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 42px;
-    padding: 0 18px;
+    min-height: 44px;
+    padding: 0 20px;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
@@ -596,7 +673,7 @@ $design->writeContentPageStyles();
 }
 
 .prospectus-btn-secondary:hover {
-    background: #f5faf7;
+    background: var(--green-soft);
     color: var(--green);
 }
 
@@ -605,43 +682,7 @@ $design->writeContentPageStyles();
     cursor: not-allowed;
 }
 
-@media (max-width: 900px) {
-    #infoWrapper.col-lg-12 {
-        flex-direction: column;
-        margin: 15px auto;
-    }
-
-    #leftArea.col-lg-9 {
-        width: 100%;
-        padding: 15px 20px;
-    }
-}
-
-@media (max-width: 560px) {
-    #leftArea.col-lg-9 {
-        padding: 10px;
-    }
-
-    .prospectus-header h2 {
-        font-size: 21px;
-    }
-
-    .prospectus-card {
-        padding: 17px;
-    }
-
-    .prospectus-dropzone {
-        padding: 14px;
-    }
-
-    .prospectus-actions .prospectus-btn {
-        width: 100%;
-    }
-}
-
-/* ======================================================================
-   Hardening against global site CSS + finishing touches
-   ====================================================================== */
+/* ---------- Hardening against global site CSS ---------- */
 #leftArea .prospectus-root .prospectus-header h2 {
     margin: 0 !important;
     padding: 0 !important;
@@ -658,15 +699,15 @@ $design->writeContentPageStyles();
 }
 
 #leftArea .prospectus-root .prospectus-card h3 {
-    margin: 0 0 18px !important;
-    padding: 0 0 15px !important;
+    margin: 0 0 20px !important;
+    padding: 0 0 16px !important;
     border: 0 !important;
     border-bottom: 1px solid var(--border) !important;
     text-transform: none !important;
 }
 
 #leftArea .prospectus-root .prospectus-status h4 {
-    margin: 1px 0 5px !important;
+    margin: 1px 0 6px !important;
     padding: 0 !important;
     border: 0 !important;
     text-transform: none !important;
@@ -677,13 +718,9 @@ $design->writeContentPageStyles();
     padding: 0 !important;
 }
 
-#leftArea .prospectus-root .prospectus-status p.prospectus-modified {
-    margin-top: 8px !important;
-}
-
 #leftArea .prospectus-root label.prospectus-label {
     display: block !important;
-    margin: 0 0 9px !important;
+    margin: 0 0 10px !important;
     padding: 0 !important;
     float: none !important;
     width: auto !important;
@@ -714,7 +751,7 @@ $design->writeContentPageStyles();
 
 #leftArea .prospectus-root a.prospectus-btn-secondary:hover,
 #leftArea .prospectus-root button.prospectus-btn-secondary:hover {
-    background: #f5faf7 !important;
+    background: var(--green-soft) !important;
     color: var(--green) !important;
 }
 
@@ -729,27 +766,53 @@ $design->writeContentPageStyles();
 }
 
 #leftArea .prospectus-root .prospectus-btn-sm {
-    min-height: 34px;
-    padding: 0 13px;
+    min-height: 36px;
+    padding: 0 14px;
     font-size: 12px;
 }
 
-.prospectus-view-row {
-    margin-top: 12px;
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+    #infoWrapper.col-lg-12 {
+        flex-direction: column;
+        margin: 15px auto;
+    }
+
+    #leftArea.col-lg-9 {
+        width: 100%;
+        padding: 15px 20px;
+    }
 }
 
 @media (max-width: 560px) {
+    #leftArea.col-lg-9 {
+        padding: 10px;
+    }
+
+    .prospectus-header h2 {
+        font-size: 21px;
+    }
+
+    .prospectus-header-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 19px;
+    }
+
+    .prospectus-card {
+        padding: 18px;
+    }
+
     .prospectus-status {
         flex-direction: column;
         gap: 12px;
     }
 
-    .prospectus-header-icon {
-        width: 42px;
-        height: 42px;
-        font-size: 18px;
+    .prospectus-dropzone {
+        padding: 16px;
     }
 
+    .prospectus-actions .prospectus-btn,
     .prospectus-view-row .prospectus-btn {
         width: 100%;
     }
@@ -770,8 +833,8 @@ $design->writeContentPageStyles();
         </div>
 
         <div>
-            <h2>Prospectus PDF Upload</h2>
-            <p>Upload and replace the Prospectus PDF displayed on the public website.</p>
+            <h2><?php echo prospectusEscape(DOC_TITLE); ?> PDF Upload</h2>
+            <p>Upload and replace the <?php echo prospectusEscape(DOC_TITLE); ?> PDF displayed on the public website.</p>
         </div>
     </div>
 
@@ -780,9 +843,7 @@ $design->writeContentPageStyles();
             class="prospectus-message <?php echo prospectusEscape($messageType); ?>"
             role="<?php echo $messageType === 'error' ? 'alert' : 'status'; ?>"
         >
-            <i class="fas <?php echo $messageType === 'error'
-                ? 'fa-circle-exclamation'
-                : 'fa-circle-check'; ?>"></i>
+            <i class="fas <?php echo $messageType === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'; ?>"></i>
 
             <div><?php echo prospectusEscape($message); ?></div>
         </div>
@@ -792,47 +853,44 @@ $design->writeContentPageStyles();
 
         <h3>
             <i class="fas fa-file-circle-check"></i>
-            Current Prospectus PDF
+            Current <?php echo prospectusEscape(DOC_TITLE); ?> PDF
         </h3>
 
         <div class="prospectus-status">
 
-            <div class="prospectus-status-icon">
+            <div class="prospectus-status-icon<?php echo $fileExists ? ' is-ok' : ''; ?>">
                 <i class="fas fa-file-pdf"></i>
             </div>
 
             <div class="prospectus-status-body">
-                <h4>PROSPECTUS.pdf</h4>
-
-                <p>
-                    S3 object key:
-                    <?php echo prospectusEscape(PROSPECTUS_S3_KEY); ?>
-                </p>
+                <h4><?php echo prospectusEscape(DOC_FILE_NAME); ?></h4>
 
                 <?php if ($fileExists) { ?>
 
                     <span class="prospectus-badge active">
                         <i class="fas fa-check-circle"></i>
-                        PDF exists in S3
+                        PDF uploaded
                     </span>
 
-                    <?php if ($lastModified) { ?>
-                        <p class="prospectus-modified">
-                            Last modified:
-                            <?php echo prospectusEscape($lastModified); ?>
-                        </p>
-                    <?php } ?>
+                    <div class="prospectus-meta">
+                        <?php if ($lastModified) { ?>
+                            <p class="prospectus-modified">
+                                <i class="far fa-clock"></i>
+                                Last modified: <?php echo prospectusEscape($lastModified); ?>
+                            </p>
+                        <?php } ?>
+
+                        <?php if ($fileSizeText !== '') { ?>
+                            <p>
+                                <i class="far fa-hard-drive"></i>
+                                Size: <?php echo prospectusEscape($fileSizeText); ?>
+                            </p>
+                        <?php } ?>
+                    </div>
 
                     <div class="prospectus-view-row">
                         <a
-                            href="<?php
-                            echo prospectusEscape(
-                                $s3Client->getObjectUrl(
-                                    AWS_BUCKET,
-                                    PROSPECTUS_S3_KEY
-                                )
-                            );
-                            ?>"
+                            href="<?php echo prospectusEscape($viewUrl); ?>"
                             target="_blank"
                             rel="noopener"
                             class="prospectus-btn prospectus-btn-secondary prospectus-btn-sm"
@@ -846,7 +904,7 @@ $design->writeContentPageStyles();
 
                     <span class="prospectus-badge missing">
                         <i class="fas fa-exclamation-circle"></i>
-                        PDF not found in S3
+                        PDF not uploaded yet
                     </span>
 
                 <?php } ?>
@@ -861,14 +919,10 @@ $design->writeContentPageStyles();
             id="prospectus-upload-form"
         >
 
-            <input
-                type="hidden"
-                name="csrf_token"
-                value="<?php echo prospectusEscape($csrfToken); ?>"
-            >
+            <input type="hidden" name="csrf_token" value="<?php echo prospectusEscape($csrfToken); ?>">
 
             <label class="prospectus-label" for="prospectus_pdf">
-                Select Prospectus PDF
+                Select <?php echo prospectusEscape(DOC_TITLE); ?> PDF
             </label>
 
             <input
@@ -880,55 +934,42 @@ $design->writeContentPageStyles();
                 required
             >
 
-            <label
-                for="prospectus_pdf"
-                class="prospectus-dropzone"
-                id="prospectus-dropzone"
-            >
+            <label for="prospectus_pdf" class="prospectus-dropzone" id="prospectus-dropzone">
                 <span class="prospectus-upload-icon">
-                    <i class="fas fa-file-arrow-up"></i>
+                    <i class="fas fa-file-arrow-up" id="prospectus-upload-icon"></i>
                 </span>
 
                 <span class="prospectus-file-text">
-                    <span
-                        class="prospectus-file-name"
-                        id="prospectus-file-name"
-                    >
+                    <span class="prospectus-file-name" id="prospectus-file-name">
                         Click to select a PDF or drag it here
                     </span>
 
                     <span class="prospectus-help">
-                        PDF only · Maximum file size: 10 MB
+                        PDF only &middot; Maximum file size: 10 MB
                     </span>
                 </span>
             </label>
+
+            <div class="prospectus-inline-error" id="prospectus-error" role="alert" hidden></div>
 
             <div class="prospectus-warning">
                 <i class="fas fa-triangle-exclamation"></i>
 
                 <span>
                     Uploading a new PDF replaces the existing
-                    PROSPECTUS.pdf in S3. Use this module only
-                    for the Prospectus document.
+                    <?php echo prospectusEscape(DOC_FILE_NAME); ?>.
+                    Use this module only for the <?php echo prospectusEscape(DOC_TITLE); ?> document.
                 </span>
             </div>
 
             <div class="prospectus-actions">
 
-                <button
-                    type="submit"
-                    class="prospectus-btn prospectus-btn-primary"
-                    id="prospectus-submit"
-                >
+                <button type="submit" class="prospectus-btn prospectus-btn-primary" id="prospectus-submit">
                     <i class="fas fa-cloud-arrow-up"></i>
-                    Upload Prospectus PDF
+                    Upload <?php echo prospectusEscape(DOC_TITLE); ?> PDF
                 </button>
 
-                <button
-                    type="reset"
-                    class="prospectus-btn prospectus-btn-secondary"
-                    id="prospectus-reset"
-                >
+                <button type="reset" class="prospectus-btn prospectus-btn-secondary" id="prospectus-reset">
                     <i class="fas fa-rotate-left"></i>
                     Clear
                 </button>
@@ -947,6 +988,8 @@ $design->writeContentPageStyles();
     var input = document.getElementById('prospectus_pdf');
     var zone = document.getElementById('prospectus-dropzone');
     var title = document.getElementById('prospectus-file-name');
+    var icon = document.getElementById('prospectus-upload-icon');
+    var errorBox = document.getElementById('prospectus-error');
     var form = document.getElementById('prospectus-upload-form');
     var submit = document.getElementById('prospectus-submit');
     var reset = document.getElementById('prospectus-reset');
@@ -955,7 +998,9 @@ $design->writeContentPageStyles();
         return;
     }
 
+    var MAX_SIZE = 10 * 1024 * 1024;
     var defaultText = 'Click to select a PDF or drag it here';
+    var submitHtml = submit ? submit.innerHTML : '';
 
     function formatSize(bytes) {
         return bytes >= 1024 * 1024
@@ -963,14 +1008,49 @@ $design->writeContentPageStyles();
             : (bytes / 1024).toFixed(1) + ' KB';
     }
 
+    function showError(text) {
+        errorBox.textContent = text;
+        errorBox.hidden = false;
+    }
+
+    function clearError() {
+        errorBox.textContent = '';
+        errorBox.hidden = true;
+    }
+
+    // Returns an error text, or an empty string when the file is fine
+    function validate(file) {
+        if (!/\.pdf$/i.test(file.name)) {
+            return 'Only PDF files are allowed.';
+        }
+
+        if (file.size <= 0 || file.size > MAX_SIZE) {
+            return 'PDF size must be between 1 byte and 10 MB.';
+        }
+
+        return '';
+    }
+
     function refresh() {
         if (input.files && input.files.length) {
             var file = input.files[0];
 
-            title.textContent =
-                file.name + ' (' + formatSize(file.size) + ')';
+            title.textContent = file.name + ' (' + formatSize(file.size) + ')';
+            zone.classList.add('has-file');
+            icon.className = 'fas fa-file-pdf';
+
+            var problem = validate(file);
+
+            if (problem) {
+                showError(problem);
+            } else {
+                clearError();
+            }
         } else {
             title.textContent = defaultText;
+            zone.classList.remove('has-file');
+            icon.className = 'fas fa-file-arrow-up';
+            clearError();
         }
     }
 
@@ -1000,28 +1080,21 @@ $design->writeContentPageStyles();
     form.addEventListener('submit', function (event) {
         if (!input.files || !input.files.length) {
             event.preventDefault();
-            alert('Please select a PDF file.');
+            showError('Please select a PDF file.');
             return;
         }
 
-        var file = input.files[0];
+        var problem = validate(input.files[0]);
 
-        if (!/\.pdf$/i.test(file.name)) {
+        if (problem) {
             event.preventDefault();
-            alert('Only PDF files are allowed.');
-            return;
-        }
-
-        if (file.size <= 0 || file.size > 10 * 1024 * 1024) {
-            event.preventDefault();
-            alert('PDF size must be between 1 byte and 10 MB.');
+            showError(problem);
             return;
         }
 
         if (submit) {
             submit.disabled = true;
-            submit.innerHTML =
-                '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+            submit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
         }
     });
 
@@ -1032,8 +1105,7 @@ $design->writeContentPageStyles();
 
                 if (submit) {
                     submit.disabled = false;
-                    submit.innerHTML =
-                        '<i class="fas fa-cloud-arrow-up"></i> Upload Prospectus PDF';
+                    submit.innerHTML = submitHtml;
                 }
             }, 0);
         });

@@ -327,8 +327,8 @@ export default function TopHeader() {
             icon: <FaCloudDownloadAlt />,
             children: [
                 { label: "Forms", href: "menubar?type=application-forms" },
-                { label: "Chart", href: `${API_URL}/application_forms_download.php/chart/CHART.pdf`, target: "_blank" },
-                { label: "Prospectus", href: `${API_URL}/application_forms_download.php/prospectus/PROSPECTUS.pdf`, target: "_blank" },
+                { label: "Chart", href: getPdfHref("chart", `${API_URL}/application_forms_download.php/chart/CHART.pdf`), target: "_blank" },
+                { label: "Prospectus", href: getPdfHref("prospectus", `${API_URL}/application_forms_download.php/prospectus/PROSPECTUS.pdf`), target: "_blank" },
             ],
         },
     ];

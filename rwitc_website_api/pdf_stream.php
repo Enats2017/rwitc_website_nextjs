@@ -67,24 +67,59 @@ try {
         ],
     ]);
 
-    $s3Object = $s3Client->getObject([
+    // 1) Read only the file info first (no download yet)
+    $head = $s3Client->headObject([
         'Bucket' => AWS_BUCKET,
         'Key'    => $s3Key,
     ]);
 
-    // Clear any accidental output before sending the PDF
+    $etag         = isset($head['ETag']) ? (string)$head['ETag'] : '';
+    $lastModified = isset($head['LastModified']) ? $head['LastModified']->getTimestamp() : 0;
+
+    // Clear any accidental output before sending headers
     while (ob_get_level() > 0) {
         ob_end_clean();
     }
+
+    // Always ask the server first, so a newly uploaded PDF shows immediately
+    header('Cache-Control: no-cache, must-revalidate');
+    header('X-Content-Type-Options: nosniff');
+    header('Access-Control-Allow-Origin: *');
+
+    if ($etag !== '') {
+        header('ETag: ' . $etag);
+    }
+    if ($lastModified > 0) {
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $lastModified) . ' GMT');
+    }
+
+    // 2) If the browser already has the same version, send 304 (no download)
+    $clientEtag     = isset($_SERVER['HTTP_IF_NONE_MATCH']) ? trim($_SERVER['HTTP_IF_NONE_MATCH']) : '';
+    $clientModified = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) : false;
+
+    $notModified = false;
+    if ($clientEtag !== '' && $etag !== '') {
+        $notModified = ($clientEtag === $etag);
+    } elseif ($clientModified !== false && $lastModified > 0) {
+        $notModified = ($lastModified <= $clientModified);
+    }
+
+    if ($notModified) {
+        http_response_code(304);
+        exit;
+    }
+
+    // 3) File is new or changed: download from S3 and send it
+    $s3Object = $s3Client->getObject([
+        'Bucket' => AWS_BUCKET,
+        'Key'    => $s3Key,
+    ]);
 
     header('Content-Type: ' . pdfContentType($fileName));
     header('Content-Disposition: inline; filename="' . $fileName . '"');
     if (isset($s3Object['ContentLength'])) {
         header('Content-Length: ' . $s3Object['ContentLength']);
     }
-    header('Cache-Control: public, max-age=300');
-    header('X-Content-Type-Options: nosniff');
-    header('Access-Control-Allow-Origin: *');
 
     $body = $s3Object['Body'];
     while (!$body->eof()) {
